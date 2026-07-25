@@ -12,15 +12,16 @@
 -- owner-prefixed so bucket privacy can be tightened later without changing path
 -- shape.
 --
--- feedback-attachments should be private. The app uploads feedback attachments
--- server-side and stores storage:// object references for new submissions.
+-- feedback-attachments remains public during the compatibility phase because
+-- the separate admin UI still renders stored URLs directly. New writes are
+-- server-side and object references are ready for a later signed-URL cutover.
 
 alter table storage.objects enable row level security;
 
 insert into storage.buckets (id, name, public)
 values
   ('trade-images', 'trade-images', true),
-  ('feedback-attachments', 'feedback-attachments', false),
+  ('feedback-attachments', 'feedback-attachments', true),
   ('weekly-calendars', 'weekly-calendars', true)
 on conflict (id) do update
 set public = excluded.public;
@@ -100,9 +101,9 @@ using (
   )
 );
 
--- Feedback attachments are private by bucket setting. Authenticated users may
--- access only files under their own prefix; support/admin service-role clients
--- bypass RLS for review and cleanup.
+-- Feedback attachments retain public reads temporarily for admin compatibility.
+-- Authenticated direct access remains owner-scoped; support/admin service-role
+-- clients bypass RLS for review and cleanup.
 drop policy if exists "Users can read own feedback attachments" on storage.objects;
 create policy "Users can read own feedback attachments"
 on storage.objects

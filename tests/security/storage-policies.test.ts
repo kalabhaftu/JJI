@@ -8,8 +8,9 @@ const policies = readFileSync(
 )
 
 describe('storage policies', () => {
-  it('keeps feedback attachments private', () => {
-    expect(policies).toContain("('feedback-attachments', 'feedback-attachments', false)")
+  it('keeps feedback reads compatible until the admin signed-URL cutover', () => {
+    expect(policies).toContain("('feedback-attachments', 'feedback-attachments', true)")
+    expect(policies).toContain('separate admin UI still renders stored URLs directly')
   })
 
   it('requires an authenticated owner prefix for every browser upload bucket', () => {

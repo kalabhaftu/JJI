@@ -8,11 +8,11 @@ try {
 } catch (_) {}
 
 const nextConfig = {
+  typedRoutes: true,
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',
     },
-    typedRoutes: true,
   },
 
 
@@ -82,24 +82,6 @@ const nextConfig = {
             value: 'max-age=31536000; includeSubDomains; preload',
           },
           {
-            key: 'Content-Security-Policy',
-            value: [
-              "default-src 'self'",
-              process.env.NODE_ENV === 'development'
-                ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-                : "script-src 'self' 'unsafe-inline'",
-              `connect-src 'self' ${process.env.NEXT_PUBLIC_SUPABASE_URL} wss://*.supabase.co https://api.anthropic.com https://*.ingest.sentry.io`,
-              "style-src 'self' 'unsafe-inline'",
-              `img-src 'self' data: blob: https://lh3.googleusercontent.com ${process.env.NEXT_PUBLIC_SUPABASE_URL}`,
-              "font-src 'self'",
-              "object-src 'none'",
-              "frame-ancestors 'none'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "worker-src 'self' blob:",
-            ].join('; '),
-          },
-          {
             key: 'X-XSS-Protection',
             value: '1; mode=block',
           },
@@ -154,6 +136,9 @@ module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
   silent: !process.env.CI,
   widenClientFileUpload: true,
   tunnelRoute: '/monitoring',
+  sourcemaps: {
+    deleteSourcemapsAfterUpload: true,
+  },
   webpack: {
     automaticVercelMonitors: true,
     treeshake: {

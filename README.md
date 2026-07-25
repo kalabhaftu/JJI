@@ -13,21 +13,22 @@ A trading journal and analytics app for tracking and reviewing your trades.
 - **Reports** — filter and export performance data by account, date range, symbol, or session.
 - **Import/Export** — bring in trades via CSV or JSON; export your data at any time.
 - **Goals** — set monthly targets (win rate, net PnL, etc.) and track progress.
-- **AI insights** — optional GPT-powered weekly performance summaries.
+- **AI workspace** — optional, consent-gated xAI analysis across selected trades, journals, and weekly reviews.
 - **Demo mode** — fully functional demo at `/demo` using local mock data, no login required.
 
 ## Tech stack
 
 | Layer | Tech |
 |---|---|
-| Framework | Next.js 14 (App Router) |
+| Runtime | Node.js 24 LTS |
+| Framework | Next.js 15 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS, shadcn/ui, Framer Motion |
 | Database | PostgreSQL via Supabase |
 | ORM | Drizzle ORM |
 | Auth | Supabase Auth (email + Google + Discord OAuth) |
 | State | Zustand + TanStack Query + SWR |
-| Jobs | Inngest (background tasks, weekly reviews) |
+| Jobs | Inngest and Vercel Cron (maintenance and account safeguards) |
 | Payments | NOWPayments (crypto) |
 | Error tracking | Sentry |
 | Testing | Vitest (unit), Playwright (e2e) |
@@ -37,7 +38,7 @@ A trading journal and analytics app for tracking and reviewing your trades.
 
 ### Prerequisites
 
-- Node.js LTS (v20+)
+- Node.js 24
 - npm
 - A [Supabase](https://supabase.com) project (free tier is enough for dev)
 - PostgreSQL connection strings from Supabase
@@ -75,7 +76,7 @@ Everything else in `.env.example` (payments, AI, Sentry, etc.) is optional for l
 
 ### 3. Set up the database
 
-Push the Drizzle schema to your Supabase project:
+Generate or push the Drizzle schema to a development Supabase project:
 
 ```bash
 npm run db:generate   # generate migration files
@@ -83,6 +84,8 @@ npm run db:push       # apply schema to the database
 ```
 
 You also need to apply the Supabase storage policies from `supabase/storage-policies.sql` in the Supabase SQL editor.
+
+Timestamped SQL migrations in `supabase/migrations/` must be rehearsed against a staging clone before production. The server-only RLS migration intentionally preserves owner-scoped `SELECT` access for the tables used by Supabase Realtime while keeping browser writes revoked.
 
 ### 4. Run the dev server
 
@@ -130,7 +133,7 @@ Demo mode (`/demo`) runs entirely in the browser. A fetch interceptor (`app/demo
 ## Security notes
 
 - Never commit real secrets. Use `.env.local` for local development.
-- All API routes are protected via Supabase session cookies. Row Level Security (RLS) is enforced at the database level.
+- Protected APIs resolve the Supabase session and enforce ownership again in Drizzle queries. RLS is an additional database boundary; authenticated browser access is limited to owner-scoped Realtime reads.
 - The `supabase/storage-policies.sql` file defines bucket access policies. Review and apply them before deploying.
 - CORS is configured in `lib/security/origins.ts`. The production origin is `https://justjournalit.vercel.app`.
 - A cron secret (`CRON_SECRET`) is required in production for scheduled maintenance jobs.

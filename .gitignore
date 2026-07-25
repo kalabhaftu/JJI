@@ -167,6 +167,7 @@ tramp
 *.sqlite
 *.sqlite3
 **.db
+supabase/.temp/
 
 # Prisma
 # Keep schema.prisma and migrations, but ignore generated client

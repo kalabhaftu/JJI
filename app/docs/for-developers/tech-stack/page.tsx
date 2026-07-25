@@ -38,14 +38,14 @@ export default function TechStackDocsPage() {
       <DocsSection title="Backend & infrastructure">
         <ul>
           <li><strong>Database:</strong> PostgreSQL via Supabase</li>
-          <li><strong>ORM:</strong> Prisma 6</li>
+          <li><strong>ORM:</strong> Drizzle ORM</li>
           <li><strong>Authentication:</strong> Supabase Auth (magic link, OAuth)</li>
           <li><strong>State (Client):</strong> Zustand</li>
           <li><strong>State (Server):</strong> TanStack Query</li>
           <li><strong>AI:</strong> AI SDK (Vercel), OpenAI, xAI</li>
           <li><strong>Payments:</strong> NOWPayments (crypto)</li>
           <li><strong>Error Tracking:</strong> Sentry</li>
-          <li><strong>Caching:</strong> @vercel/kv (Upstash Redis)</li>
+          <li><strong>Caching and rate limits:</strong> Upstash Redis</li>
           <li><strong>Deployment:</strong> Vercel with GitHub Actions CI</li>
           <li><strong>Real-time:</strong> Supabase Realtime</li>
         </ul>

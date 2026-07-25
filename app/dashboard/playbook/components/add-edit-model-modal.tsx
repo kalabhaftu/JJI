@@ -132,10 +132,15 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
 
   const handleRuleChange = (index: number, field: keyof Rule, value: string) => {
     const newRules = [...rules]
-    const updatedRule = { ...newRules[index] }
-    // @ts-ignore
-    updatedRule[field] = value
-    newRules[index] = updatedRule as Rule
+    const currentRule = newRules[index]
+    if (!currentRule) return
+    const updatedRule: Rule = { ...currentRule }
+    if (field === 'category') {
+      updatedRule.category = value as RuleCategory
+    } else {
+      updatedRule.text = value
+    }
+    newRules[index] = updatedRule
     setRules(newRules)
   }
 
@@ -381,4 +386,3 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
     </>
   )
 }
-

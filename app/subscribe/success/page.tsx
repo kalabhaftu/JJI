@@ -40,7 +40,9 @@ export default function SubscribeSuccessPage() {
             return true
           }
         }
-      } catch {}
+      } catch {
+        return false
+      }
       return false
     }
 

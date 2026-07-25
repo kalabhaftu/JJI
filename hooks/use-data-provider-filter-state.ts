@@ -40,7 +40,9 @@ export function useDataProviderFilterState(timezone: string | undefined) {
         const ids = parsed?.selectedPhaseAccountIds
         if (Array.isArray(ids) && ids.length > 0) return ids
       }
-    } catch {}
+    } catch {
+      return []
+    }
     return []
   })
   const [dateRange, setDateRange] = useState<DataProviderDateRange | undefined>(undefined)

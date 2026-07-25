@@ -1,10 +1,8 @@
 // JJI Service Worker - Optimized for performance
 // Provides offline functionality, caching, and background sync
 
-const CACHE_NAME = 'jji-v1.3.0'
-const STATIC_CACHE = 'jji-static-v1.3.0'
-const API_CACHE = 'jji-api-v1.3.0'
-const IMAGE_CACHE = 'jji-images-v1.3.0'
+const STATIC_CACHE = 'jji-static-v1.4.0'
+const IMAGE_CACHE = 'jji-images-v1.4.0'
 
 let currentUserId = null
 
@@ -13,12 +11,6 @@ const STATIC_FILES = [
   '/',
   '/offline.html',
 ]
-
-// Background sync tags
-const SYNC_TAGS = {
-  TRADE_UPLOAD: 'trade-upload',
-  PROFILE_UPDATE: 'profile-update',
-}
 
 // Install event - cache static resources
 self.addEventListener('install', (event) => {
@@ -36,12 +28,6 @@ self.addEventListener('install', (event) => {
   )
 })
 
-self.addEventListener('message', (event) => {
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting()
-  }
-})
-
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
   
@@ -51,9 +37,7 @@ self.addEventListener('activate', (event) => {
       caches.keys().then((cacheNames) => {
         return Promise.all(
           cacheNames.map((cacheName) => {
-            if (cacheName !== CACHE_NAME && 
-                cacheName !== STATIC_CACHE && 
-                cacheName !== API_CACHE &&
+            if (cacheName !== STATIC_CACHE &&
                 cacheName !== IMAGE_CACHE) {
               return caches.delete(cacheName)
             }
@@ -83,6 +67,8 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(handleStaticRequest(request))
   } else if (isAPIRequest(url)) {
     event.respondWith(handleAPIRequest(request))
+  } else if (isPrivateMediaRequest(url)) {
+    event.respondWith(fetch(request))
   } else if (isImageRequest(url)) {
     event.respondWith(handleImageRequest(request))
   } else {
@@ -150,33 +136,12 @@ async function handleImageRequest(request) {
   }
 }
 
-// Handle page requests - cache-first (stale-while-revalidate) for the app shell
-// so a flaky/offline network never replaces the whole app with offline.html
-// when we have a previously cached copy.
+// Documents are always network-only. Caching authenticated HTML in a global
+// service-worker cache can expose one user's dashboard after logout or account
+// switching. The explicit offline page is the supported document fallback.
 async function handlePageRequest(request) {
-  const cache = await caches.open(CACHE_NAME)
-  const cachedResponse = await cache.match(request, { ignoreSearch: false })
-
-  // Background revalidation - update cache for next navigation
-  const revalidate = fetch(request)
-    .then((response) => {
-      if (response && response.ok && response.type === 'basic') {
-        cache.put(request, response.clone()).catch(() => {})
-      }
-      return response
-    })
-    .catch(() => null)
-
-  if (cachedResponse) {
-    // Serve cached shell immediately; revalidate in background
-    revalidate
-    return cachedResponse
-  }
-
   try {
-    const response = await revalidate
-    if (response) return response
-    throw new Error('network failed')
+    return await fetch(request)
   } catch (error) {
     
     // Serve offline page
@@ -226,70 +191,6 @@ async function handlePageRequest(request) {
   }
 }
 
-// Background sync for uploading data when back online
-self.addEventListener('sync', (event) => {
-  
-  switch (event.tag) {
-    case SYNC_TAGS.TRADE_UPLOAD:
-      event.waitUntil(syncTradeUploads())
-      break
-    case SYNC_TAGS.PROFILE_UPDATE:
-      event.waitUntil(syncProfileUpdates())
-      break
-  }
-})
-
-// Sync pending trade uploads
-async function syncTradeUploads() {
-  try {
-    const db = await openIndexedDB()
-    const pendingTrades = await getPendingTrades(db)
-    
-    for (const trade of pendingTrades) {
-      try {
-        const response = await fetch('/api/v1/trades/quick-add', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(trade.data)
-        })
-        
-        if (response.ok) {
-          await removePendingTrade(db, trade.id)
-        }
-      } catch (error) {
-      }
-    }
-  } catch (error) {
-  }
-}
-
-// Sync profile updates
-async function syncProfileUpdates() {
-  try {
-    const db = await openIndexedDB()
-    const pendingUpdates = await getPendingProfileUpdates(db)
-    
-    for (const update of pendingUpdates) {
-      try {
-        const response = await fetch('/api/auth/profile', {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(update.data)
-        })
-        
-        if (response.ok) {
-          await removePendingProfileUpdate(db, update.id)
-        }
-      } catch (error) {
-      }
-    }
-  } catch (error) {
-  }
-}
 // Message handling for communication with main thread
 self.addEventListener('message', (event) => {
   if (!event.data) return
@@ -301,13 +202,12 @@ self.addEventListener('message', (event) => {
       self.skipWaiting()
       break
     case 'CLEAR_CACHE':
-      clearAllCaches()
+      event.waitUntil(clearAllUserData())
       break
     case 'SET_USER_ID':
       const newUserId = event.data.userId
       if (currentUserId !== null && newUserId !== currentUserId) {
-        // Clear API cache when user changes to prevent cross-user data leakage
-        caches.delete(API_CACHE)
+        event.waitUntil(clearAllUserData())
       }
       currentUserId = newUserId
       break
@@ -323,6 +223,21 @@ async function clearAllCaches() {
     )
   } catch (error) {
   }
+}
+
+async function clearAllUserData() {
+  const cacheNames = await caches.keys()
+  await Promise.all(
+    cacheNames
+      .filter((cacheName) => cacheName !== STATIC_CACHE)
+      .map((cacheName) => caches.delete(cacheName))
+  )
+  await new Promise((resolve) => {
+    const request = indexedDB.deleteDatabase('JJIOffline')
+    request.onsuccess = () => resolve()
+    request.onerror = () => resolve()
+    request.onblocked = () => resolve()
+  })
 }
 
 // Helper functions
@@ -341,70 +256,6 @@ function isImageRequest(url) {
   return imageExtensions.some(ext => url.pathname.endsWith(ext))
 }
 
-// IndexedDB helpers for offline storage
-function openIndexedDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open('JJIOffline', 1)
-    
-    request.onerror = () => reject(request.error)
-    request.onsuccess = () => resolve(request.result)
-    
-    request.onupgradeneeded = (event) => {
-      const db = event.target.result
-      
-      // Create object stores
-      if (!db.objectStoreNames.contains('pendingTrades')) {
-        db.createObjectStore('pendingTrades', { keyPath: 'id' })
-      }
-      
-      if (!db.objectStoreNames.contains('pendingProfileUpdates')) {
-        db.createObjectStore('pendingProfileUpdates', { keyPath: 'id' })
-      }
-      
-      if (!db.objectStoreNames.contains('offlineData')) {
-        db.createObjectStore('offlineData', { keyPath: 'key' })
-      }
-    }
-  })
+function isPrivateMediaRequest(url) {
+  return url.pathname.startsWith('/storage/v1/object/') || url.hostname.endsWith('.supabase.co')
 }
-
-async function getPendingTrades(db) {
-  const transaction = db.transaction(['pendingTrades'], 'readonly')
-  const store = transaction.objectStore('pendingTrades')
-  return new Promise((resolve, reject) => {
-    const request = store.getAll()
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
-}
-
-async function removePendingTrade(db, id) {
-  const transaction = db.transaction(['pendingTrades'], 'readwrite')
-  const store = transaction.objectStore('pendingTrades')
-  return new Promise((resolve, reject) => {
-    const request = store.delete(id)
-    request.onsuccess = () => resolve()
-    request.onerror = () => reject(request.error)
-  })
-}
-
-async function getPendingProfileUpdates(db) {
-  const transaction = db.transaction(['pendingProfileUpdates'], 'readonly')
-  const store = transaction.objectStore('pendingProfileUpdates')
-  return new Promise((resolve, reject) => {
-    const request = store.getAll()
-    request.onsuccess = () => resolve(request.result)
-    request.onerror = () => reject(request.error)
-  })
-}
-
-async function removePendingProfileUpdate(db, id) {
-  const transaction = db.transaction(['pendingProfileUpdates'], 'readwrite')
-  const store = transaction.objectStore('pendingProfileUpdates')
-  return new Promise((resolve, reject) => {
-    const request = store.delete(id)
-    request.onsuccess = () => resolve()
-    request.onerror = () => reject(request.error)
-  })
-}
-

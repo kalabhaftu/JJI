@@ -26,6 +26,8 @@ describe('user settings patching', () => {
     expect(patch.aiSettings).toEqual({
       autoGenerateInsights: true,
       includeAiInsightsInNotifications: false,
+      dataProcessingConsentAt: null,
+      dataProcessingConsentVersion: null,
     })
   })
 })

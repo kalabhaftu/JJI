@@ -173,7 +173,6 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
       setIsNewsDay((trade as any).newsDay || false)
       setNewsTraded((trade as any).newsTraded || false)
 
-      // @ts-ignore
       setMarketBias(trade.marketBias || null)
       setBiasTimeframe((trade as any).biasTimeframe || null)
       setNarrativeTimeframe((trade as any).narrativeTimeframe || null)
@@ -211,7 +210,6 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
         ...imageFields,
         modelId: modelId || null,
         selectedRules: (trade as any).selectedRules || [],
-        // @ts-ignore
         marketBias: (trade as any).marketBias || null,
         newsDay: (trade as any).newsDay || false,
         selectedNews: newsIds,
@@ -246,7 +244,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
     file: File
   ) => {
     try {
-      const currentUser = user || supabaseUser
+      const currentUser = supabaseUser || user
       if (!currentUser?.id) { toast.error('User not authenticated'); return }
       setUploadingField(field)
       let fileToUpload = file

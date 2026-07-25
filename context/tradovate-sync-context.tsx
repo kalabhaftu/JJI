@@ -5,6 +5,7 @@ import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
 import { type SynchronizationType } from '@/lib/db/schema'
 import { DEFAULT_INCLUDED_FEE_TYPES } from '@/app/dashboard/components/import/tradovate/sync/fee-types'
+import logger from '@/lib/logger'
 
 interface TradovateSyncContextType {
   // Core sync management
@@ -138,7 +139,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
     try {
       const runSync = async () => {
-        console.log('Starting sync for account:', accountId)
+        logger.debug({ accountId }, 'Starting Tradovate sync')
         if (!account.token) {
           const errorMsg = `Token for account ${accountId} is expired`
           return errorMsg
@@ -166,7 +167,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
         const savedCount = payload.savedCount || 0
         const ordersCount = payload.ordersCount || 0
 
-        console.log(`Sync complete for ${accountId}: ${savedCount} trades saved, ${ordersCount} orders processed`)
+        logger.debug({ accountId, savedCount, ordersCount }, 'Tradovate sync complete')
 
         // Show success message
         let successMessage: string
@@ -247,7 +248,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
         const minutesSinceLastSync = (now - lastSyncTime) / (1000 * 60)
 
         if (minutesSinceLastSync >= syncInterval) {
-          console.log(`Auto-sync triggered for account ${account.accountId}`)
+          logger.debug({ accountId: account.accountId }, 'Tradovate auto-sync triggered')
           await performSyncForAccount(account.accountId)
         }
       }

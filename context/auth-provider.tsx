@@ -191,17 +191,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsLoading(false)
     lastSyncedSessionRef.current = null
     
-    try {
-      useTradesStore.getState().setTrades([])
-    } catch (e) {}
-
-    try {
-      queryClient.clear()
-    } catch (e) {}
-
-    try {
-      mutate(() => true, undefined, { revalidate: false })
-    } catch (e) {}
+    useTradesStore.getState().setTrades([])
+    queryClient.clear()
+    void mutate(() => true, undefined, { revalidate: false }).catch(() => undefined)
 
     localStorage.removeItem('jji_user_data')
     // Clear Supabase auth tokens (they start with 'sb-')

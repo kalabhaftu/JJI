@@ -21,7 +21,7 @@ import {
  * - Consistency Score: 10%
  */
 
-export interface ZellaScoreMetrics {
+export interface PerformanceScoreMetrics {
   avgWinLoss: number
   tradeWinPercentage: number
   maxDrawdown: number
@@ -30,7 +30,7 @@ export interface ZellaScoreMetrics {
   consistencyScore: number
 }
 
-export interface ZellaScoreResult {
+export interface PerformanceScoreResult {
   overallScore: number
   metrics: {
     avgWinLoss: number
@@ -156,7 +156,7 @@ function calculateRecoveryFactorScore(recoveryFactor: number): number {
  * Calculate Complete Performance Score
  * Weighted combination of all metrics
  */
-export function calculateZellaScore(metrics: ZellaScoreMetrics): ZellaScoreResult {
+export function calculatePerformanceScore(metrics: PerformanceScoreMetrics): PerformanceScoreResult {
   const avgWinLossScore = calculateAvgWinLossScore(metrics.avgWinLoss)
   const tradeWinPercentageScore = calculateTradeWinPercentageScore(metrics.tradeWinPercentage)
   const maxDrawdownScore = calculateMaxDrawdownScore(metrics.maxDrawdown)
@@ -209,7 +209,7 @@ export interface Trade {
 export function calculateMetricsFromTrades(
   trades: Trade[],
   breakEvenThresholdInput: number = DEFAULT_BREAK_EVEN_THRESHOLD
-): ZellaScoreMetrics | null {
+): PerformanceScoreMetrics | null {
   if (trades.length < 10) {
     return null
   }
@@ -267,5 +267,4 @@ export function calculateMetricsFromTrades(
     consistencyScore
   }
 }
-
 

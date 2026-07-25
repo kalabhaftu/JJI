@@ -15,6 +15,7 @@ import { useRithmicSyncStore } from "@/store/rithmic-sync-store";
 import { useTradesStore } from "@/store/trades-store";
 import { getUserId } from "@/server/auth";
 import { useUserStore } from "@/store/user-store";
+import logger from "@/lib/logger";
 
 interface RithmicCredentials {
   username: string;
@@ -112,7 +113,7 @@ export function RithmicSyncContextProvider({
 
   const disconnect = useCallback(() => {
     if (ws) {
-      console.log("Disconnecting WebSocket");
+      logger.debug("Disconnecting Rithmic WebSocket");
       ws.close();
       setWs(null);
       setIsConnected(false);
@@ -155,7 +156,7 @@ export function RithmicSyncContextProvider({
 
                 if (activeAccount) {
                   const [accountId] = activeAccount;
-                  console.log("Setting total days:", { accountId, totalDays });
+                  logger.debug({ accountId, totalDays }, "Setting Rithmic total days");
                   updateAccountProgress(accountId, {
                     totalDays: parseInt(totalDays),
                     daysProcessed: 0,
@@ -389,7 +390,7 @@ export function RithmicSyncContextProvider({
   const connect = useCallback(
     (url: string, token: string, accounts: string[], startDate: string) => {
       if (ws) {
-        console.log("Closing existing connection before creating new one");
+        logger.debug("Closing existing Rithmic connection before creating a new one");
         ws.close();
       }
 
@@ -747,7 +748,7 @@ export function RithmicSyncContextProvider({
         const date = new Date();
         date.setDate(date.getDate() - 91);
         const startDate = date.toISOString().slice(0, 10).replace(/-/g, "");
-        console.log("No trades found, using default start date:", startDate);
+        logger.debug({ startDate }, "No Rithmic trades found; using default start date");
         return startDate;
       }
 
@@ -776,7 +777,7 @@ export function RithmicSyncContextProvider({
         .slice(0, 10)
         .replace(/-/g, "");
 
-      console.log("Calculated start date from trades:", startDate);
+      logger.debug({ startDate }, "Calculated Rithmic start date from trades");
       return startDate;
     },
     [trades]
@@ -807,7 +808,7 @@ export function RithmicSyncContextProvider({
         const minutesSinceLastSync = (now - lastSyncTime) / (1000 * 60);
 
         if (minutesSinceLastSync >= syncInterval) {
-          console.log(`Auto-sync triggered for credential ${sync.accountId}`);
+          logger.debug({ accountId: sync.accountId }, "Rithmic auto-sync triggered");
           await performSyncForCredential(sync.accountId);
         }
       }

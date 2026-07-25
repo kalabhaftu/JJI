@@ -24,6 +24,7 @@
 
 import { useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
+import logger from '@/lib/logger'
 
 const HIDDEN_THRESHOLD_MS = 30_000
 
@@ -39,7 +40,7 @@ export function ReconnectRefetcher() {
       // components refetch. Cached-but-unused data stays put.
       queryClient.invalidateQueries({ type: 'active' })
       if (process.env.NODE_ENV !== 'production') {
-                console.debug('[reconnect] invalidated active queries:', reason)
+        logger.debug({ reason }, 'Invalidated active queries after reconnect')
       }
     }
 

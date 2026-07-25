@@ -2,7 +2,6 @@ import { DataProvider } from "@/context/data-provider";
 import { TemplateProvider } from "@/context/template-provider";
 import { TagsProvider } from "@/context/tags-provider";
 import Modals from "@/components/modals";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ReactElement, Suspense } from "react";
 import { redirect } from "next/navigation";
 import { SidebarLayout } from "./components/sidebar-layout";
@@ -11,11 +10,13 @@ import { QuickAddFAB } from "@/components/quick-add-fab";
 import { getInitBootstrapData } from "@/server/init-bootstrap";
 import { checkSubscriptionAccess } from "@/lib/services/subscription-guard-service";
 import { getSiteUiSettings } from "@/server/site-ui-settings";
-import { createDailyAnchor } from "@/lib/services/anchor-service";
 
 import { SyncContextWrapper } from "./components/sync-context-wrapper";
 import { TourWrapper } from "./components/tour-wrapper";
 import { ClientDynamicComponents } from "./components/client-dynamic-components";
+import { DeploymentMonitor } from "@/components/deployment-monitor";
+import { AppBanner } from "@/components/app-banner";
+import { OfflineIndicator } from "@/components/offline-indicator";
 
 export const dynamic = 'force-dynamic'
 
@@ -30,24 +31,12 @@ export default async function RootLayout({ children }: { children: ReactElement 
       redirect(access.redirectTo)
     }
 
-    try {
-      const timezone = initialBootstrapData.user?.timezone || initialBootstrapData.user?.settings?.timezone || 'UTC'
-      const activePropFirmAccounts = initialBootstrapData.accounts.filter(
-        (a: any) => a.accountType === 'prop-firm' && a.status === 'active'
-      )
-      await Promise.all(
-        activePropFirmAccounts.map((acc: any) => createDailyAnchor(acc.id, timezone))
-      )
-    } catch (e) {
-      console.error('Error lazily creating daily anchors:', e)
-    }
   } else if (!initialBootstrapData.isAuthenticated) {
     redirect("/login")
   }
 
   return (
-    <TooltipProvider>
-      <DataProvider initialBootstrapData={initialBootstrapData}>
+    <DataProvider initialBootstrapData={initialBootstrapData}>
         <SyncContextWrapper>
           <TourWrapper>
                 <TagsProvider>
@@ -62,12 +51,14 @@ export default async function RootLayout({ children }: { children: ReactElement 
                         <MobileBottomNav />
                         <QuickAddFAB />
                         <ClientDynamicComponents />
+                        <DeploymentMonitor />
+                        <AppBanner />
+                        <OfflineIndicator />
                       </div>
                   </TemplateProvider>
                 </TagsProvider>
               </TourWrapper>
         </SyncContextWrapper>
-      </DataProvider>
-    </TooltipProvider>
+    </DataProvider>
   );
 }

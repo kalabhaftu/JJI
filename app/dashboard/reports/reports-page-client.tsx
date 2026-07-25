@@ -368,7 +368,6 @@ export default function ReportsPageClient({
             const rect = element.getBoundingClientRect()
             const dpr = window.devicePixelRatio || 1
 
-            // @ts-ignore
             const html2canvas = (await import('html2canvas')).default
             const canvas = await html2canvas(element, {
                 scale: Math.max(dpr, 2),

@@ -126,16 +126,19 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
 
     const responses = await Promise.all(
       filesToUpload.map(async (file) => {
-        const { error } = await supabase.storage
-          .from(bucketName)
-          .upload(!!path ? `${path}/${file.name}` : file.name, file, {
-            cacheControl: cacheControl.toString(),
-            upsert,
-          })
-        if (error) {
-          return { name: file.name, message: error.message }
-        } else {
+        try {
+          const { error } = await supabase.storage
+            .from(bucketName)
+            .upload(path ? `${path}/${file.name}` : file.name, file, {
+              cacheControl: cacheControl.toString(),
+              upsert,
+            })
+          if (error) {
+            return { name: file.name, message: error.message }
+          }
           return { name: file.name, message: undefined }
+        } catch {
+          return { name: file.name, message: 'Upload failed' }
         }
       })
     )
@@ -151,6 +154,10 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     setSuccesses(newSuccesses)
 
     setLoading(false)
+    return {
+      successfulNames: responseSuccesses.map((response) => response.name),
+      errors: responseErrors,
+    }
   }, [files, path, bucketName, errors, successes, cacheControl, upsert])
 
   useEffect(() => {

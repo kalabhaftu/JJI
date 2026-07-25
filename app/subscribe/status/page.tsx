@@ -140,7 +140,6 @@ export default function SubscribeStatusPage() {
                     </Button>
                     {status?.invoiceUrl && (
                       <Button variant="outline" onClick={() => { 
-                        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
                         window.location.href = status.invoiceUrl! 
                       }} className="w-full">
                         Open Invoice

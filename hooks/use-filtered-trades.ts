@@ -10,7 +10,6 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { getMockDemoData } from '@/lib/demo/mock-data'
 
 export interface TradeFilters {
   accounts?: string[]
@@ -71,6 +70,7 @@ export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoM
     queryKey: ['v1', 'trades', queryString, isDemoMode],
     queryFn: async () => {
       if (isDemoMode) {
+        const { getMockDemoData } = await import('@/lib/demo/mock-data')
         return getMockDemoData();
       }
       const res = await fetch(`/api/v1/trades?${queryString}`)
@@ -82,4 +82,3 @@ export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoM
     gcTime: 5 * 60 * 1000,
   })
 }
-

@@ -14,6 +14,9 @@ export function DemoNetworkInterceptor() {
     })
 
     window.fetch = async function (input, init) {
+      if (!window.location.pathname.startsWith('/demo')) {
+        return originalFetch.apply(this, [input, init])
+      }
       const request = input instanceof Request ? input : null
       const urlString = typeof input === 'string' ? input : request?.url || ''
       
@@ -245,7 +248,7 @@ export function DemoNetworkInterceptor() {
           }
 
           console.warn(`[Demo] Blocked unhandled internal API request: ${method} ${pathname}`)
-          return jsonResponse({ success: true, data: [], demo: true })
+          return jsonResponse({ success: false, error: 'Not implemented in demo mode', demo: true }, 501)
         }
       } catch (e) {
         console.warn('[Demo] Failed to inspect request before demo interception', e)

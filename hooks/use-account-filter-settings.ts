@@ -52,7 +52,9 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
             const parsed = JSON.parse(cached)
             return parsed || DEFAULT_FILTER_SETTINGS
           }
-        } catch {}
+        } catch {
+          return DEFAULT_FILTER_SETTINGS
+        }
         return DEFAULT_FILTER_SETTINGS
       }
       return fetchAccountFilterSettings()
@@ -71,7 +73,9 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
           const parsed = JSON.parse(cached)
           if (parsed && typeof parsed === 'object') return parsed as AccountFilterSettings
         }
-      } catch {}
+      } catch {
+        return undefined
+      }
       return undefined
     },
     initialDataUpdatedAt: () => {

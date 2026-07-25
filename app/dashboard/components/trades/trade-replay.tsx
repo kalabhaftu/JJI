@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import {
     AlertCircle as WarningCircle
 } from "lucide-react"
-import { createChart, ColorType, IChartApi, Time, CandlestickSeries, createSeriesMarkers } from 'lightweight-charts'
+import { createChart, ColorType, IChartApi, Time, CandlestickSeries, createSeriesMarkers, type SeriesMarker } from 'lightweight-charts'
 import { getMarketData } from '@/app/actions/get-market-data'
 import { getTimezoneOffset } from 'date-fns-tz'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -115,7 +115,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
             candleSeries.setData(adjustedData as any)
 
             // Plot Markers - CRITICAL: Use adjustedData to find times
-            const markers: any[] = []
+            const markers: SeriesMarker<Time>[] = []
 
             const findNearestAdjustedTime = (targetTimeStr: string) => {
                 const targetDate = new Date(targetTimeStr)
@@ -156,7 +156,6 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
                 } catch (e) { /* marker placement failed silently */ }
             }
 
-            // @ts-ignore
             createSeriesMarkers(candleSeries, markers)
             chart.timeScale().fitContent()
 

@@ -81,6 +81,7 @@ import { TemplateAwareDashboardSkeleton } from '@/components/ui/dashboard-skelet
 import { WidgetErrorBoundary } from './widget-wrapper'
 import { WIDGET_GRID_DEFAULTS } from '../config/widget-dimensions'
 import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
+import { getMobileWidgetHeight } from '@/lib/dashboard/mobile-widget-layout'
 import { toast } from 'sonner'
 import { useDashboardPropFirmAccount } from '@/hooks/use-dashboard-prop-firm-account'
 import { usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data'
@@ -425,6 +426,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                         <Button
                           variant="destructive"
                           size="sm"
+                          aria-label={`Remove ${widget.type} widget`}
                           className="absolute top-2 right-2 h-6 w-6 rounded-full p-0 shadow-md z-10 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => handleRemoveWidget(widget.i)}
                         >
@@ -474,28 +476,27 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
               if (!config) return null
 
               const isChart = (config.category === 'charts' && widget.type !== 'performanceSummary') || widget.type.startsWith('calendar')
-              const chartHeight = widget.h * ROW_HEIGHT + (widget.h - 1) * GRID_MARGIN[1]
-              
-              const mobileHeight = isChart ? chartHeight : undefined
-              const minHeight = isChart ? chartHeight : (config.previewHeight || 200)
+              const mobileHeight = getMobileWidgetHeight(widget.type, isChart, config.previewHeight)
+              const minHeight = mobileHeight
 
               return (
                 <div
                   key={`mobile-${widget.i}`}
-                  className={cn('widget-wrapper relative flex-shrink-0', isEditMode && 'ring-1 ring-border/30 ring-inset rounded-2xl')}
-                  style={isChart ? { height: chartHeight } : { minHeight }}
+                  className={cn('widget-wrapper flex-shrink-0', isEditMode && 'relative rounded-2xl ring-1 ring-border/30 ring-inset')}
+                  style={{ height: mobileHeight, minHeight }}
                 >
                   {isEditMode && (
                     <Button
                       variant="destructive"
                       size="sm"
+                      aria-label={`Remove ${widget.type} widget`}
                       className="absolute top-2 right-2 h-6 w-6 rounded-full p-0 shadow-md z-10"
                       onClick={() => handleRemoveWidget(widget.i)}
                     >
                       <X className="h-3 w-3" />
                     </Button>
                   )}
-                  <LazyMobileWidget {...(mobileHeight !== undefined ? { height: mobileHeight } : {})} minHeight={minHeight} isEditMode={isEditMode}>
+                  <LazyMobileWidget height={mobileHeight} minHeight={minHeight} isEditMode={isEditMode}>
                     {config.getComponent({ size: widget.size as any })}
                   </LazyMobileWidget>
                 </div>
@@ -535,6 +536,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                       <Button
                         variant="destructive"
                         size="sm"
+                        aria-label={`Remove ${widget.type} widget`}
                         className="absolute top-2 right-2 h-6 w-6 rounded-full p-0 shadow-md z-10 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => handleRemoveWidget(widget.i)}
                       >

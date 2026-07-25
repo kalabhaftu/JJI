@@ -188,6 +188,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       )}>
         <textarea
           ref={internalTextareaRef}
+          aria-label="AI prompt"
           rows={1}
           value={value}
           onChange={handleInputChange}
@@ -206,7 +207,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
                     type="button"
                     onClick={toggleRecording}
                     className={cn(
-                      "flex h-8 w-8 items-center justify-center rounded-full transition-colors focus-visible:outline-none",
+                      "flex h-8 w-8 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                       isRecording
                         ? "bg-red-500/15 text-red-500 animate-pulse"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted"

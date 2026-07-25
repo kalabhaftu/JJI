@@ -2,30 +2,24 @@ import { DataProvider } from "@/context/data-provider";
 import { TemplateProvider } from "@/context/template-provider";
 import { TagsProvider } from "@/context/tags-provider";
 import Modals from "@/components/modals";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { ReactElement, Suspense } from "react";
 import { SidebarLayout } from "../dashboard/components/sidebar-layout";
 import { MobileBottomNav } from "@/components/ui/mobile-nav";
 import { QuickAddFAB } from "@/components/quick-add-fab";
-import { CommandPalette } from "@/components/command-palette";
-import { GlobalTradeController } from "../dashboard/components/global-trade-controller";
-import { WeeklyReviewTrigger } from "@/components/weekly-review-trigger";
-import { KeyboardShortcutsModal } from "@/components/ui/keyboard-shortcuts-modal";
 
 import { TourProvider } from "@/context/tour-context";
-import { TourTooltip } from "@/components/tour/tour-tooltip";
-import { ResumeWidget } from "@/components/tour/resume-widget";
 import { DemoNetworkInterceptor } from "./components/demo-network-interceptor";
 import { TradovateSyncContextProvider } from "@/context/tradovate-sync-context";
 import { DxFeedSyncContextProvider } from "@/context/dxfeed-sync-context";
 import { RithmicSyncContextProvider } from "@/context/rithmic-sync-context";
+import { ClientDynamicComponents } from "../dashboard/components/client-dynamic-components";
 
 export default async function DemoLayout({ children }: { children: ReactElement }) {
   const siteUiSettings = { showDonateButton: true, showFeedbackButton: true }
 
   return (
-    <TooltipProvider>
-      <DemoNetworkInterceptor />
+    <>
+    <DemoNetworkInterceptor />
       <DataProvider isDemoMode={true}>
         <TradovateSyncContextProvider disabled>
           <DxFeedSyncContextProvider disabled>
@@ -42,14 +36,7 @@ export default async function DemoLayout({ children }: { children: ReactElement 
                         <Modals />
                         <MobileBottomNav />
                         <QuickAddFAB />
-                        <CommandPalette />
-                        <KeyboardShortcutsModal />
-                        <Suspense fallback={null}>
-                          <GlobalTradeController />
-                        </Suspense>
-                        <WeeklyReviewTrigger />
-                        <TourTooltip />
-                        <ResumeWidget />
+                        <ClientDynamicComponents />
                       </div>
                   </TemplateProvider>
                 </TagsProvider>
@@ -58,6 +45,6 @@ export default async function DemoLayout({ children }: { children: ReactElement 
           </DxFeedSyncContextProvider>
         </TradovateSyncContextProvider>
       </DataProvider>
-    </TooltipProvider>
+    </>
   );
 }

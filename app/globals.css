@@ -89,12 +89,15 @@
     --card-foreground: 222 47% 11%;      /* #0F172A */
     --popover: 0 0% 100%;                /* #FFFFFF */
     --popover-foreground: 222 47% 11%;
+    --surface-raised: 0 0% 100%;
+    --surface-subtle: 220 14% 93%;
+    --border-strong: 220 13% 82%;
 
     --border: 220 13% 90%;               /* #E2E8F0 - crisp, thin border tone */
     --input: 220 13% 90%;                /* #E2E8F0 */
 
     --muted: 220 14% 94%;                /* #EAECEF - soft muted background */
-    --muted-foreground: 220 10% 46%;     /* #64748B - secondary/muted text */
+    --muted-foreground: 220 10% 44%;     /* darker secondary text; AA on page background */
 
     /* 2. LAYER 2: ACCENTS & INTERACTIVE STATES */
     --primary: 222 47% 11%;              /* #0F172A - deep indigo/slate main brand color */
@@ -109,14 +112,14 @@
     --accent: 220 14% 94%;               /* #EAECEF */
     --accent-foreground: 222 47% 11%;    /* #0F172A */
 
-    --destructive: 354 84% 54%;          /* #EF4444 - vibrant clean red */
+    --destructive: 354 84% 48%;          /* red deepened for white-label contrast */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF */
 
     --success: 162 76% 36%;              /* #10B981 - vibrant emerald green */
-    --success-foreground: 0 0% 100%;     /* #FFFFFF */
+    --success-foreground: 222 47% 11%;   /* dark text meets AA on emerald */
 
     --warning: 38 92% 50%;               /* #F59E0B - amber-500 */
-    --warning-foreground: 0 0% 100%;     /* #FFFFFF */
+    --warning-foreground: 222 47% 11%;   /* dark text meets AA on amber */
 
     --ring: 222 47% 11%;                 /* Match primary */
     --radius: 0.75rem;
@@ -160,6 +163,9 @@
     --card-foreground: 213 27% 84%;     /* #CBD5E1 */
     --popover: 219 25% 11%;             /* #151A23 */
     --popover-foreground: 213 27% 84%;
+    --surface-raised: 219 25% 10%;
+    --surface-subtle: 218 24% 14%;
+    --border-strong: 215 22% 25%;
 
     --border: 215 24% 18%;              /* #222B38 */
     --input: 215 24% 18%;               /* #222B38 */
@@ -181,13 +187,13 @@
     --accent-foreground: 213 27% 84%;
 
     --destructive: 0 84% 60%;           /* #EF4444 */
-    --destructive-foreground: 0 0% 100%;/* #FFFFFF */
+    --destructive-foreground: 222 33% 6%;/* dark text meets AA on bright red */
 
     --success: 160 84% 39%;             /* #10B981 */
-    --success-foreground: 0 0% 100%;    /* #FFFFFF */
+    --success-foreground: 222 33% 6%;   /* dark text meets AA on bright emerald */
 
     --warning: 38 92% 50%;               /* #F59E0B - amber-500 */
-    --warning-foreground: 0 0% 100%;     /* #FFFFFF */
+    --warning-foreground: 222 33% 6%;    /* dark text meets AA on amber */
 
     --ring: 210 40% 98%;                /* Match primary */
 
@@ -217,9 +223,9 @@
   /* Accent Pack: Reports Aesthetic - sage green + deep amber */
   .accent-reports {
     --success: 123 27% 62%;               /* Sage green (matches --chart-bullish) */
-    --success-foreground: 0 0% 100%;
+    --success-foreground: 222 47% 11%;
     --destructive: 25 70% 45%;            /* Deep amber/copper */
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 222 47% 6%;
     --chart-profit: 123 27% 62%;
     --chart-loss: 25 70% 45%;
   }
@@ -227,9 +233,9 @@
   .dark.accent-reports,
   .accent-reports.dark {
     --success: 123 27% 62%;
-    --success-foreground: 0 0% 100%;
+    --success-foreground: 222 33% 6%;
     --destructive: 25 70% 50%;            /* Slightly brighter amber on dark */
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 222 33% 6%;
     --chart-profit: 123 27% 62%;
     --chart-loss: 25 70% 50%;
   }
@@ -240,7 +246,7 @@
     --success: 255 85% 60%;               /* Violet (#a78bfa-like in light) */
     --success-foreground: 0 0% 100%;
     --destructive: 329 80% 55%;            /* Pink (#f472b6-like in light) */
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 222 47% 6%;
     --chart-profit: 255 85% 60%;
     --chart-loss: 329 80% 55%;
     --chart-bullish: 255 85% 60%;
@@ -253,7 +259,7 @@
     --success: 255 92% 76%;
     --success-foreground: 222 33% 6%;
     --destructive: 329 86% 70%;            /* Pink (#f472b6) */
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 222 33% 6%;
     --chart-profit: 255 92% 76%;
     --chart-loss: 329 86% 70%;
     --chart-bullish: 255 92% 76%;
@@ -288,8 +294,14 @@
 
   /* Accent Pack Light-Mode Overrides (dynamic contrast adjustments) */
   .accent-slate:not(.dark) {
-    --primary-foreground: 222 47% 11%;
-    --success-foreground: 222 47% 11%;
+    --primary: 222 47% 11%;
+    --primary-foreground: 210 40% 98%;
+    --primary-hover: 222 47% 18%;
+    --primary-press: 222 47% 5%;
+    --success: 215 25% 35%;
+    --success-foreground: 0 0% 100%;
+    --chart-profit: 215 25% 35%;
+    --chart-bullish: 215 25% 35%;
   }
 
   .accent-reports:not(.dark) {
@@ -386,9 +398,13 @@ body[data-sidebar-drawer-open="true"] .mobile-bottom-nav {
   transform: translateY(100%);
 }
 
+.mobile-bottom-nav {
+  padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+}
+
 /* Ensure tables don't break layout on mobile */
 @media (max-width: 768px) {
-  table {
+  .responsive-table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -397,22 +413,15 @@ body[data-sidebar-drawer-open="true"] .mobile-bottom-nav {
   /* Minimum touch target size (44px per Apple HIG, 48px per WCAG) */
   button,
   [role="button"],
-  a,
   input[type="checkbox"],
   input[type="radio"] {
-    min-height: 40px;
-    min-width: 40px;
+    min-height: 44px;
+    min-width: 44px;
   }
 
-  /* Smaller buttons can still exist if explicitly sized */
-  button.h-6,
-  button.h-7,
-  button.h-8,
-  [role="button"].h-6,
-  [role="button"].h-7,
-  [role="button"].h-8 {
-    min-height: unset;
-    min-width: unset;
+  .touch-target-compact {
+    min-height: 44px;
+    min-width: 44px;
   }
 
   /* Prevent dialogs from overflowing on small screens */

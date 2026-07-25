@@ -41,6 +41,7 @@ import { enUS } from 'date-fns/locale'
 import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { toast } from "sonner"
+import { useUserStore } from '@/store/user-store'
 
 interface WeeklyModalProps {
   isOpen: boolean;
@@ -204,6 +205,7 @@ export function WeeklyModal({
 }: WeeklyModalProps) {
   const dateLocale = enUS
   const { user } = useAuth()
+  const supabaseUser = useUserStore(state => state.supabaseUser)
   const { statistics } = useData()
   const { chartStyle } = useTheme()
   const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
@@ -226,7 +228,8 @@ export function WeeklyModal({
 
   // Generate organized path: userId/week-start-date (YYYY-MM-DD)
   const weekStartDate = selectedDate ? format(startOfWeek(selectedDate), 'yyyy-MM-dd') : ''
-  const uploadPath = user?.id ? `${user.id}/${weekStartDate}` : ''
+  const uploadOwnerId = supabaseUser?.id
+  const uploadPath = uploadOwnerId ? `${uploadOwnerId}/${weekStartDate}` : ''
 
   // Image upload setup - dedicated bucket for weekly calendars
   const { onUpload, files, setFiles, isSuccess: isUploadSuccess, loading: isUploading } = useSupabaseUpload({
@@ -555,11 +558,19 @@ export function WeeklyModal({
 
       // Upload new image if exists
       if (uploadedFile && files.length > 0) {
-        await onUpload()
+        if (!uploadOwnerId) throw new Error('Upload session is not available')
+        const uploadResult = await onUpload()
+        if (uploadResult.errors.length > 0 || !uploadResult.successfulNames.includes(files[0]!.name)) {
+          throw new Error(uploadResult.errors[0]?.message || 'Calendar image upload failed')
+        }
         // Construct public URL for weekly-calendars bucket with organized path
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        if (supabaseUrl && user?.id) {
-          imageUrl = `${supabaseUrl}/storage/v1/object/public/weekly-calendars/${user.id}/${weekStartDate}/${files[0]!.name}`
+        if (supabaseUrl) {
+          const objectPath = `${uploadOwnerId}/${weekStartDate}/${files[0]!.name}`
+            .split('/')
+            .map(encodeURIComponent)
+            .join('/')
+          imageUrl = `${supabaseUrl}/storage/v1/object/public/weekly-calendars/${objectPath}`
         }
       }
 

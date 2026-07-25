@@ -86,7 +86,6 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
       const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
       const resolvedBg = bgColor ? `hsl(${bgColor})` : '#0d0d0d'
 
-      // @ts-ignore - dynamic import types
       const html2canvas = (await import('html2canvas')).default
 
       const cardCanvas = await html2canvas(calendarRef.current, {

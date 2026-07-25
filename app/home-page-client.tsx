@@ -183,12 +183,6 @@ export default function HomePage() {
           <FileText className="h-6 w-6 text-primary" /><h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Make the next session easier to review.</h2><p className="mt-4 max-w-xl text-muted-foreground">Start with the web workspace, then keep your journal close with the JJI mobile app.</p><Button asChild size="lg" className="mt-8 h-12 rounded-xl px-7"><Link href={primaryHref}>{isAuthenticated ? 'Open JJI' : 'Create your workspace'} <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
         </section>
 
-        <section className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-x-5 gap-y-2 px-4 pb-10 text-sm text-muted-foreground sm:px-6 lg:px-8">
-          <Link href="/privacy" className="transition-colors hover:text-foreground">Privacy</Link>
-          <Link href="/terms" className="transition-colors hover:text-foreground">Terms</Link>
-          <Link href="/contact" className="transition-colors hover:text-foreground">Contact</Link>
-          <Link href="/docs" className="transition-colors hover:text-foreground">Docs</Link>
-        </section>
       </main>
     </div>
   )

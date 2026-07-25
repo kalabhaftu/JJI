@@ -4,7 +4,6 @@ import { LinkedAccounts } from "@/components/linked-accounts"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { DestructiveButton, PrimaryButton } from "@/components/ui/button-styles"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
@@ -596,7 +595,6 @@ export default function SettingsPage() {
       await supabase.auth.signOut()
       localStorage.clear()
       sessionStorage.clear()
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = '/?deleted=true'
 
     } catch (error) {
@@ -827,14 +825,14 @@ export default function SettingsPage() {
               >
                 Cancel
               </Button>
-              <PrimaryButton
+              <Button
                 onClick={handleProfileUpdate}
                 loading={isUpdatingProfile || isLoadingProfile}
                 loadingText={isLoadingProfile ? "Fetching..." : "Updating..."}
                 className="w-full sm:w-auto h-9 text-xs"
               >
                 Save Profile
-              </PrimaryButton>
+              </Button>
             </div>
           )}
         </div>
@@ -1435,14 +1433,14 @@ export default function SettingsPage() {
             <p className="text-xs text-muted-foreground/85 text-balance">
               Permanently delete your account and all associated trading data, files, and settings. This action is irreversible.
             </p>
-            <DestructiveButton
+            <Button
               variant="outline"
               className="gap-2 h-9 text-xs mt-1 border-destructive/30 hover:border-destructive hover:bg-destructive/10"
               onClick={() => setIsDeleteModalOpen(true)}
             >
               <Trash className="h-4 w-4" />
               Delete Account
-            </DestructiveButton>
+            </Button>
           </div>
         </div>
       </div>
@@ -1562,7 +1560,8 @@ export default function SettingsPage() {
             >
               Cancel
             </Button>
-            <DestructiveButton
+            <Button
+              variant="destructive"
               onClick={handleDeleteAccount}
               disabled={!isDeleteConfirmed || isDeleting}
               loading={isDeleting}
@@ -1570,7 +1569,7 @@ export default function SettingsPage() {
             >
               <Trash className="mr-2 h-4 w-4" />
               Delete Account
-            </DestructiveButton>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

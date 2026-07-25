@@ -50,7 +50,6 @@ import {
 } from '@/hooks/use-data-provider-filter-state';
 import { defaultLayouts } from '@/lib/dashboard/default-layouts';
 import { useDataProviderTradeMutations } from '@/hooks/use-data-provider-trade-mutations';
-import * as mockData from '@/lib/demo/mock-data';
 import { usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data';
 
 
@@ -367,7 +366,9 @@ export const DataProvider: React.FC<{
           const settings = JSON.parse(userData.accountFilterSettings)
           localStorage.setItem('settings-cache', JSON.stringify(settings))
         }
-      } catch {}
+      } catch {
+        localStorage.removeItem('settings-cache')
+      }
     }
 
     setIsLoading(false)
@@ -382,6 +383,7 @@ export const DataProvider: React.FC<{
         setIsLoading(true);
 
         if (isDemoMode) {
+          const mockData = await import('@/lib/demo/mock-data')
           setUser(mockData.MOCK_USER_PROFILE as any)
           setAccounts(mockData.MOCK_ACCOUNTS as any)
           setIsLoading(false)
@@ -439,7 +441,7 @@ export const DataProvider: React.FC<{
             })()
         
         if (!initData.isAuthenticated) {
-          try { await signOut(); } catch (error) {}
+          await signOut().catch(() => undefined)
           setIsLoading(false)
           hasLoadedDataRef.current = false
           return;
@@ -458,7 +460,9 @@ export const DataProvider: React.FC<{
               const settings = JSON.parse(userData.accountFilterSettings)
               localStorage.setItem('settings-cache', JSON.stringify(settings))
             }
-          } catch (error) {}
+          } catch {
+            localStorage.removeItem('settings-cache')
+          }
         }
 
         // NOTE: Trades are NO LONGER fetched here.
@@ -490,7 +494,7 @@ export const DataProvider: React.FC<{
           error.message.includes('User not found') ||
           error.message.includes('Unauthorized')
         )) {
-          try { await signOut(); } catch (signOutError) {}
+          await signOut().catch(() => undefined)
           return;
         }
         hasLoadedDataRef.current = false;
@@ -589,7 +593,7 @@ export const DataProvider: React.FC<{
 
     const ping = () => {
       if (document.visibilityState === 'visible') {
-        fetch('/api/health/ping').catch(() => {})
+        void fetch('/api/health/ping').catch(() => undefined)
       }
     }
 
@@ -618,9 +622,7 @@ export const DataProvider: React.FC<{
     setIsLoading(true)
     
     try {
-      try {
-        localStorage.removeItem('last-refresh-timestamp')
-      } catch (e) {}
+      localStorage.removeItem('last-refresh-timestamp')
       
       hasLoadedDataRef.current = false
       activeLoadPromiseRef.current = null

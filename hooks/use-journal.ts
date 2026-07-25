@@ -4,8 +4,6 @@ import { Trade as schemaTrade } from '@/lib/db/schema'
 
 type Trade = InferSelectModel<typeof schemaTrade>
 import { useData } from '@/context/data-provider'
-import { getMockTradesList } from '@/lib/demo/mock-data'
-import { calculateStatistics } from '@/lib/utils'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
@@ -90,66 +88,22 @@ export function useJournal(params: UseJournalParams) {
     keepPreviousData: true,
   })
 
+  const demoKey = isDemoMode
+    ? ['demo-journal', page, limit, search, tradeDate, filterBy, selectedTagIds.join(',')]
+    : null
+  const { data: demoData, isLoading: isDemoLoading } = useSWR(demoKey, async () => {
+    const { getDemoJournalData } = await import('@/lib/demo/journal-data')
+    return getDemoJournalData({ page, limit, search, tradeDate, filterBy, selectedTagIds })
+  })
+
   if (isDemoMode) {
-    let mockTrades = getMockTradesList()
-
-    // Filter by date
-    if (tradeDate) {
-      mockTrades = mockTrades.filter(t => t.entryDate.startsWith(tradeDate))
-    }
-
-    // Filter by outcome / side
-    if (filterBy === 'wins') {
-      mockTrades = mockTrades.filter(t => t.pnl > 10)
-    } else if (filterBy === 'losses') {
-      mockTrades = mockTrades.filter(t => t.pnl < -10)
-    } else if (filterBy === 'breakeven') {
-      mockTrades = mockTrades.filter(t => t.pnl >= -10 && t.pnl <= 10)
-    } else if (filterBy === 'buys') {
-      mockTrades = mockTrades.filter(t => t.side === 'LONG' || t.side === 'Buy')
-    } else if (filterBy === 'sells') {
-      mockTrades = mockTrades.filter(t => t.side === 'SHORT' || t.side === 'Sell')
-    }
-
-    // Filter by tags
-    if (selectedTagIds.length > 0) {
-      mockTrades = mockTrades.filter(t => t.tags?.some((tag: string | undefined) => tag && selectedTagIds.includes(tag)))
-    }
-
-    // Search filter
-    if (search) {
-      const searchLower = search.toLowerCase()
-      mockTrades = mockTrades.filter((t: any) => 
-        t.instrument.toLowerCase().includes(searchLower) ||
-        (t.setup && t.setup.toLowerCase().includes(searchLower)) ||
-        (t.comment && t.comment.toLowerCase().includes(searchLower))
-      )
-    }
-
-    const mockAccounts = [{
-      id: 'mock-acc-1',
-      number: 'DEMO-123',
-      name: 'Demo Account',
-      accountType: 'live' as const,
-      startingBalance: 100000,
-      balanceToDate: 105432,
-      isArchived: false,
-      status: 'active'
-    }]
-
-    mockTrades.sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime())
-    const stats = calculateStatistics(mockTrades as any, mockAccounts as any, undefined, 10)
-
-    const offset = (page - 1) * limit
-    const paginated = mockTrades.slice(offset, offset + limit)
-
     return {
-      trades: paginated as any[],
-      totalCount: mockTrades.length,
-      statistics: stats,
-      isLoading: false,
+      trades: (demoData?.trades as any[]) || [],
+      totalCount: demoData?.totalCount || 0,
+      statistics: demoData?.statistics || null,
+      isLoading: isDemoLoading,
       isError: null,
-      refetch: async () => {}
+      refetch: async () => undefined,
     }
   }
 

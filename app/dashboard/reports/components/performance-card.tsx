@@ -43,7 +43,6 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
         setIsExporting(true)
 
         try {
-            // @ts-ignore
             const html2canvas = (await import('html2canvas')).default
 
             // Clone into a hidden container at full size to avoid any clipping

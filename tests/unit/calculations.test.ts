@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { calculateStatistics, groupTradesByExecution } from '@/lib/utils'
-import { calculateMetricsFromTrades } from '@/lib/zella-score'
+import { calculateMetricsFromTrades } from '@/lib/performance-score'
 import { classifyOutcome } from '@/lib/metrics/outcome'
 import type { TradeType as Trade } from '@/lib/db/schema/trades'
 
@@ -331,8 +331,8 @@ describe('Financial Calculations - Trade Grouping (Partial Closes)', () => {
   })
 })
 
-describe('Financial Calculations - Zella Score Metrics', () => {
-  it('should calculate metrics correctly for Zella Score', () => {
+describe('Financial calculations - performance score metrics', () => {
+  it('calculates the inputs for the JJI performance score', () => {
     const trades = [
       { pnl: 200, commission: 0, entryDate: '2024-01-01T10:00:00Z' },
       { pnl: 300, commission: 0, entryDate: '2024-01-02T10:00:00Z' },
@@ -424,4 +424,3 @@ describe('Financial Calculations - Decimal Precision', () => {
     expect(stats.totalPnL).toBeCloseTo(49.75, 2)
   })
 })
-

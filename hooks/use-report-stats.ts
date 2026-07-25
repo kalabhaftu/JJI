@@ -28,8 +28,6 @@ interface UseReportStatsOptions {
   initialDataKey?: string
 }
 
-import { getMockReportStats } from '@/lib/demo/mock-data'
-
 export function useReportStats(
   filters: UseReportStatsFilters,
   enabled = true,
@@ -52,6 +50,7 @@ export function useReportStats(
     queryKey: ['report-stats', stableKey, isDemo],
     queryFn: async () => {
       if (isDemo) {
+        const { getMockReportStats } = await import('@/lib/demo/mock-data')
         return getMockReportStats()
       }
       const result = await postFetcher<ReportStatsResponse>('/api/v1/reports/stats', cleanedFilters) as any

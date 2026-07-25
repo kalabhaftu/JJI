@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
 import { X, Smartphone } from 'lucide-react'
 import { Button } from './ui/button'
 
@@ -25,19 +24,15 @@ export function AppBanner() {
   const handleOpenApp = () => {
     const path = window.location.pathname + window.location.search
     const deepLinkUrl = `jji://open?path=${encodeURIComponent(path)}`
-    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
     window.location.href = deepLinkUrl
   }
 
   if (!show) return null
 
   return (
-    <AnimatePresence>
-      <motion.div
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        exit={{ y: 50, opacity: 0 }}
-        className="fixed bottom-4 left-4 right-4 z-50 p-4 rounded-xl border border-border bg-card shadow-2xl flex items-center justify-between gap-4 max-w-md mx-auto"
+      <aside
+        aria-label="Open the native app"
+        className="fixed bottom-[calc(5rem+env(safe-area-inset-bottom))] left-4 right-4 z-40 mx-auto flex max-w-md animate-in items-center justify-between gap-4 rounded-2xl border border-border bg-background p-4 shadow-lg fade-in slide-in-from-bottom-3 md:bottom-4"
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
@@ -60,7 +55,6 @@ export function AppBanner() {
             <X className="w-4 h-4" />
           </button>
         </div>
-      </motion.div>
-    </AnimatePresence>
+      </aside>
   )
 }

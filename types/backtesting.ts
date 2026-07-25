@@ -13,7 +13,7 @@ export interface BacktestingStats {
   maxDrawdown: number
   recoveryFactor: number
   consistency: number
-  zellaScore: number
+  performanceScore: number
 }
 
 export interface BacktestingCalendarData {
@@ -25,7 +25,7 @@ export interface BacktestingCalendarData {
   }
 }
 
-export interface ZellaScoreMetrics {
+export interface PerformanceScoreMetrics {
   winRate: number
   profitFactor: number
   avgWinLoss: number
@@ -37,5 +37,5 @@ export interface ZellaScoreMetrics {
 export interface BacktestingData {
   stats: BacktestingStats
   calendarData: BacktestingCalendarData
-  zellaMetrics: ZellaScoreMetrics
+  performanceMetrics: PerformanceScoreMetrics
 }

@@ -61,7 +61,6 @@ export function SubscribeClient() {
           sessionStorage.setItem('pendingPaymentId', data.paymentRecordId)
         }
         // Redirect to NOWPayments hosted invoice page
-        // eslint-disable-next-line @next/next/no-location-assign-relative-destination
         window.location.href = data.invoiceUrl
       }
     } catch (error) {
@@ -186,7 +185,6 @@ export function SubscribeClient() {
               await supabase.auth.signOut()
               localStorage.clear()
               sessionStorage.clear()
-              // eslint-disable-next-line @next/next/no-location-assign-relative-destination
               window.location.href = '/'
             }}
           >

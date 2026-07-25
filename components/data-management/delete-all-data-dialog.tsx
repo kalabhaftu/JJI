@@ -131,7 +131,6 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
 
       handleClose()
 
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = '/dashboard'
 
     } catch (error) {
@@ -326,4 +325,3 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
     </AlertDialog>
   )
 }
-

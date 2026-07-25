@@ -105,9 +105,7 @@ export function StatementView({ trades, dateRange }: StatementViewProps) {
 
   const handleExportPdf = async () => {
     const [{ jsPDF }, autoTableModule] = await Promise.all([
-      // @ts-ignore
       import('jspdf'),
-      // @ts-ignore
       import('jspdf-autotable'),
     ])
     const autoTable = (autoTableModule.default || autoTableModule) as any

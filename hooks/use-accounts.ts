@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
+import logger from '@/lib/logger'
 
 interface UnifiedAccount {
   id: string
@@ -49,7 +50,9 @@ function broadcastAccountsUpdate() {
   realtimeSubscribers.forEach(callback => {
     try {
       callback()
-    } catch (error) { }
+    } catch (error) {
+      logger.error({ error }, 'Account cache subscriber failed')
+    }
   })
 }
 

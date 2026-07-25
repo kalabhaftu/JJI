@@ -1096,7 +1096,10 @@ export async function getTradovateSynchronizations() {
     }
 
     const synchronizations = await db.query.Synchronization.findMany({
-      where: (table, { eq }) => eq(table.userId, internalUserId) && eq(table.service, 'tradovate'),
+      where: (table, { and, eq }) => and(
+        eq(table.userId, internalUserId),
+        eq(table.service, 'tradovate')
+      ),
       orderBy: (table, { desc }) => [desc(table.lastSyncedAt)]
     })
 

@@ -6,19 +6,13 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 // Removed Vercel Analytics and Speed Insights to comply with essential-only cookie policy
 import { AuthProvider } from "@/context/auth-provider";
 import { CookieConsent } from "@/components/ui/cookie-consent";
-import { ConsoleFilterWrapper } from "@/components/console-filter-wrapper";
-import { TrackingScripts } from "@/components/tracking-scripts";
 import { ThemeProvider } from "@/context/theme-provider";
 import { QueryProvider } from "@/lib/query/query-provider";
-import { DeploymentMonitor } from "@/components/deployment-monitor";
-import { ClientErrorReporter } from "@/components/error-reporter";
 import { ErrorBoundaryWrapper } from "@/components/error-boundary";
-import { SeasonalManager } from "@/app/dashboard/components/seasonal/seasonal-manager";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
-import { AppBanner } from "@/components/app-banner";
-import { OfflineIndicator } from "@/components/offline-indicator";
-import { Footer } from "@/components/footer";
+import { RouteAwareFooter } from "@/components/route-aware-footer";
 import Script from "next/script"
+import { headers } from 'next/headers'
 import { BRAND } from '@/lib/constants/brand'
 
 const DEFAULT_SITE_URL = BRAND.siteUrl
@@ -92,26 +86,18 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get('x-nonce') || undefined
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   return (
-    <html lang="en" className={`${inter.variable} dark`} translate="no" suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
-        {/* Prevent Google Translate */}
         <meta name="application-name" content={BRAND.name} />
-        <meta name="google" content="notranslate" />
-        <meta name="googlebot" content="notranslate" />
-        <meta name="googlebot-news" content="notranslate" />
 
         {/* Analytics removed to comply with essential-only cookie policy */}
 
         {/* Performance: Preconnect to Supabase for faster API calls */}
-        <link
-          rel="preconnect"
-          href={process.env.NEXT_PUBLIC_SUPABASE_URL || ''}
-          crossOrigin="anonymous"
-        />
-
-        {/* Performance: DNS prefetch for external resources */}
-        <link rel="dns-prefetch" href={process.env.NEXT_PUBLIC_SUPABASE_URL || ''} />
+        {supabaseUrl && <link rel="preconnect" href={supabaseUrl} crossOrigin="anonymous" />}
+        {supabaseUrl && <link rel="dns-prefetch" href={supabaseUrl} />}
 
         <link
           rel="apple-touch-icon"
@@ -123,7 +109,7 @@ export default async function RootLayout({
           sizes="180x180"
           href="/apple-touch-icon-precomposed.png"
         />
-        <Script id="theme-script" strategy="beforeInteractive">
+        <Script id="theme-script" nonce={nonce} strategy="beforeInteractive">
           {`(function(){try{var r=document.documentElement;r.style.colorScheme="dark",r.classList.contains("dark")||r.classList.add("dark");var t=localStorage.getItem("theme")||"dark",e=t;"system"===t&&(e=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),"light"!==e&&"dark"!==e&&(e="dark"),"light"===e?(r.classList.remove("dark"),r.classList.add("light"),r.style.colorScheme="light"):(r.classList.remove("light"),r.classList.add("dark"),r.style.colorScheme="dark");var a=localStorage.getItem("accentPack")||"classic";r.classList.remove("accent-reports","accent-violet","accent-slate"),"reports"===a?r.classList.add("accent-reports"):"violet"===a?r.classList.add("accent-violet"):"slate"===a&&r.classList.add("accent-slate")}catch(c){document.documentElement.classList.add("dark"),document.documentElement.style.colorScheme="dark"}})();`}
         </Script>
       </head>
@@ -131,25 +117,17 @@ export default async function RootLayout({
         <ErrorBoundaryWrapper showDetails={process.env.NODE_ENV === 'development'}>
           <ThemeProvider>
             <QueryProvider>
-              <ConsoleFilterWrapper>
-                <AuthProvider>
-                  <TooltipProvider>
-                    <ServiceWorkerRegister />
-                    <DeploymentMonitor />
-                    <CookieConsent />
-                    <TrackingScripts />
-                    <SafeToaster />
-                    <ClientErrorReporter />
-                    <SeasonalManager />
-                    <AppBanner />
-                    <OfflineIndicator />
-                    <div className="flex-1 flex flex-col">
-                      {children}
-                    </div>
-                    <Footer />
-                  </TooltipProvider>
-                </AuthProvider>
-              </ConsoleFilterWrapper>
+              <AuthProvider>
+                <TooltipProvider>
+                  <ServiceWorkerRegister />
+                  <CookieConsent />
+                  <SafeToaster />
+                  <div className="flex-1 flex flex-col">
+                    {children}
+                  </div>
+                  <RouteAwareFooter />
+                </TooltipProvider>
+              </AuthProvider>
             </QueryProvider>
           </ThemeProvider>
         </ErrorBoundaryWrapper>

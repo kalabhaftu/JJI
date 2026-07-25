@@ -42,7 +42,7 @@ export default function PrivacyPage() {
             <li><strong>Account Information:</strong> Your email address and basic profile information used for authentication.</li>
             <li><strong>Financial & Trading Data:</strong> The trades, journal entries, broker imports, and analytics you generate or input into our platform.</li>
             <li><strong>Payment Information:</strong> Handled securely via our payment providers (e.g., Stripe, NOWPayments). We do not store your full credit card details.</li>
-            <li><strong>Usage Data:</strong> Basic telemetry, such as crash reports and analytics (only if you opt-in), to help us improve the platform.</li>
+            <li><strong>Operational telemetry:</strong> Crash reports and sampled performance traces used to keep the service reliable. JJI does not enable session replay, advertising analytics, or default personal-data collection in monitoring.</li>
           </ul>
         </div>
       )
@@ -72,6 +72,9 @@ export default function PrivacyPage() {
           <p>
             To run the platform, we use trusted third-party services (e.g., cloud hosting, payment gateways, and email providers). These service providers are bound by strict confidentiality agreements and are only permitted to process your data to provide their respective services.
           </p>
+          <p>
+            AI features are opt-in. When you allow AI analysis, JJI sends your question and only the trading data sources you selected to xAI for response generation. Do not include secrets in prompts. JJI stores the resulting conversation in your workspace so you can return to it or delete it.
+          </p>
         </div>
       )
     },
@@ -82,13 +85,12 @@ export default function PrivacyPage() {
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
           <p>
-            We use essential cookies to keep you logged in and ensure the app functions properly. 
-            We also use non-essential cookies for analytics and marketing, but <strong>only if you explicitly consent</strong> via our cookie banner. You can update your preferences at any time.
+            We use essential cookies and local storage to keep you logged in and remember app preferences. JJI does not use advertising or non-essential analytics cookies.
           </p>
           <div className="mt-4">
             <Button variant="outline" size="sm" onClick={openCookiePreferences} className="gap-2">
               <Settings2 className="w-4 h-4" />
-              Manage Cookie Preferences
+              View Storage Notice
             </Button>
           </div>
         </div>

@@ -108,7 +108,6 @@ export function TradovateCredentialsManager() {
       sessionStorage.setItem("tradovate_oauth_state", result.state);
 
       // Redirect to Tradovate OAuth
-      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = result.authUrl;
     } catch (error) {
       toast.error("Failed to initiate oauth connection");

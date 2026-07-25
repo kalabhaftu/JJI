@@ -202,7 +202,7 @@ export function calculateAccountBalanceChart(
 }
 
 import { groupTradesByExecution } from '@/lib/utils'
-import { calculateZellaScore, calculateMetricsFromTrades } from '@/lib/zella-score'
+import { calculatePerformanceScore, calculateMetricsFromTrades } from '@/lib/performance-score'
 
 export function calculatePnlByStrategy(
   trades: Partial<TradeType>[],
@@ -420,7 +420,7 @@ export function calculatePerformanceScoreResult(
   const metrics = calculateMetricsFromTrades(trades as any, breakEvenThreshold)
   if (!metrics) return { hasData: false }
   
-  const scoreResult = calculateZellaScore(metrics)
+  const scoreResult = calculatePerformanceScore(metrics)
   const radarData = [
     { metric: 'Win %', value: scoreResult.breakdown.tradeWinPercentageScore, fullMark: 100, rawValue: scoreResult.metrics.tradeWinPercentage, weight: 15, description: 'Percentage of winning trades', target: '60%+' },
     { metric: 'Profit Factor', value: scoreResult.breakdown.profitFactorScore, fullMark: 100, rawValue: scoreResult.metrics.profitFactor, weight: 25, description: 'Total Wins ÷ Total Losses', target: '2.6+' },

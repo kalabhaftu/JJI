@@ -380,7 +380,6 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                   onClick={() => {
                     localStorage.removeItem('settings-cache');
                     localStorage.removeItem('active-accounts');
-                    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
                     window.location.href = '/';
                   }}
                   tooltip="Exit Demo"

@@ -60,7 +60,6 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
         logoImg.src = '/android-chrome-512x512.png'
       })
 
-      // @ts-ignore
       const html2canvas = (await import('html2canvas')).default
 
       const cardCanvas = await html2canvas(calendarRef.current, {

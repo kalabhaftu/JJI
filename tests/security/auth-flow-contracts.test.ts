@@ -22,6 +22,23 @@ describe('authentication flow contracts', () => {
     expect(launcher).not.toContain('router.replace(`/?next=${encodeURIComponent(nextPath)}`)')
   })
 
+  it('exchanges callback codes instead of rendering landing with a code query', () => {
+    const rootPage = source('app/page.tsx')
+    const callback = source('app/api/auth/callback/route.ts')
+
+    expect(rootPage).toContain("redirect(`/api/auth/callback?${callbackParams.toString()}`)")
+    expect(callback).toContain("supabase.auth.exchangeCodeForSession(code)")
+    expect(callback).toContain("const baseUrl = new URL(request.url).origin")
+  })
+
+  it('uses the auth callback URL for email and provider redirects', () => {
+    const auth = source('server/auth.ts')
+
+    expect(auth).toContain("new URL('api/auth/callback', websiteURL)")
+    expect(auth).toContain('emailRedirectTo')
+    expect(auth).toContain('redirectTo: await getAuthCallbackUrl(next)')
+  })
+
   it('isolates local dev output from production builds and bundle analysis', () => {
     const devRunner = source('scripts/run-next-dev.js')
     const packageJson = JSON.parse(source('package.json'))

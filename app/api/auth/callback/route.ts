@@ -1,5 +1,5 @@
 'use server'
-import { createClient, ensureUserInDatabase, getWebsiteURL } from '@/server/auth'
+import { createClient, ensureUserInDatabase } from '@/server/auth'
 import { NextResponse } from 'next/server'
 import { logActivity } from '@/lib/activity-logger'
 import { captureUserGeo } from '@/server/geolocation'
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   const error_code = searchParams.get('error_code')
   const next = searchParams.get('next')
   const action = searchParams.get('action')
-  const baseUrl = await getWebsiteURL()
+  const baseUrl = new URL(request.url).origin
 
   if (error_code) {
     if (error_code === 'bad_oauth_state') {

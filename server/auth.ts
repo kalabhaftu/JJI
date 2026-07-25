@@ -2,6 +2,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
+import type { Route } from 'next'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, sql } from 'drizzle-orm'
@@ -34,7 +35,24 @@ function getConfiguredAppUrl() {
   return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_VERCEL_URL || null
 }
 
+async function getRequestOrigin() {
+  const headerStore = await headers()
+  const origin = headerStore.get('origin')
+  if (origin) return new URL(origin).origin
+
+  const forwardedProto = headerStore.get('x-forwarded-proto') || 'http'
+  const forwardedHost = headerStore.get('x-forwarded-host') || headerStore.get('host')
+  if (forwardedHost) return `${forwardedProto}://${forwardedHost}`
+
+  return null
+}
+
 export async function getWebsiteURL() {
+  const requestOrigin = await getRequestOrigin()
+  if (isLocalDevelopment() && requestOrigin) {
+    return requestOrigin.endsWith('/') ? requestOrigin : `${requestOrigin}/`
+  }
+
   const configuredUrl = getConfiguredAppUrl()
 
   if (!configuredUrl) {
@@ -47,6 +65,17 @@ export async function getWebsiteURL() {
   const normalizedUrl = configuredUrl.startsWith('http') ? configuredUrl : `https://${configuredUrl}`
   const origin = new URL(normalizedUrl).origin
   return origin.endsWith('/') ? origin : `${origin}/`
+}
+
+async function getAuthCallbackUrl(next: string | null = null) {
+  const websiteURL = await getWebsiteURL()
+  const url = new URL('api/auth/callback', websiteURL)
+
+  if (next) {
+    url.searchParams.set('next', getSafeRedirectPath(next))
+  }
+
+  return url.toString()
 }
 
 export async function createClient() {
@@ -97,29 +126,27 @@ export async function createClient() {
 
 export async function signInWithDiscord(next: string | null = null) {
   const supabase = await createClient()
-  const websiteURL = await getWebsiteURL()
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const { data } = await supabase.auth.signInWithOAuth({
     provider: 'discord',
     options: {
-      redirectTo: `${websiteURL}api/auth/callback${next ? `?next=${encodeURIComponent(getSafeRedirectPath(next))}` : ''}`,
+      redirectTo: await getAuthCallbackUrl(next),
     },
   })
   if (data.url) {
-      redirect(data.url)
+      redirect(data.url as Route)
   }
 }
 
 export async function signInWithGoogle(next: string | null = null) {
   const supabase = await createClient()
-  const websiteURL = await getWebsiteURL()
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const { data } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${websiteURL}api/auth/callback${next ? `?next=${encodeURIComponent(getSafeRedirectPath(next))}` : ''}`,
+      redirectTo: await getAuthCallbackUrl(next),
     },
   })
   if (data.url) {
-    redirect(data.url)
+    redirect(data.url as Route)
   }
 }
 
@@ -162,7 +189,7 @@ export async function signInWithEmail(email: string, next: string | null = null)
   }
 
   const supabase = await createClient()
-  const websiteURL = await getWebsiteURL()
+  const emailRedirectTo = await getAuthCallbackUrl(next)
 
   const existingUser = await safeDbOperation(
     () => db.query.User.findFirst({
@@ -174,7 +201,10 @@ export async function signInWithEmail(email: string, next: string | null = null)
 
   if (isExistingUser) {
     const { error } = await supabase.auth.signInWithOtp({
-      email: normalizedEmail
+      email: normalizedEmail,
+      options: {
+        emailRedirectTo,
+      },
     })
 
     if (error) {
@@ -201,6 +231,7 @@ export async function signInWithEmail(email: string, next: string | null = null)
       email: normalizedEmail,
       password: generateTemporaryPassword(),
       options: {
+        emailRedirectTo,
         data: {
           email: normalizedEmail,
         }
@@ -760,7 +791,7 @@ export async function linkDiscordAccount() {
     },
   })
   if (data.url) {
-    redirect(data.url)
+    redirect(data.url as Route)
   }
   if (error) {
     throw new Error(error.message)
@@ -777,7 +808,7 @@ export async function linkGoogleAccount() {
     },
   })
   if (data.url) {
-    redirect(data.url)
+    redirect(data.url as Route)
   }
   if (error) {
     throw new Error(error.message)

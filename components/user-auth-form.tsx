@@ -21,6 +21,7 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Mail, ArrowLeft, RefreshCw } from "lucide-react"
+import type { Route } from "next"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import {
@@ -104,7 +105,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                 description: "Redirecting you to the dashboard...",
             })
             router.refresh()
-            router.push(nextUrl || '/dashboard')
+            router.push((nextUrl || '/dashboard') as Route)
         } catch (error) {
             setFailedAttempts(prev => prev + 1)
             setOtpError(true)

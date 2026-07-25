@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+import type { Route } from "next"
 
 import { Spinner } from "@/components/ui/spinner"
 import { createClient } from "@/lib/supabase"
@@ -89,7 +90,7 @@ export function AppLaunchClient({ nextPath }: AppLaunchClientProps) {
 
         if (!cancelled && isServerAuthenticated) {
           setStatus("Opening dashboard...")
-          router.replace(nextPath)
+          router.replace(nextPath as Route)
           return
         }
 
@@ -117,7 +118,7 @@ export function AppLaunchClient({ nextPath }: AppLaunchClientProps) {
 
         if (!cancelled) {
           setStatus("Opening dashboard...")
-          router.replace(nextPath)
+          router.replace(nextPath as Route)
         }
       } catch {
         await redirectToLogin()

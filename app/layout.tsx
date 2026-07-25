@@ -11,7 +11,6 @@ import { QueryProvider } from "@/lib/query/query-provider";
 import { ErrorBoundaryWrapper } from "@/components/error-boundary";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { RouteAwareFooter } from "@/components/route-aware-footer";
-import Script from "next/script"
 import { headers } from 'next/headers'
 import { BRAND } from '@/lib/constants/brand'
 
@@ -109,9 +108,14 @@ export default async function RootLayout({
           sizes="180x180"
           href="/apple-touch-icon-precomposed.png"
         />
-        <Script id="theme-script" nonce={nonce} strategy="beforeInteractive">
-          {`(function(){try{var r=document.documentElement;r.style.colorScheme="dark",r.classList.contains("dark")||r.classList.add("dark");var t=localStorage.getItem("theme")||"dark",e=t;"system"===t&&(e=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),"light"!==e&&"dark"!==e&&(e="dark"),"light"===e?(r.classList.remove("dark"),r.classList.add("light"),r.style.colorScheme="light"):(r.classList.remove("light"),r.classList.add("dark"),r.style.colorScheme="dark");var a=localStorage.getItem("accentPack")||"classic";r.classList.remove("accent-reports","accent-violet","accent-slate"),"reports"===a?r.classList.add("accent-reports"):"violet"===a?r.classList.add("accent-violet"):"slate"===a&&r.classList.add("accent-slate")}catch(c){document.documentElement.classList.add("dark"),document.documentElement.style.colorScheme="dark"}})();`}
-        </Script>
+        <script
+          id="theme-script"
+          nonce={nonce}
+          suppressHydrationWarning
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var r=document.documentElement;r.style.colorScheme="dark",r.classList.contains("dark")||r.classList.add("dark");var t=localStorage.getItem("theme")||"dark",e=t;"system"===t&&(e=window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),"light"!==e&&"dark"!==e&&(e="dark"),"light"===e?(r.classList.remove("dark"),r.classList.add("light"),r.style.colorScheme="light"):(r.classList.remove("light"),r.classList.add("dark"),r.style.colorScheme="dark");var a=localStorage.getItem("accentPack")||"classic";r.classList.remove("accent-reports","accent-violet","accent-slate"),"reports"===a?r.classList.add("accent-reports"):"violet"===a?r.classList.add("accent-violet"):"slate"===a&&r.classList.add("accent-slate")}catch(c){document.documentElement.classList.add("dark"),document.documentElement.style.colorScheme="dark"}})();`,
+          }}
+        />
       </head>
       <body className={`${inter.variable} font-sans min-h-screen flex flex-col overflow-x-clip w-full`}>
         <ErrorBoundaryWrapper showDetails={process.env.NODE_ENV === 'development'}>

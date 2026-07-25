@@ -21,7 +21,6 @@ import {
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { useAuth } from '@/context/auth-provider'
 import { useTheme } from '@/context/theme-provider'
 import { BRAND } from '@/lib/constants/brand'
 
@@ -65,12 +64,11 @@ const workflow = [
 ] as const
 
 export default function HomePage() {
-  const { isAuthenticated } = useAuth()
   const { theme, toggleTheme } = useTheme()
-  const primaryHref = isAuthenticated ? '/dashboard' : '/login'
+  const primaryHref = '/app-launch?next=/dashboard'
 
   return (
-    <div className="min-h-screen overflow-x-clip bg-background selection:bg-primary/30">
+    <div className="min-h-screen bg-background selection:bg-primary/30">
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="JJI home">
@@ -95,13 +93,13 @@ export default function HomePage() {
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
             <Button asChild size="sm" className="rounded-xl px-4">
-              <Link href={primaryHref}>{isAuthenticated ? 'Open app' : 'Get started'}</Link>
+              <Link href={primaryHref}>Open JJI</Link>
             </Button>
           </div>
         </div>
       </nav>
 
-      <main>
+      <main id="main-content">
         <section className="relative isolate overflow-hidden">
           <div className="mx-auto grid w-full max-w-7xl gap-12 px-4 pb-16 pt-14 sm:px-6 sm:pb-24 sm:pt-20 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-16 lg:px-8">
             <div className="max-w-2xl">
@@ -114,7 +112,7 @@ export default function HomePage() {
               <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
                 <Button asChild size="lg" className="h-12 rounded-xl px-6">
                   <Link href={primaryHref}>
-                    {isAuthenticated ? 'Open your workspace' : 'Start journaling'}
+                    Open your workspace
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
@@ -132,7 +130,7 @@ export default function HomePage() {
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-foreground"><LineChart className="h-4 w-4" /></div>
                       <div><p className="text-sm font-semibold">Trading overview</p><p className="text-[11px] text-muted-foreground">This week, all accounts</p></div>
                     </div>
-                    <span className="rounded-lg border border-border/70 px-2 py-1 text-[10px] text-muted-foreground">Live view</span>
+                    <span className="rounded-lg border border-border/70 px-2 py-1 text-xs text-muted-foreground">Example workspace</span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 py-4 sm:grid-cols-4">
                     {[
@@ -180,7 +178,7 @@ export default function HomePage() {
         </section>
 
         <section className="mx-auto flex w-full max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
-          <FileText className="h-6 w-6 text-primary" /><h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Make the next session easier to review.</h2><p className="mt-4 max-w-xl text-muted-foreground">Start with the web workspace, then keep your journal close with the JJI mobile app.</p><Button asChild size="lg" className="mt-8 h-12 rounded-xl px-7"><Link href={primaryHref}>{isAuthenticated ? 'Open JJI' : 'Create your workspace'} <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
+          <FileText className="h-6 w-6 text-primary" /><h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Make the next session easier to review.</h2><p className="mt-4 max-w-xl text-muted-foreground">Start with the web workspace, then keep your journal close with the JJI mobile app.</p><Button asChild size="lg" className="mt-8 h-12 rounded-xl px-7"><Link href={primaryHref}>Open JJI <ArrowRight className="ml-2 h-4 w-4" /></Link></Button>
         </section>
 
       </main>

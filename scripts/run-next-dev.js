@@ -9,6 +9,9 @@ const useWindowsSafeMode = isWindows && !isWindowsSafeModeDisabled
 const env = {
   ...process.env,
   NEXT_TELEMETRY_DISABLED: process.env.NEXT_TELEMETRY_DISABLED || '1',
+  // Keep a running dev server isolated from `next build` and bundle analysis.
+  // Sharing .next lets either process replace the other's manifests and chunks.
+  NEXT_DIST_DIR: process.env.NEXT_DIST_DIR || '.next-dev',
 }
 
 if (!env.NODE_OPTIONS) {

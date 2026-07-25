@@ -11,6 +11,28 @@ interface AppLaunchClientProps {
 }
 
 const restoreInFlight = new Map<string, Promise<Response>>()
+let authCheckInFlight: Promise<boolean> | null = null
+
+function checkServerSession() {
+  if (authCheckInFlight) {
+    return authCheckInFlight
+  }
+
+  authCheckInFlight = fetch("/api/auth/check", {
+    cache: "no-store",
+    headers: { "Cache-Control": "no-cache" },
+  })
+    .then(async (response) => {
+      if (!response.ok) return false
+      const data = await response.json().catch(() => null)
+      return data?.authenticated === true
+    })
+    .finally(() => {
+      authCheckInFlight = null
+    })
+
+  return authCheckInFlight
+}
 
 function buildRestoreSessionKey(accessToken: string, refreshToken: string) {
   return `${accessToken.slice(-12)}:${refreshToken.slice(-12)}`
@@ -57,24 +79,18 @@ export function AppLaunchClient({ nextPath }: AppLaunchClientProps) {
     const redirectToLogin = async () => {
       await clearStaleLocalSession()
       if (!cancelled) {
-        router.replace(`/?next=${encodeURIComponent(nextPath)}`)
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`)
       }
     }
 
     const bootstrap = async () => {
       try {
-        const authCheck = await fetch("/api/auth/check", {
-          cache: "no-store",
-          headers: { "Cache-Control": "no-cache" },
-        })
+        const isServerAuthenticated = await checkServerSession()
 
-        if (authCheck.ok) {
-          const authData = await authCheck.json().catch(() => null)
-          if (!cancelled && authData?.authenticated) {
-            setStatus("Opening dashboard...")
-            router.replace(nextPath)
-            return
-          }
+        if (!cancelled && isServerAuthenticated) {
+          setStatus("Opening dashboard...")
+          router.replace(nextPath)
+          return
         }
 
         setStatus("Restoring secure session...")

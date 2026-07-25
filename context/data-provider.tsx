@@ -36,7 +36,6 @@ import { useUserStore } from '@/store/user-store';
 import { useTradesStore } from '@/store/trades-store';
 import { useAccountFilterSettings } from '@/hooks/use-account-filter-settings';
 import { AccountFilterSettings } from '@/types/account-filter-settings';
-import { calculateStatistics, formatCalendarData } from '@/lib/utils';
 import { useFilteredTrades } from '@/hooks/use-filtered-trades';
 import { handleServerActionError } from '@/lib/utils/server-action-error-handler';
 import { useDataProviderRealtime } from '@/hooks/use-data-provider-realtime';
@@ -87,6 +86,32 @@ type CalendarData = {
     trades: TradeType[]
   }
 }
+
+const EMPTY_STATISTICS: StatisticsProps = {
+  breakEvenThreshold: 0,
+  cumulativeFees: 0,
+  cumulativePnl: 0,
+  winningStreak: 0,
+  winRate: 0,
+  nbTrades: 0,
+  nbBe: 0,
+  nbWin: 0,
+  nbLoss: 0,
+  totalPositionTime: 0,
+  averagePositionTime: '0s',
+  profitFactor: 0,
+  grossLosses: 0,
+  grossWin: 0,
+  biggestWin: 0,
+  biggestLoss: 0,
+  averageWin: 0,
+  averageLoss: 0,
+  totalPayouts: 0,
+  nbPayouts: 0,
+  totalPnL: 0,
+}
+
+const EMPTY_CALENDAR_DATA: CalendarData = {}
 
 // Removed TickRange - tick details feature has been removed
 
@@ -683,16 +708,14 @@ export const DataProvider: React.FC<{
   const statistics = useMemo(() => {
     // Use server-computed statistics when available
     if (serverTradeData?.statistics) return serverTradeData.statistics;
-    // Fallback to client-side calculation
-    return calculateStatistics(formattedTrades, accounts);
-  }, [serverTradeData?.statistics, formattedTrades, accounts]);
+    return EMPTY_STATISTICS;
+  }, [serverTradeData?.statistics]);
 
   const calendarData = useMemo(() => {
     // Use server-computed calendar data when available
     if (serverTradeData?.calendarData) return serverTradeData.calendarData;
-    // Fallback to client-side calculation
-    return formatCalendarData(formattedTrades, accounts);
-  }, [serverTradeData?.calendarData, formattedTrades, accounts]);
+    return EMPTY_CALENDAR_DATA;
+  }, [serverTradeData?.calendarData]);
 
   const isPlusUser = () => {
     return true; // All users now have full access

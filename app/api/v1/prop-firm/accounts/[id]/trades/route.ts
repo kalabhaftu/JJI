@@ -8,6 +8,9 @@ import * as schema from '@/lib/db/schema'
 import { eq, and, desc } from 'drizzle-orm'
 import { buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData } from '@/lib/trade-core'
+import { classifyOutcome } from '@/lib/metrics/outcome'
+import { getTradeNetPnl } from '@/lib/metrics/pnl'
+import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -273,6 +276,32 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     )
     const groupedSummary = buildGroupedTradeCountSummary(rawTrades as any)
     const trades = groupedSummary.groupedTrades
+    const breakEvenThreshold = await getRuntimeBreakEvenThreshold(internalUserId)
+    const statistics = trades.reduce(
+      (acc, trade) => {
+        const pnl = getTradeNetPnl(trade)
+        acc.totalPnl += pnl
+
+        const outcome = classifyOutcome(pnl, breakEvenThreshold)
+        if (outcome === 'win') acc.winningTrades += 1
+        else if (outcome === 'loss') acc.losingTrades += 1
+        else acc.breakEvenTrades += 1
+
+        return acc
+      },
+      {
+        totalTrades: trades.length,
+        winningTrades: 0,
+        losingTrades: 0,
+        breakEvenTrades: 0,
+        winRate: 0,
+        totalPnl: 0,
+      }
+    )
+    const tradableTradesCount = statistics.winningTrades + statistics.losingTrades
+    statistics.winRate = tradableTradesCount > 0
+      ? Math.round((statistics.winningTrades / tradableTradesCount) * 1000) / 10
+      : 0
 
     return NextResponse.json({
       success: true,
@@ -284,6 +313,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           currentPhase: masterAccount.currentPhase
         },
         trades,
+        statistics,
           filter: {
             applied: phaseFilter,
             availablePhases: masterAccount.PhaseAccount.map(

@@ -29,13 +29,13 @@ function StatItem({ label, value, negative }: StatItemProps) {
 }
 
 export default function PerformanceSummaryWidget() {
-  const { data: chartData, isLoading: chartLoading } = useWidgetData('equityCurve')
+  const { data: summaryMetrics, isLoading: summaryLoading } = useWidgetData('performanceSummary')
   const { data: strategies = [] } = useWidgetData('pnlByStrategy')
-  const { statistics, formattedTrades } = useData()
-  const { mode, formatValue, getTradeRMultipleInfo } = useDashboardDisplay()
+  const { statistics } = useData()
+  const { mode, formatValue } = useDashboardDisplay()
 
   const stats = useMemo(() => {
-    if (!statistics || !formattedTrades) return null
+    if (!statistics) return null
 
     const totalTrades = statistics.nbTrades || 0
     const profitFactor = statistics.profitFactor || 0
@@ -46,59 +46,28 @@ export default function PerformanceSummaryWidget() {
       ? ((statistics.averageWin * statistics.nbWin) - (Math.abs(statistics.averageLoss) * statistics.nbLoss)) / totalTrades
       : 0
 
-    let maxDrawdown = 0
-    let peak = 0
-    const drawdowns: number[] = []
-
-    if (Array.isArray(chartData) && chartData.length > 0) {
-      for (const point of chartData) {
-        const equity = point.equity || 0
-        if (equity > peak) peak = equity
-        const dd = peak - equity
-        if (dd > 0) drawdowns.push(dd)
-        if (dd > maxDrawdown) maxDrawdown = dd
-      }
-    }
-
-    const avgDrawdown = drawdowns.length > 0
-      ? drawdowns.reduce((sum, d) => sum + d, 0) / drawdowns.length
-      : 0
-
-    const rCoverage = formattedTrades.reduce(
-      (acc, trade) => {
-        const rInfo = getTradeRMultipleInfo(trade)
-        if (rInfo.hasData && rInfo.value !== null) {
-          acc.total += rInfo.value
-          acc.valid += 1
-        }
-        acc.all += 1
-        return acc
-      },
-      { total: 0, valid: 0, all: 0 }
-    )
-
     return {
       totalTrades,
       profitFactor,
       expectancy,
-      maxDrawdown,
-      avgDrawdown,
+      maxDrawdown: summaryMetrics?.maxDrawdown ?? 0,
+      avgDrawdown: summaryMetrics?.avgDrawdown ?? 0,
       fees,
       net: netPnl,
-      rCoverage,
+      rCoverage: summaryMetrics?.rCoverage ?? { total: 0, valid: 0, all: 0 },
       grossPnl,
       winRate: statistics.winRate || 0,
       avgWin: statistics.averageWin || 0,
       avgLoss: Math.abs(statistics.averageLoss || 0),
     }
-  }, [statistics, formattedTrades, chartData, getTradeRMultipleInfo])
+  }, [statistics, summaryMetrics])
 
   const topStrategies = useMemo(() => {
     if (!Array.isArray(strategies)) return []
     return [...strategies].sort((a: any, b: any) => Math.abs(Number(b.pnl || 0)) - Math.abs(Number(a.pnl || 0))).slice(0, 6)
   }, [strategies])
 
-  if (chartLoading) {
+  if (summaryLoading) {
     return (
       <WidgetCard title="Performance">
         <div className="flex items-center justify-center h-full">

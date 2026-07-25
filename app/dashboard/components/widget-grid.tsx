@@ -81,10 +81,10 @@ import { TemplateAwareDashboardSkeleton } from '@/components/ui/dashboard-skelet
 import { WidgetErrorBoundary } from './widget-wrapper'
 import { WIDGET_GRID_DEFAULTS } from '../config/widget-dimensions'
 import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
-import { getMobileWidgetHeight } from '@/lib/dashboard/mobile-widget-layout'
+import { getMobileWidgetHeight, isContentSizedMobileWidget } from '@/lib/dashboard/mobile-widget-layout'
 import { toast } from 'sonner'
 import { useDashboardPropFirmAccount } from '@/hooks/use-dashboard-prop-firm-account'
-import { usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data'
+import { getPropFirmCacheKey, usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data'
 
 import 'react-grid-layout/css/styles.css'
 
@@ -134,7 +134,11 @@ function LazyMobileWidget({ children, minHeight, height, isEditMode }: { childre
   }, [isEditMode])
 
   return (
-    <div ref={ref} style={{ height, minHeight }} className="w-full h-full flex flex-col">
+    <div
+      ref={ref}
+      style={{ height, minHeight }}
+      className={cn('w-full flex flex-col', height ? 'h-full' : 'h-auto')}
+    >
       {isIntersecting ? (
         children
       ) : (
@@ -173,15 +177,16 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   // Track initial mount and load state for active prop-firm challenge
   const propFirmAccount = useDashboardPropFirmAccount()
   const activePropFirmId = propFirmAccount.selectedMasterAccountId
-  const propFirmCache = usePropFirmStore(state => state.cache[activePropFirmId || ''])
+  const activePropFirmCacheKey = getPropFirmCacheKey(activePropFirmId, propFirmAccount.resetTimezone)
+  const propFirmCache = usePropFirmStore(state => state.cache[activePropFirmCacheKey])
   const fetchPropFirmData = usePropFirmStore(state => state.fetchData)
 
   // Trigger fetch early if we have prop firm widgets so the dashboard skeleton can wait for it
   useEffect(() => {
     if (hasPropFirmWidget && activePropFirmId) {
-      fetchPropFirmData(activePropFirmId)
+      fetchPropFirmData(activePropFirmId, propFirmAccount.resetTimezone)
     }
-  }, [hasPropFirmWidget, activePropFirmId, fetchPropFirmData])
+  }, [hasPropFirmWidget, activePropFirmId, propFirmAccount.resetTimezone, fetchPropFirmData])
 
   const isPropFirmLoading = (hasPropFirmWidget && activePropFirmId)
     ? (propFirmAccount.isLoading || !propFirmCache || propFirmCache.isLoading)
@@ -477,13 +482,14 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
 
               const isChart = (config.category === 'charts' && widget.type !== 'performanceSummary') || widget.type.startsWith('calendar')
               const mobileHeight = getMobileWidgetHeight(widget.type, isChart, config.previewHeight)
+              const isContentSized = isContentSizedMobileWidget(widget.type)
               const minHeight = mobileHeight
 
               return (
                 <div
                   key={`mobile-${widget.i}`}
                   className={cn('widget-wrapper flex-shrink-0', isEditMode && 'relative rounded-2xl ring-1 ring-border/30 ring-inset')}
-                  style={{ height: mobileHeight, minHeight }}
+                  style={{ height: isContentSized ? undefined : mobileHeight, minHeight }}
                 >
                   {isEditMode && (
                     <Button

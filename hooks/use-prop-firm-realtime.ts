@@ -45,6 +45,13 @@ interface PropFirmAccountLocal {
     payoutCycleDays: number | null
     startDate: string
     endDate: string | null
+    tradeCount?: number
+    totalPnL?: number
+    wins?: number
+    losses?: number
+    breakEvenTrades?: number
+    winRate?: number
+    profitProgress?: number
   }>
   currentPnL?: number
   currentGrossPnL?: number

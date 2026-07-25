@@ -26,12 +26,12 @@ const DEFAULT_TEMPLATE_LAYOUT: TemplateLayoutItem[] = [
   { i: 'trade-duration', type: 'tradeDurationPerformance', size: 'small-long', x: 0, y: 18, w: 4, h: 4 },
   { i: 'session-analysis', type: 'sessionAnalysis', size: 'medium', x: 8, y: 22, w: 4, h: 4 },
   { i: 'calendar-advanced', type: 'calendarAdvanced', size: 'extra-large', x: 0, y: 1, w: 8, h: 9 },
-  { i: '22c371e9-0750-4416-9348-96152d86230e', type: 'performanceSummary', size: 'large', x: 0, y: 26, w: 12, h: 4 },
+  { i: '22c371e9-0750-4416-9348-96152d86230e', type: 'performanceSummary', size: 'large', x: 0, y: 26, w: 12, h: 6 },
   { i: 'e8b7b18f-533e-44f9-85fa-474cfe5e4a3a', type: 'accountProgression', size: 'large', x: 0, y: 10, w: 8, h: 4 },
-  { i: 'b3fd19eb-dc9f-402e-9b1d-9c4eedd4c34a', type: 'timeOfDayPerformance', size: 'medium', x: 0, y: 30, w: 12, h: 4 },
-  { i: '7eb35a19-c0f1-41ba-a2c3-7e7dcf126fb6', type: 'propFirmGrowthCurve', size: 'extra-large', x: 0, y: 34, w: 12, h: 4 },
-  { i: 'b7abd4a3-d729-4660-87cb-6443716c9350', type: 'propFirmAccountStatistics', size: 'extra-large', x: 0, y: 38, w: 12, h: 5 },
-  { i: 'cbea8dc2-f8d6-4e4d-8d1b-d969dbaf9c7e', type: 'propFirmObjectivesToday', size: 'extra-large', x: 0, y: 43, w: 12, h: 4 },
+  { i: 'b3fd19eb-dc9f-402e-9b1d-9c4eedd4c34a', type: 'timeOfDayPerformance', size: 'medium', x: 0, y: 32, w: 12, h: 4 },
+  { i: '7eb35a19-c0f1-41ba-a2c3-7e7dcf126fb6', type: 'propFirmGrowthCurve', size: 'extra-large', x: 0, y: 36, w: 12, h: 4 },
+  { i: 'b7abd4a3-d729-4660-87cb-6443716c9350', type: 'propFirmAccountStatistics', size: 'extra-large', x: 0, y: 40, w: 12, h: 7 },
+  { i: 'cbea8dc2-f8d6-4e4d-8d1b-d969dbaf9c7e', type: 'propFirmObjectivesToday', size: 'extra-large', x: 0, y: 47, w: 12, h: 9 },
 ]
 
 export function cloneDefaultTemplateLayout(): TemplateLayoutItem[] {

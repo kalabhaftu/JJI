@@ -42,7 +42,7 @@ const NARROW_DESKTOP_ROWS: LayoutSpecRow[] = [
     { type: 'equityCurve', w: 8, h: 4 },
     { type: 'drawdown', w: 4, h: 4 },
   ],
-  [{ type: 'performanceSummary', w: 12, h: 5 }],
+  [{ type: 'performanceSummary', w: 12, h: 6 }],
   [{ type: 'recentTrades', w: 12, h: 4 }],
   [{ type: 'calendarMini', w: 12, h: 6 }],
   [
@@ -66,12 +66,15 @@ const NARROW_DESKTOP_ROWS: LayoutSpecRow[] = [
   ],
   [{ type: 'sessionAnalysis', w: 12, h: 4 }],
   [{ type: 'calendarAdvanced', w: 12, h: 8 }],
+  [{ type: 'propFirmGrowthCurve', w: 12, h: 5 }],
+  [{ type: 'propFirmAccountStatistics', w: 12, h: 7 }],
+  [{ type: 'propFirmObjectivesToday', w: 12, h: 9 }],
 ]
 
 const TABLET_ROWS: LayoutSpecRow[] = [
   [{ type: 'equityCurve', w: 6, h: 4 }],
   [{ type: 'drawdown', w: 6, h: 4 }],
-  [{ type: 'performanceSummary', w: 6, h: 5 }],
+  [{ type: 'performanceSummary', w: 6, h: 6 }],
   [{ type: 'recentTrades', w: 6, h: 4 }],
   [{ type: 'calendarMini', w: 6, h: 6 }],
   [
@@ -95,12 +98,15 @@ const TABLET_ROWS: LayoutSpecRow[] = [
   ],
   [{ type: 'sessionAnalysis', w: 6, h: 4 }],
   [{ type: 'calendarAdvanced', w: 6, h: 8 }],
+  [{ type: 'propFirmGrowthCurve', w: 6, h: 5 }],
+  [{ type: 'propFirmAccountStatistics', w: 6, h: 8 }],
+  [{ type: 'propFirmObjectivesToday', w: 6, h: 9 }],
 ]
 
 const MOBILE_ROWS: LayoutSpecRow[] = [
   [{ type: 'equityCurve', w: 1, h: 4 }],
   [{ type: 'drawdown', w: 1, h: 4 }],
-  [{ type: 'performanceSummary', w: 1, h: 6 }],
+  [{ type: 'performanceSummary', w: 1, h: 7 }],
   [{ type: 'recentTrades', w: 1, h: 5 }],
   [{ type: 'calendarMini', w: 1, h: 6 }],
   [{ type: 'netDailyPnL', w: 1, h: 4 }],
@@ -116,6 +122,9 @@ const MOBILE_ROWS: LayoutSpecRow[] = [
   [{ type: 'tradeDurationPerformance', w: 1, h: 4 }],
   [{ type: 'sessionAnalysis', w: 1, h: 4 }],
   [{ type: 'calendarAdvanced', w: 1, h: 10 }],
+  [{ type: 'propFirmGrowthCurve', w: 1, h: 5 }],
+  [{ type: 'propFirmAccountStatistics', w: 1, h: 9 }],
+  [{ type: 'propFirmObjectivesToday', w: 1, h: 9 }],
 ]
 
 function getWidgetDefaults(type: string) {
@@ -192,6 +201,11 @@ function buildLayoutFromRows(
     })
 
     if (rowItems.length > 0) {
+      if (rowItems.length === 1 && row.length > 1) {
+        rowItems[0]!.x = 0
+        rowItems[0]!.w = cols
+      }
+
       layout.push(...rowItems)
       currentY += rowHeight
     }

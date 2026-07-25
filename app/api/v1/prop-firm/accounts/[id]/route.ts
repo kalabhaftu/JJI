@@ -10,6 +10,15 @@ import { logger } from '@/lib/logger'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
+import { withCache } from '@/lib/cache/helpers'
+import { CacheKeys, CacheTTL } from '@/lib/cache/keys'
+import {
+  buildPropFirmAccountExtremes,
+  buildPropFirmDailyDrawdown,
+  buildPropFirmGrowth,
+  buildPropFirmTodayStats,
+  getPropFirmTradeTimestamp,
+} from '@/lib/prop-firm/widget-metrics'
 import { eq, and, inArray, desc, asc, exists } from 'drizzle-orm'
 
 interface RouteParams {
@@ -31,6 +40,31 @@ const UpdateMasterAccountSchema = z.object({
   isArchived: z.boolean().optional()
 })
 
+function normalizeTimeZone(value: string | null) {
+  if (!value) return 'UTC'
+
+  try {
+    Intl.DateTimeFormat('en-US', { timeZone: value }).format(new Date())
+    return value
+  } catch {
+    return 'UTC'
+  }
+}
+
+function getLatestTradeTimestamp(trades: any[]) {
+  let latest: Date | null = null
+
+  for (const trade of trades) {
+    const timestamp = getPropFirmTradeTimestamp(trade)
+    if (!timestamp) continue
+    if (!latest || timestamp.getTime() > latest.getTime()) {
+      latest = timestamp
+    }
+  }
+
+  return latest
+}
+
 export async function GET(request: NextRequest, { params }: RouteParams) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -46,6 +80,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const internalUserId = identity.internalUserId
 
     const { id: masterAccountId } = await params
+    const { searchParams } = new URL(request.url)
+    const resetTimezone = normalizeTimeZone(searchParams.get('resetTimezone'))
     // ID is pure masterAccountId (UUID), not composite
 
     // PERFORMANCE OPTIMIZATION: Use parallel queries and database aggregations
@@ -267,6 +303,47 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    const phaseMetricsById = new Map<string, {
+      tradeCount: number
+      totalPnL: number
+      wins: number
+      losses: number
+      breakEvenTrades: number
+      winRate: number
+      profitProgress: number
+    }>()
+
+    for (const phase of phases as Array<typeof phases[number]>) {
+      const phaseTrades = groupedCounts.groupedTrades.filter((trade: any) => trade.phaseAccountId === phase.id)
+      let totalPnLForPhase = 0
+      let phaseWins = 0
+      let phaseLosses = 0
+      let phaseBreakEvenTrades = 0
+
+      for (const trade of phaseTrades as Array<{ pnl: number }>) {
+        const netPnl = getTradeNetPnl(trade)
+        totalPnLForPhase += netPnl
+
+        const outcome = classifyOutcome(netPnl, breakEvenThreshold)
+        if (outcome === 'win') phaseWins += 1
+        else if (outcome === 'loss') phaseLosses += 1
+        else phaseBreakEvenTrades += 1
+      }
+
+      const phaseTradableTrades = phaseWins + phaseLosses
+      phaseMetricsById.set(phase.id, {
+        tradeCount: phaseTrades.length,
+        totalPnL: totalPnLForPhase,
+        wins: phaseWins,
+        losses: phaseLosses,
+        breakEvenTrades: phaseBreakEvenTrades,
+        winRate: phaseTradableTrades > 0 ? (phaseWins / phaseTradableTrades) * 100 : 0,
+        profitProgress: phase.profitTargetPercent > 0
+          ? Math.min((totalPnLForPhase / ((phase.profitTargetPercent / 100) * masterAccount.accountSize)) * 100, 100)
+          : 0,
+      })
+    }
+
     // Format account data as expected by the hook
     const accountData = {
       id: masterAccount.id,
@@ -277,6 +354,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       currentPhase: currentPhase || null,
       status: masterAccount.status,
       phases: phases.map((phase: any) => {
+        const phaseMetrics = phaseMetricsById.get(phase.id)
         return {
           id: phase.id,
           phaseNumber: phase.phaseNumber,
@@ -294,6 +372,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           startDate: phase.startDate.toISOString(),
           endDate: phase.endDate?.toISOString() || null,
           trades: phase.Trade || [],
+          tradeCount: phaseMetrics?.tradeCount ?? 0,
+          totalPnL: phaseMetrics?.totalPnL ?? 0,
+          wins: phaseMetrics?.wins ?? 0,
+          losses: phaseMetrics?.losses ?? 0,
+          breakEvenTrades: phaseMetrics?.breakEvenTrades ?? 0,
+          winRate: phaseMetrics?.winRate ?? 0,
+          profitProgress: phaseMetrics?.profitProgress ?? 0,
         }
       }),
       currentPnL: currentPhaseNetPnL,
@@ -309,9 +394,39 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       lastUpdated: new Date().toISOString()
     }
 
+    const currentPhaseStatus = String(currentPhase?.status || '').toLowerCase()
+    const isFinished =
+      String(masterAccount.status || '').toLowerCase() === 'failed' ||
+      (currentPhase ? currentPhaseStatus !== 'active' : false)
+    const latestTradeTimestamp = getLatestTradeTimestamp(currentPhaseGroupedTrades)
+    const referenceDate = isFinished
+      ? latestTradeTimestamp || new Date()
+      : new Date()
+    const widgetMetricsVersion = `${currentPhaseGroupedTrades.length}-${latestTradeTimestamp?.getTime() ?? 'empty'}`
+    const widgetMetrics = await withCache(
+      CacheKeys.propFirmWidgetMetrics(masterAccountId, resetTimezone, widgetMetricsVersion),
+      CacheTTL.propFirmWidgetMetrics,
+      async () => {
+        const growthResult = buildPropFirmGrowth(accountData, currentPhaseGroupedTrades, resetTimezone)
+        return {
+          accountExtremes: buildPropFirmAccountExtremes(currentPhaseGroupedTrades),
+          dailyDrawdown: buildPropFirmDailyDrawdown(accountData, currentPhaseGroupedTrades, resetTimezone, referenceDate, drawdownData),
+          todayStats: buildPropFirmTodayStats(currentPhaseGroupedTrades, resetTimezone, referenceDate),
+          growth: growthResult.points,
+          peakEquity: growthResult.peakEquity,
+          maxDrawdown: growthResult.maxDrawdown,
+          tradingDays: growthResult.tradingDays,
+          groupedTradeCount: currentPhaseGroupedTrades.length,
+          resetTimezone,
+          referenceDate: referenceDate.toISOString(),
+        }
+      },
+    )
+
     const response = {
       account: accountData,
       drawdown: drawdownData,
+      widgetMetrics,
       // Keep the full data for backward compatibility
       masterAccount: {
         id: masterAccount.id,
@@ -325,7 +440,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         owner: { id: masterAccount.userId, email: '' }
       },
       phases: phases.map((phase: typeof phases[number]) => {
-        const phaseTrades = groupedCounts.groupedTrades.filter((trade: any) => trade.phaseAccountId === phase.id)
+        const phaseMetrics = phaseMetricsById.get(phase.id)
         return {
           id: phase.id,
           phaseNumber: phase.phaseNumber,
@@ -341,8 +456,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           payoutCycleDays: phase.payoutCycleDays,
           startDate: phase.startDate,
           endDate: phase.endDate,
-          tradeCount: groupedCounts.groupedCountByPhaseAccountId.get(phase.id) || 0,
-          totalPnL: phaseTrades.reduce((sum: number, trade: any) => sum + Number(trade.pnl || 0), 0)
+          tradeCount: phaseMetrics?.tradeCount ?? 0,
+          totalPnL: phaseMetrics?.totalPnL ?? 0,
+          wins: phaseMetrics?.wins ?? 0,
+          losses: phaseMetrics?.losses ?? 0,
+          breakEvenTrades: phaseMetrics?.breakEvenTrades ?? 0,
+          winRate: phaseMetrics?.winRate ?? 0,
+          profitProgress: phaseMetrics?.profitProgress ?? 0,
         }
       }),
       currentPhase: currentPhase ? {

@@ -27,11 +27,9 @@ import {
   Zap,
   Clock
 } from "lucide-react"
-import { cn, formatTradeData, groupTradesByExecution } from "@/lib/utils"
+import { cn, formatTradeData } from "@/lib/utils"
 import { AccountStatus } from "@/types/prop-firm"
 import { AccountTradesPageSkeleton } from "../components/account-loading-skeletons"
-import { useData } from '@/context/data-provider'
-import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 
 interface TradeData {
   id: string
@@ -74,9 +72,14 @@ export default function AccountTradesPage() {
   const [activeTab, setActiveTab] = useState('trades')
   const [phaseFilter, setPhaseFilter] = useState<string>('current') // NEW: Phase filter state
   const [availablePhases, setAvailablePhases] = useState<PhaseInfo[]>([]) // NEW: Available phases
-  const { statistics } = useData()
-  const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
-
+  const [tradeStatistics, setTradeStatistics] = useState({
+    totalTrades: 0,
+    winningTrades: 0,
+    losingTrades: 0,
+    breakEvenTrades: 0,
+    winRate: 0,
+    totalPnl: 0,
+  })
   const accountId = params.id as string
 
   // Fetch account details
@@ -115,6 +118,14 @@ export default function AccountTradesPage() {
       const data = await response.json()
       if (data.success) {
         setTrades(data.data.trades)
+        setTradeStatistics(data.data.statistics || {
+          totalTrades: 0,
+          winningTrades: 0,
+          losingTrades: 0,
+          breakEvenTrades: 0,
+          winRate: 0,
+          totalPnl: 0,
+        })
         setAvailablePhases(data.data.filter?.availablePhases || [])
       } else {
         throw new Error(data.error || 'Failed to fetch trades')
@@ -157,25 +168,16 @@ export default function AccountTradesPage() {
     return new Date(dateString).toLocaleString()
   }
 
-  // Group partial closes before calculating account metrics.
-  const groupedTrades = groupTradesByExecution(
-    trades as unknown as Parameters<typeof groupTradesByExecution>[0]
-  ) as unknown as TradeData[]
-
-  // Filter GROUPED trades based on search term
-  const filteredTrades = groupedTrades.filter((trade) =>
+  // The API returns grouped executions; search remains client-side for instant filtering.
+  const filteredTrades = trades.filter((trade) =>
     trade.symbol.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  // Calculate trade statistics using GROUPED trades and NET P&L
-  const totalTrades = groupedTrades.length
-  const winningTrades = groupedTrades.filter((trade) => classifyOutcome(Number(trade.pnl || 0), breakEvenThreshold) === 'win').length
-  const losingTrades = groupedTrades.filter((trade) => classifyOutcome(Number(trade.pnl || 0), breakEvenThreshold) === 'loss').length
-  const breakEvenTrades = groupedTrades.filter((trade) => classifyOutcome(Number(trade.pnl || 0), breakEvenThreshold) === 'breakeven').length
-  // Calculate win rate excluding break-even trades (industry standard)
-  const tradableTradesCount = winningTrades + losingTrades
-  const winRate = tradableTradesCount > 0 ? Math.round((winningTrades / tradableTradesCount) * 1000) / 10 : 0
-  const totalPnl = groupedTrades.reduce((sum, trade) => sum + trade.pnl, 0)
+  const totalTrades = tradeStatistics.totalTrades
+  const winningTrades = tradeStatistics.winningTrades
+  const losingTrades = tradeStatistics.losingTrades
+  const winRate = tradeStatistics.winRate
+  const totalPnl = tradeStatistics.totalPnl
 
   if (isLoading) {
     return <AccountTradesPageSkeleton />

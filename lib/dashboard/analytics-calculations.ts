@@ -7,6 +7,7 @@ import { calculateWinRate, classifyOutcome, DEFAULT_BREAK_EVEN_THRESHOLD } from 
 import { CHART_COLORS } from '@/app/dashboard/components/widget-card'
 import { 
   calculateTradeRMultiple,
+  hasValidTradeRMultipleData,
   calculatePeakToTroughDrawdown,
   calculateExpectancy 
 } from '@/lib/math/performance-metrics'
@@ -128,6 +129,43 @@ export function calculateEquityCurve(trades: Partial<TradeType>[]) {
       equity: parseFloat(cumulative.toFixed(2)),
     }
   })
+}
+
+export function calculatePerformanceSummaryMetrics(trades: Partial<TradeType>[]) {
+  const equityCurve = calculateEquityCurve(trades)
+  let maxDrawdown = 0
+  let peak = 0
+  let drawdownTotal = 0
+  let drawdownCount = 0
+
+  for (const point of equityCurve) {
+    const equity = point.equity || 0
+    if (equity > peak) peak = equity
+    const drawdown = peak - equity
+    if (drawdown > 0) {
+      drawdownTotal += drawdown
+      drawdownCount += 1
+    }
+    if (drawdown > maxDrawdown) maxDrawdown = drawdown
+  }
+
+  const rCoverage = trades.reduce(
+    (acc, trade) => {
+      if (hasValidTradeRMultipleData(trade as any)) {
+        acc.total += calculateTradeRMultiple(trade as any)
+        acc.valid += 1
+      }
+      acc.all += 1
+      return acc
+    },
+    { total: 0, valid: 0, all: 0 }
+  )
+
+  return {
+    maxDrawdown,
+    avgDrawdown: drawdownCount > 0 ? drawdownTotal / drawdownCount : 0,
+    rCoverage,
+  }
 }
 
 export function calculateNetDailyPnl(

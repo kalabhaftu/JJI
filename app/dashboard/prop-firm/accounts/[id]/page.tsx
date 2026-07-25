@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
-import { useData } from '@/context/data-provider'
 import { toast } from "sonner"
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePropFirmRealtime } from "@/hooks/use-prop-firm-realtime"
@@ -36,8 +35,7 @@ import { cn } from "@/lib/utils"
 import { AccountStatus } from "@/types/prop-firm"
 import { AccountNotFoundError, ConnectionError } from "@/components/prop-firm/account-error-boundary"
 import { HistoryTab } from "./components/history-tab"
-import { calculateWinRate, classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
-import { getTradeNetPnl } from '@/lib/metrics/pnl'
+import { calculateWinRate } from '@/lib/metrics/outcome'
 
 import { DetailPageSkeleton } from "./components/detail-skeleton"
 import { MetricCard } from "./components/metric-card"
@@ -62,7 +60,6 @@ export default function AccountDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuth()
-  const { statistics } = useData()
   const [activeTab, setActiveTab] = useState('overview')
   const [accountData, setAccountData] = useState<any>(null)
   const [isEditingName, setIsEditingName] = useState(false)
@@ -214,27 +211,62 @@ export default function AccountDetailPage() {
     }
   }, [realtimeAccount, realtimeDrawdown, tradesData, payoutsData, editedAccountName])
 
+  const phaseSummaries = useMemo(() => {
+    const map = new Map<string, {
+      totalTrades: number
+      totalPnL: number
+      wins: number
+      losses: number
+      winRate: number
+      profitProgress: number
+    }>()
+
+    for (const phase of accountData?.phases || []) {
+      map.set(phase.id, {
+        totalTrades: Number(phase.tradeCount ?? 0),
+        totalPnL: Number(phase.totalPnL ?? 0),
+        wins: Number(phase.wins ?? 0),
+        losses: Number(phase.losses ?? 0),
+        winRate: Number(phase.winRate ?? 0),
+        profitProgress: Number(phase.profitProgress ?? 0),
+      })
+    }
+
+    return map
+  }, [accountData?.phases])
+
+  const getPhaseSummary = useCallback((phase: any) => {
+    return phaseSummaries.get(phase.id) ?? {
+      totalTrades: 0,
+      totalPnL: 0,
+      wins: 0,
+      losses: 0,
+      winRate: 0,
+      profitProgress: 0,
+    }
+  }, [phaseSummaries])
+
   // Computed values
   const stats = useMemo(() => {
-    if (!tradesData.length) return null
+    if (phaseSummaries.size > 0) {
+      const values = Array.from(phaseSummaries.values())
+      const totalTrades = values.reduce((sum, phase) => sum + phase.totalTrades, 0)
+      const totalPnl = values.reduce((sum, phase) => sum + phase.totalPnL, 0)
+      const wins = values.reduce((sum, phase) => sum + phase.wins, 0)
+      const losses = values.reduce((sum, phase) => sum + phase.losses, 0)
 
-    const wins = tradesData.filter(
-      t => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'win'
-    )
-    const losses = tradesData.filter(
-      t => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'loss'
-    )
-    const totalPnl = tradesData.reduce((sum, t) => sum + getTradeNetPnl(t), 0)
-
-    return {
-      totalTrades: tradesData.length,
-      winRate: Math.round(calculateWinRate(wins.length, losses.length)),
-      totalPnl,
-      avgTrade: tradesData.length > 0 ? totalPnl / tradesData.length : 0,
-      wins: wins.length,
-      losses: losses.length
+      return {
+        totalTrades,
+        winRate: Math.round(calculateWinRate(wins, losses)),
+        totalPnl,
+        avgTrade: totalTrades > 0 ? totalPnl / totalTrades : 0,
+        wins,
+        losses
+      }
     }
-  }, [breakEvenThreshold, tradesData])
+
+    return null
+  }, [phaseSummaries])
 
   const handleRefresh = async () => {
     hasFetchedDataRef.current = false
@@ -348,6 +380,8 @@ export default function AccountDetailPage() {
                     <Button
                       size="icon"
                       variant="ghost"
+                      aria-label="Rename account"
+                      title="Rename account"
                       className="h-6 w-6"
                       onClick={() => setIsEditingName(true)}
                     >

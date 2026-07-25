@@ -11,6 +11,7 @@ export const CacheKeys = {
 
   // Prop firm state - invalidated on breach or phase change
   propFirmPhase:   (accountId: string)                 => `v1:phase:${accountId}`,
+  propFirmWidgetMetrics: (accountId: string, timezone: string, version: string) => `v1:prop-widget:${accountId}:${timezone.replace(/[^A-Za-z0-9_-]/g, '_')}:${version}`,
   dailyAnchor:     (accountId: string, date: string)   => `v1:anchor:${accountId}:${date}`,
 
   // User-level - invalidated on account changes
@@ -26,6 +27,7 @@ export const CacheTTL = {
   drawdownCurve:  60 * 30,       // 30 minutes
   widgetData:     60 * 30,       // 30 minutes
   propFirmPhase:  60 * 5,        // 5 minutes
+  propFirmWidgetMetrics: 60,      // 1 minute, compact derived metrics
   dailyAnchor:    60 * 60 * 23,  // 23 hours (reset slightly before cron)
   userAccounts:   60 * 5,        // 5 minutes
 } as const

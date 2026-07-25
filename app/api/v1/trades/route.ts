@@ -22,6 +22,7 @@ import {
   calculateTagPerformance,
   calculateTimeOfDayPerformance,
   calculateDisciplineAnalytics,
+  calculatePerformanceSummaryMetrics,
 } from '@/lib/dashboard/analytics-calculations'
 import { calculateBalanceInfo } from '@/lib/utils/balance-calculator'
 import { CacheHeaders } from '@/lib/api-cache-headers'
@@ -458,6 +459,7 @@ export async function GET(request: NextRequest) {
       tradeDurationPerformance: safeWidget(() => calculateTradeDurationPerformance(trades, breakEvenThreshold), []),
       weekdayPnl: safeWidget(() => calculateWeekdayPnl(trades, breakEvenThreshold), []),
       performanceScore: safeWidget(() => calculatePerformanceScoreResult(trades, breakEvenThreshold), { hasData: false } as any),
+      performanceSummary: safeWidget(() => calculatePerformanceSummaryMetrics(trades), { maxDrawdown: 0, avgDrawdown: 0, rCoverage: { total: 0, valid: 0, all: 0 } }),
       sessionAnalysis: safeWidget(() => calculateSessionAnalysis(trades, breakEvenThreshold), {} as any),
       accountProgression: safeWidget(() => calculateAccountProgression(trades, filteredAccounts, breakEvenThreshold), { cumulative: [], balance: [], summary: {} } as any),
       tagPerformance: safeWidget(() => calculateTagPerformance(trades, breakEvenThreshold), {} as any),

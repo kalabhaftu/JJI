@@ -3,13 +3,6 @@
 import { useEffect, useMemo } from 'react'
 import { create } from 'zustand'
 import { useDashboardPropFirmAccount } from './use-dashboard-prop-firm-account'
-import {
-  buildPropFirmAccountExtremes,
-  buildPropFirmDailyDrawdown,
-  buildPropFirmGrowth,
-  buildPropFirmTodayStats,
-  getPropFirmTradeTimestamp,
-} from '@/lib/prop-firm/widget-metrics'
 
 type PropFirmTrade = {
   id: string
@@ -52,6 +45,9 @@ type PropFirmWidgetData = {
     dailyDrawdownRemaining: number
     dailyLossFloor: number
     dailyLimit: number
+    isBreached?: boolean
+    breachType?: string
+    notes?: string
   }
   resetTimezone: string
   groupedTradeCount: number
@@ -77,15 +73,20 @@ interface PropFirmCacheEntry {
 
 interface PropFirmStore {
   cache: Record<string, PropFirmCacheEntry>
-  fetchData: (id: string) => Promise<void>
+  fetchData: (id: string, resetTimezone?: string) => Promise<void>
   clearCache: () => void
+}
+
+export function getPropFirmCacheKey(id: string | null | undefined, resetTimezone = 'UTC') {
+  return id ? `${id}:${resetTimezone || 'UTC'}` : ''
 }
 
 export const usePropFirmStore = create<PropFirmStore>((set, get) => ({
   cache: {},
   clearCache: () => set({ cache: {} }),
-  fetchData: async (id: string) => {
-    const entry = get().cache[id]
+  fetchData: async (id: string, resetTimezone = 'UTC') => {
+    const cacheKey = getPropFirmCacheKey(id, resetTimezone)
+    const entry = get().cache[cacheKey]
     if (entry && (entry.isLoading || entry.promise || entry.accountPayload)) {
       if (entry.promise) {
         await entry.promise
@@ -101,7 +102,7 @@ export const usePropFirmStore = create<PropFirmStore>((set, get) => ({
     set((state) => ({
       cache: {
         ...state.cache,
-        [id]: {
+        [cacheKey]: {
           accountPayload: null,
           trades: [],
           isLoading: true,
@@ -112,20 +113,17 @@ export const usePropFirmStore = create<PropFirmStore>((set, get) => ({
     }))
 
     try {
-      const [accountResponse, tradesResponse] = await Promise.all([
-        fetch(`/api/v1/prop-firm/accounts/${id}`),
-        fetch(`/api/v1/prop-firm/accounts/${id}/trades?phase=current`),
-      ])
-      const [accountJson, tradesJson] = await Promise.all([accountResponse.json(), tradesResponse.json()])
+      const params = new URLSearchParams({ resetTimezone })
+      const accountResponse = await fetch(`/api/v1/prop-firm/accounts/${id}?${params.toString()}`)
+      const accountJson = await accountResponse.json()
       if (!accountResponse.ok || !accountJson.success) throw new Error(accountJson.error || 'Failed to load prop firm account')
-      if (!tradesResponse.ok || !tradesJson.success) throw new Error(tradesJson.error || 'Failed to load prop firm trades')
 
       set((state) => ({
         cache: {
           ...state.cache,
-          [id]: {
+          [cacheKey]: {
             accountPayload: accountJson.data,
-            trades: Array.isArray(tradesJson.data?.trades) ? tradesJson.data.trades : [],
+            trades: [],
             isLoading: false,
             error: null,
             promise: null,
@@ -136,7 +134,7 @@ export const usePropFirmStore = create<PropFirmStore>((set, get) => ({
       set((state) => ({
         cache: {
           ...state.cache,
-          [id]: {
+          [cacheKey]: {
             accountPayload: null,
             trades: [],
             isLoading: false,
@@ -154,15 +152,17 @@ export const usePropFirmStore = create<PropFirmStore>((set, get) => ({
 export function usePropFirmDashboardWidgetData() {
   const selection = useDashboardPropFirmAccount()
   const id = selection.selectedMasterAccountId
+  const resetTimezone = selection.resetTimezone || 'UTC'
 
-  const cacheEntry = usePropFirmStore((state) => state.cache[id || ''])
+  const cacheKey = getPropFirmCacheKey(id, resetTimezone)
+  const cacheEntry = usePropFirmStore((state) => state.cache[cacheKey])
   const fetchData = usePropFirmStore((state) => state.fetchData)
 
   useEffect(() => {
     if (id) {
-      fetchData(id)
+      fetchData(id, resetTimezone)
     }
-  }, [id, fetchData])
+  }, [id, resetTimezone, fetchData])
 
   const accountPayload = cacheEntry?.accountPayload ?? null
   const emptyTrades = useMemo(() => [], [])
@@ -172,42 +172,40 @@ export function usePropFirmDashboardWidgetData() {
 
   const computed = useMemo(() => {
     const account = accountPayload?.account ?? null
-    const resetTimezone = selection.resetTimezone || 'UTC'
+    const widgetMetrics = accountPayload?.widgetMetrics ?? {}
 
-    // Sort trades to find the last trade's timestamp
-    const sortedTrades = [...trades].sort((a, b) => {
-      const timeA = getPropFirmTradeTimestamp(a)?.getTime() || 0
-      const timeB = getPropFirmTradeTimestamp(b)?.getTime() || 0
-      return timeA - timeB
-    })
-    const lastTrade = sortedTrades[sortedTrades.length - 1]
-    const lastTradeTime = lastTrade ? getPropFirmTradeTimestamp(lastTrade) : null
-
-    // Check if the account or current phase is failed/passed/blown/ended
-    const currentPhase = account?.currentPhase || {}
-    const isMasterFailed = String(account?.status || '').toLowerCase() === 'failed'
-    const isPhaseFinished = String(currentPhase?.status || '').toLowerCase() !== 'active'
-    const isFinished = isMasterFailed || isPhaseFinished
-
-    const referenceDate = isFinished && lastTradeTime ? lastTradeTime : new Date()
-
-    const growthResult = buildPropFirmGrowth(account, trades, resetTimezone)
     return {
       account,
       drawdown: accountPayload?.drawdown ?? null,
       statistics: accountPayload?.statistics ?? null,
       trades,
-      accountExtremes: buildPropFirmAccountExtremes(trades),
-      dailyDrawdown: buildPropFirmDailyDrawdown(account, trades, resetTimezone, referenceDate, accountPayload?.drawdown),
-      resetTimezone,
-      groupedTradeCount: trades.length,
-      todayStats: buildPropFirmTodayStats(trades, resetTimezone, referenceDate),
-      growth: growthResult.points,
-      peakEquity: growthResult.peakEquity,
-      maxDrawdown: growthResult.maxDrawdown,
-      tradingDays: growthResult.tradingDays,
+      accountExtremes: widgetMetrics.accountExtremes ?? { bestTrade: 0, worstTrade: 0, averageTrade: 0 },
+      dailyDrawdown: widgetMetrics.dailyDrawdown ?? {
+        dailyStartBalance: 0,
+        dailyDrawdownUsed: 0,
+        dailyDrawdownRemaining: 0,
+        dailyLossFloor: 0,
+        dailyLimit: 0,
+      },
+      resetTimezone: widgetMetrics.resetTimezone ?? resetTimezone,
+      groupedTradeCount: widgetMetrics.groupedTradeCount ?? 0,
+      todayStats: widgetMetrics.todayStats ?? {
+        pnl: 0,
+        trades: 0,
+        wins: 0,
+        losses: 0,
+        breakeven: 0,
+        winRate: 0,
+        bestTrade: 0,
+        worstTrade: 0,
+        averageTrade: 0,
+      },
+      growth: widgetMetrics.growth ?? [],
+      peakEquity: widgetMetrics.peakEquity ?? Number(account?.accountSize || 0),
+      maxDrawdown: widgetMetrics.maxDrawdown ?? 0,
+      tradingDays: widgetMetrics.tradingDays ?? 0,
     } satisfies PropFirmWidgetData
-  }, [accountPayload, trades, selection.resetTimezone])
+  }, [accountPayload, trades, resetTimezone])
 
   return {
     ...selection,

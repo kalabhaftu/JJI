@@ -66,7 +66,6 @@ export async function invalidateAccountCache(
   // will expire naturally via TTL.
   const { CacheKeys } = await import('./keys')
   await invalidateCache(
-    CacheKeys.performanceScore(userId, accountId),
     CacheKeys.accountMetrics(accountId),
     CacheKeys.tradeStats(accountId),
     CacheKeys.propFirmPhase(accountId),

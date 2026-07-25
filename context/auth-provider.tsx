@@ -66,9 +66,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isRecoverableSessionError = useCallback((error: unknown) => {
     if (!error || typeof error !== 'object') return false
 
-    const maybeError = error as { message?: string; code?: string; status?: number }
-    const message = maybeError.message?.toLowerCase() || ''
-    const code = maybeError.code?.toLowerCase() || ''
+    const maybeError = error as { message?: unknown; code?: unknown; status?: number }
+    const message = typeof maybeError.message === 'string' ? maybeError.message.toLowerCase() : ''
+    const code = typeof maybeError.code === 'string' ? maybeError.code.toLowerCase() : ''
 
     return (
       code === 'refresh_token_not_found' ||

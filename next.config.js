@@ -8,6 +8,7 @@ try {
 } catch (_) {}
 
 const nextConfig = {
+  distDir: process.env.NEXT_DIST_DIR || '.next',
   typedRoutes: true,
   experimental: {
     serverActions: {
@@ -54,8 +55,10 @@ const nextConfig = {
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 
   async headers() {
-    const allowedOrigin = process.env.APP_BASE_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://justjournalit.vercel.app');
+    const allowedOrigin = process.env.VERCEL_ENV === 'production'
+      ? 'https://justjournalit.vercel.app'
+      : process.env.APP_BASE_URL ||
+        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://justjournalit.vercel.app');
 
     return [
       {
@@ -137,6 +140,7 @@ module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
   widenClientFileUpload: true,
   tunnelRoute: '/monitoring',
   sourcemaps: {
+    disable: !process.env.VERCEL && !process.env.CI,
     deleteSourcemapsAfterUpload: true,
   },
   webpack: {

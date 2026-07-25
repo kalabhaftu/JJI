@@ -15,10 +15,10 @@ Use the admin area for production operations, not routine personal trading workf
 - Reply when the user needs a response, then update status so old feedback does not look new.
 - Delete only spam or entries that should not be retained.
 
-## Error Logs
-- Investigate recent production errors before clearing logs.
-- Export logs when you need to compare incidents or share details with development.
-- Use clear actions only after confirming the issue is fixed or the logs are no longer useful.
+## Production incidents
+- Use Sentry as the source of truth for application errors.
+- Correlate the Sentry event with the Vercel deployment, route, release, and request time.
+- Resolve an issue only after the fix is deployed and the original signature is no longer occurring.
 
 ## Activity
 - Audit important user/admin actions.

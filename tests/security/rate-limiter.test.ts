@@ -15,7 +15,7 @@ describe('rate limiter production posture', () => {
     delete process.env.ALLOW_IN_MEMORY_RATE_LIMITS_IN_PRODUCTION
 
     const { consumeRateLimitKey, emailOtpLimiter } = await import('@/lib/rate-limiter')
-    const result = await consumeRateLimitKey('email-otp:test', emailOtpLimiter)
+    const result = await consumeRateLimitKey('rate-limit:email-otp:test', emailOtpLimiter)
 
     expect(result.allowed).toBe(false)
     expect(result.remaining).toBe(0)
@@ -27,7 +27,7 @@ describe('rate limiter production posture', () => {
     delete process.env.KV_REST_API_TOKEN
 
     const { consumeRateLimitKey, emailOtpLimiter } = await import('@/lib/rate-limiter')
-    const result = await consumeRateLimitKey(`email-otp:${crypto.randomUUID()}`, emailOtpLimiter)
+    const result = await consumeRateLimitKey(`rate-limit:email-otp:${crypto.randomUUID()}`, emailOtpLimiter)
 
     expect(result.allowed).toBe(true)
     expect(result.remaining).toBe(3)

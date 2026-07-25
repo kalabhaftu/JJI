@@ -4,17 +4,23 @@ import dynamic from 'next/dynamic'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useData } from '@/context/data-provider'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
-import TradeReplay from '../components/trades/trade-replay'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { Suspense } from 'react'
 import { cn, classifyTrade, ensureExtendedTrade } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
-import { TradeDetailPanel } from '../components/tables/trade-detail-panel'
-import { TradeEditPanel } from '../components/tables/trade-edit-panel'
 import { TablePageSkeleton } from './components/table-page-skeleton'
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
 
+const TradeReplay = dynamic(() => import('../components/trades/trade-replay'), { ssr: false })
+const TradeDetailPanel = dynamic(
+  () => import('../components/tables/trade-detail-panel').then((mod) => mod.TradeDetailPanel),
+  { ssr: false },
+)
+const TradeEditPanel = dynamic(
+  () => import('../components/tables/trade-edit-panel').then((mod) => mod.TradeEditPanel),
+  { ssr: false },
+)
 const TradeTableReview = dynamic(
   () => import('../components/tables/trade-table-review').then((mod) => ({ default: mod.TradeTableReview })),
   { ssr: false }

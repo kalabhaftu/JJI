@@ -4,7 +4,7 @@ import { relations } from 'drizzle-orm'
 
 export const AuditLog = pgTable('AuditLog', {
   id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id')
+  userId: text('user_id')
     .notNull()
     .references(() => User.id, { onDelete: 'cascade' }),
   action: text('action').notNull(), // e.g. "CREATE_TRADE", "UPDATE_TRADE", "DELETE_TRADE"

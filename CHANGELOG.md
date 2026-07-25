@@ -10,3 +10,4 @@
 - Added staged RLS and daily-anchor idempotency migrations plus security, privacy, ownership, migration, and mobile-layout regression coverage.
 - Hardened Storage owner policies, aligned legacy weekly-review data without dropping records, added missing foreign-key indexes, and enforced deterministic UI, offline-mutation, and WCAG theme-contrast contracts.
 - Updated CI and local tooling for Node.js 24, patched dependency chains, reproducible installs, secret scanning, and production console checks.
+- Aligned production Drizzle and Supabase schema history, optimized Realtime RLS, fixed Sentry auth/control-flow noise, lazy-loaded heavy route features, and added maintainer and operations documentation.

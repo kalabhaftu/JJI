@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
+import { scrubSentryEvent, shouldDropSentryEvent } from '@/lib/observability/sentry-scrub'
 
 describe('Sentry privacy scrubber', () => {
   it('removes request bodies, credentials, journal content, and direct identifiers', () => {
@@ -23,5 +23,18 @@ describe('Sentry privacy scrubber', () => {
       route: '/api/v1/ai',
       nested: { operation: 'generate' },
     })
+  })
+
+  it('drops expected framework and recoverable auth control flow', () => {
+    expect(shouldDropSentryEvent({
+      exception: { values: [{ value: 'NEXT_HTTP_ERROR_FALLBACK;404' }] },
+    })).toBe(true)
+    expect(shouldDropSentryEvent({}, new Error('NEXT_REDIRECT'))).toBe(true)
+    expect(shouldDropSentryEvent({
+      exception: { values: [{ value: 'Invalid Refresh Token: Refresh Token Not Found' }] },
+    })).toBe(true)
+    expect(shouldDropSentryEvent({
+      exception: { values: [{ value: 'Database connection failed' }] },
+    })).toBe(false)
   })
 })

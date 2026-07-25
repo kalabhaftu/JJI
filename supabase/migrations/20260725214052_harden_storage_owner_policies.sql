@@ -198,3 +198,4 @@ using (
 -- Verification queries to run after applying:
 -- select id, public from storage.buckets where id in ('trade-images', 'feedback-attachments', 'weekly-calendars');
 -- select policyname, cmd, roles from pg_policies where schemaname = 'storage' and tablename = 'objects' order by policyname;
+;

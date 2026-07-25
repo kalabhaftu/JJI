@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
@@ -8,8 +9,12 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from 'lucide-react'
-import ImportTradesCard from '@/app/dashboard/components/import/import-trades-card'
 import { ImportTradesPageSkeleton } from '../../components/account-loading-skeletons'
+
+const ImportTradesCard = dynamic(
+  () => import('@/app/dashboard/components/import/import-trades-card'),
+  { loading: () => <ImportTradesPageSkeleton />, ssr: false },
+)
 
 interface AccountData {
   id: string

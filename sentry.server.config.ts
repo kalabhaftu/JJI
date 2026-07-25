@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
+import { scrubSentryEvent, shouldDropSentryEvent } from '@/lib/observability/sentry-scrub'
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN ?? process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -9,5 +9,8 @@ Sentry.init({
   tracesSampleRate: 0.2,
   enableLogs: true,
   skipOpenTelemetrySetup: true,
-  beforeSend: scrubSentryEvent,
+  beforeSend(event, hint) {
+    if (shouldDropSentryEvent(event, hint.originalException)) return null
+    return scrubSentryEvent(event)
+  },
 })

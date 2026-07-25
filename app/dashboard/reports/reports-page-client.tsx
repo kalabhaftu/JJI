@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import {
     Table,
     TableBody,
@@ -10,7 +11,6 @@ import {
 } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useData } from '@/context/data-provider'
-import { useTheme } from '@/context/theme-provider'
 import { formatTimeInZone } from '@/lib/time-utils'
 import { classifyTrade, cn } from '@/lib/utils'
 import {
@@ -39,7 +39,7 @@ import {
     endOfDay
 } from 'date-fns'
 import { motion } from 'framer-motion'
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { getPnlDisplayLabel, getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { DateRange } from '@/components/ui/custom-date-range-picker'
@@ -48,21 +48,6 @@ import { ReportFilters } from './components/report-filters'
 import { useReportStats } from '@/hooks/use-report-stats'
 import type { ReportStatsResponse } from '@/lib/statistics/report-statistics'
 import type { PropFirmSummaryDTO } from '@/lib/statistics/propfirm-statistics'
-import { 
-    Area, 
-    AreaChart, 
-    ResponsiveContainer, 
-    Tooltip as RechartsTooltip, 
-    XAxis, 
-    YAxis 
-} from 'recharts'
-
-const COLORS = {
-    bullish: 'hsl(var(--chart-bullish))',
-    bearish: 'hsl(var(--chart-bearish))',
-    muted: 'hsl(220, 15%, 55%)'
-}
-
 import { Button } from '@/components/ui/button'
 import {
     Dialog,
@@ -85,18 +70,22 @@ import {
     TooltipProvider,
     TooltipTrigger
 } from '@/components/ui/tooltip'
-import { DiverseCharts } from './components/diverse-charts'
-import { MonthlyReturnsMatrix } from './components/monthly-returns-matrix'
-import { InstrumentBreakdown } from './components/instrument-breakdown'
-import { TradeDurationChart } from './components/trade-duration-chart'
-import { TimeOfDayHeatmap } from './components/time-of-day-heatmap'
-import { MaeMfeScatter } from './components/mae-mfe-scatter'
-import { CommissionAnalysis } from './components/commission-analysis'
-import { StatementView } from './components/statement-view'
-import { PerformanceCard } from './components/performance-card'
-import { PropFirmTab } from './components/propfirm-tab'
 import { PropFirmReportsSkeleton, ReportsContentSkeleton } from './components/reports-page-skeleton'
 import { PageHeader } from '@/components/ui/page-header'
+
+const DiverseCharts = dynamic(() => import('./components/diverse-charts').then((mod) => mod.DiverseCharts))
+const MonthlyReturnsMatrix = dynamic(() => import('./components/monthly-returns-matrix').then((mod) => mod.MonthlyReturnsMatrix))
+const InstrumentBreakdown = dynamic(() => import('./components/instrument-breakdown').then((mod) => mod.InstrumentBreakdown))
+const TradeDurationChart = dynamic(() => import('./components/trade-duration-chart').then((mod) => mod.TradeDurationChart))
+const TimeOfDayHeatmap = dynamic(() => import('./components/time-of-day-heatmap').then((mod) => mod.TimeOfDayHeatmap))
+const MaeMfeScatter = dynamic(() => import('./components/mae-mfe-scatter').then((mod) => mod.MaeMfeScatter))
+const CommissionAnalysis = dynamic(() => import('./components/commission-analysis').then((mod) => mod.CommissionAnalysis))
+const StatementView = dynamic(() => import('./components/statement-view').then((mod) => mod.StatementView))
+const PerformanceCard = dynamic(() => import('./components/performance-card').then((mod) => mod.PerformanceCard))
+const PropFirmTab = dynamic(() => import('./components/propfirm-tab').then((mod) => mod.PropFirmTab))
+const RMultipleDistributionChart = dynamic(
+    () => import('./components/r-multiple-distribution-chart').then((mod) => mod.RMultipleDistributionChart),
+)
 
 interface ReportsPageClientProps {
     initialReportData?: ReportStatsResponse | null
@@ -178,14 +167,8 @@ export default function ReportsPageClient({
     initialPropFirmData,
 }: ReportsPageClientProps) {
     const { accounts } = useData()
-    const { chartStyle } = useTheme()
     const user = useUserStore(state => state.user)
     const pnlDisplayMode = normalizePnlDisplayMode(user?.pnlDisplayMode)
-
-    const isSharp = chartStyle === 'sharp'
-    const curveType = isSharp ? 'linear' : 'monotone'
-    const strokeVal = 'hsl(var(--foreground))'
-    const fillVal = 'url(#colorRMultiple)'
 
     // Filter State
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
@@ -229,35 +212,6 @@ export default function ReportsPageClient({
     const rMultipleDistribution = reportData?.rMultipleDistribution ?? null
     const rMultipleDataQuality = reportData?.rMultipleDataQuality ?? null
 
-    // Pre-computed R-Multiple data for Recharts
-    const rMultipleChartData = useMemo(() => {
-        if (!rMultipleDistribution) return []
-        return Object.entries(rMultipleDistribution).map(([bucket, rawCount]) => {
-            const count = Number(rawCount)
-            const isNegative = bucket.includes('<') || bucket.includes('-')
-            return {
-                name: bucket,
-                count,
-                color: isNegative ? COLORS.bearish : COLORS.bullish
-            }
-        })
-    }, [rMultipleDistribution])
-
-    const RMultipleTooltip = ({ active, payload, label }: any) => {
-        if (active && payload && payload.length) {
-            return (
-                <div className="bg-card border border-border p-2 rounded-lg shadow-md">
-                    <p className="text-[10px] uppercase font-black text-muted-foreground/70 mb-1">{label}</p>
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-mono font-bold" style={{ color: payload[0].payload.color }}>
-                            {payload[0].value} Trades
-                        </span>
-                    </div>
-                </div>
-            )
-        }
-        return null
-    }
     const filteredTrades = reportData?.filteredTrades ?? []
     const filterOptions = reportData?.filterOptions ?? {
         symbols: [],
@@ -748,33 +702,7 @@ export default function ReportsPageClient({
                                 </div>
                                                 <div className="flex h-[280px] flex-col rounded-2xl border border-border/20 bg-muted/5 p-6">
                                                     <div className="flex-1 w-full">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <AreaChart data={rMultipleChartData} margin={{ top: 10, right: 10, left: -30, bottom: 0 }}>
-                                                                <defs>
-                                                                    <linearGradient id="colorRMultiple" x1="0" y1="0" x2="0" y2="1">
-                                                                        <stop offset="5%" stopColor="hsl(var(--foreground))" stopOpacity={0.15}/>
-                                                                        <stop offset="95%" stopColor="hsl(var(--foreground))" stopOpacity={0}/>
-                                                                    </linearGradient>
-                                                                </defs>
-                                                                <XAxis 
-                                                                    dataKey="name" 
-                                                                    axisLine={false} 
-                                                                    tickLine={false} 
-                                                                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
-                                                                />
-                                                                <YAxis hide />
-                                                                <RechartsTooltip content={<RMultipleTooltip />} cursor={{ stroke: 'hsl(var(--border))', strokeWidth: 1, strokeDasharray: '4 4' }} />
-                                                                <Area 
-                                                                    type={curveType} 
-                                                                    dataKey="count" 
-                                                                    stroke={strokeVal} 
-                                                                    strokeWidth={2}
-                                                                    fillOpacity={1} 
-                                                                    fill={fillVal}
-                                                                    animationDuration={1000}
-                                                                />
-                                                            </AreaChart>
-                                                        </ResponsiveContainer>
+                                                        <RMultipleDistributionChart distribution={rMultipleDistribution ?? {}} />
                                                     </div>
                                                 </div>
                                             </div>

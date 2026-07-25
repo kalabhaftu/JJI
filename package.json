@@ -13,7 +13,7 @@
     "dev:ultra": "rimraf .next node_modules/.cache && cross-env NODE_OPTIONS=\"--max-old-space-size=12288\" node scripts/run-next-dev.js",
     "build": "next build",
     "build:dev": "next build",
-    "build:analyze": "cross-env ANALYZE=true next build",
+    "build:analyze": "cross-env ANALYZE=true NEXT_DIST_DIR=.next-analyze next build",
     "start": "next start -H 0.0.0.0",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

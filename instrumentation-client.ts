@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
+import { scrubSentryEvent, shouldDropSentryEvent } from '@/lib/observability/sentry-scrub'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -15,6 +15,7 @@ Sentry.init({
   beforeSend(event, hint) {
     const error = hint.originalException
     if (error instanceof Error && error.message?.includes('blocked by client')) return null
+    if (shouldDropSentryEvent(event, error)) return null
     return scrubSentryEvent(event)
   },
 })

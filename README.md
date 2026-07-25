@@ -1,169 +1,148 @@
 # JJI — Just Journal It
 
-A trading journal and analytics app for tracking and reviewing your trades.
+Production trading journal, performance analytics, prop-firm tracking, and consent-gated AI review workspace.
 
-> **This is proprietary software.** The source is not publicly licensed. See [License](#license) below.
+- Production: [justjournalit.vercel.app](https://justjournalit.vercel.app)
+- Staging branch: `preview`
+- Production branch: `main`
+- Runtime: Node.js 24
+- Package manager: npm
 
-## What it does
+## Product
 
-- **Dashboard** — view your equity curve, daily PnL, drawdown, win rate, and profit factor across one or more accounts.
-- **Calendar** — review each trading day: PnL, setups, trade count, and notes at a glance.
-- **Journal** — log notes, setups, rules, and screenshots per trade or per day.
-- **Prop firm tracking** — manage challenge phases, drawdown limits, profit targets, and payout eligibility.
-- **Reports** — filter and export performance data by account, date range, symbol, or session.
-- **Import/Export** — bring in trades via CSV or JSON; export your data at any time.
-- **Goals** — set monthly targets (win rate, net PnL, etc.) and track progress.
-- **AI workspace** — optional, consent-gated xAI analysis across selected trades, journals, and weekly reviews.
-- **Demo mode** — fully functional demo at `/demo` using local mock data, no login required.
+- Multi-account trade journal and calendar
+- Dashboard widgets and reusable layouts
+- Trade import, editing, grouping, tagging, export, and deletion
+- Performance, risk, drawdown, session, and strategy reports
+- Prop-firm challenges, phase evaluation, breaches, and payouts
+- Daily notes, playbooks, goals, notifications, and shared reports
+- Consent-gated AI conversations, insights, mappings, and weekly reviews
+- Local demo mode under `/demo`
 
-## Tech stack
+## System
 
-| Layer | Tech |
+| Area | Implementation |
 |---|---|
-| Runtime | Node.js 24 LTS |
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| Styling | Tailwind CSS, shadcn/ui, Framer Motion |
-| Database | PostgreSQL via Supabase |
-| ORM | Drizzle ORM |
-| Auth | Supabase Auth (email + Google + Discord OAuth) |
-| State | Zustand + TanStack Query + SWR |
-| Jobs | Inngest and Vercel Cron (maintenance and account safeguards) |
-| Payments | NOWPayments (crypto) |
-| Error tracking | Sentry |
-| Testing | Vitest (unit), Playwright (e2e) |
-| Deployment | Vercel |
+| Web | Next.js 15 App Router, React 19, TypeScript |
+| UI | Tailwind CSS, shadcn/ui primitives, Radix UI |
+| Database | Supabase Postgres 17 |
+| Data access | Drizzle ORM with PostgreSQL.js |
+| Authentication | Supabase Auth |
+| Storage | Supabase Storage |
+| Cache and rate limits | Upstash Redis |
+| Durable jobs | Inngest |
+| Scheduled maintenance | Inngest cron and authenticated Vercel Cron |
+| Error monitoring | Sentry |
+| Payments | NOWPayments |
+| Email | Resend |
+| Hosting | Vercel |
+| Tests | Vitest |
 
-## Getting started locally
+## Repository map
 
-### Prerequisites
+```text
+app/                    Next.js routes, layouts, pages, and API handlers
+components/             Shared product and UI components
+context/                Client providers and product state
+hooks/                  Client data and interaction hooks
+lib/
+  cache/                Upstash cache keys, cache-aside helpers, invalidation
+  db/                   Drizzle client, schema, and relations
+  inngest/              Inngest client and durable functions
+  security/             Request, origin, import, export, and ownership guards
+  services/             Domain services
+server/                 Server-only domain and query modules
+supabase/
+  migrations/           Ordered production database migrations
+  storage-policies.sql  Storage bucket and object policies
+tests/                  Unit, integration, security, and UI contract tests
+docs/                   Maintainer and operations documentation
+```
+
+## Local development
+
+### Requirements
 
 - Node.js 24
 - npm
-- A [Supabase](https://supabase.com) project (free tier is enough for dev)
-- PostgreSQL connection strings from Supabase
+- Supabase development project
+- PostgreSQL pooled and direct connection strings
 
-### 1. Clone and install
+### Setup
 
 ```bash
 git clone <repository-url>
-cd <project-directory>
-npm install
-```
-
-### 2. Configure environment
-
-Copy `.env.example` to `.env.local` and fill in the required values:
-
-```bash
+cd tradelytix
+npm ci
 cp .env.example .env.local
-```
-
-Minimum variables needed to run locally:
-
-```env
-DATABASE_URL=             # Supabase pooled connection string (pgBouncer)
-DIRECT_URL=               # Supabase direct connection string (for migrations)
-NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-SUPABASE_SERVICE_ROLE_KEY=
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXTAUTH_SECRET=          # Any random 32+ character string
-```
-
-Everything else in `.env.example` (payments, AI, Sentry, etc.) is optional for local development.
-
-### 3. Set up the database
-
-Generate or push the Drizzle schema to a development Supabase project:
-
-```bash
-npm run db:generate   # generate migration files
-npm run db:push       # apply schema to the database
-```
-
-You also need to apply the Supabase storage policies from `supabase/storage-policies.sql` in the Supabase SQL editor.
-
-Timestamped SQL migrations in `supabase/migrations/` must be rehearsed against a staging clone before production. The server-only RLS migration intentionally preserves owner-scoped `SELECT` access for the tables used by Supabase Realtime while keeping browser writes revoked.
-
-### 4. Run the dev server
-
-```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). You can use the app at `/demo` without any auth or DB.
+Open `http://localhost:3000`. `/demo` runs without authentication.
 
-## Useful commands
+Environment variables are documented in [.env.example](.env.example). Keep credentials in local or managed environment storage. Never commit secrets.
+
+## Commands
 
 ```bash
-npm run dev              # start dev server (localhost:3000)
-npm run type-check       # TypeScript check
-npm run lint             # ESLint
-npm test -- --run        # run Vitest tests once
-npm run test:e2e         # Playwright end-to-end tests
-npm run db:studio        # open Drizzle Studio to inspect the DB
-npm run lint:fix         # auto-fix lint issues
+npm run dev                 Start the development server
+npm run type-check          Run TypeScript validation
+npm run lint                Run ESLint
+npm test -- --run           Run all Vitest suites
+npm run test:ui-contracts   Run deterministic UI and accessibility contracts
+npm run security:scan-console
+npm audit --audit-level=low
+npm run build               Build the production application
+npm run build:analyze       Generate bundle analyzer reports
+npm run db:generate         Generate a reviewed Drizzle migration
+npm run db:studio           Open Drizzle Studio
 ```
 
-## Project layout
+`npm run db:push` is development-only. Production database changes use reviewed files under `supabase/migrations/`, staging rehearsal, backup, apply, and verification.
 
-```
-app/                    # Next.js App Router pages and layouts
-  (auth)/               # sign-in, sign-up, reset password
-  dashboard/            # main app (requires auth)
-  demo/                 # demo mode (no auth, all data is local mock)
-  api/v1/               # REST API routes
-components/             # shared React components
-context/                # React context providers
-hooks/                  # data-fetching hooks (TanStack Query, SWR)
-lib/                    # utilities, analytics calculations, DB client
-  db/                   # Drizzle schema and migrations
-  demo/                 # mock data for demo mode
-  security/             # CORS, origin validation, CSP helpers
-public/                 # static assets, PWA manifest, service worker
-tests/                  # Vitest unit tests and security tests
-```
+## Data boundaries
 
-## Demo mode
+- Browser code uses Supabase Auth and owner-scoped Realtime reads.
+- Application database reads and writes run through server routes and Drizzle.
+- Protected queries include the authenticated internal user identifier.
+- RLS is enabled as database defense in depth.
+- Browser table writes are revoked.
+- Storage writes use authenticated owner prefixes or the service role.
+- Documents, API responses, and private media are not stored in shared service-worker caches.
 
-Demo mode (`/demo`) runs entirely in the browser. A fetch interceptor (`app/demo/components/demo-network-interceptor.tsx`) catches all `/api/v1/*` calls and returns mock data. No database connection or auth token is needed.
+## Production services
 
-## Security notes
+| Service | Required production configuration | Verification |
+|---|---|---|
+| Supabase | database, Auth, service role, Storage | migrations, advisors, RLS/policy inventory, two-user checks |
+| Upstash | REST URL and token | PING, set/get, TTL, deletion, rate-limit behavior |
+| Inngest | event key and signing key | endpoint sync, registered functions, signed execution, retry/failure checks |
+| Sentry | DSN, org, project, release token | issue query, controlled event, release and source-map checks |
+| Vercel | canonical URLs, service credentials, cron secret | preview build, health endpoints, production deployment |
 
-- Never commit real secrets. Use `.env.local` for local development.
-- Protected APIs resolve the Supabase session and enforce ownership again in Drizzle queries. RLS is an additional database boundary; authenticated browser access is limited to owner-scoped Realtime reads.
-- The `supabase/storage-policies.sql` file defines bucket access policies. Review and apply them before deploying.
-- CORS is configured in `lib/security/origins.ts`. The production origin is `https://justjournalit.vercel.app`.
-- A cron secret (`CRON_SECRET`) is required in production for scheduled maintenance jobs.
+## Release flow
 
-## Environment variables reference
+1. Implement on `preview`.
+2. Run type-check, lint, tests, audit, console scan, and production build.
+3. Rehearse pending database and Storage migrations against staging.
+4. Back up production and apply verified migrations.
+5. Deploy and verify the production application and external services.
+6. Merge `preview` into `main`.
+7. Confirm the production deployment commit and clean branch state.
 
-See `.env.example` for the full list with descriptions. Key groups:
+## Maintainer documentation
 
-| Group | Variables |
-|---|---|
-| Database | `DATABASE_URL`, `DIRECT_URL` |
-| Supabase | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` |
-| App URLs | `APP_BASE_URL`, `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_SITE_URL` |
-| Auth | `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID/SECRET`, `DISCORD_CLIENT_ID/SECRET` |
-| Payments | `NOWPAYMENTS_*` |
-| AI | `XAI_API_KEY`, `XAI_MODEL` |
-| Background jobs | `INNGEST_EVENT_KEY`, `INNGEST_SIGNING_KEY` |
-| Cron | `CRON_SECRET` |
-| Email | `RESEND_API_KEY` |
-| Error tracking | `SENTRY_DSN`, `SENTRY_AUTH_TOKEN`, `SENTRY_ORG`, `SENTRY_PROJECT` |
-
-## Deployment
-
-The app is deployed on Vercel. Push to `main` triggers a production deploy. The `preview` branch is used for staging.
-
-Production URL: `https://justjournalit.vercel.app`  
-Support: `justjournalit1@gmail.com`
+- [Repository instructions](AGENTS.md)
+- [Documentation index](docs/index.md)
+- [Architecture](docs/architecture.md)
+- [Database and migrations](docs/database.md)
+- [Production operations](docs/operations.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
+- [Changelog](CHANGELOG.md)
 
 ## License
 
 Copyright © 2025–present Just Journal It. All rights reserved.
 
-This software is proprietary. You may not copy, distribute, modify, or use this code without explicit written permission from the authors. No open-source license is granted.
+This repository contains proprietary software. Use, copying, modification, and distribution require written authorization from the owner.

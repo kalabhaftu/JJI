@@ -8,19 +8,12 @@
 import {
   getFromCache as redisGet,
   setInCache as redisSet,
-  deleteFromCache as redisDelete,
-  deleteCachePattern as redisDeletePattern,
   isRedisAvailable,
   CachePrefix,
   CacheTTL,
 } from './redis-cache'
 
-import {
-  memGet,
-  memSet,
-  memDelete,
-  memDeletePattern,
-} from './memory-cache'
+import { memGet, memSet } from './memory-cache'
 
 export { CachePrefix, CacheTTL }
 
@@ -52,29 +45,6 @@ export async function setCached<T>(
 }
 
 /**
- * Delete key from cache (Redis or memory)
- */
-async function deleteCached(key: string): Promise<boolean> {
-  if (isRedisAvailable()) {
-    return await redisDelete(key)
-  }
-  
-  memDelete(key)
-  return true
-}
-
-/**
- * Delete keys matching pattern (Redis or memory)
- */
-async function deleteCachedPattern(pattern: string): Promise<number> {
-  if (isRedisAvailable()) {
-    return await redisDeletePattern(pattern)
-  }
-  
-  return memDeletePattern(pattern)
-}
-
-/**
  * Get or set pattern (cache-aside) - unified
  */
 export async function getOrSetCached<T>(
@@ -92,25 +62,4 @@ export async function getOrSetCached<T>(
   await setCached(key, data, ttl)
 
   return data
-}
-
-/**
- * Invalidate all user-specific caches
- */
-export async function invalidateUserCache(userId: string): Promise<void> {
-  await Promise.all([
-    deleteCachedPattern(`${CachePrefix.DASHBOARD_STATS}${userId}*`),
-    deleteCachedPattern(`${CachePrefix.USER_DATA}${userId}*`),
-    deleteCachedPattern(`${CachePrefix.ACCOUNT_LIST}${userId}*`),
-    deleteCachedPattern(`${CachePrefix.TRADE_LIST}${userId}*`),
-    deleteCachedPattern(`${CachePrefix.CALENDAR_DATA}${userId}*`),
-    deleteCachedPattern(`${CachePrefix.AI_CONTEXT}${userId}:*`),
-  ])
-}
-
-/**
- * Get current cache backend
- */
-function getCacheBackend(): 'redis' | 'memory' {
-  return isRedisAvailable() ? 'redis' : 'memory'
 }

@@ -81,13 +81,13 @@ export const emailOtpLimiter: LimiterConfig = { points: 3, duration: 3600, failC
  * Uses user ID if available, falls back to IP.
  */
 function getRateLimitIdentifier(req: NextRequest): string {
-  return `ip:${getClientIp(req.headers)}`
+  return `rate-limit:ip:${getClientIp(req.headers)}`
 }
 
 export function getEmailRateLimitKey(email: string) {
   const normalized = email.trim().toLowerCase()
   const hash = createHash('sha256').update(normalized).digest('hex')
-  return `email-otp:${hash}`
+  return `rate-limit:email-otp:${hash}`
 }
 
 export async function consumeRateLimitKey(

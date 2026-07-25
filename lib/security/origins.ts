@@ -33,6 +33,10 @@ function getCanonicalOrigin() {
 }
 
 export function getAllowedOrigins() {
+  if (process.env.VERCEL_ENV === 'production') {
+    return [DEFAULT_PRODUCTION_ORIGIN]
+  }
+
   const origins = new Set<string>([
     DEFAULT_PRODUCTION_ORIGIN,
     getCanonicalOrigin(),

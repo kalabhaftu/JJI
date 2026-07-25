@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
+import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TradeCard } from './trade-card'
 import {
@@ -50,8 +51,6 @@ import { toast } from 'sonner'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useData } from '@/context/data-provider'
 import { useModalStateStore } from '@/store/modal-state-store'
-import { TradeEditPanel } from '@/app/dashboard/components/tables/trade-edit-panel'
-import { TradeDetailPanel } from '@/app/dashboard/components/tables/trade-detail-panel'
 import type { TradeType as Trade } from '@/lib/db/schema';
 
 import { groupTradesByExecution, formatCurrency } from '@/lib/utils'
@@ -62,13 +61,27 @@ import { cn, ensureExtendedTrade } from '@/lib/utils'
 import { useJournal } from '@/hooks/use-journal'
 import { formatBreakevenBand, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { PageHeader } from '@/components/ui/page-header'
-import { JournalCalendar } from './journal-calendar'
-import { DailyNotePanel } from './daily-note-panel'
 import { format } from 'date-fns'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { classifyOutcome } from '@/lib/metrics/outcome'
 
 const ITEMS_PER_PAGE = 21
+const TradeEditPanel = dynamic(
+  () => import('@/app/dashboard/components/tables/trade-edit-panel').then((mod) => mod.TradeEditPanel),
+  { ssr: false },
+)
+const TradeDetailPanel = dynamic(
+  () => import('@/app/dashboard/components/tables/trade-detail-panel').then((mod) => mod.TradeDetailPanel),
+  { ssr: false },
+)
+const JournalCalendar = dynamic(
+  () => import('./journal-calendar').then((mod) => mod.JournalCalendar),
+  { ssr: false },
+)
+const DailyNotePanel = dynamic(
+  () => import('./daily-note-panel').then((mod) => mod.DailyNotePanel),
+  { ssr: false },
+)
 
 function JournalStats({ statistics }: { statistics: any }) {
   if (!statistics) return null

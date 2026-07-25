@@ -1,4 +1,36 @@
 const SENSITIVE_KEY = /(?:authorization|cookie|token|secret|password|passcode|prompt|journal|note|content|payload|body|csv|screenshot|image|attachment|email|ip(?:address)?|useragent|broker.*raw)/i
+const EXPECTED_CONTROL_FLOW = [
+  'NEXT_REDIRECT',
+  'NEXT_HTTP_ERROR_FALLBACK;',
+  'Invalid Refresh Token: Refresh Token Not Found',
+  "Lock broken by another request with the 'steal' option.",
+] as const
+
+type SentryLikeEvent = {
+  message?: string
+  exception?: { values?: Array<{ value?: string }> }
+}
+
+export function shouldDropSentryEvent(
+  event: SentryLikeEvent,
+  originalException?: unknown,
+) {
+  const originalMessage =
+    originalException instanceof Error
+      ? originalException.message
+      : typeof originalException === 'string'
+        ? originalException
+        : ''
+  const messages = [
+    event.message ?? '',
+    originalMessage,
+    ...(event.exception?.values?.map((value) => value.value ?? '') ?? []),
+  ]
+
+  return messages.some((message) =>
+    EXPECTED_CONTROL_FLOW.some((expected) => message.includes(expected)),
+  )
+}
 
 function scrubValue(value: unknown, depth = 0): unknown {
   if (depth > 4) return '[Truncated]'

@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
-import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
+import { scrubSentryEvent, shouldDropSentryEvent } from '@/lib/observability/sentry-scrub'
 
 // Only initialize Sentry if DSN is provided (optional for personal use)
 const SENTRY_DSN = process.env.NEXT_PUBLIC_SENTRY_DSN
@@ -17,6 +17,9 @@ if (SENTRY_DSN) {
     
     // Don't report in development
     enabled: process.env.NODE_ENV === 'production',
-    beforeSend: scrubSentryEvent,
+    beforeSend(event, hint) {
+      if (shouldDropSentryEvent(event, hint.originalException)) return null
+      return scrubSentryEvent(event)
+    },
   })
 }

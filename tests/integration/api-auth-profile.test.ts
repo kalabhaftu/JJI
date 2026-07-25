@@ -165,7 +165,7 @@ describe('GET/PATCH /api/auth/profile', () => {
     const patchBody = await patchResponse.json()
     expect(patchResponse.status).toBe(200)
     expect(patchBody.data.autoAdjustAccountDate).toBe(true)
-    expect(mockSet).toHaveBeenCalled()
+    expect(mockOnConflictDoUpdate).toHaveBeenCalled()
 
     const getResponse = await GET()
     const getBody = await getResponse.json()
@@ -244,6 +244,8 @@ describe('GET/PATCH /api/auth/profile', () => {
     expect(patchBody.data.aiSettings).toEqual({
       autoGenerateInsights: true,
       includeAiInsightsInNotifications: true,
+      dataProcessingConsentAt: null,
+      dataProcessingConsentVersion: null,
     })
 
     const getResponse = await GET()
@@ -253,6 +255,8 @@ describe('GET/PATCH /api/auth/profile', () => {
     expect(getBody.data.aiSettings).toEqual({
       autoGenerateInsights: true,
       includeAiInsightsInNotifications: true,
+      dataProcessingConsentAt: null,
+      dataProcessingConsentVersion: null,
     })
   })
 

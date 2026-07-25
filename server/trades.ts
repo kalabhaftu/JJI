@@ -7,6 +7,7 @@ import { eq, inArray, and } from 'drizzle-orm';
 import { getUserIdSafe } from '@/server/auth';
 import { ImageCompressor } from '@/lib/image-compression';
 import { deletePublicStorageUrls } from '@/server/storage-admin';
+import { parseTradeUpdate } from '@/lib/trades/update-schema';
 
 async function deleteTrade(tradeId: string) {
   try {
@@ -99,7 +100,8 @@ export async function updateTradeAction(tradeId: string, data: any) {
       throw new Error('User not authenticated')
     }
 
-    const updated = (await db.update(schema.Trade).set(data).where(and(eq(schema.Trade.id, tradeId), eq(schema.Trade.userId, userId))).returning())[0]
+    const update = parseTradeUpdate(data)
+    const updated = (await db.update(schema.Trade).set(update).where(and(eq(schema.Trade.id, tradeId), eq(schema.Trade.userId, userId))).returning())[0]
 
     return {
       success: true,

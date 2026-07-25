@@ -6,6 +6,9 @@ import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 import { eq } from 'drizzle-orm'
 import { invalidateTradesCache } from '@/lib/cache/invalidate-trade'
+import { parseTradeUpdate } from '@/lib/trades/update-schema'
+import { getClientIp } from '@/lib/security/client-ip'
+import { z } from 'zod'
 
 export async function GET(
   request: NextRequest,
@@ -82,7 +85,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const { id } = await params
-    const body = await request.json()
+    const body = parseTradeUpdate(await request.json())
 
     const existing = await db.query.Trade.findFirst({ where: (table, { eq }) => eq(table.id, id) })
     if (!existing) return NextResponse.json({ error: 'Trade not found' }, { status: 404 })
@@ -95,7 +98,7 @@ export async function PATCH(
       entityId: id,
       beforeData: existing,
       afterData: updated,
-      ipAddress: request.headers.get('x-forwarded-for') || null,
+      ipAddress: getClientIp(request.headers),
     })
 
 
@@ -103,6 +106,9 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, trade: updated })
   } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid trade update', details: error.flatten() }, { status: 400 })
+    }
     logger.error({ error: error?.message, layer: 'api' }, 'PATCH /api/v1/trades/[id] failed')
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
@@ -133,7 +139,7 @@ export async function DELETE(
       entityId: id,
       beforeData: existing,
       afterData: null,
-      ipAddress: request.headers.get('x-forwarded-for') || null,
+      ipAddress: getClientIp(request.headers),
     })
 
     

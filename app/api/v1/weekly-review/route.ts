@@ -9,6 +9,23 @@ import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { eq, and, ne, desc } from 'drizzle-orm'
+import { z } from 'zod'
+import { checkAIAccess } from '@/lib/services/ai-guard-service'
+import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
+
+export const maxDuration = 30
+
+const weeklyReviewRequestSchema = z.object({
+  clientDate: z.string().datetime({ offset: true }).optional(),
+}).strict()
+
+const weeklyReviewResultSchema = z.object({
+  grade: z.enum(['A+', 'A', 'B+', 'B', 'C+', 'C', 'D', 'F']),
+  weekSummary: z.string().trim().min(1).max(2_000),
+  highlights: z.array(z.string().trim().min(1).max(500)).max(3),
+  lowlights: z.array(z.string().trim().min(1).max(500)).max(3),
+  focusNextWeek: z.string().trim().min(1).max(1_000),
+}).strict()
 
 export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
@@ -17,7 +34,7 @@ export async function GET(request: NextRequest) {
   try {
     const { internalUserId } = await getResolvedUserIdentity()
     const params = request.nextUrl.searchParams
-    const limit = parseInt(params.get('limit') || '10')
+    const limit = z.coerce.number().int().min(1).max(50).catch(10).parse(params.get('limit') || '10')
     const latest = params.get('latest') === 'true'
     const reviewId = params.get('reviewId')
 
@@ -69,31 +86,34 @@ export async function POST(request: NextRequest) {
 
   const start = Date.now()
 
+  let reviewWeekStart: Date | null = null
+  let resolvedUserId: string | null = null
+
   try {
     const { internalUserId } = await getResolvedUserIdentity()
+    resolvedUserId = internalUserId
 
-    const { allowed } = await consumeRateLimitKey(`ai-review:${internalUserId}`, aiReviewLimiter)
-    if (!allowed) {
+    const aiGuard = await checkAIAccess(internalUserId)
+    if (!aiGuard.hasAccess) {
+      return NextResponse.json({ error: aiGuard.reason, code: 'PAYWALL' }, { status: 403 })
+    }
+    if (!(await hasCurrentAiDataConsent(internalUserId))) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Too many requests',
-          details: 'You can only generate one AI review per 24 hours.',
-          code: 'RATE_LIMIT_EXCEEDED',
-          retryable: true,
-        },
-        { status: 429 }
+        { error: 'AI data processing consent is required', code: 'AI_DATA_CONSENT_REQUIRED' },
+        { status: 412 },
       )
     }
 
     // Calculate last week's window (Mon–Sun)
-    let clientDate: string | null = null
+    let requestBody: z.infer<typeof weeklyReviewRequestSchema>
     try {
-      const body = await request.json()
-      clientDate = body.clientDate
-    } catch {}
+      const rawBody = await request.text()
+      requestBody = weeklyReviewRequestSchema.parse(rawBody ? JSON.parse(rawBody) : {})
+    } catch {
+      return NextResponse.json({ error: 'Invalid review request' }, { status: 400 })
+    }
 
-    const now = clientDate ? new Date(clientDate) : new Date()
+    const now = requestBody.clientDate ? new Date(requestBody.clientDate) : new Date()
     const dayOfWeek = now.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
     let lastWeekStart: Date
     let lastWeekEnd: Date
@@ -111,6 +131,7 @@ export async function POST(request: NextRequest) {
     // Normalize to start and end of day
     lastWeekStart.setHours(0, 0, 0, 0)
     lastWeekEnd.setHours(23, 59, 59, 999)
+    reviewWeekStart = lastWeekStart
 
     // Idempotent: return existing review if already generated
     const existing = await db.query.WeeklyAIReview.findFirst({
@@ -137,6 +158,28 @@ export async function POST(request: NextRequest) {
     // No trades last week → don't create a review
     if (trades.length === 0) {
       return NextResponse.json({ success: true, data: null, reason: 'no_trades' })
+    }
+
+    const apiKey = process.env.XAI_API_KEY
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'AI provider is unavailable', code: 'AI_PROVIDER_UNAVAILABLE' },
+        { status: 503 },
+      )
+    }
+
+    const { allowed } = await consumeRateLimitKey(`ai-review:${internalUserId}`, aiReviewLimiter)
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Too many requests',
+          details: 'You can only generate one AI review per 24 hours.',
+          code: 'RATE_LIMIT_EXCEEDED',
+          retryable: true,
+        },
+        { status: 429 },
+      )
     }
 
     const breakEvenThreshold = await getRuntimeBreakEvenThreshold(internalUserId)
@@ -219,14 +262,12 @@ export async function POST(request: NextRequest) {
       .join('\n')
 
     // Call AI
-    const apiKey = process.env.XAI_API_KEY
     const baseUrl = process.env.XAI_BASE_URL || 'https://api.x.ai/v1'
     const model = process.env.XAI_MODEL || 'grok-4-1-fast-reasoning'
 
-    let aiResult: any = null
+    let aiResult: z.infer<typeof weeklyReviewResultSchema>
 
-    if (apiKey) {
-      try {
+    try {
         const prompt = `You are a trading performance analyst writing a concise Weekly Performance Report Card.
 
 This is NOT a deep behavioral audit. This is a short, scannable weekly summary that tells the trader:
@@ -267,9 +308,6 @@ ${instrumentSummary || 'No instrument data'}
 By Day:
 ${daySummary || 'No daily data'}
 
-Trade Notes (sample):
-${trades.filter(t => t.comment).slice(0, 8).map(t => `${format(new Date(t.entryDate), 'EEE')}: ${t.instrument} ${t.side} $${getNetPnl(t).toFixed(2)} "${t.comment}"`).join('\n') || 'No notes'}
-
 RESPOND WITH EXACTLY THIS JSON:
 {
   "grade": "Letter grade (A+ through F)",
@@ -303,56 +341,52 @@ RULES:
             temperature: 0.6,
             max_tokens: 1500,
           }),
+          signal: AbortSignal.timeout(25_000),
         })
 
-        if (response.ok) {
-          const data = await response.json()
-          const content = data.choices?.[0]?.message?.content
-          if (content) {
-            const jsonMatch = content.match(/\{[\s\S]*\}/)
-            if (jsonMatch) {
-              aiResult = cleanContent(JSON.parse(jsonMatch[0]))
-            }
-          }
+        if (!response.ok) {
+          throw new Error(`AI provider returned ${response.status}`)
         }
-      } catch {
-        // AI failed, use fallback
-      }
+        const data = await response.json()
+        const content = data.choices?.[0]?.message?.content
+        const jsonMatch = typeof content === 'string' ? content.match(/\{[\s\S]*\}/) : null
+        if (!jsonMatch) {
+          throw new Error('AI provider returned no structured review')
+        }
+        aiResult = weeklyReviewResultSchema.parse(cleanContent(JSON.parse(jsonMatch[0])))
+    } catch (error) {
+      logger.error({ error, layer: 'ai' }, 'Weekly review generation failed')
+      return NextResponse.json(
+        { error: 'AI review generation failed', code: 'AI_PROVIDER_ERROR' },
+        { status: 502 },
+      )
     }
 
-    // Fallback if AI is unavailable
-    if (!aiResult) {
-      const grade = totalPnl > 500 ? 'A' : totalPnl > 100 ? 'B+' : totalPnl > 0 ? 'B' : totalPnl > -100 ? 'C' : totalPnl > -500 ? 'D' : 'F'
-      aiResult = {
-        grade,
-        weekSummary: `You completed ${trades.length} trades this week with a total P&L of $${totalPnl.toFixed(2)}. Your win rate was ${winRate.toFixed(1)}% with a profit factor of ${profitFactor === Infinity ? 'very high' : profitFactor.toFixed(2)}. ${totalPnl > 0 ? 'A profitable week overall.' : 'Work needed to get back to profitability.'}`,
-        highlights: wins.length > 0 ? [`Won ${wins.length} out of ${trades.length} trades`, bestDay ? `Best day was ${bestDay[0]} with $${bestDay[1].pnl.toFixed(2)}` : 'Consistent daily trading'] : [],
-        lowlights: losses.length > 0 ? [`${losses.length} losing trades`, worstDay ? `Worst day was ${worstDay[0]} with $${worstDay[1].pnl.toFixed(2)}` : 'Room for improvement'] : [],
-        focusNextWeek: totalPnl > 0 ? 'Maintain your current discipline and try to reduce your largest loss size.' : 'Focus on taking fewer, higher quality setups. Quality over quantity.',
-      }
-    }
+    const review = await db.transaction(async (tx) => {
+      const insertedReview = (await tx.insert(schema.WeeklyAIReview).values({
+        userId: internalUserId,
+        weekStart: lastWeekStart,
+        weekEnd: lastWeekEnd,
+        summary: aiResult.weekSummary,
+        highlights: aiResult.highlights,
+        lowlights: aiResult.lowlights,
+        stats: keyStats,
+        grade: aiResult.grade,
+        focusNextWeek: aiResult.focusNextWeek,
+      }).returning())[0]
 
-    // Store in DB
-    const review = (await db.insert(schema.WeeklyAIReview).values({
-      userId: internalUserId,
-      weekStart: lastWeekStart,
-      weekEnd: lastWeekEnd,
-      summary: aiResult.weekSummary || '',
-      highlights: aiResult.highlights || [],
-      lowlights: aiResult.lowlights || [],
-      stats: keyStats,
-      grade: aiResult.grade || '',
-      focusNextWeek: aiResult.focusNextWeek || null,
-    }).returning())[0]
+      if (!insertedReview) throw new Error('Failed to persist weekly review')
 
-    // Create notification
-    await db.insert(schema.Notification).values({
-      userId: internalUserId,
-      type: 'WEEKLY_PERFORMANCE',
-      title: `Weekly Report: ${format(lastWeekStart, 'MMM d')} – ${format(lastWeekEnd, 'MMM d')} | Grade: ${aiResult.grade || '?'}`,
-      message: (aiResult.weekSummary || '').slice(0, 500),
-      data: { reviewId: review!.id },
-      actionRequired: false,
+      await tx.insert(schema.Notification).values({
+        userId: internalUserId,
+        type: 'WEEKLY_PERFORMANCE',
+        title: `Weekly Report: ${format(lastWeekStart, 'MMM d')} – ${format(lastWeekEnd, 'MMM d')} | Grade: ${aiResult.grade}`,
+        message: aiResult.weekSummary.slice(0, 500),
+        data: { reviewId: insertedReview.id },
+        actionRequired: false,
+      })
+
+      return insertedReview
     })
 
     logger.info({ latencyMs: Date.now() - start, grade: aiResult.grade, layer: 'api' }, 'POST /api/v1/weekly-review')
@@ -363,10 +397,12 @@ RULES:
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     // Unique constraint = already exists (race condition)
-    if (error.code === '23505') {
+    if (error.code === '23505' && reviewWeekStart && resolvedUserId) {
       const existing = await db.query.WeeklyAIReview.findFirst({
-        where: (table, { eq }) => eq(table.userId, (error as any)._userId),
-        orderBy: (table, { desc }) => [desc(table.createdAt)],
+        where: (table, { eq, and }) => and(
+          eq(table.userId, resolvedUserId!),
+          eq(table.weekStart, reviewWeekStart!),
+        ),
       })
       return NextResponse.json({ success: true, data: existing, cached: true })
     }

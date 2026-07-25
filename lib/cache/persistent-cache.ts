@@ -184,8 +184,7 @@ function clearNextJSCache(): void {
   
   try {
     if ('__NEXT_DATA__' in window) {
-      // @ts-ignore
-      delete window.__NEXT_DATA__
+      Reflect.deleteProperty(window, '__NEXT_DATA__')
     }
   } catch {
   }
@@ -330,4 +329,3 @@ export function getCacheStats(): {
     sessionStorageKeys
   }
 }
-

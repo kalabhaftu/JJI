@@ -4,6 +4,7 @@ import * as Sentry from '@sentry/nextjs'
 import logger from '@/lib/logger';
 
 import React from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, RefreshCw, Home } from "lucide-react"
 
@@ -35,21 +36,16 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
                         </p>
                     </div>
 
-                    <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5 text-left text-sm font-mono overflow-auto max-h-48 custom-scrollbar">
-                        <p className="text-destructive font-semibold">Error Digest: {error.digest || 'Unknown'}</p>
-                        <p className="mt-1 text-muted-foreground break-all">{error.message}</p>
-                    </div>
+                    {error.digest && (
+                        <p className="rounded-xl bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">Reference: {error.digest}</p>
+                    )}
 
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <Button onClick={() => reset()} size="lg" className="w-full sm:w-auto gap-2">
                             <RefreshCw className="h-4 w-4" />
                             Try Again
                         </Button>
-                        {/* eslint-disable-next-line @next/next/no-location-assign-relative-destination */}
-                        <Button onClick={() => window.location.href = '/'} variant="outline" size="lg" className="w-full sm:w-auto gap-2">
-                            <Home className="h-4 w-4" />
-                            Return Home
-                        </Button>
+                        <Button asChild variant="outline" size="lg" className="w-full sm:w-auto gap-2"><Link href="/"><Home className="h-4 w-4" />Return Home</Link></Button>
                     </div>
                 </div>
             </body>

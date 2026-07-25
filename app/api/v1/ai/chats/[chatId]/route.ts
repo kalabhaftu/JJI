@@ -4,6 +4,13 @@ import * as schema from '@/lib/db/schema'
 import { eq, and, asc } from 'drizzle-orm'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { z } from 'zod'
+
+const updateChatSchema = z.object({
+  title: z.string().trim().min(1).max(160).optional(),
+  isPinned: z.boolean().optional(),
+  isArchived: z.boolean().optional(),
+}).strict().refine((value) => Object.keys(value).length > 0)
 
 export async function GET(
   request: NextRequest,
@@ -66,8 +73,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
     }
 
-    const body = await request.json()
-    const { title, isPinned, isArchived } = body
+    const { title, isPinned, isArchived } = updateChatSchema.parse(await request.json())
 
     const updatedChat = (await db
       .update(schema.AIChat)
@@ -76,7 +82,7 @@ export async function PATCH(
         ...(isPinned !== undefined && { isPinned }),
         ...(isArchived !== undefined && { isArchived }),
       })
-      .where(eq(schema.AIChat.id, chatId))
+      .where(and(eq(schema.AIChat.id, chatId), eq(schema.AIChat.userId, userId)))
       .returning({
         id: schema.AIChat.id,
         title: schema.AIChat.title,
@@ -88,6 +94,7 @@ export async function PATCH(
 
     return NextResponse.json({ success: true, data: updatedChat })
   } catch (error) {
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid chat update' }, { status: 400 })
     return NextResponse.json({ error: 'Failed to update chat' }, { status: 500 })
   }
 }
@@ -120,7 +127,7 @@ export async function DELETE(
     await db
       .update(schema.AIChat)
       .set({ isDeleted: true })
-      .where(eq(schema.AIChat.id, chatId))
+      .where(and(eq(schema.AIChat.id, chatId), eq(schema.AIChat.userId, userId)))
 
     return NextResponse.json({ success: true, message: 'Chat deleted successfully' })
   } catch (error) {

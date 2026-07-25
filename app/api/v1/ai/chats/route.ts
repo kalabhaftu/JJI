@@ -4,6 +4,17 @@ import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { checkAIAccess } from '@/lib/services/ai-guard-service'
+import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
+import { z } from 'zod'
+
+const createChatSchema = z.object({
+  title: z.string().trim().min(1).max(160).optional(),
+  accounts: z.array(z.string().min(1).max(256)).max(100).default([]),
+  dateRange: z.enum(['all-time', 'last-7-days', 'last-30-days', 'last-90-days', 'custom']).default('last-30-days'),
+  customFrom: z.string().datetime().or(z.string().date()).nullable().optional(),
+  customTo: z.string().datetime().or(z.string().date()).nullable().optional(),
+  dataSources: z.array(z.enum(['trades', 'journals', 'performance', 'statistics', 'reviews'])).max(5).default([]),
+}).strict()
 
 export async function GET(request: NextRequest) {
   const rl = await applyRateLimit(request, apiLimiter)
@@ -63,8 +74,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: aiGuard.reason, code: 'PAYWALL' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const { title, accounts, dateRange, customFrom, customTo, dataSources } = body
+    if (!(await hasCurrentAiDataConsent(userId))) {
+      return NextResponse.json({ error: 'AI data processing consent is required', code: 'AI_DATA_CONSENT_REQUIRED' }, { status: 412 })
+    }
+
+    const { title, accounts, dateRange, customFrom, customTo, dataSources } = createChatSchema.parse(await request.json())
 
     const chat = (await db.insert(schema.AIChat).values({
       userId,
@@ -78,6 +92,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: chat })
   } catch (error) {
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid chat configuration' }, { status: 400 })
     return NextResponse.json({ error: 'Failed to create chat' }, { status: 500 })
   }
 }

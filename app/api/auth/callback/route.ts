@@ -2,7 +2,7 @@
 import { createClient, ensureUserInDatabase, getWebsiteURL } from '@/server/auth'
 import { NextResponse } from 'next/server'
 import { logActivity } from '@/lib/activity-logger'
-import { captureUserGeo, extractIP } from '@/server/geolocation'
+import { captureUserGeo } from '@/server/geolocation'
 import { resolveInternalUserId } from '@/server/user-identity'
 import { getSafeRedirectPath } from '@/lib/security/redirects'
 import logger from '@/lib/logger'
@@ -54,9 +54,8 @@ export async function GET(request: Request) {
 
         logActivity({ userId: data.user.id, action: 'USER_LOGIN', entity: 'Auth' })
 
-        const clientIP = extractIP(request.headers)
         resolveInternalUserId(data.user.id).then(internalId => {
-          if (internalId) captureUserGeo(internalId, clientIP)
+          if (internalId) captureUserGeo(internalId, request.headers)
         }).catch((e) => {
           logger.error({ error: e, userId: data.user.id }, 'Error updating geo log during auth callback')
         })

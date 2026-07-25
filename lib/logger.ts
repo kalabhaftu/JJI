@@ -1,5 +1,6 @@
 import pino from 'pino'
 import * as Sentry from '@sentry/nextjs'
+import { scrubSentryContext } from '@/lib/observability/sentry-scrub'
 
 const pinoLogger = pino({
   level: process.env.LOG_LEVEL ?? 'info',
@@ -41,14 +42,10 @@ pinoLogger.error = (...args: any[]) => {
             errorObj = arg.err
           } else if (arg.error instanceof Error) {
             errorObj = arg.error
-          } else if (Array.isArray(arg.originalArgs)) {
-            // console-interceptor support
-            const foundError = arg.originalArgs.find((a: any) => a instanceof Error)
-            if (foundError) errorObj = foundError
           } else if (arg.message && typeof arg.message === 'string') {
             messageStr += (messageStr ? ' ' : '') + arg.message
           }
-          extraContext = { ...extraContext, ...arg }
+          extraContext = scrubSentryContext({ ...extraContext, ...arg })
         }
       }
 

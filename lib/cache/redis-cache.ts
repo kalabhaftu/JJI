@@ -2,27 +2,15 @@
  * Redis/Upstash Caching Layer
  * 
  * Provides high-performance caching for frequently accessed data
- * Compatible with Vercel KV (Upstash Redis)
+ * Uses the shared Upstash Redis client.
  * 
  * Usage:
- * 1. Set up Vercel KV or Upstash Redis
- * 2. Add environment variables: KV_REST_API_URL, KV_REST_API_TOKEN
+ * 1. Set up Upstash Redis
+ * 2. Add environment variables: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
  * 3. Use cache functions in API routes
  */
 
-import { createClient } from '@vercel/kv'
-
-let customKv: ReturnType<typeof createClient> | null = null
-
-function getKvClient() {
-  if (!customKv) {
-    customKv = createClient({
-      url: process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL || '',
-      token: process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN || '',
-    })
-  }
-  return customKv
-}
+import { isRedisConfigured, redis } from './client'
 
 // Cache key prefixes for organization
 export const CachePrefix = {
@@ -53,8 +41,7 @@ export async function getFromCache<T>(key: string): Promise<T | null> {
       return null
     }
 
-    const client = getKvClient()
-    const data = await client.get<T>(key)
+    const data = await redis.get<T>(key)
     return data
   } catch (error) {
     return null
@@ -74,8 +61,7 @@ export async function setInCache<T>(
       return false
     }
 
-    const client = getKvClient()
-    await client.set(key, value, { ex: ttl })
+    await redis.set(key, value, { ex: ttl })
     return true
   } catch (error) {
     return false
@@ -91,8 +77,7 @@ export async function deleteFromCache(key: string): Promise<boolean> {
       return false
     }
 
-    const client = getKvClient()
-    await client.del(key)
+    await redis.del(key)
     return true
   } catch (error) {
     return false
@@ -108,12 +93,17 @@ export async function deleteCachePattern(pattern: string): Promise<number> {
       return 0
     }
 
-    const client = getKvClient()
-    const keys = await client.keys(pattern)
-    if (keys.length === 0) return 0
-
-    await client.del(...keys)
-    return keys.length
+    let cursor = '0'
+    let deleted = 0
+    do {
+      const [nextCursor, keys] = await redis.scan(cursor, { match: pattern, count: 100 })
+      cursor = String(nextCursor)
+      if (keys.length > 0) {
+        await redis.del(...keys)
+        deleted += keys.length
+      }
+    } while (cursor !== '0')
+    return deleted
   } catch (error) {
     return 0
   }
@@ -123,10 +113,7 @@ export async function deleteCachePattern(pattern: string): Promise<number> {
  * Check if Redis is available
  */
 export function isRedisAvailable(): boolean {
-  return !!(
-    (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN) ||
-    (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN)
-  )
+  return isRedisConfigured()
 }
 
 /**

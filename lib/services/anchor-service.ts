@@ -61,7 +61,19 @@ export async function createDailyAnchor(phaseAccountId: string, timezone: string
     phaseAccountId,
     date: anchorDate,
     anchorEquity
+  }).onConflictDoNothing({
+    target: [schema.DailyAnchor.phaseAccountId, schema.DailyAnchor.date],
   }).returning()
+
+  if (!anchor) {
+    const concurrentAnchor = await db.query.DailyAnchor.findFirst({
+      where: and(
+        eq(schema.DailyAnchor.phaseAccountId, phaseAccountId),
+        eq(schema.DailyAnchor.date, anchorDate)
+      )
+    })
+    return { created: false, reason: 'already_exists', anchor: concurrentAnchor }
+  }
 
   return { created: true, anchor }
 }

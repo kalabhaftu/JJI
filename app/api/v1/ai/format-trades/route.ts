@@ -3,8 +3,11 @@ import { streamObject } from "ai";
 import { NextRequest } from "next/server";
 import { tradeSchema } from "./schema";
 import { z } from "zod";
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyRateLimit, aiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
+import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
+import { NextResponse } from 'next/server'
 
 export const maxDuration = 30;
 
@@ -15,16 +18,22 @@ const xai = createOpenAI({
 });
 
 const requestSchema = z.object({
-  headers: z.array(z.string()),
-  rows: z.array(z.array(z.string())).max(100, "Too many rows to process")
-});
+  headers: z.array(z.string().min(1).max(128)).min(1).max(100),
+  rows: z.array(z.array(z.string().max(512)).max(100)).max(100, "Too many rows to process")
+}).strict();
 
 export async function POST(req: NextRequest) {
   // Apply rate limiting
-  const rateLimitResult = await applyRateLimit(req, apiLimiter);
+  const rateLimitResult = await applyRateLimit(req, aiLimiter);
   if (rateLimitResult) return rateLimitResult;
 
   try {
+    const identity = await getResolvedUserIdentitySafe()
+    if (!identity) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!(await hasCurrentAiDataConsent(identity.internalUserId))) {
+      return NextResponse.json({ error: 'AI data processing consent is required', code: 'AI_DATA_CONSENT_REQUIRED' }, { status: 412 })
+    }
+
     const body = await req.json();
     const { headers, rows } = requestSchema.parse(body);
 

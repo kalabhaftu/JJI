@@ -2,28 +2,8 @@ import logger from '@/lib/logger';
 import { createHash } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
-import { Redis } from '@upstash/redis'
-
-// ─── Redis client initialization ───
-let customRedis: Redis | null = null
-
-function getRedisClient() {
-  if (!customRedis) {
-    customRedis = new Redis({
-      url: process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || '',
-      token: process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || '',
-    })
-  }
-  return customRedis
-}
-
-// ─── KV availability check ───
-function isKvAvailable(): boolean {
-  return !!(
-    (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) ||
-    (process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN)
-  )
-}
+import { isRedisConfigured, redis } from '@/lib/cache/client'
+import { getClientIp } from '@/lib/security/client-ip'
 
 // ─── Limiter config type ───
 export interface LimiterConfig {
@@ -70,7 +50,7 @@ function getUpstashLimiter(config: LimiterConfig): Ratelimit {
   
   if (!limiter) {
     limiter = new Ratelimit({
-      redis: getRedisClient(),
+      redis,
       limiter: Ratelimit.slidingWindow(config.points, `${config.duration} s`),
       ephemeralCache: ephemeralCache,
       analytics: false,
@@ -83,11 +63,12 @@ function getUpstashLimiter(config: LimiterConfig): Ratelimit {
 // ─── Exported limiter configs (drop-in compatible with existing imports) ───
 export const apiLimiter: LimiterConfig = { points: 100, duration: 60 }
 const authLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
-const aiLimiter: LimiterConfig = { points: 20, duration: 60 }
+export const aiLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 export const aiReviewLimiter: LimiterConfig = { points: 1, duration: 86400 }
 export const importLimiter: LimiterConfig = { points: 10, duration: 60 }
 const uploadLimiter: LimiterConfig = { points: 30, duration: 60 }
 export const webhookLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
+export const thorLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 const paymentLimiter: LimiterConfig = { points: 30, duration: 60, failClosed: true }
 export const feedbackLimiter: LimiterConfig = { points: 5, duration: 60 }
 const adminLimiter: LimiterConfig = { points: 200, duration: 60, failClosed: true }
@@ -100,10 +81,7 @@ export const emailOtpLimiter: LimiterConfig = { points: 3, duration: 3600, failC
  * Uses user ID if available, falls back to IP.
  */
 function getRateLimitIdentifier(req: NextRequest): string {
-  const forwarded = req.headers.get('x-forwarded-for')
-  const ipPart = forwarded?.split(',')[0];
-  const ip = ipPart ? ipPart.trim() : req.headers.get('x-real-ip') || 'unknown'
-  return `ip:${ip}`
+  return `ip:${getClientIp(req.headers)}`
 }
 
 export function getEmailRateLimitKey(email: string) {
@@ -116,7 +94,7 @@ export async function consumeRateLimitKey(
   key: string,
   limiter: LimiterConfig
 ): Promise<{ allowed: boolean; remaining: number }> {
-  if (!isKvAvailable()) {
+  if (!isRedisConfigured()) {
     if (shouldFailClosed(limiter)) {
       return { allowed: false, remaining: 0 }
     }
@@ -148,7 +126,7 @@ export async function applyRateLimit(
 ): Promise<NextResponse | null> {
   const identifier = getRateLimitIdentifier(req)
 
-  if (!isKvAvailable()) {
+  if (!isRedisConfigured()) {
     if (shouldFailClosed(limiter)) {
       return rateLimitUnavailableResponse()
     }

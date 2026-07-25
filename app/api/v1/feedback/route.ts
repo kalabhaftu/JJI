@@ -11,6 +11,8 @@ import { z } from 'zod'
 import { buildFeedbackAttachmentPath } from '@/lib/storage/paths'
 import { escapeHtml, sendEmail } from '@/lib/email'
 
+import { getSupabaseAdminClient } from '@/server/supabase-admin'
+
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const MAX_FILES = 3
 
@@ -33,6 +35,8 @@ const IMAGE_SIGNATURES: Record<string, number[][]> = {
   'image/gif': [[0x47, 0x49, 0x46, 0x38, 0x37, 0x61], [0x47, 0x49, 0x46, 0x38, 0x39, 0x61]],
   'image/webp': [[0x52, 0x49, 0x46, 0x46]],
   'application/pdf': [[0x25, 0x50, 0x44, 0x46]],
+  'application/msword': [[0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1]],
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': [[0x50, 0x4B, 0x03, 0x04]],
 }
 
 const feedbackSchema = z.object({
@@ -54,7 +58,10 @@ async function validateFileSignature(file: File) {
   if (!signatures) return true
 
   const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer())
-  return signatures.some((signature) => signature.every((byte, index) => bytes[index] === byte))
+  const hasPrefix = signatures.some((signature) => signature.every((byte, index) => bytes[index] === byte))
+  return file.type === 'image/webp'
+    ? hasPrefix && [0x57, 0x45, 0x42, 0x50].every((byte, index) => bytes[index + 8] === byte)
+    : hasPrefix
 }
 
 function sanitizeOriginalFileName(fileName: string) {
@@ -105,11 +112,7 @@ export async function POST(req: NextRequest) {
       }
 
       try {
-        const { createClient } = await import('@supabase/supabase-js')
-        const supabase = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        )
+        const supabase = getSupabaseAdminClient()
 
         const fileName = `${crypto.randomUUID()}${ext}`
         const ownerId = identity?.authUserId || identity?.internalUserId || 'anonymous'
@@ -125,7 +128,7 @@ export async function POST(req: NextRequest) {
 
         if (uploadError || !uploadData) {
           logger.warn(`Feedback attachment upload failed (type: ${file.type}, size: ${file.size})`)
-          continue
+          return createErrorResponse('Unable to upload feedback attachment', 503, undefined, 'ATTACHMENT_UPLOAD_FAILED')
         }
 
         attachments.push({
@@ -136,6 +139,7 @@ export async function POST(req: NextRequest) {
         })
       } catch {
         logger.warn(`Feedback attachment upload failed (type: ${file.type}, size: ${file.size})`)
+        return createErrorResponse('Unable to upload feedback attachment', 503, undefined, 'ATTACHMENT_UPLOAD_FAILED')
       }
     }
 

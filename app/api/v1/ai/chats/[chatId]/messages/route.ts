@@ -10,6 +10,7 @@ import { eq, and, or, inArray, desc, asc } from 'drizzle-orm'
 import { createHash } from 'crypto'
 import { getOrSetCached } from '@/lib/cache/unified-cache'
 import { CachePrefix, CacheTTL } from '@/lib/cache/redis-cache'
+import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
 
 export const maxDuration = 60
 
@@ -58,6 +59,11 @@ function isPromptOffScope(prompt: string): boolean {
 
 async function resolveDataContext(userId: string, chat: any) {
   const { accounts, dateRange, customFrom, customTo } = chat
+  const selectedSources = new Set<string>(Array.isArray(chat.dataSources) ? chat.dataSources : [])
+  const includeTrades = selectedSources.size === 0 || selectedSources.has('trades') || selectedSources.has('performance') || selectedSources.has('statistics')
+  const includeJournals = selectedSources.size === 0 || selectedSources.has('journals')
+  const includeReviews = selectedSources.size === 0 || selectedSources.has('reviews')
+  const includeAccounts = selectedSources.size === 0 || selectedSources.has('performance') || selectedSources.has('statistics')
   
   let fromDate = subDays(new Date(), 30)
   let toDate = new Date()
@@ -85,30 +91,32 @@ async function resolveDataContext(userId: string, chat: any) {
   let resolvedAccountNumbers: string[] = []
   let resolvedPhaseAccountIds: string[] = []
   let resolvedPhaseIds: string[] = []
+  let resolvedMasterAccountIds: string[] = []
   let rawNumbers: string[] = []
 
   if (accounts && accounts.length > 0) {
     const userAccounts = await db.query.Account.findMany({
-      where: (table, { or, inArray }) => or(
-        inArray(table.id, accounts),
-        inArray(table.number, accounts)
+      where: (table, { and, eq, or, inArray }) => and(
+        eq(table.userId, userId),
+        or(inArray(table.id, accounts), inArray(table.number, accounts))
       ),
       columns: { id: true, number: true }
     })
 
-    const userPhaseAccounts = await db.query.PhaseAccount.findMany({
-      where: (table, { or, inArray }) => or(
-        inArray(table.id, accounts),
-        inArray(table.phaseId, accounts)
-      ),
-      with: { MasterAccount: true },
-      columns: { id: true, phaseId: true }
-    })
+    const userPhaseAccounts = await db
+      .select({ id: schema.PhaseAccount.id, phaseId: schema.PhaseAccount.phaseId, masterAccountId: schema.PhaseAccount.masterAccountId })
+      .from(schema.PhaseAccount)
+      .innerJoin(schema.MasterAccount, eq(schema.PhaseAccount.masterAccountId, schema.MasterAccount.id))
+      .where(and(
+        eq(schema.MasterAccount.userId, userId),
+        or(inArray(schema.PhaseAccount.id, accounts), inArray(schema.PhaseAccount.phaseId, accounts))
+      ))
 
     resolvedAccountIds = userAccounts.map(a => a.id)
     resolvedAccountNumbers = userAccounts.map(a => a.number)
     resolvedPhaseAccountIds = userPhaseAccounts.map(pa => pa.id)
     resolvedPhaseIds = userPhaseAccounts.map(pa => pa.phaseId).filter(Boolean) as string[]
+    resolvedMasterAccountIds = userPhaseAccounts.map(pa => pa.masterAccountId)
 
     rawNumbers = accounts.filter(
       (num: string) => !resolvedAccountIds.includes(num) && !resolvedPhaseAccountIds.includes(num)
@@ -116,21 +124,21 @@ async function resolveDataContext(userId: string, chat: any) {
   }
 
   // 1. Fetch Trades
-  const tradesWhere = (table: any, { and, or, inArray, gte, lte }: any) => {
+  const tradesWhere = (table: any, { and, or, inArray, gte, lte, isNull }: any) => {
     const base = and(
       eq(table.userId, userId),
       gte(table.entryDate, fromStr),
       lte(table.entryDate, toStr)
     )
     if (accounts && accounts.length > 0) {
-      return or(
+      return and(
         base,
         or(
           inArray(table.accountId, resolvedAccountIds),
           inArray(table.phaseAccountId, resolvedPhaseAccountIds),
           and(
-            eq(table.accountId, null),
-            eq(table.phaseAccountId, null),
+            isNull(table.accountId),
+            isNull(table.phaseAccountId),
             inArray(table.accountNumber, [...resolvedAccountNumbers, ...resolvedPhaseIds, ...rawNumbers])
           )
         )
@@ -139,69 +147,70 @@ async function resolveDataContext(userId: string, chat: any) {
     return base
   }
 
-  const tradesPromise = db.query.Trade.findMany({
+  const tradesPromise = includeTrades ? db.query.Trade.findMany({
     where: tradesWhere,
     orderBy: (table, { asc }) => [asc(table.entryDate)],
-    with: { TradingModel: true }
-  })
+    with: { TradingModel: true },
+    limit: 5_000,
+  }) : Promise.resolve([])
 
   // 2. Fetch Daily Journal Notes
-  const journalsWhere = (table: any, { and, or, inArray, gte, lte }: any) => {
+  const journalsWhere = (table: any, { and, inArray, gte, lte }: any) => {
     const base = and(
       eq(table.userId, userId),
       gte(table.date, fromDate),
       lte(table.date, toDate)
     )
     if (accounts && accounts.length > 0) {
-      return or(
+      return and(
         base,
-        or(
-          inArray(table.accountId, resolvedAccountIds),
-          { Account: { number: { in: [...resolvedAccountNumbers, ...rawNumbers] } } }
-        )
+        inArray(table.accountId, [...resolvedAccountIds, ...resolvedPhaseAccountIds, ...accounts])
       )
     }
     return base
   }
 
-  const journalsPromise = db.query.DailyNote.findMany({
+  const journalsPromise = includeJournals ? db.query.DailyNote.findMany({
     where: journalsWhere,
-    orderBy: (table, { asc }) => [asc(table.date)]
-  })
+    orderBy: (table, { asc }) => [asc(table.date)],
+    limit: 366,
+  }) : Promise.resolve([])
 
   // 3. Fetch Weekly Performance Reviews
-  const weeklyReviewsPromise = db.query.WeeklyReview.findMany({
+  const weeklyReviewsPromise = includeReviews ? db.query.WeeklyReview.findMany({
     where: (table, { and, gte, lte }) => and(
       eq(table.userId, userId),
       gte(table.startDate, fromDate),
       lte(table.startDate, toDate)
     ),
-    orderBy: (table, { asc }) => [asc(table.startDate)]
-  })
+    orderBy: (table, { asc }) => [asc(table.startDate)],
+    limit: 104,
+  }) : Promise.resolve([])
 
   // 4. Fetch AI Performance Reports
-  const aiReviewsPromise = db.query.WeeklyAIReview.findMany({
+  const aiReviewsPromise = includeReviews ? db.query.WeeklyAIReview.findMany({
     where: (table, { and, gte, lte }) => and(
       eq(table.userId, userId),
       gte(table.weekStart, fromDate),
       lte(table.weekStart, toDate)
     ),
-    orderBy: (table, { asc }) => [asc(table.weekStart)]
-  })
+    orderBy: (table, { asc }) => [asc(table.weekStart)],
+    limit: 104,
+  }) : Promise.resolve([])
 
   // 5. Fetch Accounts/Metrics
-  const accountsPromise = db.query.MasterAccount.findMany({
+  const accountsPromise = includeAccounts ? db.query.MasterAccount.findMany({
     where: (table, { and, eq, inArray }) => and(
       eq(table.userId, userId),
       eq(table.isArchived, false),
-      ...(accounts && accounts.length > 0 ? [inArray(table.id, accounts)] : [])
+      ...(accounts && accounts.length > 0 ? [inArray(table.id, [...accounts, ...resolvedMasterAccountIds])] : [])
     ),
     with: {
       PhaseAccount: {
         where: (p: any, { eq }: any) => eq(p.status, 'active')
       }
     }
-  })
+  }) : Promise.resolve([])
 
   const [tradesList, journalsList, weeklyReviewsList, aiReviewsList, accountsList] = await Promise.all([
     tradesPromise,
@@ -277,9 +286,9 @@ async function resolveDataContext(userId: string, chat: any) {
     ...(accounts && accounts.length > 0 ? [or(inArray(table.id, accounts), inArray(table.number, accounts))] : [])
   )
 
-  const standardAccountsList = await db.query.Account.findMany({
+  const standardAccountsList = includeAccounts ? await db.query.Account.findMany({
     where: standardAccountsWhere
-  })
+  }) : []
 
   if (standardAccountsList.length > 0) {
     contextText += `### STANDARD TRADING ACCOUNTS:\n`
@@ -362,6 +371,10 @@ export async function POST(
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
       return NextResponse.json({ error: aiGuard.reason, code: 'PAYWALL' }, { status: 403 })
+    }
+
+    if (!(await hasCurrentAiDataConsent(userId))) {
+      return NextResponse.json({ error: 'AI data processing consent is required', code: 'AI_DATA_CONSENT_REQUIRED' }, { status: 412 })
     }
 
     const body = await request.json()

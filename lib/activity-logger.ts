@@ -1,5 +1,6 @@
 import { db } from '@/lib/db/client'
 import { ActivityLog } from '@/lib/db/schema'
+import { getClientIp as resolveClientIp } from '@/lib/security/client-ip'
 
 interface LogActivityParams {
   userId: string
@@ -35,10 +36,6 @@ export function logActivity(params: LogActivityParams): void {
  * Extract client IP from request headers (works behind Vercel/Cloudflare proxies).
  */
 export function getClientIp(request: Request): string | null {
-  const headers = new Headers(request.headers)
-  return (
-    headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    headers.get('x-real-ip') ||
-    null
-  )
+  const address = resolveClientIp(request.headers)
+  return address === 'unknown' ? null : address
 }

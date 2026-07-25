@@ -238,7 +238,10 @@ export async function createTradeImportJob(params: {
 
 export async function getTradeImportJobForUser(jobId: string, internalUserId: string) {
   const job = await db.query.ImportJob.findFirst({
-    where: (table, { eq }) => eq(table.id, jobId) && eq(table.userId, internalUserId),
+    where: (table, { and, eq }) => and(
+      eq(table.id, jobId),
+      eq(table.userId, internalUserId)
+    ),
     columns: {
       id: true,
       status: true,
@@ -262,7 +265,12 @@ export async function getTradeImportJobForUser(jobId: string, internalUserId: st
 }
 
 export async function cancelTradeImportJob(jobId: string, internalUserId: string) {
-  const current = await db.query.ImportJob.findFirst({ where: (table, { eq }) => eq(table.id, jobId) && eq(table.userId, internalUserId) })
+  const current = await db.query.ImportJob.findFirst({
+    where: (table, { and, eq }) => and(
+      eq(table.id, jobId),
+      eq(table.userId, internalUserId)
+    )
+  })
 
   if (!current) {
     return { error: 'Import job not found', status: 404 as const }
@@ -288,7 +296,10 @@ export async function cancelTradeImportJob(jobId: string, internalUserId: string
 
 export async function processTradeImportJobChunk(jobId: string, internalUserId: string) {
   const job = await db.query.ImportJob.findFirst({
-    where: (table, { eq }) => eq(table.id, jobId) && eq(table.userId, internalUserId),
+    where: (table, { and, eq }) => and(
+      eq(table.id, jobId),
+      eq(table.userId, internalUserId)
+    ),
     columns: {
       id: true,
       userId: true,
@@ -367,7 +378,10 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
         state.masterAccountId = phaseAccount.MasterAccount.id
       } else {
         const account = await db.query.Account.findFirst({
-          where: (table, { eq }) => eq(table.id, payload.accountId) && eq(table.userId, internalUserId),
+          where: (table, { and, eq }) => and(
+            eq(table.id, payload.accountId),
+            eq(table.userId, internalUserId)
+          ),
           columns: { id: true, number: true, name: true }
         })
 

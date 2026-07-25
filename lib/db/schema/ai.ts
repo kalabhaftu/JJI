@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json, uniqueIndex } from 'drizzle-orm/pg-core';
 import { User } from './users';
 
 
@@ -15,7 +15,9 @@ export const WeeklyAIReview = pgTable('WeeklyAIReview', {
   grade: text('grade').default(''),
   focusNextWeek: text('focus_next_week'),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
-});
+}, (table) => ({
+  userWeekUnique: uniqueIndex('WeeklyAIReview_userId_weekStart_key').on(table.userId, table.weekStart),
+}));
 
 export type WeeklyAIReviewType = typeof WeeklyAIReview.$inferSelect;
 export type NewWeeklyAIReview = typeof WeeklyAIReview.$inferInsert;
@@ -124,5 +126,4 @@ export const AIChatMessageRelations = relations(AIChatMessage, ({ one, many }) =
     references: [AIChat.id]
   }),
 }));
-
 

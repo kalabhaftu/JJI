@@ -12,6 +12,14 @@ vi.mock('@/server/user-identity', () => ({
 
 vi.mock('@/lib/db/client', () => ({
   db: {
+    select: vi.fn(() => {
+      const query: any = {
+        from: vi.fn(() => query),
+        innerJoin: vi.fn(() => query),
+        where: vi.fn(() => query),
+      };
+      return query;
+    }),
     transaction: vi.fn(),
     query: {
       User: { findFirst: vi.fn() },

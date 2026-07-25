@@ -8,6 +8,17 @@ interface PerformanceMetrics {
   memoryUsage?: number;
 }
 
+interface LayoutShiftEntry extends PerformanceEntry {
+  hadRecentInput: boolean
+  value: number
+}
+
+interface PerformanceWithMemory extends Performance {
+  memory?: {
+    usedJSHeapSize?: number
+  }
+}
+
 class PerformanceMonitor {
   private metrics: Map<string, PerformanceMetrics> = new Map();
   private observers: PerformanceObserver[] = [];
@@ -39,10 +50,9 @@ class PerformanceMonitor {
     const clsObserver = new PerformanceObserver((list) => {
       let clsValue = 0;
       list.getEntries().forEach((entry) => {
-        // @ts-ignore - layout-shift is not in types yet
-        if (!entry.hadRecentInput) {
-          // @ts-ignore
-          clsValue += entry.value;
+        const layoutShift = entry as LayoutShiftEntry
+        if (!layoutShift.hadRecentInput) {
+          clsValue += layoutShift.value;
         }
       });
 
@@ -95,8 +105,7 @@ class PerformanceMonitor {
 
   // Memory usage tracking
   getMemoryUsage(): number | undefined {
-    // @ts-ignore - memory property might not exist
-    return (performance as any).memory?.usedJSHeapSize;
+    return (performance as PerformanceWithMemory).memory?.usedJSHeapSize;
   }
 
   // Check if performance is degraded

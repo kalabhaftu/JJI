@@ -12,6 +12,7 @@ import { unstable_cache } from 'next/cache'
 import logger from '@/lib/logger'
 import { convertDecimal } from '@/lib/utils/decimal'
 import { buildTradePersistenceData } from '@/lib/trade-core'
+import { parseTradeUpdate } from '@/lib/trades/update-schema'
 import { eq, inArray, desc, and, sql } from 'drizzle-orm'
 
 type Trade = typeof schema.Trade.$inferSelect
@@ -287,7 +288,7 @@ export async function updateTradesAction(tradesIds: string[], update: Partial<Tr
 
     const internalUserId = userLookup.id
 
-    const normalizedUpdate: Record<string, any> = { ...update }
+    const normalizedUpdate: Record<string, any> = parseTradeUpdate(update)
     if ('chartLinks' in update || 'chartLinksList' in update) {
       const normalized = buildTradePersistenceData(update as any)
       normalizedUpdate.chartLinks = normalized.chartLinks

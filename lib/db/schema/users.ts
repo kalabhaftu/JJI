@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json, customType } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json, customType, index } from 'drizzle-orm/pg-core';
 import { UserRoleEnum, ImportJobStatusEnum, NotificationTypeEnum, NotificationPriorityEnum, FeedbackCategoryEnum, FeedbackStatusEnum, SubscriptionStatusEnum } from './enums';
 import { Account, LiveAccountTransaction, MasterAccount, Payout, PhaseAccount } from './accounts';
 import { BacktestTrade } from './backtest';
@@ -192,7 +192,10 @@ export const Subscription = pgTable('Subscription', {
   freeAccessId: text('freeAccessId'),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
-});
+}, (table) => [
+  index('Subscription_promoCodeId_idx').on(table.promoCodeId),
+  index('Subscription_freeAccessId_idx').on(table.freeAccessId),
+]);
 
 export type SubscriptionType = typeof Subscription.$inferSelect;
 export type NewSubscription = typeof Subscription.$inferInsert;

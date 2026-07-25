@@ -4,6 +4,8 @@ import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
 import { db } from '@/lib/db/client'
+import * as schema from '@/lib/db/schema'
+import { and, eq } from 'drizzle-orm'
 
 // Validation schema
 const ValidateTradeSchema = z.object({
@@ -28,12 +30,20 @@ export async function POST(request: NextRequest) {
     const { accountNumber } = ValidateTradeSchema.parse(body)
 
     // First, check if this is a phase account (prop firm)
-    const phaseAccount = await db.query.PhaseAccount.findFirst({
-      where: (table, { eq }) => eq(table.phaseId, accountNumber) && eq(table.status, 'active'),
-      with: {
-        MasterAccount: true
-      }
-    })
+    const [phaseResult] = await db
+      .select({ phaseAccount: schema.PhaseAccount })
+      .from(schema.PhaseAccount)
+      .innerJoin(
+        schema.MasterAccount,
+        eq(schema.PhaseAccount.masterAccountId, schema.MasterAccount.id)
+      )
+      .where(and(
+        eq(schema.PhaseAccount.phaseId, accountNumber),
+        eq(schema.PhaseAccount.status, 'active'),
+        eq(schema.MasterAccount.userId, internalUserId)
+      ))
+      .limit(1)
+    const phaseAccount = phaseResult?.phaseAccount
 
     if (phaseAccount) {
       // This is a prop firm account - validate phase ID
@@ -60,7 +70,10 @@ export async function POST(request: NextRequest) {
 
     // Not a prop firm account - check if it's a regular account
     const regularAccount = await db.query.Account.findFirst({
-      where: (table, { eq }) => eq(table.number, accountNumber) && eq(table.userId, internalUserId)
+      where: (table, { and, eq }) => and(
+        eq(table.number, accountNumber),
+        eq(table.userId, internalUserId)
+      )
     })
 
     if (regularAccount) {

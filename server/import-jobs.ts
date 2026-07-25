@@ -5,9 +5,12 @@ import { createClient } from '@/server/auth'
 import { buildUserSettingsUpdateData, extractUserSettingsWriteData, pickSettingsPatch } from '@/lib/user-settings'
 import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData } from '@/lib/trade-core'
 import { eq, and, or, inArray, desc, asc } from 'drizzle-orm'
+import { validateImportArchive } from '@/lib/security/import-archive'
 
 const TRADE_CHUNK_SIZE = 25
 const BACKTEST_CHUNK_SIZE = 25
+const MAX_IMAGE_BYTES = 12 * 1024 * 1024
+const MAX_IMPORT_ITEMS = 100_000
 
 type ImportJobStage = 'queued' | 'preparing' | 'trades' | 'backtests' | 'completed' | 'failed' | 'cancelled'
 
@@ -75,6 +78,7 @@ async function uploadImage(
   if (!result) return null
 
   const buffer = await result.file.async('arraybuffer')
+  if (buffer.byteLength > MAX_IMAGE_BYTES) throw new Error('A backup image exceeds the size limit')
   const path = `trades/${internalUserId}/${newId}/${suffix}.${result.ext}`
 
   const { data: uploadData, error } = await supabase.storage
@@ -798,6 +802,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
 
   try {
     const zip = await JSZip.loadAsync(toBuffer(job.fileData))
+    validateImportArchive(zip)
     const manifestFile = zip.file('data.json')
 
     if (!manifestFile) {
@@ -814,6 +819,9 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
     const data = JSON.parse(manifestContent)
 
     const totalItems = (data.trades?.length || 0) + (data.backtestTrades?.length || 0)
+    if (!Number.isFinite(totalItems) || totalItems > MAX_IMPORT_ITEMS) {
+      throw new Error('Backup contains too many import records')
+    }
     let state = parseJobState(job.state)
 
     if (job.status === 'queued') {

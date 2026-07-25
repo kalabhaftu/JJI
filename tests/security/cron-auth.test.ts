@@ -13,11 +13,11 @@ function request(headers?: HeadersInit) {
 }
 
 describe('cron auth', () => {
-  it('accepts Vercel cron requests', () => {
+  it('does not trust a spoofable Vercel cron user agent', () => {
     process.env.NODE_ENV = 'production'
     process.env.CRON_SECRET = 'x'.repeat(32)
 
-    expect(validateCronRequest(request({ 'user-agent': 'vercel-cron/1.0' }))).toBeNull()
+    expect(validateCronRequest(request({ 'user-agent': 'vercel-cron/1.0' }))?.status).toBe(401)
   })
 
   it('accepts valid bearer secret', () => {

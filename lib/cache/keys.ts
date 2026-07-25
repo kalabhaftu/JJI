@@ -1,6 +1,6 @@
 export const CacheKeys = {
   // Account-level metrics - invalidated on any trade mutation
-  zellaScore:      (userId: string, accountId: string) => `v1:zella:${userId}:${accountId}`,
+  performanceScore: (userId: string, accountId: string) => `v2:jji:performance-score:${userId}:${accountId}`,
   accountMetrics:  (accountId: string)                 => `v1:metrics:${accountId}`,
   tradeStats:      (accountId: string)                 => `v1:stats:${accountId}`,
 
@@ -20,7 +20,7 @@ export const CacheKeys = {
 
 // All TTLs in seconds
 export const CacheTTL = {
-  zellaScore:     60 * 60,       // 1 hour
+  performanceScore: 60 * 60,     // 1 hour
   accountMetrics: 60 * 15,       // 15 minutes
   tradeStats:     60 * 15,       // 15 minutes
   dailyPnlSeries: 60 * 30,       // 30 minutes

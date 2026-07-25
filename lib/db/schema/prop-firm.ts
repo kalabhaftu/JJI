@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json, uniqueIndex } from 'drizzle-orm/pg-core';
 import { BreachTypeEnum } from './enums';
 import { Account, LiveAccountTransaction, MasterAccount, Payout, PhaseAccount } from './accounts';
 
@@ -27,7 +27,9 @@ export const DailyAnchor = pgTable('DailyAnchor', {
   date: timestamp('date', { withTimezone: true, mode: 'date' }).notNull(),
   anchorEquity: doublePrecision('anchorEquity').notNull(),
   computedAt: timestamp('computedAt', { withTimezone: true, mode: 'date' }).defaultNow(),
-});
+}, (table) => [
+  uniqueIndex('DailyAnchor_phaseAccountId_date_key').on(table.phaseAccountId, table.date),
+]);
 
 export type DailyAnchorType = typeof DailyAnchor.$inferSelect;
 export type NewDailyAnchor = typeof DailyAnchor.$inferInsert;
@@ -45,4 +47,3 @@ export const DailyAnchorRelations = relations(DailyAnchor, ({ one, many }) => ({
     references: [PhaseAccount.id]
   }),
 }));
-

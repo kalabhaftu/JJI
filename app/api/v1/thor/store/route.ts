@@ -4,13 +4,14 @@ import * as schema from '@/lib/db/schema';
 import { saveTradesAction } from '@/server/database';
 import { eq, and, gte, lte, desc, count } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
-import { thorRateLimit } from '@/lib/security/ratelimit';
+import { consumeRateLimitKey, thorLimiter } from '@/lib/rate-limiter';
+import { getClientIp } from '@/lib/security/client-ip';
 
 // Common authentication function to use across all methods
 async function authenticateRequest(req: NextRequest) {
-  const ip = req.headers.get('x-forwarded-for') || '127.0.0.1';
-  const { success } = await thorRateLimit.limit(ip);
-  if (!success) {
+  const ip = getClientIp(req.headers);
+  const { allowed } = await consumeRateLimitKey(`thor:${ip}`, thorLimiter);
+  if (!allowed) {
     return {
       authenticated: false,
       error: {

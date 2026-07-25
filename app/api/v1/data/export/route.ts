@@ -1,12 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
+import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
-import archiver from 'archiver'
 import { PassThrough } from 'stream'
 import { USER_SETTINGS_SELECT, mergeUserSettings } from '@/lib/user-settings'
-import { eq, and, or, inArray } from 'drizzle-orm'
+import { eq, and, or, inArray, gte, lte, type SQL } from 'drizzle-orm'
+
+import { fetchTrustedExportImage } from '@/lib/security/export-media'
+import { z } from 'zod'
+
+interface ArchiveError extends Error {
+  code?: string
+}
+
+type ArchiveStream = Omit<NodeJS.ReadWriteStream, 'on'> & {
+  append(source: Buffer | string, data: { name: string }): ArchiveStream
+  finalize(): Promise<void>
+  on(event: 'warning' | 'error', listener: (error: ArchiveError) => void): ArchiveStream
+}
 
 // Helper to sanitize and transform data
 const sanitizeUser = (data: any) => {
@@ -18,6 +31,13 @@ const sanitizeUser = (data: any) => {
 const numberValuesToString = (obj: any) => {
   return obj // Assuming standard JSON safe
 }
+
+const exportFiltersSchema = z.object({
+  from: z.string().max(64).refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid from date').optional(),
+  to: z.string().max(64).refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid to date').optional(),
+  accountIds: z.array(z.string().min(1).max(256)).max(100).optional(),
+  instruments: z.array(z.string().min(1).max(128)).max(100).optional(),
+}).strict()
 
 export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
@@ -31,42 +51,40 @@ export async function POST(request: NextRequest) {
     const internalUserId = identity.internalUserId
 
     // Parse Filters
-    let filters: { from?: string; to?: string; accountIds?: string[]; instruments?: string[] } = {}
+    let filters: z.infer<typeof exportFiltersSchema> = {}
     if (request.headers.get('content-type')?.includes('application/json')) {
       try {
-        filters = await request.json()
+        filters = exportFiltersSchema.parse(await request.json())
       } catch (e) {
-        logger.warn('Failed to parse export filters: ' + (e instanceof Error ? e.message : String(e)))
+        return NextResponse.json({ error: 'Invalid export filters' }, { status: 400 })
       }
     }
 
-    // Prepare Where Clauses
-    const dateFilter = (dateField: string) => {
-      if (!filters.from && !filters.to) return {}
-      return {
-        [dateField]: {
-          ...(filters.from ? { gte: new Date(filters.from) } : {}),
-          ...(filters.to ? { lte: new Date(filters.to) } : {})
-        }
-      }
+    const tradeConditions: SQL[] = [eq(schema.Trade.userId, internalUserId)]
+    if (filters.from) tradeConditions.push(gte(schema.Trade.entryDate, filters.from))
+    if (filters.to) tradeConditions.push(lte(schema.Trade.entryDate, filters.to))
+    if (filters.accountIds?.length) {
+      tradeConditions.push(or(
+        inArray(schema.Trade.accountId, filters.accountIds),
+        inArray(schema.Trade.phaseAccountId, filters.accountIds)
+      )!)
+    }
+    if (filters.instruments?.length) {
+      tradeConditions.push(inArray(schema.Trade.instrument, filters.instruments))
     }
 
-    // Trade Filter: Date + Account
-    const tradeWhere: any = {
-      userId: internalUserId,
-      ...dateFilter('entryDate')
-    }
-
-    if (filters.accountIds && filters.accountIds.length > 0) {
-      tradeWhere['OR'] = [
-        { accountId: { in: filters.accountIds } },
-        { phaseAccountId: { in: filters.accountIds } }
-      ]
-    }
-
-    if (filters.instruments && filters.instruments.length > 0) {
-      tradeWhere['instrument'] = { in: filters.instruments }
-    }
+    const ownedMasterAccountIds = db
+      .select({ id: schema.MasterAccount.id })
+      .from(schema.MasterAccount)
+      .where(eq(schema.MasterAccount.userId, internalUserId))
+    const ownedPhaseAccountIds = db
+      .select({ id: schema.PhaseAccount.id })
+      .from(schema.PhaseAccount)
+      .innerJoin(
+        schema.MasterAccount,
+        eq(schema.PhaseAccount.masterAccountId, schema.MasterAccount.id)
+      )
+      .where(eq(schema.MasterAccount.userId, internalUserId))
 
     // Fetch absolutely everything for this user
     const [
@@ -115,12 +133,12 @@ export async function POST(request: NextRequest) {
       db.query.TradeTag.findMany({ where: (table, { eq }) => eq(table.userId, internalUserId) }),
       db.query.DailyNote.findMany({ where: (table, { eq }) => eq(table.userId, internalUserId) }),
       db.query.WeeklyReview.findMany({ where: (table, { eq }) => eq(table.userId, internalUserId) }),
-      db.query.Trade.findMany({ where: (table, { eq }) => eq(table.userId, internalUserId) }),
+      db.query.Trade.findMany({ where: () => and(...tradeConditions) }),
       db.query.BacktestTrade.findMany({ where: (table, { eq }) => eq(table.userId, internalUserId) }),
       db.query.DashboardTemplate.findMany({ where: (table, { eq }) => eq(table.userId, internalUserId) }),
       db.query.LiveAccountTransaction.findMany({ where: (table, { eq }) => eq(table.userId, internalUserId) }),
       db.query.BreachRecord.findMany({
-        where: (table, { eq }) => eq(table.phaseAccountId, internalUserId),
+        where: (table) => inArray(table.phaseAccountId, ownedPhaseAccountIds),
         with: {
           PhaseAccount: {
             columns: {
@@ -134,7 +152,7 @@ export async function POST(request: NextRequest) {
         },
       }),
       db.query.DailyAnchor.findMany({
-        where: (table, { eq }) => eq(table.phaseAccountId, internalUserId),
+        where: (table) => inArray(table.phaseAccountId, ownedPhaseAccountIds),
         with: {
           PhaseAccount: {
             columns: {
@@ -148,7 +166,7 @@ export async function POST(request: NextRequest) {
         },
       }),
       db.query.Payout.findMany({
-        where: (table, { eq }) => eq(table.masterAccountId, internalUserId),
+        where: (table) => inArray(table.masterAccountId, ownedMasterAccountIds),
         with: {
           MasterAccount: { columns: { accountName: true } },
           PhaseAccount: {
@@ -257,7 +275,12 @@ export async function POST(request: NextRequest) {
 
     // Set up Archive Stream
     const stream = new PassThrough()
-    const archive = archiver('zip', { zlib: { level: 9 } })
+    // Archiver 8 is ESM-only, while its current DefinitelyTyped package still
+    // describes the removed callable default export.
+    const archiverRuntime = await import('archiver') as unknown as {
+      ZipArchive: new (options?: { zlib?: { level?: number } }) => ArchiveStream
+    }
+    const archive = new archiverRuntime.ZipArchive({ zlib: { level: 9 } })
 
     // Log archive warnings/errors
     archive.on('warning', (err) => {
@@ -277,16 +300,16 @@ export async function POST(request: NextRequest) {
         // 1. Add Manifest
         archive.append(JSON.stringify(manifest, null, 2), { name: 'data.json' })
 
-        // 2. Fetch Images
-        // Helper to download
-        const downloadFile = async (url: string): Promise<Buffer | null> => {
-          try {
-            const res = await fetch(url)
-            if (!res.ok) return null
-            return Buffer.from(await res.arrayBuffer())
-          } catch (e) {
-            return null
-          }
+        // 2. Fetch images only from this project's Supabase Storage origin.
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const MAX_TOTAL_MEDIA_BYTES = 100 * 1024 * 1024
+        let archivedMediaBytes = 0
+
+        const appendImageWithinBudget = (image: { buffer: Buffer; extension: string }, name: string) => {
+          if (archivedMediaBytes + image.buffer.byteLength > MAX_TOTAL_MEDIA_BYTES) return false
+          archivedMediaBytes += image.buffer.byteLength
+          archive.append(image.buffer, { name: `${name}.${image.extension}` })
+          return true
         }
 
         // We process trades in chunks to avoid blowing up memory or connections
@@ -315,11 +338,10 @@ export async function POST(request: NextRequest) {
           ]
 
           for (const img of images) {
-            if (img.url && img.url.startsWith('http')) {
-              const ext = img.url.split('.').pop()?.split('?')[0] || 'png'
-              const buffer = await downloadFile(img.url)
-              if (buffer) {
-                archive.append(buffer, { name: `images/trades/${trade.id}_${img.suffix}.${ext}` })
+            if (img.url && supabaseUrl) {
+              const image = await fetchTrustedExportImage(img.url, supabaseUrl)
+              if (image) {
+                appendImageWithinBudget(image, `images/trades/${trade.id}_${img.suffix}`)
               }
             }
           }
@@ -354,11 +376,10 @@ export async function POST(request: NextRequest) {
             { url: trade.cardPreviewImage, suffix: 'preview' },
           ]
           for (const img of images) {
-            if (img.url && img.url.startsWith('http')) {
-              const ext = img.url.split('.').pop()?.split('?')[0] || 'png'
-              const buffer = await downloadFile(img.url)
-              if (buffer) {
-                archive.append(buffer, { name: `images/backtest/${trade.id}_${img.suffix}.${ext}` })
+            if (img.url && supabaseUrl) {
+              const image = await fetchTrustedExportImage(img.url, supabaseUrl)
+              if (image) {
+                appendImageWithinBudget(image, `images/backtest/${trade.id}_${img.suffix}`)
               }
             }
           }

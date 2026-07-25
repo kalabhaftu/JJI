@@ -24,7 +24,7 @@ function isFundedPhase(evaluationType: string, phaseNumber: number): boolean {
   return isFundedPhaseForEvaluation(evaluationType, phaseNumber)
 }
 
-// Update validation schema (simplified for now)
+// Only user-editable master-account fields are accepted.
 const UpdateMasterAccountSchema = z.object({
   accountName: z.string().min(1, 'Account name is required').optional(),
   status: z.enum(['active', 'funded', 'failed']).optional(),

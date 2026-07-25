@@ -23,7 +23,7 @@ interface UploadOptions {
 }
 
 const DEFAULT_MAX_SIZE = 5 * 1024 * 1024 // 5MB (reduced for security)
-const DEFAULT_ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+const DEFAULT_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
 // Magic bytes (file signatures) for image validation
 const IMAGE_SIGNATURES: Record<string, number[][]> = {
@@ -99,14 +99,14 @@ class MediaUploadService {
       const bytes = new Uint8Array(arrayBuffer)
 
       const signatures = IMAGE_SIGNATURES[file.type]
-      if (!signatures) {
-        // If we don't have signature for this type, allow it (fallback)
-        return { valid: true }
-      }
+      if (!signatures) return { valid: false, error: 'Unsupported image signature' }
 
-      const isValid = signatures.some(signature =>
+      const hasPrefix = signatures.some(signature =>
         signature.every((byte, index) => bytes[index] === byte)
       )
+      const isValid = file.type === 'image/webp'
+        ? hasPrefix && [0x57, 0x45, 0x42, 0x50].every((byte, index) => bytes[index + 8] === byte)
+        : hasPrefix
 
       if (!isValid) {
         return {
@@ -211,5 +211,4 @@ class MediaUploadService {
 }
 
 export const uploadService = new MediaUploadService()
-
 

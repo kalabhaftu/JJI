@@ -1,8 +1,12 @@
 import { createOpenAI } from "@ai-sdk/openai";
 import { streamObject } from "ai";
 import { NextRequest } from "next/server";
+import { NextResponse } from 'next/server'
 import { mappingSchema } from "./schema";
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyRateLimit, aiLimiter } from '@/lib/rate-limiter'
+import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
+import { z } from 'zod'
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -31,20 +35,23 @@ const FIELD_HINTS = {
   closeReason: ['reason', 'close reason', 'exit reason', 'type', 'closure', 'trade result', 'exit type', 'closed by']
 }
 
+const mappingRequestSchema = z.object({
+  fieldColumns: z.array(z.string().min(1).max(128)).min(1).max(100),
+  firstRows: z.array(z.record(z.string().max(512))).max(10),
+}).strict()
+
 export async function POST(req: NextRequest) {
-  const rateLimitRes = await applyRateLimit(req, apiLimiter)
+  const rateLimitRes = await applyRateLimit(req, aiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
-    const body = await req.json();
-    const { fieldColumns, firstRows } = typeof body === 'string' ? JSON.parse(body) : body;
-
-    if (!fieldColumns || !firstRows) {
-      return new Response(JSON.stringify({ error: "Missing required fields" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+    const identity = await getResolvedUserIdentitySafe()
+    if (!identity) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    if (!(await hasCurrentAiDataConsent(identity.internalUserId))) {
+      return NextResponse.json({ error: 'AI data processing consent is required', code: 'AI_DATA_CONSENT_REQUIRED' }, { status: 412 })
     }
+
+    const { fieldColumns, firstRows } = mappingRequestSchema.parse(await req.json())
 
     const result = streamObject({
       model: xai(process.env.XAI_MODEL || "grok-4-1-fast-reasoning"),

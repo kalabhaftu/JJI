@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json, index } from 'drizzle-orm/pg-core';
 import { PromoTypeEnum, PromoApplicabilityEnum, FreeAccessTypeEnum } from './enums';
 import { AdminFeatureFlag, AdminSharingPolicy, User, UserSettings, ImportJob, Notification, Feedback, UserGeoLog, SharedReport, Subscription, Synchronization } from './users';
 
@@ -63,7 +63,9 @@ export const PaymentRecord = pgTable('PaymentRecord', {
   discountAmount: doublePrecision('discountAmount').default(0),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
-});
+}, (table) => [
+  index('PaymentRecord_promoCodeId_idx').on(table.promoCodeId),
+]);
 
 export type PaymentRecordType = typeof PaymentRecord.$inferSelect;
 export type NewPaymentRecord = typeof PaymentRecord.$inferInsert;
@@ -151,4 +153,3 @@ export const PromoRedemptionRelations = relations(PromoRedemption, ({ one, many 
 export const FreeAccessInviteRelations = relations(FreeAccessInvite, ({ one, many }) => ({
   Subscription: many(Subscription),
 }));
-

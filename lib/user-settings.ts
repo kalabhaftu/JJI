@@ -5,7 +5,11 @@ import type { UserType, UserSettingsType, NewUserSettings } from '@/lib/db/schem
 export const DEFAULT_AI_SETTINGS = {
   autoGenerateInsights: false,
   includeAiInsightsInNotifications: false,
+  dataProcessingConsentAt: null as string | null,
+  dataProcessingConsentVersion: null as string | null,
 }
+
+export const AI_DATA_CONSENT_VERSION = '2026-07-22'
 
 export const USER_SETTINGS_SELECT = {
   timezone: true,
@@ -46,6 +50,12 @@ export function normalizeAiSettings(value: unknown) {
     includeAiInsightsInNotifications: raw.includeAiInsightsInNotifications !== false
       ? !!raw.includeAiInsightsInNotifications
       : false,
+    dataProcessingConsentAt: typeof raw.dataProcessingConsentAt === 'string' && !Number.isNaN(Date.parse(raw.dataProcessingConsentAt))
+      ? raw.dataProcessingConsentAt
+      : null,
+    dataProcessingConsentVersion: typeof raw.dataProcessingConsentVersion === 'string'
+      ? raw.dataProcessingConsentVersion
+      : null,
   }
 }
 

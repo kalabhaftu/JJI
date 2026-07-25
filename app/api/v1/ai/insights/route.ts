@@ -3,6 +3,13 @@ import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { z } from 'zod'
+
+const createInsightSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  content: z.string().trim().min(1).max(50_000),
+  category: z.string().trim().min(1).max(64).default('insight'),
+}).strict()
 
 export async function GET(request: NextRequest) {
   const rl = await applyRateLimit(request, apiLimiter)
@@ -37,12 +44,7 @@ export async function POST(request: NextRequest) {
   const userId = identity.internalUserId
 
   try {
-    const body = await request.json()
-    const { title, content, category } = body
-
-    if (!title || !content) {
-      return NextResponse.json({ error: 'Title and content are required' }, { status: 400 })
-    }
+    const { title, content, category } = createInsightSchema.parse(await request.json())
 
     const insight = (await db.insert(schema.AISavedInsight).values({
       userId,
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: insight })
   } catch (error) {
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid insight' }, { status: 400 })
     return NextResponse.json({ error: 'Failed to save insight' }, { status: 500 })
   }
 }

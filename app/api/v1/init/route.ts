@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
               countryCode: countryCode || null,
               country: country || null,
               city: city || null,
-              ipAddress: headerList.get('x-forwarded-for') || 'hidden'
             }).returning().then((rows) => rows[0]).catch((err: unknown) => logger.error('Geo logging failed' + ' : ' + err))
           }
         }).catch((err: unknown) => logger.error('Geo logging failed on ip' + ' : ' + err))

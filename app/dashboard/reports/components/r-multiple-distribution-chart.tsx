@@ -11,7 +11,7 @@ import {
 import { useTheme } from '@/context/theme-provider'
 
 interface RMultipleDistributionChartProps {
-  distribution: Record<string, number>
+  distribution: object
 }
 
 function RMultipleTooltip({ active, payload, label }: any) {

@@ -121,25 +121,10 @@ export function NotificationItem({
   return (
     <article
       className={cn(
-        "relative border p-4 transition-colors hover:bg-muted/50 group cursor-pointer",
+        "relative border p-4 transition-colors hover:bg-muted/50 group",
         notificationColors[notification.type as NotificationType],
         !notification.isRead && "bg-muted/30"
       )}
-      onClick={() => {
-        if (!notification.isRead) {
-          onMarkAsRead(notification.id)
-        }
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          if (!notification.isRead) {
-            onMarkAsRead(notification.id)
-          }
-        }
-      }}
-      role="button"
-      tabIndex={0}
     >
       <Button
         variant="ghost"
@@ -185,7 +170,7 @@ export function NotificationItem({
             </span>
 
             <div className="flex items-center gap-1">
-              {isActionable ? (
+              {isActionable && (
                 <Button
                   variant="default"
                   size="sm"
@@ -198,21 +183,20 @@ export function NotificationItem({
                   {actionLabel}
                   <ChevronRight className="h-3 w-3 ml-1" />
                 </Button>
-              ) : (
-                !notification.isRead && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onMarkAsRead(notification.id)
-                    }}
-                  >
-                    <Check className="h-3 w-3 mr-1" />
-                    Mark read
-                  </Button>
-                )
+              )}
+              {!notification.isRead && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onMarkAsRead(notification.id)
+                  }}
+                >
+                  <Check className="h-3 w-3 mr-1" />
+                  Mark read
+                </Button>
               )}
             </div>
           </div>

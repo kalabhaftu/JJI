@@ -6,10 +6,20 @@ const baseDirectory = path.dirname(fileURLToPath(import.meta.url))
 const compat = new FlatCompat({ baseDirectory })
 
 const config = [
-  ...compat.extends('next/core-web-vitals'),
   {
-    ignores: ['.next/**', '.claude/worktrees/**', 'node_modules/**', 'coverage/**', 'playwright-report/**', 'test-results/**'],
+    ignores: [
+      '.next/**',
+      '.next-dev/**',
+      '.next-analyze/**',
+      '.impeccable/**',
+      '.claude/worktrees/**',
+      'node_modules/**',
+      'coverage/**',
+      'playwright-report/**',
+      'test-results/**',
+    ],
   },
+  ...compat.extends('next/core-web-vitals'),
   {
     rules: {
       'react-hooks/set-state-in-effect': 'off',

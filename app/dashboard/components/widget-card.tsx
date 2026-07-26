@@ -32,7 +32,7 @@ function getWidgetDescription(title: string): string | null {
   if (t.includes('PERFORMANCE')) return 'High-level dashboard overview of profit factor, win rates, and averages.'
   if (t.includes('INSTRUMENT')) return 'Performance analysis grouped by instrument or ticker symbol.'
   if (t.includes('STRATEGY')) return 'Net P&L performance broken down by individual strategies to evaluate strategy edge.'
-  if (t.includes('DURATION')) return 'Compares holding times (minutes/hours) to trade outcomes to optimize trade duration.'
+  if (t.includes('DURATION')) return 'Compares holding times (minutes/hours) to trade outcomes to improve trade duration.'
   if (t.includes('SESSION')) return 'Analyzes trade metrics grouped by market sessions (Asia, London, New York).'
   if (t.includes('ACCOUNT STATISTICS') || t.includes('PROP FIRM ACCOUNT')) return 'Shows detailed prop-firm account statistics, active phase, start date, and overall duration.'
   if (t.includes('PROP FIRM GROWTH') || t.includes('GROWTH CURVE')) return 'Visualizes your equity and balance growth curve for the active prop-firm challenge phase.'

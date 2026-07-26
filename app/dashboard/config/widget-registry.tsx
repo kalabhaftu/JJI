@@ -385,7 +385,7 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetConfig> = {
     defaultSize: 'small-long',
     allowedSizes: ['small-long', 'medium', 'large'],
     category: 'charts',
-    description: 'Overall performance score with radar chart showing 6 key metrics',
+    description: 'Overall performance score with radar chart showing 6 metrics',
     previewHeight: 200,
     getComponent: ({ size }) => <PerformanceScore size={size} />,
     getPreview: () => (

@@ -1,0 +1,35 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "ai-color-palette",
+        "value": "*",
+        "files": [
+          "app/dashboard/components/calendar/calendar-widget.tsx"
+        ],
+        "createdAt": "2026-07-25T21:37:32.514Z",
+        "reason": "Calendar export presets intentionally show user-selectable saved-image palettes"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "app/docs/docs-layout-client.tsx"
+        ],
+        "createdAt": "2026-07-25T21:37:33.832Z",
+        "reason": "Documentation blockquotes use the conventional prose quote marker"
+      },
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "components/ui/editor/lexical-editor.tsx"
+        ],
+        "createdAt": "2026-07-25T21:37:34.211Z",
+        "reason": "Editor blockquotes require a visible semantic quote marker"
+      }
+    ]
+  }
+}

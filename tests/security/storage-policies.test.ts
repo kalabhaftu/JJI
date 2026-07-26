@@ -17,7 +17,7 @@ describe('storage policies', () => {
     for (const bucket of ['trade-images', 'feedback-attachments', 'weekly-calendars']) {
       expect(policies).toContain(`bucket_id = '${bucket}'`)
     }
-    expect(policies.match(/auth\.uid\(\)::text/g)?.length).toBeGreaterThanOrEqual(10)
+    expect(policies.match(/(?:\(select\s+)?auth\.uid\(\)\)?::text/g)?.length).toBeGreaterThanOrEqual(10)
     expect(policies).not.toMatch(/to\s+anon[\s\S]{0,100}for\s+(insert|update|delete)/i)
   })
 

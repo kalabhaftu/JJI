@@ -283,33 +283,40 @@ export function WeeklyModal({
     // CRITICAL: Group trades to show correct execution count
     const groupedTrades = groupTradesByExecution(trades as TradeType[]) as GroupedTrade[]
 
-    const longNumber = groupedTrades.filter(trade => (trade as any).side?.toLowerCase() === 'long' || (trade as any).side?.toUpperCase() === 'BUY').length
-    const shortNumber = groupedTrades.filter(trade => (trade as any).side?.toLowerCase() === 'short' || (trade as any).side?.toUpperCase() === 'SELL').length
+    let longNumber = 0
+    let shortNumber = 0
+    let winningTrades = 0
+    let losingTrades = 0
+    let pnl = 0
+    let winPnl = 0
+    let lossPnl = 0
 
-    // Calculate win rate with user-specific break-even threshold
-    const winningTrades = groupedTrades
-      .filter(t => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'win').length
-    const losingTrades = groupedTrades
-      .filter(t => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'loss').length
+    for (const trade of groupedTrades) {
+      const side = (trade as any).side
+      const sideValue = typeof side === 'string' ? side.toLowerCase() : ''
+      if (sideValue === 'long' || sideValue === 'buy') longNumber += 1
+      if (sideValue === 'short' || sideValue === 'sell') shortNumber += 1
+
+      const netPnl = getTradeNetPnl(trade)
+      pnl += netPnl
+      const outcome = classifyOutcome(netPnl, breakEvenThreshold)
+      if (outcome === 'win') {
+        winningTrades += 1
+        winPnl += netPnl
+      } else if (outcome === 'loss') {
+        losingTrades += 1
+        lossPnl += netPnl
+      }
+    }
+
     const winRate = (winningTrades + losingTrades) > 0 ? (winningTrades / (winningTrades + losingTrades)) * 100 : 0
-
-    const avgWin = winningTrades > 0
-      ? groupedTrades
-          .filter(t => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'win')
-          .reduce((sum, t) => sum + getTradeNetPnl(t), 0) / winningTrades
-      : 0
-    const avgLoss = losingTrades > 0
-      ? Math.abs(
-          groupedTrades
-            .filter(t => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'loss')
-            .reduce((sum, t) => sum + getTradeNetPnl(t), 0)
-        ) / losingTrades
-      : 0
+    const avgWin = winningTrades > 0 ? winPnl / winningTrades : 0
+    const avgLoss = losingTrades > 0 ? Math.abs(lossPnl) / losingTrades : 0
 
     return {
       trades: groupedTrades,
       tradeNumber: groupedTrades.length,
-      pnl: groupedTrades.reduce((sum, trade) => sum + getTradeNetPnl(trade), 0),
+      pnl,
       longNumber,
       shortNumber,
       winRate,
@@ -326,6 +333,8 @@ export function WeeklyModal({
     const dayStats: Record<string, { pnl: number; trades: number }> = {}
     const pairStats: Record<string, { pnl: number; trades: number; wins: number }> = {}
     const sessionStats: Record<string, { pnl: number; trades: number }> = {}
+    let grossProfit = 0
+    let grossLoss = 0
 
     weeklyData.trades.forEach((trade: any) => {
       // Day Stats
@@ -347,22 +356,18 @@ export function WeeklyModal({
       if (!sessionStats[session]) sessionStats[session] = { pnl: 0, trades: 0 }
       sessionStats[session].pnl += netPnL
       sessionStats[session].trades += 1
+
+      const outcome = classifyOutcome(netPnL, breakEvenThreshold)
+      if (outcome === 'win') grossProfit += netPnL
+      if (outcome === 'loss') grossLoss += netPnL
     })
 
     const sortedDays = Object.entries(dayStats).sort((a, b) => b[1].pnl - a[1].pnl)
     const sortedPairs = Object.entries(pairStats).sort((a, b) => b[1].pnl - a[1].pnl)
     const sortedSessions = Object.entries(sessionStats).sort((a, b) => b[1].pnl - a[1].pnl)
 
-    // Profit factor uses canonical net realized P&L.
-    const grossProfit = weeklyData.trades
-      .map(t => getTradeNetPnl(t))
-      .filter(netPnl => classifyOutcome(netPnl, breakEvenThreshold) === 'win')
-      .reduce((sum, netPnl) => sum + netPnl, 0)
-    const grossLoss = Math.abs(weeklyData.trades
-      .map(t => getTradeNetPnl(t))
-      .filter(netPnl => classifyOutcome(netPnl, breakEvenThreshold) === 'loss')
-      .reduce((sum, netPnl) => sum + netPnl, 0))
-    const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0
+    const absoluteGrossLoss = Math.abs(grossLoss)
+    const profitFactor = absoluteGrossLoss > 0 ? grossProfit / absoluteGrossLoss : grossProfit > 0 ? Infinity : 0
 
     return {
       bestDay: sortedDays[0],
@@ -375,7 +380,7 @@ export function WeeklyModal({
       sessionStats: sortedSessions,
       profitFactor,
       grossProfit,
-      grossLoss
+      grossLoss: absoluteGrossLoss
     }
   }, [weeklyData, breakEvenThreshold])
 
@@ -1231,7 +1236,7 @@ export function WeeklyModal({
                       onChange={(val) => setReviewData({ ...reviewData, notes: val })}
                     />
                     <p className="text-xs text-muted-foreground/70">
-                      Complete each section with your answers so your weekly review stays consistent and actionable.
+                      Complete each section with your answers so your weekly review stays consistent.
                     </p>
                   </div>
                 </div>

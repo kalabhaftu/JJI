@@ -12,6 +12,13 @@ const aiPrompt = source('components/ui/ai-prompt-input.tsx')
 const aiSidebar = source('app/dashboard/ai/components/workspace-sidebar.tsx')
 const aiComposer = source('app/dashboard/ai/components/context-composer.tsx')
 const widgetGrid = source('app/dashboard/components/widget-grid.tsx')
+const layout = source('app/layout.tsx')
+const dialog = source('components/ui/dialog.tsx')
+const notifications = source('components/notifications/notification-item.tsx')
+const dropzone = source('components/ui/file-dropzone.tsx')
+const offlineIndicator = source('components/offline-indicator.tsx')
+const dataManagement = source('app/dashboard/data/components/data-management/data-management-card.tsx')
+const navbar = source('app/dashboard/components/navbar.tsx')
 
 describe('accessibility and theme source contracts', () => {
   it('keeps keyboard focus, reduced-motion, contrast, zoom, and touch safeguards', () => {
@@ -64,5 +71,40 @@ describe('accessibility and theme source contracts', () => {
     expect(widgetGrid).toContain('new IntersectionObserver(')
     expect(widgetGrid).toContain("rootMargin: '200px'")
     expect(widgetGrid).toContain('getMobileWidgetHeight(widget.type, isChart, config.previewHeight)')
+  })
+
+  it('keeps navigation, status changes, and errors available to assistive technology', () => {
+    expect(layout).toContain('href="#main-content"')
+    expect(offlineIndicator).toContain('aria-live="polite"')
+    expect(dropzone).toContain('aria-live="assertive"')
+    expect(dropzone).toContain('role="alert"')
+    expect(source('app/error.tsx')).toContain('aria-live="assertive"')
+  })
+
+  it('separates notification actions and requires explicit dialog descriptions', () => {
+    expect(notifications).toContain('<article')
+    expect(notifications).not.toContain('role={isActionable')
+    expect(notifications).not.toContain('tabIndex={isActionable')
+    expect(notifications).toContain('aria-label="Delete notification"')
+    expect(dialog).not.toContain('Dialog content')
+    expect(navbar).toContain('<DialogDescription>Choose which trading accounts apply to the current view.</DialogDescription>')
+    expect(navbar).toContain('<DialogDescription>Refine the data shown on the current page.</DialogDescription>')
+  })
+
+  it('uses the complete destructive pattern for selected account deletion', () => {
+    expect(dataManagement).toContain('Delete selected accounts')
+    expect(dataManagement).toContain('This action cannot be undone.')
+    expect(dataManagement).toContain('bg-destructive text-destructive-foreground')
+    expect(dataManagement).toContain('<AlertDialogCancel>Cancel</AlertDialogCancel>')
+  })
+
+  it('keeps the operational type floor at 12px', () => {
+    const tailwindConfig = source('tailwind.config.ts')
+    expect(tailwindConfig).not.toContain("'xxs': ['0.625rem'")
+    expect(tailwindConfig).not.toContain("'xxxs': ['0.5rem'")
+    expect(tailwindConfig).not.toContain("'nano': ['0.375rem'")
+    for (const token of ['6', '7', '8', '9', '10', '11']) {
+      expect(globals).toContain(`.text-\\[${token}px\\]`)
+    }
   })
 })

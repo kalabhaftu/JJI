@@ -38,12 +38,14 @@ export function CalendarSettings() {
                     {stats.map((stat) => {
                         const isChecked = visibleStats[stat.key]
                         return (
-                            <div
+                            <button
+                                type="button"
                                 key={stat.key}
                                 onClick={() => {
                                     setVisibleStats({ [stat.key]: !isChecked })
                                 }}
-                                className="flex items-center gap-2.5 py-1.5 px-2 hover:bg-muted/30 rounded-md cursor-pointer select-none transition-colors"
+                                aria-pressed={isChecked}
+                                className="flex w-full items-center gap-2.5 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted/30"
                             >
                                 <div className={cn(
                                     "h-4 w-4 rounded flex items-center justify-center transition-all",
@@ -58,7 +60,7 @@ export function CalendarSettings() {
                                 <span className="text-xs font-semibold text-foreground/80 tracking-tight">
                                     {stat.label}
                                 </span>
-                            </div>
+                            </button>
                         )
                     })}
                 </div>

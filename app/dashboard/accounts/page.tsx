@@ -473,6 +473,8 @@ export default function AccountsPage() {
                       <Button
                         variant="ghost"
                         size="icon"
+                        aria-label="Refresh accounts"
+                        title="Refresh accounts"
                         onClick={handleRefresh}
                         disabled={isRefreshing}
                         className="h-9 w-9 text-muted-foreground hover:text-foreground"
@@ -570,6 +572,8 @@ export default function AccountsPage() {
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Clear account search"
+                  title="Clear search"
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                   onClick={() => setSearchQuery('')}
                 >
@@ -805,9 +809,14 @@ function AccountCard({
         isFunded && "ring-1 ring-primary/25",
         isAtRisk && !isFailed && "ring-1 ring-destructive/25"
       )}
-      onClick={onView}
     >
-      <CardContent className="p-4 pt-5">
+      <button
+        type="button"
+        className="absolute inset-0 z-0"
+        onClick={onView}
+        aria-label={`View account ${account.displayName || account.name || account.number}`}
+      />
+      <CardContent className="pointer-events-none relative z-[1] p-4 pt-5">
         {/* Header */}
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -855,6 +864,7 @@ function AccountCard({
             </div>
           </div>
 
+          <div className="pointer-events-auto relative z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
               <Button
@@ -898,6 +908,7 @@ function AccountCard({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          </div>
         </div>
 
         {/* Balance */}

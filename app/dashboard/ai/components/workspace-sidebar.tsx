@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils'
 import type { ChatSession, SavedInsight, WeeklyReview, WorkspaceTab } from '../types'
 
 interface WorkspaceSidebarProps {
+  className?: string
   activeTab: WorkspaceTab
   chats: ChatSession[]
   insights: SavedInsight[]
@@ -26,10 +27,11 @@ interface WorkspaceSidebarProps {
 const tabs: Array<{ id: WorkspaceTab; label: string }> = [
   { id: 'chats', label: 'Chats' },
   { id: 'insights', label: 'Insights' },
-  { id: 'history', label: 'Audits' },
+  { id: 'history', label: 'Reviews' },
 ]
 
 export function WorkspaceSidebar({
+  className,
   activeTab,
   chats,
   insights,
@@ -47,7 +49,7 @@ export function WorkspaceSidebar({
   onReviewSelect,
 }: WorkspaceSidebarProps) {
   return (
-    <aside aria-label="AI workspace library" className="flex max-h-[36vh] w-full shrink-0 flex-col border-b border-border/70 bg-[hsl(var(--surface-raised))] lg:max-h-none lg:w-80 lg:border-b-0 lg:border-r">
+    <aside aria-label="AI workspace library" className={cn("flex h-full w-full shrink-0 flex-col bg-[hsl(var(--surface-raised))] lg:w-80 lg:border-r", className)}>
       <div className="flex min-h-14 items-center justify-between px-4">
         <div>
           <p className="text-sm font-semibold text-foreground">Assistant workspace</p>
@@ -135,14 +137,14 @@ export function WorkspaceSidebar({
 
         {activeTab === 'history' && (
           <div className="divide-y divide-border/70">
-            {reviews.length === 0 ? <EmptyState>No weekly audits yet.</EmptyState> : reviews.map((review, index) => (
+            {reviews.length === 0 ? <EmptyState>No weekly reviews yet.</EmptyState> : reviews.map((review, index) => (
               <button key={`${review.weekStart ?? 'review'}-${index}`} type="button" onClick={() => onReviewSelect(review, index)} className="group w-full py-3 text-left first:pt-0">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs font-semibold text-foreground">Weekly performance audit</span>
+                  <span className="text-xs font-semibold text-foreground">Weekly performance review</span>
                   <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold">{review.grade || review.riskGrade || '—'}</span>
                 </div>
-                <p className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">{review.summary || 'Open the audit for details.'}</p>
-                <span className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-foreground"><Eye className="h-3 w-3" /> View audit</span>
+                <p className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">{review.summary || 'Open the review for details.'}</p>
+                <span className="mt-2 flex items-center gap-1 text-xs font-semibold text-foreground"><Eye className="h-3 w-3" /> View review</span>
               </button>
             ))}
           </div>

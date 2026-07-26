@@ -633,10 +633,9 @@ export default function SettingsPage() {
   const categories = [
     { id: 'profile' as const, label: 'Profile & Plan', icon: User },
     { id: 'preferences' as const, label: 'Preferences', icon: SettingsIcon },
-    { id: 'integrations' as const, label: 'Integrations', icon: Webhook },
-    { id: 'connections' as const, label: 'Linked Accounts', icon: LinkIcon },
+    { id: 'connections' as const, label: 'Connections', icon: LinkIcon },
     { id: 'security' as const, label: 'Security & Data', icon: Shield },
-    { id: 'help' as const, label: 'Help & Tutorials', icon: BookMarked },
+    { id: 'help' as const, label: 'Help', icon: BookMarked },
   ]
 
   const { startTour } = useTour()
@@ -645,7 +644,7 @@ export default function SettingsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-semibold text-heading-text">Help & Tutorials</h2>
+          <h2 className="text-lg font-semibold text-heading-text">Help</h2>
           <p className="text-xs text-muted-foreground/85">Restart interactive system tours to learn more about the platform</p>
         </div>
 
@@ -738,7 +737,7 @@ export default function SettingsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h2 className="text-lg font-semibold text-heading-text">Profile & Subscription</h2>
+          <h2 className="text-lg font-semibold text-heading-text">Profile & Plan</h2>
           <p className="text-xs text-muted-foreground/85">Manage your personal information and subscription plan</p>
         </div>
 
@@ -1312,6 +1311,8 @@ export default function SettingsPage() {
             <Button
               variant="outline"
               size="icon"
+              aria-label={webhookCopied ? "Webhook URL copied" : "Copy webhook URL"}
+              title={webhookCopied ? "Copied" : "Copy webhook URL"}
               className="shrink-0 h-9 w-9"
               disabled={!webhookToken || isLoadingWebhook}
               onClick={copyWebhookUrl}
@@ -1371,14 +1372,22 @@ export default function SettingsPage() {
 
   const renderConnectionsTab = () => {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
         <div>
-          <h2 className="text-lg font-semibold text-heading-text">Linked Accounts</h2>
-          <p className="text-xs text-muted-foreground/85">Manage your authenticated social logins and platform connections</p>
+          <h2 className="text-lg font-semibold text-heading-text">Connections</h2>
+          <p className="text-xs text-muted-foreground/85">Manage imports, webhooks, and sign-in providers</p>
         </div>
 
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6" data-tour="settings-card-connections">
-          <LinkedAccounts plain={true} />
+        {renderIntegrationsTab()}
+
+        <div className="space-y-3">
+          <div>
+            <h3 className="text-sm font-semibold text-heading-text">Linked accounts</h3>
+            <p className="text-xs text-muted-foreground/85">Manage the providers that can sign you in.</p>
+          </div>
+          <div className="rounded-xl border border-border/40 bg-card/45 p-6" data-tour="settings-card-connections">
+            <LinkedAccounts plain={true} />
+          </div>
         </div>
       </div>
     )
@@ -1497,7 +1506,6 @@ export default function SettingsPage() {
           >
              {activeTab === 'profile' && renderProfileTab()}
             {activeTab === 'preferences' && renderPreferencesTab()}
-            {activeTab === 'integrations' && renderIntegrationsTab()}
             {activeTab === 'connections' && renderConnectionsTab()}
             {activeTab === 'security' && renderSecurityTab()}
             {activeTab === 'help' && renderHelpTab()}

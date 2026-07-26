@@ -46,8 +46,20 @@ describe('app shell navigation contracts', () => {
 
     for (const item of MOBILE_NAV_DESTINATIONS) {
       expect(getMobileNavHref(item.href, false)).toBe(item.href)
-      expect(getMobileNavHref(item.href, true)).toMatch(/^\/demo(?:\/|$)/)
+      if (item.id === 'more') {
+        expect(getMobileNavHref(item.href, true)).toBe('#more')
+      } else {
+        expect(getMobileNavHref(item.href, true)).toMatch(/^\/demo(?:\/|$)/)
+      }
     }
+
+    expect(MOBILE_NAV_DESTINATIONS.map(({ label }) => label)).toEqual([
+      'Overview',
+      'Journal',
+      'Trades',
+      'Reports',
+      'More',
+    ])
   })
 
   it('selects the correct active destination for dashboard and demo routes', () => {
@@ -55,7 +67,7 @@ describe('app shell navigation contracts', () => {
     expect(getActiveMobileNavId('/dashboard/journal/day', false)).toBe('journal')
     expect(getActiveMobileNavId('/dashboard/reports', false)).toBe('reports')
     expect(getActiveMobileNavId('/dashboard/table', false)).toBe('table')
-    expect(getActiveMobileNavId('/dashboard/accounts/1', false)).toBe('accounts')
+    expect(getActiveMobileNavId('/dashboard/accounts/1', false)).toBe('more')
     expect(getActiveMobileNavId('/demo/reports', true)).toBe('reports')
     expect(getActiveMobileNavId('/login', false)).toBeNull()
   })

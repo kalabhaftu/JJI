@@ -50,7 +50,7 @@ export function ContextComposer({
           <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
             <Brain className="h-5 w-5" />
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">JJI intelligence</p>
+          <p className="text-xs font-semibold text-muted-foreground">JJI analysis</p>
           <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Turn your trading history into a focused next action.</h1>
           <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">Choose the evidence the assistant may use, then ask a direct question. Every response should connect a claim to your selected data.</p>
         </header>
@@ -87,7 +87,7 @@ export function ContextComposer({
           <div className="flex items-end justify-between gap-4">
             <div>
               <h2 id="starting-points" className="text-lg font-semibold text-foreground">Starting points</h2>
-              <p className="mt-1 text-sm text-muted-foreground">Use a structured audit or write your own question.</p>
+              <p className="mt-1 text-sm text-muted-foreground">Use a structured review or write your own question.</p>
             </div>
           </div>
           <div className="mt-4 grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 sm:grid-cols-2">

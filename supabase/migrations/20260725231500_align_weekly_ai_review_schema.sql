@@ -18,7 +18,6 @@ BEGIN
   END IF;
 END
 $$;
-
 ALTER TABLE public."WeeklyAIReview"
   ALTER COLUMN "weekStart" TYPE timestamp with time zone
     USING "weekStart"::timestamp AT TIME ZONE 'UTC',

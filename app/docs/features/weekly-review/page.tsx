@@ -6,7 +6,7 @@ export default function WeeklyReviewDocsPage() {
     <DocsPage
       badge="Feature Guide"
       title="Weekly Review"
-      description="The weekly review provides a structured summary of your trading performance for the past week, with actionable insights and comparison to previous periods."
+      description="The weekly review provides a structured summary of your trading performance for the past week, with insights and comparison to previous periods."
     >
       <DocsSection title="What the weekly review includes">
         <ul>

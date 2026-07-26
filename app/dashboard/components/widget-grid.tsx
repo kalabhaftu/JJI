@@ -443,17 +443,18 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                   </div>
                 ) : (
                   isEditMode && (
-                    <Card
-                      className="h-24 border-2 border-dashed border-border/50 bg-muted/20 hover:bg-muted/40 cursor-pointer transition-all hover:border-primary/30"
+                    <button
+                      type="button"
+                      className="h-24 w-full rounded-xl border-2 border-dashed border-border/50 bg-muted/20 hover:bg-muted/40 cursor-pointer transition-all hover:border-primary/30"
                       onClick={() => handleAddWidget({ slotIndex: index })}
                     >
-                      <CardContent className="h-full flex flex-col items-center justify-center p-4">
+                      <div className="h-full flex flex-col items-center justify-center p-4">
                         <Plus className="h-5 w-5 text-muted-foreground mb-1.5" />
                         <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                           Add KPI
                         </span>
-                      </CardContent>
-                    </Card>
+                      </div>
+                    </button>
                   )
               )}
             </div>
@@ -502,7 +503,11 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                       <X className="h-3 w-3" />
                     </Button>
                   )}
-                  <LazyMobileWidget height={mobileHeight} minHeight={minHeight} isEditMode={isEditMode}>
+                  <LazyMobileWidget
+                    {...(isContentSized ? {} : { height: mobileHeight })}
+                    minHeight={minHeight}
+                    isEditMode={isEditMode}
+                  >
                     {config.getComponent({ size: widget.size as any })}
                   </LazyMobileWidget>
                 </div>
@@ -577,17 +582,18 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
       {/* Add new widget button at bottom in edit mode */}
       {isEditMode && (
         <div className="px-4 pb-4">
-          <Card
-            className="h-24 border-2 border-dashed border-border/50 bg-muted/20 hover:bg-muted/40 cursor-pointer transition-all hover:border-primary/30"
+          <button
+            type="button"
+            className="h-24 w-full rounded-xl border-2 border-dashed border-border/50 bg-muted/20 hover:bg-muted/40 cursor-pointer transition-all hover:border-primary/30"
             onClick={() => handleAddWidget()}
           >
-            <CardContent className="h-full flex flex-col items-center justify-center p-4">
+            <div className="h-full flex flex-col items-center justify-center p-4">
               <Plus className="h-6 w-6 text-muted-foreground mb-1.5" />
               <span className="text-xs font-bold text-muted-foreground">
                 Add Widget
               </span>
-            </CardContent>
-          </Card>
+            </div>
+          </button>
         </div>
       )}
 

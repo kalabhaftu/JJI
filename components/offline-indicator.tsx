@@ -27,9 +27,13 @@ export function OfflineIndicator() {
   if (!isOffline) return null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex items-center gap-2 bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 px-3 py-2 rounded-full shadow-lg text-sm font-medium backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4">
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full border border-warning/30 bg-warning/10 px-3 py-2 text-sm font-medium text-warning shadow-lg backdrop-blur-sm animate-in fade-in slide-in-from-bottom-4"
+    >
       <WifiOff className="w-4 h-4" />
-      <span>Working Offline</span>
+      <span>Working offline</span>
     </div>
   )
 }

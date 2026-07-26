@@ -5,6 +5,5 @@ USING public."WeeklyAIReview" AS keeper
 WHERE duplicate."userId" = keeper."userId"
   AND duplicate."weekStart" = keeper."weekStart"
   AND duplicate."id" > keeper."id";
-
 CREATE UNIQUE INDEX IF NOT EXISTS "WeeklyAIReview_userId_weekStart_key"
 ON public."WeeklyAIReview" ("userId", "weekStart");

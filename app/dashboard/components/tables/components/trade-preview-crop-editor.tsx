@@ -144,6 +144,8 @@ export function TradePreviewCropEditor({
           type="button"
           variant="outline"
           size="icon"
+          aria-label="Zoom out"
+          title="Zoom out"
           className="h-9 w-9"
           onClick={() => updateTransform({ zoom: clampTradePreviewZoom(transform.zoom - 0.15) })}
           disabled={disabled}
@@ -167,6 +169,8 @@ export function TradePreviewCropEditor({
           type="button"
           variant="outline"
           size="icon"
+          aria-label="Zoom in"
+          title="Zoom in"
           className="h-9 w-9"
           onClick={() => updateTransform({ zoom: clampTradePreviewZoom(transform.zoom + 0.15) })}
           disabled={disabled}

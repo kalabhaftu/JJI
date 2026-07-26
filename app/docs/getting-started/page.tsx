@@ -125,7 +125,7 @@ export default function GettingStartedDocsPage() {
 
       <DocsSection title="6. Set up the mobile app">
         <p>
-          JJI offers a companion mobile app built with Flutter, available on both Android and
+          JJI has a companion mobile app built with Flutter, available on both Android and
           iOS. It syncs with your web account in real time.
         </p>
         <DocsCardGrid>
@@ -146,8 +146,8 @@ export default function GettingStartedDocsPage() {
 
       <DocsSection title="7. Next steps">
         <p>
-          With trades imported and both platforms set up, explore the deeper features that JJI
-          offers for trade analysis and improvement.
+          With trades imported and both platforms set up,           explore the deeper features JJI
+          has for trade analysis and improvement.
         </p>
         <DocsCardGrid>
           <DocsInfoCard

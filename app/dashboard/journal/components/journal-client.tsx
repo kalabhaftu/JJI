@@ -433,6 +433,8 @@ export function JournalClient() {
             <Button
               variant="ghost"
               size="icon"
+              aria-label="Clear journal search"
+              title="Clear search"
               onClick={() => {
                 setSearchTerm('')
                 setTradeDateFilter('')

@@ -69,8 +69,11 @@ const DayCell = memo(function DayCell({
   }, [dayData, breakEvenThreshold])
 
   return (
-    <div
+    <button
+      type="button"
       onClick={!isMiniCalendar && onClick ? onClick : undefined}
+      disabled={isMiniCalendar || !onClick}
+      aria-label={`Open ${format(date, 'MMMM d, yyyy')}${hasTrades ? `, ${dayData.tradeNumber} trades` : ''}`}
       className={cn(
         "relative flex flex-col items-center justify-center rounded-[4px] md:rounded-[6px] border transition-all duration-150 select-none group h-full",
         // Mini calendar: taller cells so they are properly rectangular not square
@@ -78,6 +81,7 @@ const DayCell = memo(function DayCell({
         isMiniCalendar 
           ? "min-h-[68px] sm:min-h-[76px] lg:min-h-[84px]" 
           : "min-h-[48px] md:min-h-[60px] lg:min-h-[68px] cursor-pointer",
+        isMiniCalendar && "disabled:cursor-default",
 
         // No trades - uses theme tokens so it works in any color scheme
         !hasTrades && isCurrentMonth && "bg-muted/30 dark:bg-[#0c0e12]/40 border-border/40 dark:border-border/20 hover:border-border/60 dark:hover:border-border/40",
@@ -232,7 +236,7 @@ const DayCell = memo(function DayCell({
           )}
         </div>
       </div>
-    </div>
+    </button>
   )
 })
 
@@ -270,9 +274,12 @@ function WeeklySummary({
   const isPositive = stats.pnl >= 0
 
   return (
-    <div
+    <button
+      type="button"
+      disabled={!onReviewWeek || !weekDays[0]}
+      aria-label={`Review week ${weekIndex + 1}`}
       className={cn(
-        "flex h-full min-h-[48px] md:min-h-[60px] flex-col items-start justify-center rounded-[4px] md:rounded-[6px] border p-2.5 cursor-pointer transition-all hover:bg-muted/30 dark:hover:bg-muted/10 group lg:min-h-[68px]",
+        "flex h-full min-h-[48px] md:min-h-[60px] flex-col items-start justify-center rounded-[4px] md:rounded-[6px] border p-2.5 cursor-pointer transition-all hover:bg-muted/30 dark:hover:bg-muted/10 group lg:min-h-[68px] disabled:cursor-default",
         "bg-muted/25 dark:bg-[#0c0e12]/35 border-border/40 dark:border-border/20 shadow-none hover:border-border/60 dark:hover:border-border/40"
       )}
       onClick={() => { if (weekDays[0]) onReviewWeek?.(weekDays[0]) }}
@@ -300,7 +307,7 @@ function WeeklySummary({
       )}>
         {stats.tradedDays} {stats.tradedDays === 1 ? 'day' : 'days'}
       </div>
-    </div>
+    </button>
   )
 }
 

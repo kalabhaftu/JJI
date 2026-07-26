@@ -17,7 +17,7 @@ import { ThemeSwitcher } from '@/components/theme-switcher'
 import { TemplateSelector } from './template-selector'
 import { DashboardDisplayModeSelector } from './navbar-display-mode'
 import { signOut } from '@/server/auth'
-import { Settings, LogOut, Wallet, Plus } from 'lucide-react'
+import { Settings, LogOut, Wallet, Plus, SlidersHorizontal } from 'lucide-react'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import {
   DropdownMenu,
@@ -34,12 +34,12 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Logo } from '@/components/logo'
-import { Badge } from '@/components/ui/badge'
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/user-avatar'
 
 export default function Navbar() {
@@ -54,7 +54,7 @@ export default function Navbar() {
   const [mobileAccountsOpen, setMobileAccountsOpen] = useState(false)
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 
-  const { accountNumbers, isMobile, isDemoMode } = useData()
+  const { isMobile, isDemoMode } = useData()
   const { forceClearAuth } = useAuth()
 
   useKeyboardShortcuts()
@@ -93,7 +93,26 @@ export default function Navbar() {
 
         {/* Right: Account Selector + Filters + Template + Import + Notifications + Theme + Profile */}
         <div className="flex items-center gap-1 sm:gap-1.5">
-          {/* Account Selector - hidden on mobile, shown in profile dropdown */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:hidden"
+            onClick={() => setMobileAccountsOpen(true)}
+            aria-label="Select accounts"
+          >
+            <Wallet className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:hidden"
+            onClick={() => setMobileFiltersOpen(true)}
+            aria-label="Open filters"
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+          </Button>
+
+          {/* Account Selector */}
           <Popover open={!isMobile && accountPopoverOpen} onOpenChange={setAccountPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" data-tour="navbar-accounts-btn" className="hidden h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:flex" aria-label="Trading accounts">
@@ -137,6 +156,7 @@ export default function Navbar() {
             data-tour="quick-add-btn"
             className="hidden h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:flex items-center justify-center rounded-lg"
             title="Quick Add Trade"
+            aria-label="Quick add trade"
           >
             <Plus className="h-4 w-4" />
           </Button>
@@ -155,7 +175,7 @@ export default function Navbar() {
           {/* Profile dropdown - includes mobile-only items */}
           <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+              <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" aria-label="Open profile menu">
                 <Avatar className="h-8 w-8">
                   <AvatarImage key={avatarUrl ?? 'navbar-avatar-fallback'} src={avatarUrl} referrerPolicy="no-referrer" />
                   <AvatarFallback className="uppercase text-xs bg-muted text-foreground font-medium">
@@ -182,39 +202,6 @@ export default function Navbar() {
                 </div>
               </div>
               <DropdownMenuSeparator />
-
-              {/* Mobile-only: Accounts */}
-              <DropdownMenuItem
-                className="sm:hidden cursor-pointer"
-                onSelect={(e) => {
-                  e.preventDefault()
-                  setProfileMenuOpen(false)
-                  setMobileAccountsOpen(true)
-                }}
-              >
-                <Wallet className="mr-2 h-4 w-4" />
-                Accounts
-                {accountNumbers.length > 0 && (
-                  <Badge variant="secondary" className="ml-auto h-5 px-1.5 text-xs">
-                    {accountNumbers.length}
-                  </Badge>
-                )}
-              </DropdownMenuItem>
-
-              {/* Mobile-only: Filters */}
-              <DropdownMenuItem
-                className="sm:hidden cursor-pointer"
-                onSelect={(e) => {
-                  e.preventDefault()
-                  setProfileMenuOpen(false)
-                  setMobileFiltersOpen(true)
-                }}
-              >
-                <Settings className="mr-2 h-4 w-4" />
-                Filters
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator className="sm:hidden" />
 
               <div className="sm:hidden px-2 py-1.5">
                 <div className="flex items-center justify-between">
@@ -258,7 +245,8 @@ export default function Navbar() {
       <Dialog open={mobileAccountsOpen} onOpenChange={setMobileAccountsOpen}>
         <DialogContent className="max-w-[min(100vw-1rem,32rem)] p-0 flex flex-col overflow-hidden max-h-[85dvh]">
           <DialogHeader className="px-4 pt-4 pb-0 flex-shrink-0">
-            <DialogTitle>Account Filter</DialogTitle>
+            <DialogTitle>Accounts</DialogTitle>
+            <DialogDescription>Choose which trading accounts apply to the current view.</DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-0 flex flex-col px-1 pb-3">
             <AccountSelector onSave={() => setMobileAccountsOpen(false)} />
@@ -270,6 +258,7 @@ export default function Navbar() {
         <DialogContent className="max-w-[min(100vw-1rem,32rem)] p-0 flex flex-col overflow-hidden max-h-[85dvh]">
           <DialogHeader className="px-4 pt-4 pb-0 flex-shrink-0">
             <DialogTitle>Filters</DialogTitle>
+            <DialogDescription>Refine the data shown on the current page.</DialogDescription>
           </DialogHeader>
           <div className="flex-1 min-h-0 flex flex-col px-1 pb-3">
             <CombinedFilters

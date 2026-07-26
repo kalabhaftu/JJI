@@ -224,9 +224,11 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                         const isPreview = image === backtest.cardPreviewImage
                         return (
                           <div key={index} className="relative group">
-                            <div
+                            <button
+                              type="button"
                               className="aspect-video relative rounded-lg overflow-hidden cursor-pointer border-2 border-transparent hover:border-primary transition-colors"
                               onClick={() => setSelectedImage(image)}
+                              aria-label={`Open ${isPreview ? 'card preview' : `screenshot ${index + 1}`}`}
                             >
                               <Image
                                 src={image}
@@ -237,7 +239,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                 <Eye className="w-8 h-8 text-white" />
                               </div>
-                            </div>
+                            </button>
                             <p className="text-xs text-muted-foreground mt-1 text-center">
                               {isPreview ? 'Card Preview' : `Screenshot ${index + 1}`}
                             </p>
@@ -348,4 +350,3 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
     </>
   )
 }
-

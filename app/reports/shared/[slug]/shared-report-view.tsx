@@ -117,7 +117,7 @@ export function SharedReportView({ report }: Props) {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-5 py-8">
+      <main id="main-content" className="mx-auto max-w-6xl px-5 py-8">
         {psych && activity ? (
           <div className="overflow-hidden rounded-sm border border-slate-200 bg-white shadow-sm">
             <section className="border-b border-slate-200 px-6 py-6">

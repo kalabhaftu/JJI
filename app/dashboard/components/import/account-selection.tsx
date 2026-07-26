@@ -216,13 +216,14 @@ export default function AccountSelection({
             {accountsWithPhases.map((account) => {
               const isSelected = selectedAccountId === account.id;
               return (
-                <Card
+                <button
+                  type="button"
                   key={account.id}
                   data-tour="import-account-card"
                   className={cn(
-                    "p-5 cursor-pointer hover:border-primary/30 hover:bg-muted/10 hover:scale-[1.015] hover:shadow-md transition-all duration-200 relative group flex flex-col justify-between rounded-2xl border",
+                    "relative group flex flex-col justify-between rounded-xl border p-5 text-left cursor-pointer hover:border-primary/30 hover:bg-muted/10 hover:shadow-md transition-all duration-200",
                     isSelected 
-                      ? "border-primary bg-primary/5 shadow-md shadow-primary/5 ring-1 ring-primary/20 scale-[1.015]" 
+                      ? "border-primary bg-primary/5 shadow-md shadow-primary/5 ring-1 ring-primary/20"
                       : "border-border bg-card"
                   )}
                   onClick={() => {
@@ -308,7 +309,7 @@ export default function AccountSelection({
                       ${account.startingBalance.toLocaleString()}
                     </span>
                   </div>
-                </Card>
+                </button>
               );
             })}
           </div>

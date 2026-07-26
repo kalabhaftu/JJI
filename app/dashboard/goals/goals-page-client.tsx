@@ -127,6 +127,8 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
             <Button
               variant="ghost"
               size="icon"
+              aria-label={`Edit goal ${goal.title}`}
+              title="Edit goal"
               className="h-6 w-6 opacity-30 hover:opacity-100"
               onClick={(e) => { e.stopPropagation(); onEdit(goal) }}
             >
@@ -136,6 +138,8 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
           <Button
             variant="ghost"
             size="icon"
+            aria-label={`Delete goal ${goal.title}`}
+            title="Delete goal"
             className="h-6 w-6 opacity-30 hover:opacity-100 hover:text-short"
             onClick={(e) => { e.stopPropagation(); onDelete(goal.id) }}
           >
@@ -228,7 +232,7 @@ export function GoalsPageClient() {
             {
               id: 'mock-goal-3',
               title: 'Log at least 40 trades',
-              description: 'Build robust sample size for the new order block model',
+              description: 'Build sufficient sample size for the new order block model',
               metric: 'trades' as const,
               targetValue: 40,
               currentValue: 80,

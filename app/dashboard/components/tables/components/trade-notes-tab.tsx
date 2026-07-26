@@ -409,6 +409,8 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                                     type="button"
                                                     variant="ghost"
                                                     size="icon"
+                                                    aria-label={`Delete template ${template.name}`}
+                                                    title="Delete template"
                                                     className="h-7 w-7 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 focus:opacity-100"
                                                     disabled={deletingTemplateId === template.id}
                                                     onClick={(event) => {
@@ -436,6 +438,8 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                         type="button"
                                         variant="outline"
                                         size="icon"
+                                        aria-label="Save note as template"
+                                        title="Save as template"
                                         className="h-8 w-8 shrink-0 bg-muted/20 disabled:opacity-40"
                                         disabled={isSubmitting || isSavingTemplate || !noteHasContent}
                                         onClick={openSaveTemplateDialog}
@@ -744,6 +748,8 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                     type="button"
                                     variant="ghost"
                                     size="icon"
+                                    aria-label={`Remove chart link ${index + 1}`}
+                                    title="Remove chart link"
                                     className="h-9 w-9 text-muted-foreground hover:text-destructive transition-colors"
                                     onClick={() => {
                                         const newLinks = chartLinks.filter((_, i) => i !== index)

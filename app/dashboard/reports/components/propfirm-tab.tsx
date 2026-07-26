@@ -215,7 +215,7 @@ export function PropFirmTab({ initialData }: PropFirmTabProps) {
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/5 py-24">
         <Building2 className="mb-4 h-10 w-10 text-muted-foreground/30" />
         <h3 className="mb-2 text-sm font-bold uppercase tracking-widest text-muted-foreground/50">No Prop Firm Accounts</h3>
-        <p className="text-[10px] font-medium text-muted-foreground/40">Import prop firm trades to see master-account analytics here</p>
+        <p className="text-xs font-medium text-muted-foreground">Import prop firm trades to see account analysis here.</p>
       </div>
     )
   }

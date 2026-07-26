@@ -4,10 +4,8 @@ import "./globals.css";
 import { SafeToaster } from "@/components/safe-toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 // Removed Vercel Analytics and Speed Insights to comply with essential-only cookie policy
-import { AuthProvider } from "@/context/auth-provider";
 import { CookieConsent } from "@/components/ui/cookie-consent";
 import { ThemeProvider } from "@/context/theme-provider";
-import { QueryProvider } from "@/lib/query/query-provider";
 import { ErrorBoundaryWrapper } from "@/components/error-boundary";
 import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { RouteAwareFooter } from "@/components/route-aware-footer";
@@ -117,22 +115,24 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans min-h-screen flex flex-col overflow-x-clip w-full`}>
+      <body className={`${inter.variable} font-sans min-h-screen flex flex-col w-full`}>
+        <a
+          href="#main-content"
+          className="fixed left-3 top-3 z-[100] -translate-y-20 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg transition-transform focus:translate-y-0"
+        >
+          Skip to main content
+        </a>
         <ErrorBoundaryWrapper showDetails={process.env.NODE_ENV === 'development'}>
           <ThemeProvider>
-            <QueryProvider>
-              <AuthProvider>
-                <TooltipProvider>
-                  <ServiceWorkerRegister />
-                  <CookieConsent />
-                  <SafeToaster />
-                  <div className="flex-1 flex flex-col">
-                    {children}
-                  </div>
-                  <RouteAwareFooter />
-                </TooltipProvider>
-              </AuthProvider>
-            </QueryProvider>
+            <TooltipProvider>
+              <ServiceWorkerRegister />
+              <CookieConsent />
+              <SafeToaster />
+              <div className="flex-1 flex flex-col">
+                {children}
+              </div>
+              <RouteAwareFooter />
+            </TooltipProvider>
           </ThemeProvider>
         </ErrorBoundaryWrapper>
       </body>

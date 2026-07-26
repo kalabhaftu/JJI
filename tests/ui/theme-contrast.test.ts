@@ -80,7 +80,6 @@ const themes: Record<string, Palette> = {
   'reports-light': {
     ...light,
     ...palette(block('.accent-reports {')),
-    ...palette(block('.accent-reports:not(.dark) {')),
   },
   'reports-dark': {
     ...dark,
@@ -129,4 +128,29 @@ describe('theme contrast', () => {
       }
     })
   }
+
+  it('prevents accent packs from overriding semantic colors', () => {
+    for (const selector of [
+      '.accent-reports {',
+      '.dark.accent-reports,',
+      '.accent-violet {',
+      '.dark.accent-violet,',
+      '.accent-slate {',
+      '.dark.accent-slate,',
+      '.accent-slate:not(.dark) {',
+    ]) {
+      const declarations = block(selector)
+      for (const token of [
+        '--success',
+        '--warning',
+        '--destructive',
+        '--chart-profit',
+        '--chart-loss',
+        '--chart-bullish',
+        '--chart-bearish',
+      ]) {
+        expect(declarations, `${selector} must not override ${token}`).not.toContain(`${token}:`)
+      }
+    }
+  })
 })

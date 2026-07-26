@@ -103,10 +103,9 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
                 <ScrollArea className="max-h-[200px]">
                   <div className="space-y-2">
                     {tags.map((tag) => (
-                      <div
+                      <label
                         key={tag.id}
                         className="flex items-center gap-2 p-1.5 rounded hover:bg-accent/50 cursor-pointer"
-                        onClick={() => handleToggleTag(tag.id)}
                       >
                         <Checkbox
                           checked={selectedTagIds.includes(tag.id)}
@@ -122,7 +121,7 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
                         >
                           {tag.name}
                         </Badge>
-                      </div>
+                      </label>
                     ))}
                   </div>
                 </ScrollArea>

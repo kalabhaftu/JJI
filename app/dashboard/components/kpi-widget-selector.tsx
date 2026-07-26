@@ -114,10 +114,9 @@ export default function KpiWidgetSelector({
                   <Card
                     key={type}
                     className={cn(
-                      "hover:bg-muted/50 transition-colors cursor-pointer",
+                      "transition-colors",
                       isUsed && "opacity-60"
                     )}
-                    onClick={() => !isUsed && handleSelect(type)}
                   >
                     <CardContent className="p-4 space-y-3">
                       <div className="flex items-start justify-between gap-2">
@@ -135,6 +134,7 @@ export default function KpiWidgetSelector({
                         size="sm"
                         className="w-full"
                         disabled={isUsed}
+                        onClick={() => handleSelect(type)}
                       >
                         {isUsed ? 'Already in use' : 'Select'}
                       </Button>

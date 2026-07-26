@@ -52,21 +52,23 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
 
   if (isAuthenticated && !isLoading && !isProcessingLogout) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <main id="main-content" className="flex min-h-screen items-center justify-center bg-background">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className="flex flex-col items-center gap-4"
+          role="status"
+          aria-live="polite"
         >
           <Spinner className="h-8 w-8 text-primary" />
           <p className="text-muted-foreground animate-pulse">Restoring your session...</p>
         </motion.div>
-      </div>
+      </main>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background overflow-hidden relative flex flex-col items-center justify-center selection:bg-primary/30">
+    <main id="main-content" className="relative flex min-h-screen flex-col items-center justify-center bg-background selection:bg-primary/30">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -133,6 +135,6 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
           </div>
         </motion.div>
       </motion.div>
-    </div>
+    </main>
   )
 }

@@ -110,67 +110,67 @@ export function LexicalToolbar() {
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/20">
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} type="button">
+      <Button aria-label="Undo" title="Undo" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} type="button">
         <Undo className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)} type="button">
+      <Button aria-label="Redo" title="Redo" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)} type="button">
         <Redo className="h-4 w-4" />
       </Button>
       
       <Separator orientation="vertical" className="h-6 mx-1" />
       
-      <Toggle size="sm" pressed={blockType === 'h1'} onPressedChange={() => formatHeading('h1')}>
+      <Toggle aria-label="Heading 1" title="Heading 1" size="sm" pressed={blockType === 'h1'} onPressedChange={() => formatHeading('h1')}>
         <Heading1 className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={blockType === 'h2'} onPressedChange={() => formatHeading('h2')}>
+      <Toggle aria-label="Heading 2" title="Heading 2" size="sm" pressed={blockType === 'h2'} onPressedChange={() => formatHeading('h2')}>
         <Heading2 className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={blockType === 'h3'} onPressedChange={() => formatHeading('h3')}>
+      <Toggle aria-label="Heading 3" title="Heading 3" size="sm" pressed={blockType === 'h3'} onPressedChange={() => formatHeading('h3')}>
         <Heading3 className="h-4 w-4" />
       </Toggle>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <Toggle size="sm" pressed={isBold} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}>
+      <Toggle aria-label="Bold" title="Bold" size="sm" pressed={isBold} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}>
         <Bold className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={isItalic} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}>
+      <Toggle aria-label="Italic" title="Italic" size="sm" pressed={isItalic} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}>
         <Italic className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={isUnderline} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}>
+      <Toggle aria-label="Underline" title="Underline" size="sm" pressed={isUnderline} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}>
         <Underline className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={isStrikethrough} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')}>
+      <Toggle aria-label="Strikethrough" title="Strikethrough" size="sm" pressed={isStrikethrough} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')}>
         <Strikethrough className="h-4 w-4" />
       </Toggle>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <Toggle size="sm" pressed={blockType === 'ul'} onPressedChange={() => formatList('ul')}>
+      <Toggle aria-label="Bulleted list" title="Bulleted list" size="sm" pressed={blockType === 'ul'} onPressedChange={() => formatList('ul')}>
         <List className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={blockType === 'ol'} onPressedChange={() => formatList('ol')}>
+      <Toggle aria-label="Numbered list" title="Numbered list" size="sm" pressed={blockType === 'ol'} onPressedChange={() => formatList('ol')}>
         <ListOrdered className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={blockType === 'check'} onPressedChange={() => formatList('check')}>
+      <Toggle aria-label="Checklist" title="Checklist" size="sm" pressed={blockType === 'check'} onPressedChange={() => formatList('check')}>
         <ListTodo className="h-4 w-4" />
       </Toggle>
-      <Toggle size="sm" pressed={blockType === 'quote'} onPressedChange={() => formatQuote()}>
+      <Toggle aria-label="Quote" title="Quote" size="sm" pressed={blockType === 'quote'} onPressedChange={() => formatQuote()}>
         <Quote className="h-4 w-4" />
       </Toggle>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')} type="button">
+      <Button aria-label="Align left" title="Align left" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')} type="button">
         <AlignLeft className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')} type="button">
+      <Button aria-label="Align center" title="Align center" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')} type="button">
         <AlignCenter className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')} type="button">
+      <Button aria-label="Align right" title="Align right" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')} type="button">
         <AlignRight className="h-4 w-4" />
       </Button>
-      <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')} type="button">
+      <Button aria-label="Justify" title="Justify" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')} type="button">
         <AlignJustify className="h-4 w-4" />
       </Button>
     </div>

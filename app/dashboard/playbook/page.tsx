@@ -533,7 +533,7 @@ export default function PlaybookPage() {
           </div>
           <AlertDialogFooter>
             <AlertDialogAction onClick={() => setViewModel(null)} className="font-black uppercase tracking-tighter text-xs">
-              Close Intelligence
+              Close analysis
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

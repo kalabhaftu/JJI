@@ -125,7 +125,7 @@ export function AdvancedExportDialog() {
       setIsExporting(true)
       toast.info('Preparing system export...', {
         id: 'export',
-        description: 'Generating comprehensive backup archive...',
+        description: 'Generating backup archive...',
         duration: Infinity
       })
 

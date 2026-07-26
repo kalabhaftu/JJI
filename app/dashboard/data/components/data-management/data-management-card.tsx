@@ -328,31 +328,26 @@ export function DataManagementCard() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[26px] border border-border/22 bg-card/36 p-4 sm:p-5">
+      <section className="border-y border-border/30 py-5">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-4">
             <div className="space-y-1">
-              <p className="text-[10px] font-black uppercase tracking-[0.18em] text-muted-foreground/55">Accounts & Backups</p>
-              <h2 className="text-xl font-semibold tracking-tight">Organize connected accounts and keep cleanup separate from destructive actions.</h2>
+              <p className="text-xs font-semibold text-muted-foreground">Accounts and backups</p>
+              <h2 className="text-xl font-semibold tracking-tight">Manage account data</h2>
             </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="rounded-2xl border border-border/14 bg-background/35 p-3">
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/55">Groups</p>
-                <p className="mt-2 text-lg font-black font-mono">{stats.totalAccounts}</p>
-              </div>
-              <div className="rounded-2xl border border-border/14 bg-background/35 p-3">
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/55">Phases</p>
-                <p className="mt-2 text-lg font-black font-mono">{stats.totalPhases}</p>
-              </div>
-              <div className="rounded-2xl border border-border/14 bg-background/35 p-3">
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/55">Live</p>
-                <p className="mt-2 text-lg font-black font-mono">{stats.liveAccounts}</p>
-              </div>
-              <div className="rounded-2xl border border-border/14 bg-background/35 p-3">
-                <p className="text-[9px] font-black uppercase tracking-[0.14em] text-muted-foreground/55">Trades</p>
-                <p className="mt-2 text-lg font-black font-mono">{stats.totalTrades}</p>
-              </div>
-            </div>
+            <dl className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+              {[
+                ['Groups', stats.totalAccounts],
+                ['Phases', stats.totalPhases],
+                ['Live', stats.liveAccounts],
+                ['Trades', stats.totalTrades],
+              ].map(([label, value]) => (
+                <div key={label} className="border-l border-border/40 pl-3">
+                  <dt className="text-xs text-muted-foreground">{label}</dt>
+                  <dd className="mt-1 font-mono text-lg font-semibold">{value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ImportDialog />
@@ -371,7 +366,7 @@ export function DataManagementCard() {
                     ) : (
                       <>
                         <Trash2 className="mr-2 h-4 w-4" />
-                        Delete ({selectedAccounts.length})
+                        Delete selected ({selectedAccounts.length})
                       </>
                     )}
                   </Button>
@@ -387,8 +382,12 @@ export function DataManagementCard() {
                   </AlertDialogHeader>
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteAccounts} disabled={deleteLoading}>
-                      {deleteLoading ? "Deleting..." : "Delete"}
+                    <AlertDialogAction
+                      onClick={handleDeleteAccounts}
+                      disabled={deleteLoading}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      {deleteLoading ? "Deleting..." : "Delete selected accounts"}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -433,9 +432,13 @@ export function DataManagementCard() {
                 key={group.accountName} 
                 className="overflow-hidden rounded-[22px] border border-border/24 bg-card/92"
               >
-                <div 
+                <button
+                  type="button"
+                  disabled={!hasMultiplePhases}
+                  aria-expanded={hasMultiplePhases ? isExpanded : undefined}
+                  aria-label={hasMultiplePhases ? `${isExpanded ? 'Collapse' : 'Expand'} ${group.accountName}` : group.accountName}
                   className={cn(
-                    "p-4 transition-colors",
+                    "w-full p-4 text-left transition-colors disabled:cursor-default",
                     hasMultiplePhases && "cursor-pointer hover:bg-muted/35"
                   )}
                   onClick={() => hasMultiplePhases && toggleExpandAccount(group.accountName)}
@@ -483,7 +486,7 @@ export function DataManagementCard() {
                       </div>
                     </div>
                   </div>
-                </div>
+                </button>
 
                 {(isExpanded || !hasMultiplePhases) && (
                   <div className="divide-y divide-border/16 border-t border-border/18">
@@ -520,6 +523,8 @@ export function DataManagementCard() {
                         <Button
                           variant="ghost"
                           size="icon"
+                          aria-label={`Rename account ${phase.number}`}
+                          title="Rename account"
                           className="h-8 w-8 text-muted-foreground hover:text-foreground"
                           onClick={(e) => {
                             e.stopPropagation()

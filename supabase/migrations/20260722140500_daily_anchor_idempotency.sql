@@ -5,6 +5,5 @@ USING public."DailyAnchor" AS keeper
 WHERE duplicate."phaseAccountId" = keeper."phaseAccountId"
   AND duplicate."date" = keeper."date"
   AND duplicate."id" > keeper."id";
-
 CREATE UNIQUE INDEX IF NOT EXISTS "DailyAnchor_phaseAccountId_date_key"
 ON public."DailyAnchor" ("phaseAccountId", "date");

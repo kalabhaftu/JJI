@@ -109,6 +109,8 @@ export function DonateCardsClient() {
                     <Button
                       variant="outline"
                       size="icon"
+                      aria-label={isCopied ? `${meta.name} address copied` : `Copy ${meta.name} address`}
+                      title={isCopied ? "Copied" : "Copy address"}
                       className="h-8 w-8 shrink-0"
                       onClick={() => copyToClipboard(addr.address, index)}
                     >

@@ -257,6 +257,8 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label={`Remove mapping for ${header}`}
+                      title="Remove mapping"
                       onClick={() => handleRemoveMapping(header)}
                       className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground h-8 w-8 rounded-lg transition-all"
                     >

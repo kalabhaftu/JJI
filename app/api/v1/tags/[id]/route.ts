@@ -9,7 +9,7 @@ import { eq, and } from 'drizzle-orm'
 // PUT - Update a tag
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -21,7 +21,7 @@ export async function PUT(
     }
     const userId = identity.internalUserId
 
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
     const { name, color } = body
 
@@ -64,7 +64,7 @@ export async function PUT(
 // DELETE - Delete a tag
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -76,7 +76,7 @@ export async function DELETE(
     }
     const userId = identity.internalUserId
 
-    const { id } = params
+    const { id } = await params
 
     // Verify tag ownership
     const existingTag = await db.query.TradeTag.findFirst({

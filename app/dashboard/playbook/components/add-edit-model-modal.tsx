@@ -251,6 +251,8 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                         type="button"
                         variant="ghost"
                         size="icon"
+                        aria-label={`Remove rule ${index + 1}`}
+                        title="Remove rule"
                         onClick={() => handleRemoveRule(index)}
                         className="h-10 w-10 shrink-0 opacity-40 hover:opacity-100 transition-opacity"
                       >

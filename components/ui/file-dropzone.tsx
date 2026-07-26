@@ -84,15 +84,17 @@ export function FileDropzone({
 
                             {/* Remove Button Overlay */}
                             {onClear && (
-                                <div
+                                <button
+                                    type="button"
+                                    aria-label={`Remove ${value.name}`}
                                     onClick={(e) => {
                                         e.stopPropagation()
                                         onClear()
                                     }}
-                                    className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 shadow-md cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity"
+                                    className="absolute -right-1 -top-1 rounded-full bg-destructive p-1 text-destructive-foreground opacity-100 shadow-md transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
                                 >
                                     <X className="h-3 w-3" />
-                                </div>
+                                </button>
                             )}
                         </div>
                         <p className="text-sm font-medium text-foreground">{value.name}</p>
@@ -112,7 +114,7 @@ export function FileDropzone({
                             isDragActive ? "bg-primary/20" : "bg-muted/40"
                         )}>
                             {icon || (
-                                isDragActive ? <FileUp className="h-8 w-8 text-primary animate-bounce" /> : <Upload className="h-8 w-8 text-muted-foreground/60" />
+                                isDragActive ? <FileUp className="h-8 w-8 text-primary" /> : <Upload className="h-8 w-8 text-muted-foreground/60" />
                             )}
                         </div>
 
@@ -137,7 +139,7 @@ export function FileDropzone({
 
             {/* Error Feedback */}
             {fileRejections.length > 0 && (
-                <div className="flex items-start gap-2 text-destructive text-xs bg-destructive/10 p-2 rounded-md">
+                <div role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
                     <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
                         <span className="font-semibold">File not accepted:</span>

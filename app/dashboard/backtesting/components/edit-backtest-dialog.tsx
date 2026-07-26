@@ -519,11 +519,9 @@ export function EditBacktestDialog({
 
       {/* Fullscreen Image Viewer */}
       {fullscreenImage && (
-        <div
-          className="fixed inset-0 z-[10001] bg-black/90 flex items-center justify-center p-4"
-          onClick={() => setFullscreenImage(null)}
-        >
-          <div className="w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/90 p-4" role="dialog" aria-modal="true" aria-label="Fullscreen backtest image">
+          <button type="button" className="absolute inset-0" onClick={() => setFullscreenImage(null)} aria-label="Close fullscreen image" />
+          <div className="pointer-events-none z-10 flex h-full w-full items-center justify-center">
             <Image
               src={fullscreenImage}
               alt="Fullscreen view"
@@ -532,7 +530,7 @@ export function EditBacktestDialog({
               className="max-w-full max-h-full object-contain"
             />
           </div>
-          <div className="absolute top-4 right-4 flex gap-2">
+          <div className="absolute right-4 top-4 z-20 flex gap-2">
             <Button
               variant="secondary"
               size="icon"
@@ -565,4 +563,3 @@ export function EditBacktestDialog({
     </>
   )
 }
-

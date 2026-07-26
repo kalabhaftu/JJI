@@ -71,7 +71,6 @@ export default function AccountDetailPage() {
   const hasFetchedDataRef = useRef(false)
 
   const accountId = params.id as string
-  const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
 
   const {
     account: realtimeAccount,
@@ -563,17 +562,9 @@ export default function AccountDetailPage() {
                   <CardContent>
                     <div className="space-y-4">
                       {accountData.phases.map((phase: any) => {
-                        const phaseTrades = tradesData.filter((t: any) =>
-                          t.phase?.id === phase.id || t.phaseAccountId === phase.id
-                        )
-                        const phasePnL = phaseTrades.reduce((sum: number, t: any) => sum + getTradeNetPnl(t), 0)
-                        const wins = phaseTrades.filter(
-                          (t: any) => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'win'
-                        ).length
-                        const losses = phaseTrades.filter(
-                          (t: any) => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'loss'
-                        ).length
-                        const winRate = Math.round(calculateWinRate(wins, losses))
+                        const phaseSummary = getPhaseSummary(phase)
+                        const phasePnL = phaseSummary.totalPnL
+                        const winRate = Math.round(phaseSummary.winRate)
 
                         return (
                           <div key={phase.id} className="rounded-2xl border border-border/30 bg-muted/15 p-4">
@@ -591,7 +582,7 @@ export default function AccountDetailPage() {
                             <div className="grid grid-cols-3 gap-4 text-sm">
                               <div>
                                 <p className="text-muted-foreground">Trades</p>
-                                <p className="font-medium">{phaseTrades.length}</p>
+                                <p className="font-medium">{phaseSummary.totalTrades}</p>
                               </div>
                               <div>
                                 <p className="text-muted-foreground">Win Rate</p>
@@ -600,9 +591,9 @@ export default function AccountDetailPage() {
                               <div>
                                 <p className="text-muted-foreground">W/L</p>
                                 <p className="font-medium">
-                                  <span className="text-long">{wins}</span>
+                                  <span className="text-long">{phaseSummary.wins}</span>
                                   <span className="text-muted-foreground">/</span>
-                                  <span className="text-short">{losses}</span>
+                                  <span className="text-short">{phaseSummary.losses}</span>
                                 </p>
                               </div>
                             </div>
@@ -809,16 +800,7 @@ export default function AccountDetailPage() {
                 breaches={[]}
                 evaluationType={account.evaluationType}
                 phases={accountData.phases?.map((phase: any) => {
-                  const phaseTrades = tradesData.filter((t: any) =>
-                    t.phase?.id === phase.id || t.phaseAccountId === phase.id
-                  )
-                  const totalPnL = phaseTrades.reduce((sum: number, t: any) => sum + getTradeNetPnl(t), 0)
-                  const wins = phaseTrades.filter(
-                    (t: any) => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'win'
-                  ).length
-                  const losses = phaseTrades.filter(
-                    (t: any) => classifyOutcome(getTradeNetPnl(t), breakEvenThreshold) === 'loss'
-                  ).length
+                  const phaseSummary = getPhaseSummary(phase)
 
                   return {
                     id: phase.id,
@@ -827,13 +809,11 @@ export default function AccountDetailPage() {
                     status: phase.status,
                     startDate: phase.startDate,
                     endDate: phase.endDate,
-                    totalTrades: phaseTrades.length,
-                    totalPnL,
-                    winRate: calculateWinRate(wins, losses),
+                    totalTrades: phaseSummary.totalTrades,
+                    totalPnL: phaseSummary.totalPnL,
+                    winRate: phaseSummary.winRate,
                     profitTargetPercent: phase.profitTargetPercent,
-                    profitProgress: phase.profitTargetPercent > 0
-                      ? Math.min((totalPnL / ((phase.profitTargetPercent / 100) * account.startingBalance)) * 100, 100)
-                      : 0,
+                    profitProgress: phaseSummary.profitProgress,
                   }
                 }) || []}
               />

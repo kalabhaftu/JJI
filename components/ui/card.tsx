@@ -6,10 +6,10 @@ import { cn } from "@/lib/utils"
 const cardVariants = cva("text-card-foreground", {
   variants: {
     variant: {
-      raised: "rounded-2xl border border-border/80 bg-[hsl(var(--surface-raised))] shadow-[0_1px_2px_hsl(var(--foreground)/0.04)]",
+      raised: "rounded-xl border border-border/80 bg-[hsl(var(--surface-raised))] shadow-[0_1px_2px_hsl(var(--foreground)/0.04)]",
       flat: "border-y border-border/70 bg-transparent",
       inset: "rounded-xl bg-[hsl(var(--surface-subtle))]",
-      outline: "rounded-2xl border border-[hsl(var(--border-strong))] bg-transparent",
+      outline: "rounded-xl border border-[hsl(var(--border-strong))] bg-transparent",
     },
   },
   defaultVariants: { variant: "raised" },

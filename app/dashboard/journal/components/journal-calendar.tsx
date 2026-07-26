@@ -168,9 +168,8 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
             const isBreakEven = dailyPnl === 0 && dailyTrades.length > 0
 
             return (
-              <div
+              <article
                 key={day.toString()}
-                onClick={() => onDayClick(day, dailyTrades)}
                 className={cn(
                   "min-h-[120px] p-2 border-r border-b border-border/20 relative group transition-colors hover:bg-muted/30 cursor-pointer flex flex-col",
                   !isCurrentMonth && "opacity-40 bg-muted/10",
@@ -179,6 +178,12 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                   isCurrentDay && "bg-primary/5"
                 )}
               >
+                <button
+                  type="button"
+                  className="absolute inset-0 z-0"
+                  onClick={() => onDayClick(day, dailyTrades)}
+                  aria-label={`Open ${format(day, 'MMMM d, yyyy')}${dailyTrades.length > 0 ? `, ${dailyTrades.length} trades` : ''}`}
+                />
                 {/* Date Number */}
                 <div className="flex justify-between items-start">
                   <span className={cn(
@@ -220,12 +225,13 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                 {/* Note button */}
                 {isCurrentMonth && (
                   <button
+                    type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       onDayNoteClick?.(day)
                     }}
                     className={cn(
-                      "absolute bottom-2 right-2 transition-opacity h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 flex items-center justify-center border border-primary/20",
+                      "absolute bottom-2 right-2 z-10 transition-opacity h-6 w-6 rounded-md bg-primary/10 hover:bg-primary/20 flex items-center justify-center border border-primary/20",
                       hasJournalEntry ? "opacity-100" : "opacity-0 group-hover:opacity-100"
                     )}
                     title={hasJournalEntry ? "Open daily journal" : "Add daily journal"}
@@ -247,7 +253,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                     </span>
                   ) : null}
                 </div>
-              </div>
+              </article>
             )
           })}
         </div>

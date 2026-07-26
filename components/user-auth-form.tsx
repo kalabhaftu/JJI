@@ -4,7 +4,6 @@ import { Spinner } from '@/components/ui/spinner'
 
 import * as React from "react"
 import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/icons"
@@ -21,8 +20,8 @@ import {
     FormMessage,
 } from "@/components/ui/form"
 import { Mail, ArrowLeft, RefreshCw } from "lucide-react"
-import type { Route } from "next"
 import { useRouter } from "next/navigation"
+import type { Route } from "next"
 import { toast } from "sonner"
 import {
     InputOTP,
@@ -190,6 +189,9 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         } catch (error) {
             setAuthMethod(null)
             setIsLoading(false)
+            toast.error("Discord sign-in failed", {
+                description: "Return to this page and try again. If Discord denied access, approve JJI in the provider window.",
+            })
         }
     }
 
@@ -202,12 +204,18 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         } catch (error) {
             setAuthMethod(null)
             setIsLoading(false)
+            toast.error("Google sign-in failed", {
+                description: "Return to this page and try again. Allow cookies for the provider redirect if it keeps closing.",
+            })
         }
     }
 
     if (!showOtpInput) {
         return (
             <div className={cn("grid gap-6", className)} {...props}>
+                <p className="text-sm text-muted-foreground">
+                    Sign in or create your account with a one-time email code or a connected provider.
+                </p>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmitEmail)} className="grid gap-4">
                         <FormField
@@ -215,6 +223,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             name="email"
                             render={({ field }) => (
                                 <FormItem>
+                                    <FormLabel>Email address</FormLabel>
                                     <FormControl>
                                         <Input
                                             id="email"
@@ -236,7 +245,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             {isLoading && authMethod === 'email' && (
                                 <Spinner className="mr-2 h-4 w-4" />
                             )}
-                            Send Verification Code
+                            Send verification code
                         </Button>
                     </form>
                 </Form>
@@ -247,7 +256,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
                         <span className="bg-background px-2 text-muted-foreground">
-                            Or continue with
+                            Or use a provider
                         </span>
                     </div>
                 </div>
@@ -338,7 +347,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                                     <Spinner className="mr-2 h-4 w-4" />
                                     Verifying...
                                 </>
-                            ) : "Verify Code"}
+                            ) : "Verify code"}
                         </Button>
 
                         <div className="flex items-center justify-between text-sm pt-2">
@@ -348,7 +357,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                                 className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 <ArrowLeft className="h-3 w-3 mr-1" />
-                                Change Email
+                                Change email
                             </button>
 
                             <button

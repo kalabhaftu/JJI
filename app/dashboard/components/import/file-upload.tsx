@@ -237,6 +237,8 @@ export default function FileUpload({
                   <Button 
                     variant="ghost" 
                     size="icon"
+                    aria-label={`Remove ${file.name}`}
+                    title="Remove file"
                     onClick={() => removeFile(index)}
                     className="opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive text-muted-foreground h-8 w-8 rounded-lg transition-all"
                   >

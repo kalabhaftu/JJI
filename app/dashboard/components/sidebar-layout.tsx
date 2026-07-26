@@ -28,9 +28,9 @@ export function SidebarLayout({ children, siteUiSettings }: SidebarLayoutProps) 
   return (
     <SidebarProvider defaultOpen={false}>
       <DashboardSidebar siteUiSettings={siteUiSettings} />
-      <SidebarInset>
+      <SidebarInset id="main-content">
         <Navbar />
-        <div className="w-full max-w-full overflow-x-hidden pb-24 lg:pb-0">
+        <div className="min-w-0 w-full max-w-full pb-24 lg:pb-0">
           {children}
         </div>
       </SidebarInset>

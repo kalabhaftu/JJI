@@ -14,7 +14,7 @@
     background-color: hsl(var(--background)) !important;
     color-scheme: dark;
     overflow-y: scroll !important;
-    overflow-x: hidden !important;
+    overflow-x: visible !important;
     scrollbar-gutter: stable !important;
     -ms-overflow-style: scrollbar !important;
   }
@@ -34,7 +34,7 @@
     margin: 0 !important;
     padding: 0 !important;
     background-color: inherit !important;
-    overflow-x: hidden !important;
+    overflow-x: visible !important;
   }
 
   ::-webkit-scrollbar {
@@ -220,76 +220,34 @@
     --sidebar-ring: 210 40% 98%;
   }
 
-  /* Accent Pack: Reports Aesthetic - sage green + deep amber */
+  /* Accent packs may change brand accents only. Semantic colors stay stable. */
   .accent-reports {
-    --success: 123 27% 62%;               /* Sage green (matches --chart-bullish) */
-    --success-foreground: 222 47% 11%;
-    --destructive: 25 70% 45%;            /* Deep amber/copper */
-    --destructive-foreground: 222 47% 6%;
-    --chart-profit: 123 27% 62%;
-    --chart-loss: 25 70% 45%;
+    --primary: 123 27% 36%;
   }
 
   .dark.accent-reports,
   .accent-reports.dark {
-    --success: 123 27% 62%;
-    --success-foreground: 222 33% 6%;
-    --destructive: 25 70% 50%;            /* Slightly brighter amber on dark */
-    --destructive-foreground: 222 33% 6%;
-    --chart-profit: 123 27% 62%;
-    --chart-loss: 25 70% 50%;
+    --primary: 123 27% 62%;
   }
 
-  /* Accent Pack: Violet & Pink */
+  /* Accent Pack: Violet */
   .accent-violet {
     --primary: 255 85% 60%;
-    --success: 255 85% 60%;               /* Violet (#a78bfa-like in light) */
-    --success-foreground: 0 0% 100%;
-    --destructive: 329 80% 55%;            /* Pink (#f472b6-like in light) */
-    --destructive-foreground: 222 47% 6%;
-    --chart-profit: 255 85% 60%;
-    --chart-loss: 329 80% 55%;
-    --chart-bullish: 255 85% 60%;
-    --chart-bearish: 329 80% 55%;
   }
 
   .dark.accent-violet,
   .accent-violet.dark {
-    --primary: 255 92% 76%;               /* Violet (#a78bfa) */
-    --success: 255 92% 76%;
-    --success-foreground: 222 33% 6%;
-    --destructive: 329 86% 70%;            /* Pink (#f472b6) */
-    --destructive-foreground: 222 33% 6%;
-    --chart-profit: 255 92% 76%;
-    --chart-loss: 329 86% 70%;
-    --chart-bullish: 255 92% 76%;
-    --chart-bearish: 329 86% 70%;
+    --primary: 255 92% 76%;
   }
 
-  /* Accent Pack: Slate & Smoke */
+  /* Accent Pack: Slate */
   .accent-slate {
-    --primary: 210 40% 98%;               /* White-ish */
-    --success: 210 40% 98%;               
-    --success-foreground: 222 33% 6%;
-    --destructive: 215 16% 47%;            /* Grey/Smoke */
-    --destructive-foreground: 0 0% 100%;
-    --chart-profit: 210 40% 98%;
-    --chart-loss: 215 16% 47%;
-    --chart-bullish: 210 40% 98%;
-    --chart-bearish: 215 16% 47%;
+    --primary: 215 25% 27%;
   }
 
   .dark.accent-slate,
   .accent-slate.dark {
     --primary: 210 40% 98%;
-    --success: 210 40% 98%;
-    --success-foreground: 222 33% 6%;
-    --destructive: 215 16% 47%;
-    --destructive-foreground: 0 0% 100%;
-    --chart-profit: 210 40% 98%;
-    --chart-loss: 215 16% 47%;
-    --chart-bullish: 210 40% 98%;
-    --chart-bearish: 215 16% 47%;
   }
 
   /* Accent Pack Light-Mode Overrides (dynamic contrast adjustments) */
@@ -298,14 +256,6 @@
     --primary-foreground: 210 40% 98%;
     --primary-hover: 222 47% 18%;
     --primary-press: 222 47% 5%;
-    --success: 215 25% 35%;
-    --success-foreground: 0 0% 100%;
-    --chart-profit: 215 25% 35%;
-    --chart-bullish: 215 25% 35%;
-  }
-
-  .accent-reports:not(.dark) {
-    --success-foreground: 222 47% 11%;
   }
 }
 
@@ -369,9 +319,8 @@
 }
 
 
-/* Prevent horizontal overflow on all screens */
+/* Preserve browser zoom and keep wide content scrolling local to its owner. */
 html {
-  overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
 }
 
@@ -467,12 +416,6 @@ body[data-sidebar-drawer-open="true"] .mobile-bottom-nav {
 
 /* Medium screens: constrain wide content */
 @media (max-width: 1024px) {
-  /* Prevent absolute/fixed elements from causing horizontal scroll */
-  .fixed,
-  .absolute {
-    max-width: 100vw;
-  }
-
   /* Improve grid layouts on tablets */
   .react-grid-layout {
     min-height: auto !important;
@@ -501,14 +444,42 @@ body[data-sidebar-drawer-open="true"] .mobile-bottom-nav {
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
+    html:focus-within {
+      scroll-behavior: auto;
+    }
+
     *,
     *::before,
     *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+      transition-duration: 80ms !important;
+      transition-delay: 0ms !important;
+    }
+
+    .animate-ping,
+    [data-motion="decorative"] {
+      animation: none !important;
+    }
+
+    .animate-pulse {
+      animation-duration: 2s !important;
+    }
+
+    .animate-spin {
+      animation-duration: 1.5s !important;
     }
   }
+}
+
+/* Legacy density aliases render at the 12px operational floor. */
+.text-\[6px\],
+.text-\[7px\],
+.text-\[8px\],
+.text-\[9px\],
+.text-\[10px\],
+.text-\[11px\] {
+  font-size: 0.75rem !important;
+  line-height: 1rem !important;
 }
 
 /* Code block styles */

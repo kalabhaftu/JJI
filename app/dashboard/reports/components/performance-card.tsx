@@ -155,7 +155,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                             </span>
                         </div>
                         <h2 className="text-xl font-black tracking-tighter uppercase leading-none text-foreground">
-                            {period} <span className="text-muted-foreground font-light italic">Audit</span>
+                            {period} <span className="text-muted-foreground font-light italic">Report</span>
                         </h2>
                     </div>
 

@@ -1,31 +1,59 @@
-CREATE TYPE "public"."BacktestDirection" AS ENUM('BUY', 'SELL');--> statement-breakpoint
-CREATE TYPE "public"."BacktestModel" AS ENUM('ICT_2022', 'MSNR', 'TTFM', 'PRICE_ACTION', 'SUPPLY_DEMAND', 'SMART_MONEY', 'CUSTOM');--> statement-breakpoint
-CREATE TYPE "public"."BacktestOutcome" AS ENUM('WIN', 'LOSS', 'BREAKEVEN');--> statement-breakpoint
-CREATE TYPE "public"."BacktestSession" AS ENUM('ASIAN', 'LONDON', 'NEW_YORK');--> statement-breakpoint
-CREATE TYPE "public"."BreachType" AS ENUM('daily_drawdown', 'max_drawdown');--> statement-breakpoint
-CREATE TYPE "public"."DrawdownType" AS ENUM('static', 'trailing');--> statement-breakpoint
-CREATE TYPE "public"."ErrorLevel" AS ENUM('WARNING', 'ERROR', 'CRITICAL');--> statement-breakpoint
-CREATE TYPE "public"."ErrorSource" AS ENUM('CLIENT', 'SERVER', 'API');--> statement-breakpoint
-CREATE TYPE "public"."FeedbackCategory" AS ENUM('BUG_REPORT', 'FEATURE_REQUEST', 'GENERAL', 'OTHER');--> statement-breakpoint
-CREATE TYPE "public"."FeedbackStatus" AS ENUM('OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED');--> statement-breakpoint
-CREATE TYPE "public"."FreeAccessType" AS ENUM('lifetime', 'until_date', 'one_time_signup');--> statement-breakpoint
-CREATE TYPE "public"."ImportJobStatus" AS ENUM('queued', 'processing', 'completed', 'failed', 'cancelled');--> statement-breakpoint
-CREATE TYPE "public"."JournalEmotion" AS ENUM('confident', 'anxious', 'focused', 'energetic', 'calm', 'frustrated', 'optimistic', 'pessimistic', 'disciplined', 'impulsive', 'happy', 'sad', 'neutral', 'tired', 'excited', 'stressed', 'relaxed');--> statement-breakpoint
-CREATE TYPE "public"."MarketBias" AS ENUM('BULLISH', 'BEARISH', 'UNDECIDED');--> statement-breakpoint
-CREATE TYPE "public"."MasterAccountStatus" AS ENUM('active', 'funded', 'failed');--> statement-breakpoint
-CREATE TYPE "public"."NotificationPriority" AS ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');--> statement-breakpoint
-CREATE TYPE "public"."NotificationType" AS ENUM('FUNDED_PENDING_APPROVAL', 'FUNDED_APPROVED', 'FUNDED_DECLINED', 'PHASE_TRANSITION_PENDING', 'PAYOUT_APPROVED', 'PAYOUT_REJECTED', 'SYSTEM', 'RISK_ALERT', 'IMPORT_STATUS', 'WEEKLY_PERFORMANCE', 'STRATEGY_DEVIATION', 'SYSTEM_ANNOUNCEMENT', 'TRADE_STATUS', 'RISK_DAILY_LOSS_80', 'RISK_DAILY_LOSS_95', 'RISK_MAX_DRAWDOWN_80', 'RISK_MAX_DRAWDOWN_95', 'IMPORT_PROCESSING', 'IMPORT_COMPLETE', 'STRATEGY_SESSION_VIOLATION', 'FEEDBACK_REPLY', 'PAYMENT_DUE_SOON', 'PAYMENT_DUE_TODAY', 'PAYMENT_OVERDUE', 'SUBSCRIPTION_EXPIRED', 'PAYMENT_RECEIVED', 'PAYMENT_FAILED', 'ACCESS_RESTORED', 'ADMIN_FREE_ACCESS_GRANTED', 'ADMIN_FREE_ACCESS_REVOKED');--> statement-breakpoint
-CREATE TYPE "public"."PaymentStatus" AS ENUM('pending', 'waiting', 'confirming', 'confirmed', 'sending', 'finished', 'partially_paid', 'failed', 'refunded', 'expired');--> statement-breakpoint
-CREATE TYPE "public"."PayoutStatus" AS ENUM('pending', 'approved', 'paid', 'rejected');--> statement-breakpoint
-CREATE TYPE "public"."PhaseAccountStatus" AS ENUM('active', 'passed', 'failed', 'archived', 'pending', 'pending_approval');--> statement-breakpoint
-CREATE TYPE "public"."PromoApplicability" AS ENUM('signup_only', 'renewal_only', 'any');--> statement-breakpoint
-CREATE TYPE "public"."PromoType" AS ENUM('percentage_discount', 'fixed_discount', 'free_months', 'lifetime_free');--> statement-breakpoint
-CREATE TYPE "public"."SubscriptionStatus" AS ENUM('active', 'past_due', 'unpaid', 'expired', 'cancelled', 'free_access', 'invited_free', 'promo_active');--> statement-breakpoint
-CREATE TYPE "public"."TradeExecutionKind" AS ENUM('ENTRY', 'EXIT');--> statement-breakpoint
-CREATE TYPE "public"."TradeOutcome" AS ENUM('GOOD_WIN', 'BAD_WIN', 'GOOD_BE', 'BAD_BE', 'BREAKEVEN', 'GOOD_LOSS', 'BAD_LOSS');--> statement-breakpoint
-CREATE TYPE "public"."TransactionType" AS ENUM('DEPOSIT', 'WITHDRAWAL');--> statement-breakpoint
-CREATE TYPE "public"."UserRole" AS ENUM('user', 'admin');--> statement-breakpoint
-CREATE TYPE "public"."WeeklyExpectation" AS ENUM('BULLISH_EXPANSION', 'BEARISH_EXPANSION', 'CONSOLIDATION');--> statement-breakpoint
+CREATE TYPE "public"."BacktestDirection" AS ENUM('BUY', 'SELL');
+--> statement-breakpoint
+CREATE TYPE "public"."BacktestModel" AS ENUM('ICT_2022', 'MSNR', 'TTFM', 'PRICE_ACTION', 'SUPPLY_DEMAND', 'SMART_MONEY', 'CUSTOM');
+--> statement-breakpoint
+CREATE TYPE "public"."BacktestOutcome" AS ENUM('WIN', 'LOSS', 'BREAKEVEN');
+--> statement-breakpoint
+CREATE TYPE "public"."BacktestSession" AS ENUM('ASIAN', 'LONDON', 'NEW_YORK');
+--> statement-breakpoint
+CREATE TYPE "public"."BreachType" AS ENUM('daily_drawdown', 'max_drawdown');
+--> statement-breakpoint
+CREATE TYPE "public"."DrawdownType" AS ENUM('static', 'trailing');
+--> statement-breakpoint
+CREATE TYPE "public"."ErrorLevel" AS ENUM('WARNING', 'ERROR', 'CRITICAL');
+--> statement-breakpoint
+CREATE TYPE "public"."ErrorSource" AS ENUM('CLIENT', 'SERVER', 'API');
+--> statement-breakpoint
+CREATE TYPE "public"."FeedbackCategory" AS ENUM('BUG_REPORT', 'FEATURE_REQUEST', 'GENERAL', 'OTHER');
+--> statement-breakpoint
+CREATE TYPE "public"."FeedbackStatus" AS ENUM('OPEN', 'IN_PROGRESS', 'RESOLVED', 'CLOSED');
+--> statement-breakpoint
+CREATE TYPE "public"."FreeAccessType" AS ENUM('lifetime', 'until_date', 'one_time_signup');
+--> statement-breakpoint
+CREATE TYPE "public"."ImportJobStatus" AS ENUM('queued', 'processing', 'completed', 'failed', 'cancelled');
+--> statement-breakpoint
+CREATE TYPE "public"."JournalEmotion" AS ENUM('confident', 'anxious', 'focused', 'energetic', 'calm', 'frustrated', 'optimistic', 'pessimistic', 'disciplined', 'impulsive', 'happy', 'sad', 'neutral', 'tired', 'excited', 'stressed', 'relaxed');
+--> statement-breakpoint
+CREATE TYPE "public"."MarketBias" AS ENUM('BULLISH', 'BEARISH', 'UNDECIDED');
+--> statement-breakpoint
+CREATE TYPE "public"."MasterAccountStatus" AS ENUM('active', 'funded', 'failed');
+--> statement-breakpoint
+CREATE TYPE "public"."NotificationPriority" AS ENUM('LOW', 'MEDIUM', 'HIGH', 'CRITICAL');
+--> statement-breakpoint
+CREATE TYPE "public"."NotificationType" AS ENUM('FUNDED_PENDING_APPROVAL', 'FUNDED_APPROVED', 'FUNDED_DECLINED', 'PHASE_TRANSITION_PENDING', 'PAYOUT_APPROVED', 'PAYOUT_REJECTED', 'SYSTEM', 'RISK_ALERT', 'IMPORT_STATUS', 'WEEKLY_PERFORMANCE', 'STRATEGY_DEVIATION', 'SYSTEM_ANNOUNCEMENT', 'TRADE_STATUS', 'RISK_DAILY_LOSS_80', 'RISK_DAILY_LOSS_95', 'RISK_MAX_DRAWDOWN_80', 'RISK_MAX_DRAWDOWN_95', 'IMPORT_PROCESSING', 'IMPORT_COMPLETE', 'STRATEGY_SESSION_VIOLATION', 'FEEDBACK_REPLY', 'PAYMENT_DUE_SOON', 'PAYMENT_DUE_TODAY', 'PAYMENT_OVERDUE', 'SUBSCRIPTION_EXPIRED', 'PAYMENT_RECEIVED', 'PAYMENT_FAILED', 'ACCESS_RESTORED', 'ADMIN_FREE_ACCESS_GRANTED', 'ADMIN_FREE_ACCESS_REVOKED');
+--> statement-breakpoint
+CREATE TYPE "public"."PaymentStatus" AS ENUM('pending', 'waiting', 'confirming', 'confirmed', 'sending', 'finished', 'partially_paid', 'failed', 'refunded', 'expired');
+--> statement-breakpoint
+CREATE TYPE "public"."PayoutStatus" AS ENUM('pending', 'approved', 'paid', 'rejected');
+--> statement-breakpoint
+CREATE TYPE "public"."PhaseAccountStatus" AS ENUM('active', 'passed', 'failed', 'archived', 'pending', 'pending_approval');
+--> statement-breakpoint
+CREATE TYPE "public"."PromoApplicability" AS ENUM('signup_only', 'renewal_only', 'any');
+--> statement-breakpoint
+CREATE TYPE "public"."PromoType" AS ENUM('percentage_discount', 'fixed_discount', 'free_months', 'lifetime_free');
+--> statement-breakpoint
+CREATE TYPE "public"."SubscriptionStatus" AS ENUM('active', 'past_due', 'unpaid', 'expired', 'cancelled', 'free_access', 'invited_free', 'promo_active');
+--> statement-breakpoint
+CREATE TYPE "public"."TradeExecutionKind" AS ENUM('ENTRY', 'EXIT');
+--> statement-breakpoint
+CREATE TYPE "public"."TradeOutcome" AS ENUM('GOOD_WIN', 'BAD_WIN', 'GOOD_BE', 'BAD_BE', 'BREAKEVEN', 'GOOD_LOSS', 'BAD_LOSS');
+--> statement-breakpoint
+CREATE TYPE "public"."TransactionType" AS ENUM('DEPOSIT', 'WITHDRAWAL');
+--> statement-breakpoint
+CREATE TYPE "public"."UserRole" AS ENUM('user', 'admin');
+--> statement-breakpoint
+CREATE TYPE "public"."WeeklyExpectation" AS ENUM('BULLISH_EXPANSION', 'BEARISH_EXPANSION', 'CONSOLIDATION');
+--> statement-breakpoint
 CREATE TABLE "Account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"number" text NOT NULL,

@@ -8,8 +8,8 @@ export default function Error({
   reset: () => void
 }) {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4">
-      <h1 className="text-4xl font-bold mb-4">Something went wrong!</h1>
+    <main id="main-content" role="alert" aria-live="assertive" className="flex min-h-screen flex-col items-center justify-center p-4">
+      <h1 className="mb-4 text-4xl font-bold">Something went wrong</h1>
       <p className="text-muted-foreground mb-8">{error.message}</p>
       <button
         onClick={reset}
@@ -17,7 +17,6 @@ export default function Error({
       >
         Try again
       </button>
-    </div>
+    </main>
   )
 }
-

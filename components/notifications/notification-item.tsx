@@ -119,31 +119,37 @@ export function NotificationItem({
       : 'Take Action'
 
   return (
-    <div
-      onClick={isActionable ? () => onAction(notification) : undefined}
-      onKeyDown={isActionable ? (event) => {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault()
-          onAction(notification)
-        }
-      } : undefined}
-      role={isActionable ? 'button' : undefined}
-      tabIndex={isActionable ? 0 : undefined}
+    <article
       className={cn(
-        "p-4 hover:bg-muted/50 transition-colors border-l-4 relative group",
-        isActionable && "cursor-pointer",
+        "relative border p-4 transition-colors hover:bg-muted/50 group cursor-pointer",
         notificationColors[notification.type as NotificationType],
         !notification.isRead && "bg-muted/30"
       )}
+      onClick={() => {
+        if (!notification.isRead) {
+          onMarkAsRead(notification.id)
+        }
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          if (!notification.isRead) {
+            onMarkAsRead(notification.id)
+          }
+        }
+      }}
+      role="button"
+      tabIndex={0}
     >
       <Button
         variant="ghost"
         size="icon"
-        className="absolute top-2 right-2 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+        className="absolute right-2 top-2 h-7 w-7 text-muted-foreground opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
         onClick={(e) => {
           e.stopPropagation()
           onDelete(notification.id)
         }}
+        aria-label="Delete notification"
         title="Delete notification"
       >
         <X className="h-3.5 w-3.5" />
@@ -224,6 +230,6 @@ export function NotificationItem({
           )}
         </div>
       </div>
-    </div>
+    </article>
   )
 }

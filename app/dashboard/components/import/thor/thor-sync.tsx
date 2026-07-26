@@ -170,6 +170,8 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
                 <Button
                   variant="ghost"
                   size="icon"
+                  aria-label="Copy Thor endpoint URL"
+                  title="Copy endpoint URL"
                   className="h-5 w-5 hover:bg-muted"
                   onClick={() => {
                     if (typeof window !== 'undefined') {

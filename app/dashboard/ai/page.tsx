@@ -15,6 +15,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { followUpSuggestions } from './ai-config'
@@ -61,6 +68,7 @@ export default function AIChatWorkspace() {
   
   // Sidebar collapsed state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [mobileWorkspaceOpen, setMobileWorkspaceOpen] = useState(false)
   
   // Delete confirmation state
   const [deleteChatId, setDeleteChatId] = useState<string | null>(null)
@@ -99,7 +107,7 @@ export default function AIChatWorkspace() {
         },
         {
           id: 'demo-2',
-          title: 'Psychology Audit: Anxious Days',
+          title: 'Psychology review: anxious days',
           isPinned: false,
           isArchived: false,
           accounts: ['demo-personal'],
@@ -332,7 +340,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
 - Profit factor is **1.14** over 30 days.
 
 ### Recommended Actions
-- Upgrade your subscription to connect live MT4/5, Rithmic, or dxFeed accounts and audit your actual performance.
+- Upgrade your subscription to connect live MT4/5, Rithmic, or dxFeed accounts and review your actual performance.
 - Maintain a strict rule of no news trading.`
 
       let current = ''
@@ -778,12 +786,13 @@ With an active workspace, the assistant analyzes your actual trading records. He
           setIsReviewDialogOpen(false)
           setSelectedChatId(null)
           setMessages([])
-          handleStartChat(`Summarize and expand on my weekly analysis: ${review.summary || 'Review this weekly audit.'}`)
+          handleStartChat(`Summarize and expand on my weekly analysis: ${review.summary || 'Review this weekly report.'}`)
         }}
       />
 
       {!sidebarCollapsed && (
         <WorkspaceSidebar
+          className="hidden lg:flex"
           activeTab={activeTab}
           chats={chats}
           insights={savedInsights}
@@ -809,7 +818,45 @@ With an active workspace, the assistant analyzes your actual trading records. He
         />
       )}
 
-      <main className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <Dialog open={mobileWorkspaceOpen} onOpenChange={setMobileWorkspaceOpen}>
+        <DialogContent className="bottom-0 left-0 top-auto h-[88dvh] w-full max-w-none translate-x-0 translate-y-0 rounded-b-none p-0 lg:hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Assistant workspace</DialogTitle>
+            <DialogDescription>Choose a conversation, saved insight, or weekly review.</DialogDescription>
+          </DialogHeader>
+          <WorkspaceSidebar
+            activeTab={activeTab}
+            chats={chats}
+            insights={savedInsights}
+            reviews={weeklyAIReviews}
+            selectedChatId={selectedChatId}
+            isLoading={isLoadingChats}
+            onTabChange={setActiveTab}
+            onCollapse={() => setMobileWorkspaceOpen(false)}
+            onNewChat={() => {
+              setSelectedChatId(null)
+              setMessages([])
+              setMobileWorkspaceOpen(false)
+            }}
+            onChatSelect={(id) => {
+              handleChatSelect(id)
+              setMobileWorkspaceOpen(false)
+            }}
+            onTogglePin={handleTogglePin}
+            onToggleArchive={handleToggleArchive}
+            onDeleteChat={handleRequestDelete}
+            onDeleteInsight={handleDeleteInsight}
+            onReviewSelect={(review, index) => {
+              setSelectedReview(review)
+              setSelectedReviewIndex(index)
+              setIsReviewDialogOpen(true)
+              setMobileWorkspaceOpen(false)
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Assistant conversation">
         {isDemoMode && (
           <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border/70 bg-[hsl(var(--surface-subtle))] px-4 py-2">
             <p className="flex items-center gap-2 text-xs text-muted-foreground"><Info className="h-4 w-4 shrink-0" /><span><strong className="text-foreground">Demo data.</strong> Responses are examples, not analysis of a connected account.</span></p>
@@ -819,7 +866,8 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
         <header className="flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-border/70 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2">
-            {sidebarCollapsed && <Button variant="ghost" size="icon" onClick={() => setSidebarCollapsed(false)} aria-label="Open workspace library"><PanelLeft /></Button>}
+            <Button className="lg:hidden" variant="ghost" size="icon" onClick={() => setMobileWorkspaceOpen(true)} aria-label="Open workspace library"><PanelLeft /></Button>
+            {sidebarCollapsed && <Button className="hidden lg:inline-flex" variant="ghost" size="icon" onClick={() => setSidebarCollapsed(false)} aria-label="Open workspace library"><PanelLeft /></Button>}
             {selectedChatId ? (
               isRenameMode ? (
                 <div className="flex min-w-0 items-center gap-1">
@@ -892,7 +940,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
             onSubmit={(prompt, sourceOverride) => handleStartChat(prompt, sourceOverride)}
           />
         )}
-      </main>
+      </section>
     </div>
   )
 }

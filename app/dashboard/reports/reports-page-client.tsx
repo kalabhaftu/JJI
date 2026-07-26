@@ -38,7 +38,6 @@ import {
     subMonths,
     endOfDay
 } from 'date-fns'
-import { motion } from 'framer-motion'
 import { useState, useEffect, useCallback } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { getPnlDisplayLabel, getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
@@ -412,16 +411,16 @@ export default function ReportsPageClient({
 
     return (
         <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 pb-20 md:pb-8 overflow-hidden" id="report-content">
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+            <div>
                 {/* Header */}
                 <PageHeader
-                    title="Analytics"
-                    meta={<span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/75">{periodLabel}</span>}
+                    title="Reports"
+                    meta={<span className="text-xs font-medium text-muted-foreground">{periodLabel}</span>}
                     className="mb-4"
                     actions={
                       <div className="no-export flex items-center gap-2">
                         {/* Export CSV Button */}
-                        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isExporting} className="h-8 text-[11px] font-bold uppercase tracking-wider border-border/30 hover:bg-muted-foreground/10 rounded-xl gap-1.5">
+                        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isExporting} className="h-8 gap-1.5 rounded-lg border-border/30 text-xs font-semibold hover:bg-muted-foreground/10">
                             <Download className="h-3.5 w-3.5 opacity-60" />
                             Export CSV
                         </Button>
@@ -442,16 +441,16 @@ export default function ReportsPageClient({
                                             Performance Card
                                         </DropdownMenuItem>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-2xl bg-card border border-border/10 p-0 overflow-hidden rounded-[32px]">
+                                    <DialogContent className="overflow-hidden border border-border/10 bg-card p-0 sm:max-w-2xl">
                                         <div className="p-8">
                                             <DialogHeader className="mb-6">
-                                                <DialogTitle className="text-xl font-black tracking-tighter uppercase">Generate Performance Asset</DialogTitle>
-                                                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Render high-fidelity performance card for your network</DialogDescription>
+                                                <DialogTitle>Generate performance card</DialogTitle>
+                                                <DialogDescription>Create a shareable image from the currently filtered report.</DialogDescription>
                                             </DialogHeader>
                                             {tradingActivity && psychMetrics && (
                                                 <div className="flex justify-center">
                                                     <PerformanceCard
-                                                        period={"LATEST AUDIT"}
+                                                        period="Current report"
                                                         stats={{
                                                             totalTrades: tradingActivity.totalTrades,
                                                             winRate: tradingActivity.winRate,
@@ -478,7 +477,7 @@ export default function ReportsPageClient({
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleGenerateLink} disabled={isExporting} className="gap-2 text-xs font-medium">
                                     <LinkIcon className="h-3.5 w-3.5" />
-                                    Generate Public Link
+                                    Create public link
                                 </DropdownMenuItem>
                                 <Dialog>
                                     <DialogTrigger asChild>
@@ -487,11 +486,11 @@ export default function ReportsPageClient({
                                             Manage Shared Links
                                         </DropdownMenuItem>
                                     </DialogTrigger>
-                                    <DialogContent className="sm:max-w-2xl bg-card border border-border/10 p-0 overflow-hidden rounded-[32px]">
+                                    <DialogContent className="overflow-hidden border border-border/10 bg-card p-0 sm:max-w-2xl">
                                         <div className="p-8">
                                             <DialogHeader className="mb-6">
-                                                <DialogTitle className="text-xl font-black tracking-tighter uppercase">Manage Shared Links</DialogTitle>
-                                                <DialogDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">View and revoke active public sharing links for this page</DialogDescription>
+                                                <DialogTitle>Manage shared links</DialogTitle>
+                                                <DialogDescription>Anyone with an active link can view its filtered report until the link expires or is revoked.</DialogDescription>
                                             </DialogHeader>
                                             <SharedLinksManager />
                                         </div>
@@ -519,20 +518,29 @@ export default function ReportsPageClient({
                 {isLoading ? (
                     <ReportsContentSkeleton />
                 ) : !tradingActivity || !psychMetrics || filteredTrades.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/50 bg-card/30 py-24">
+                    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/50 bg-card/30 py-24">
                         <Zap className="h-10 w-10 text-muted-foreground/30 mb-4" />
-                        <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground/50 mb-4">Journal is empty for this period</h3>
+                        <h3 className="mb-4 text-sm font-semibold text-muted-foreground">Journal is empty for this period</h3>
                         <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handlePresetSelect('ALL')}
-                            className="text-[10px] font-black uppercase tracking-widest"
+                            className="text-xs font-semibold"
                         >
                             View All Time
                         </Button>
                     </div>
                 ) : (
-                    <Tabs defaultValue="overview" className="w-full" onValueChange={setSelectedTab}>
+                    <Tabs defaultValue="overview" value={selectedTab} className="w-full" onValueChange={setSelectedTab}>
+                        <section className="mb-6 flex flex-col justify-between gap-3 border-y border-border/30 py-4 sm:flex-row sm:items-center">
+                            <div>
+                                <h2 className="text-sm font-semibold">Next review focus</h2>
+                                <p className="mt-1 text-sm text-muted-foreground">Review the sessions and setups that changed the result before adjusting your plan.</p>
+                            </div>
+                            <Button type="button" variant="outline" size="sm" onClick={() => setSelectedTab('sessions')}>
+                                Review sessions
+                            </Button>
+                        </section>
                         <TabsList className="flex flex-nowrap mb-8 h-auto w-full justify-start overflow-x-auto rounded-xl border border-border/20 bg-background/40 p-0 no-export sm:justify-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                             <TabsTrigger value="overview" data-tour="reports-tab-overview" className="rounded-none border-r border-border/15 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all first:rounded-l-xl flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
                                 <TrendingUp className="h-3.5 w-3.5 shrink-0" />
@@ -544,7 +552,7 @@ export default function ReportsPageClient({
                             </TabsTrigger>
                             <TabsTrigger value="spreadsheet" data-tour="reports-tab-spreadsheet" className="rounded-none border-r border-border/15 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
                                 <List className="h-3.5 w-3.5 shrink-0" />
-                                Spreadsheet
+                                Trades
                             </TabsTrigger>
                             <TabsTrigger value="statement" data-tour="reports-tab-statement" className="rounded-none border-r border-border/15 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
                                 <FileText className="h-3.5 w-3.5 shrink-0" />
@@ -562,7 +570,7 @@ export default function ReportsPageClient({
                                         <div className="border-b border-border/15 p-5 lg:border-b-0 lg:border-r">
                                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
                                                 <LayoutDashboard className="h-3.5 w-3.5" />
-                                                Audit Statement
+                                                Report summary
                                             </div>
                                             <p className={cn("mt-5 font-mono text-4xl font-black tracking-tighter sm:text-5xl", psychMetrics.totalNetPnL >= 0 ? "text-long" : "text-short")}>
                                                 {psychMetrics.totalNetPnL >= 0 ? '+' : '-'}${Math.abs(psychMetrics.totalNetPnL).toLocaleString('en-US', { minimumFractionDigits: 2 })}
@@ -618,7 +626,7 @@ export default function ReportsPageClient({
                                     <div className="lg:col-span-7 space-y-6">
                                         <div className="flex items-center gap-2">
                                             <TrendingUp className="h-4 w-4 text-primary" />
-                                            <h2 className="text-[11px] uppercase tracking-[0.2em] font-black text-muted-foreground">Detailed Performance Audit</h2>
+                                            <h2 className="text-sm font-semibold text-muted-foreground">Performance detail</h2>
                                         </div>
                                         <div className="h-full overflow-hidden rounded-2xl border border-border/22 bg-muted/5">
                                             <Table>
@@ -699,7 +707,7 @@ export default function ReportsPageClient({
                                             </Tooltip>
                                         </TooltipProvider>
                                     )}
-                                </div>
+                                                </div>
                                                 <div className="flex h-[280px] flex-col rounded-2xl border border-border/20 bg-muted/5 p-6">
                                                     <div className="flex-1 w-full">
                                                         <RMultipleDistributionChart distribution={rMultipleDistribution ?? {}} />
@@ -707,10 +715,10 @@ export default function ReportsPageClient({
                                                 </div>
                                             </div>
 
-                                            {/* Clever Gap Filler: Risk Intelligence Audit */}
+                                            {/* Risk and recovery context */}
                                             <div className="rounded-2xl border border-border/22 bg-muted/5 p-6 flex-1 flex flex-col justify-center">
                                                 <div className="flex items-center justify-between mb-6">
-                                                    <h3 className="text-[10px] uppercase font-black text-muted-foreground/60 tracking-[0.2em]">Risk Intelligence Audit</h3>
+                                                    <h3 className="text-sm font-semibold text-muted-foreground">Risk analysis</h3>
                                                     <div className="h-1 w-1 rounded-full bg-muted-foreground/20" />
                                                 </div>
                                                 <div className="grid grid-cols-2 gap-x-8 gap-y-6">
@@ -846,7 +854,7 @@ export default function ReportsPageClient({
                                     <TableHeader className="bg-muted/30">
                                         <TableRow className="border-border/40 hover:bg-transparent">
                                             <TableHead className="text-[9px] font-black uppercase tracking-widest h-10">Entry Date</TableHead>
-                                            <TableHead className="text-[9px] font-black uppercase tracking-widest h-10">Asset</TableHead>
+                                            <TableHead className="h-10 text-xs font-semibold">Instrument</TableHead>
                                             <TableHead className="text-[9px] font-black uppercase tracking-widest h-10">Side</TableHead>
                                             <TableHead className="text-[9px] font-black uppercase tracking-widest h-10">Lots</TableHead>
                                             <TableHead className="text-[9px] font-black uppercase tracking-widest h-10">Result</TableHead>
@@ -906,7 +914,7 @@ export default function ReportsPageClient({
                         </TabsContent>
                     </Tabs>
                 )}
-            </motion.div>
+            </div>
         </div>
     )
 }

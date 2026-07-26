@@ -14,7 +14,7 @@ export const analysisTemplates: AnalysisTemplate[] = [
     id: 'risk',
     title: 'Risk consistency',
     icon: DollarSign,
-    description: 'Audit sizing, drawdowns, and asymmetric loss patterns.',
+    description: 'Review sizing, drawdowns, and asymmetric loss patterns.',
     prompt: 'Calculate my risk per trade across all selected accounts. Identify accounts with inconsistent risk management or sizing errors.',
     dataSources: ['trades', 'statistics', 'performance'],
   },
@@ -36,7 +36,7 @@ export const analysisTemplates: AnalysisTemplate[] = [
   },
   {
     id: 'monthly',
-    title: 'Monthly audit',
+    title: 'Monthly review',
     icon: Calendar,
     description: 'Build a complete execution and discipline review.',
     prompt: 'Generate a comprehensive monthly trading review. Synthesize trade execution quality, news trading behavior, and drawdown recovery.',

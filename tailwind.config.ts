@@ -16,9 +16,9 @@ const config: Config = {
 				satoshi: ['var(--font-system)', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
 			},
 			fontSize: {
-				'xxs': ['0.625rem', { lineHeight: '1rem' }], // 10px
-				'xxxs': ['0.5rem', { lineHeight: '1rem' }],   // 8px
-				'nano': ['0.375rem', { lineHeight: '1rem' }], // 6px
+				'xxs': ['0.75rem', { lineHeight: '1rem' }],
+				'xxxs': ['0.75rem', { lineHeight: '1rem' }],
+				'nano': ['0.75rem', { lineHeight: '1rem' }],
 			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',

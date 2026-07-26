@@ -7,7 +7,7 @@ const faqs = [
   },
   {
     q: 'Is there a mobile app?',
-    a: 'Yes, JJI has a mobile app built with Flutter, available for both Android and iOS. It syncs seamlessly with your web account and includes tabs for the dashboard, trades, journal, challenges, and settings. Push notifications are delivered via Firebase Cloud Messaging. You can download it from the Google Play Store and Apple App Store.',
+    a: 'Yes, JJI has a mobile app built with Flutter, available for both Android and iOS. It syncs with your web account and includes tabs for the dashboard, trades, journal, challenges, and settings. Push notifications are delivered via Firebase Cloud Messaging. You can download it from the Google Play Store and Apple App Store.',
   },
   {
     q: 'How do I import trades?',
@@ -43,7 +43,7 @@ const faqs = [
   },
   {
     q: 'What AI features are available?',
-    a: 'JJI includes an AI Chat feature powered by OpenAI and xAI models. You can ask it to analyze your trading performance, audit your risk metrics, calculate strategy expectancy, and run psychological assessments based on your journal entries. The AI has context of your account data and can provide personalized insights rather than generic advice.',
+    a: 'JJI includes an AI Chat feature powered by OpenAI and xAI models. You can ask it to analyze your trading performance, audit your risk metrics, calculate strategy expectancy, and run psychological assessments based on your journal entries. The AI has context of your account data and can provide personalized insights, not generic advice.',
   },
   {
     q: 'Does the mobile app have all features?',

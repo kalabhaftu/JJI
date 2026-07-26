@@ -232,7 +232,7 @@ export default function SettingsPage() {
   const handleAccentChange = (value: 'classic' | 'reports' | 'violet' | 'slate') => {
     setAccentPack(value)
     toast.success("Color accent updated", {
-      description: `Accent changed to ${value === 'reports' ? 'Sage & Amber' : value === 'violet' ? 'Violet & Pink' : value === 'slate' ? 'Slate & Smoke' : 'Classic'}.`,
+      description: `Accent changed to ${value === 'reports' ? 'Forest' : value === 'violet' ? 'Orchid' : value === 'slate' ? 'Graphite' : 'Classic'}.`,
       duration: 2000
     })
   }
@@ -958,7 +958,7 @@ export default function SettingsPage() {
           <SettingRow
             icon={Palette}
             label="Color Accent"
-            description={accentPack === 'reports' ? 'Sage & Amber' : accentPack === 'violet' ? 'Violet & Pink' : accentPack === 'slate' ? 'Slate & Smoke' : 'Classic (Red & Green)'}
+            description={accentPack === 'reports' ? 'Forest' : accentPack === 'violet' ? 'Orchid' : accentPack === 'slate' ? 'Graphite' : 'Classic'}
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -972,7 +972,7 @@ export default function SettingsPage() {
                           accentPack === 'reports' ? 'bg-[#ce6730]' : accentPack === 'violet' ? 'bg-[#f472b6]' : accentPack === 'slate' ? 'bg-[#64748b]' : 'bg-[#ef4444]'
                         )} />
                       </span>
-                      {accentPack === 'reports' ? 'Sage & Amber' : accentPack === 'violet' ? 'Violet & Pink' : accentPack === 'slate' ? 'Slate & Smoke' : 'Classic'}
+                      {accentPack === 'reports' ? 'Forest' : accentPack === 'violet' ? 'Orchid' : accentPack === 'slate' ? 'Graphite' : 'Classic'}
                     </span>
                     <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
                   </Button>
@@ -994,7 +994,7 @@ export default function SettingsPage() {
                         <div className="w-3 h-3 rounded-full bg-[#83b885]" />
                         <div className="w-3 h-3 rounded-full bg-[#ce6730]" />
                       </div>
-                      Sage & Amber
+                      Forest
                     </div>
                     {accentPack === 'reports' && <Check className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
@@ -1004,7 +1004,7 @@ export default function SettingsPage() {
                         <div className="w-3 h-3 rounded-full bg-[#a78bfa]" />
                         <div className="w-3 h-3 rounded-full bg-[#f472b6]" />
                       </div>
-                      Violet & Pink
+                      Orchid
                     </div>
                     {accentPack === 'violet' && <Check className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
@@ -1014,7 +1014,7 @@ export default function SettingsPage() {
                         <div className="w-3 h-3 rounded-full bg-[#f8fafc]" />
                         <div className="w-3 h-3 rounded-full bg-[#64748b]" />
                       </div>
-                      Slate & Smoke
+                      Graphite
                     </div>
                     {accentPack === 'slate' && <Check className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>

@@ -220,7 +220,7 @@
     --sidebar-ring: 210 40% 98%;
   }
 
-  /* Accent Pack: Reports Aesthetic - sage green + deep amber */
+  /* Accent Pack: Forest - sage green + deep amber */
   .accent-reports {
     --primary: 123 27% 36%;
     --success: 123 27% 62%;
@@ -242,7 +242,7 @@
     --chart-loss: 25 70% 50%;
   }
 
-  /* Accent Pack: Violet */
+  /* Accent Pack: Orchid - violet + pink */
   .accent-violet {
     --primary: 255 85% 60%;
     --success: 255 85% 60%;
@@ -268,7 +268,7 @@
     --chart-bearish: 329 86% 70%;
   }
 
-  /* Accent Pack: Slate */
+  /* Accent Pack: Graphite - slate + smoke */
   .accent-slate {
     --primary: 215 25% 27%;
     --success: 210 40% 98%;

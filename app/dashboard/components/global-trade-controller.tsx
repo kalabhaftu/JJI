@@ -20,7 +20,7 @@ export function GlobalTradeController() {
     const params = new URLSearchParams(searchParams.toString())
     params.delete('action')
     params.delete('tradeId')
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
+    router.replace(`${pathname}?${params.toString()}` as any, { scroll: false })
   }
 
   const handleSave = async (updatedTrade: any) => {

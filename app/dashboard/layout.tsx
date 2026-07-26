@@ -2,7 +2,7 @@ import { DataProvider } from "@/context/data-provider";
 import { TemplateProvider } from "@/context/template-provider";
 import { TagsProvider } from "@/context/tags-provider";
 import Modals from "@/components/modals";
-import { ReactElement, Suspense } from "react";
+import { ReactNode, Suspense } from "react";
 import { redirect } from "next/navigation";
 import { SidebarLayout } from "./components/sidebar-layout";
 import { MobileBottomNav } from "@/components/ui/mobile-nav";
@@ -17,10 +17,11 @@ import { ClientDynamicComponents } from "./components/client-dynamic-components"
 import { DeploymentMonitor } from "@/components/deployment-monitor";
 import { AppBanner } from "@/components/app-banner";
 import { OfflineIndicator } from "@/components/offline-indicator";
+import { AuthenticatedProviders } from "@/components/authenticated-providers";
 
 export const dynamic = 'force-dynamic'
 
-export default async function RootLayout({ children }: { children: ReactElement }) {
+export default async function RootLayout({ children }: { children: ReactNode }) {
   const initialBootstrapData = await getInitBootstrapData()
   const siteUiSettings = await getSiteUiSettings()
 
@@ -28,7 +29,7 @@ export default async function RootLayout({ children }: { children: ReactElement 
   if (initialBootstrapData.isAuthenticated && initialBootstrapData.user?.id) {
     const access = await checkSubscriptionAccess(initialBootstrapData.user.id)
     if (!access.hasAccess && access.redirectTo) {
-      redirect(access.redirectTo)
+      redirect(access.redirectTo as any)
     }
 
   } else if (!initialBootstrapData.isAuthenticated) {
@@ -36,7 +37,8 @@ export default async function RootLayout({ children }: { children: ReactElement 
   }
 
   return (
-    <DataProvider initialBootstrapData={initialBootstrapData}>
+    <AuthenticatedProviders>
+      <DataProvider initialBootstrapData={initialBootstrapData}>
         <SyncContextWrapper>
           <TourWrapper>
                 <TagsProvider>
@@ -59,6 +61,7 @@ export default async function RootLayout({ children }: { children: ReactElement 
                 </TagsProvider>
               </TourWrapper>
         </SyncContextWrapper>
-    </DataProvider>
+      </DataProvider>
+    </AuthenticatedProviders>
   );
 }

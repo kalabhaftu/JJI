@@ -55,7 +55,7 @@ function TableView() {
                 size="sm"
                 onClick={() => {
                   if (backUrl) {
-                    router.push(backUrl)
+                    router.push(backUrl as any)
                   } else {
                     router.back()
                   }

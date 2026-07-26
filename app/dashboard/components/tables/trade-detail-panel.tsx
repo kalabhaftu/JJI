@@ -167,7 +167,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
   const handleEdit = () => {
     const params = new URLSearchParams(searchParams.toString())
     params.set('view', 'edit')
-    router.push(`${basePath}?${params.toString()}`)
+    router.push(`${basePath}?${params.toString()}` as any)
   }
 
   const [copiedField, setCopiedField] = useState<string | null>(null)
@@ -504,10 +504,12 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                   {images.map((img: string, index: number) => (
-                    <div
+                    <button
+                      type="button"
                       key={index}
                       className="group relative aspect-video rounded-xl overflow-hidden border border-border/40 bg-muted/30 cursor-pointer hover:border-border/60 transition-all active:scale-[0.98]"
                       onClick={() => setSelectedImageIndex(index)}
+                      aria-label={`Open screenshot ${index + 1}`}
                     >
                       <Image
                         src={img}
@@ -525,7 +527,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
                       <Badge className="absolute top-2 right-2 bg-black/70 border-white/10 text-white text-[9px] pointer-events-none">
                         HD
                       </Badge>
-                    </div>
+                    </button>
                   ))}
                 </div>
               </section>

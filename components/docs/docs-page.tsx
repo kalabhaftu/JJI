@@ -139,7 +139,7 @@ export function DocsLinkList({
       {links.map((link) => (
         <Link
           key={link.href}
-          href={link.href}
+          href={link.href as any}
           className="rounded-2xl border border-border/70 bg-card/55 p-4 no-underline transition-colors hover:border-primary/40 hover:bg-accent/25"
         >
           <p className="m-0 text-base font-semibold text-foreground">{link.label}</p>

@@ -63,7 +63,7 @@ export async function PublicHeader({
                     isActive && 'bg-accent/70 text-foreground'
                   )}
                 >
-                  <Link href={item.href}>{item.label}</Link>
+                  <Link href={item.href as any}>{item.label}</Link>
                 </Button>
               )
             })}
@@ -76,7 +76,7 @@ export async function PublicHeader({
             </summary>
             <div className="absolute right-0 top-11 z-50 min-w-44 rounded-2xl border border-border/80 bg-popover p-2 shadow-xl">
               {navItems.map((item) => (
-                <Link key={item.href} href={item.href} className="block rounded-xl px-3 py-2 text-sm text-popover-foreground hover:bg-accent">
+                <Link key={item.href} href={item.href as any} className="block rounded-xl px-3 py-2 text-sm text-popover-foreground hover:bg-accent">
                   {item.label}
                 </Link>
               ))}

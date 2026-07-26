@@ -388,7 +388,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {
         id: 'analytics-welcome',
         title: 'Performance Reports',
-        content: 'Dive deep into win rate distribution, average holding times, cumulative PnL, and advanced metrics.',
+        content: 'View win rate distribution, average holding times, cumulative PnL, and advanced metrics.',
         placement: 'center',
         route: '/dashboard/reports',
         icon: 'welcome',
@@ -416,7 +416,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       {
         id: 'reports-tab-spreadsheet',
         title: 'Spreadsheet Grid View',
-        content: 'Click the "Spreadsheet" tab to display and audit all your trade records in a tabular format, ideal for review.',
+        content: 'Click the "Spreadsheet" tab to display and audit all your trade records in a tabular format for review.',
         targetSelector: '[data-tour="reports-tab-spreadsheet"]',
         placement: 'bottom',
         route: '/dashboard/reports',
@@ -728,7 +728,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resumeTour = () => {
     setPaused(false)
     if (currentStep?.route && pathname !== currentStep.route) {
-      router.push(currentStep.route)
+      router.push(currentStep.route as any)
     }
   }
 
@@ -814,7 +814,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Check if we need to route to a different page
     if (currentStep.route && pathname !== currentStep.route) {
       setIsLoadingTarget(true)
-      router.push(currentStep.route)
+      router.push(currentStep.route as any)
       return
     }
 

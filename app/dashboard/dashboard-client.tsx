@@ -31,7 +31,7 @@ export function DashboardClient() {
         'backtesting': '/dashboard/backtesting'
       }
       if (routes[tab]) {
-        router.push(routes[tab])
+        router.push(routes[tab] as any)
       }
     }
   }, [searchParams, router])

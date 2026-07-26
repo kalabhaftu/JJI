@@ -184,7 +184,7 @@ function DocsNav({
               return (
                 <div key={item.href} className="space-y-1">
                   <Link
-                    href={item.href}
+                    href={item.href as any}
                     {...(onNavigate !== undefined && { onClick: onNavigate as any })}
                     className={cn(
                       'group flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm transition-colors',
@@ -207,7 +207,7 @@ function DocsNav({
                       {item.subsections.map((subsection) => (
                         <Link
                           key={subsection.href}
-                          href={subsection.href}
+                          href={subsection.href as any}
                           {...(onNavigate !== undefined && { onClick: onNavigate as any })}
                           className="block rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
                         >
@@ -254,7 +254,7 @@ function DocsSearchPanel({
               searchResults.map((result) => (
                 <Link
                   key={result.href}
-                  href={result.href}
+                  href={result.href as any}
                   className="flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/60"
                   onClick={() => setSearchQuery('')}
                 >
@@ -350,7 +350,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <main className="min-w-0 py-6 lg:py-8">
+        <main id="main-content" className="min-w-0 py-6 lg:py-8">
           <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>

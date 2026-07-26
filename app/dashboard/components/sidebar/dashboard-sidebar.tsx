@@ -45,15 +45,16 @@ import { useDxFeedSyncContext } from '@/context/dxfeed-sync-context'
 import { useRithmicSyncContext } from '@/context/rithmic-sync-context'
 import { getAllRithmicData } from '@/lib/rithmic-storage'
 import { toast } from 'sonner'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { logger } from '@/lib/logger';
+import { MOBILE_SYNC_EVENT } from '@/lib/navigation/mobile-nav'
 
 const coreNavItems = [
   { id: 'widgets', label: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
-  { id: 'journal', label: 'Daily Journal', icon: CalendarDays, href: '/dashboard/journal' },
-  { id: 'reports', label: 'Analytics', icon: LineChart, href: '/dashboard/reports' },
-  { id: 'table', label: 'Trade Log', icon: ListTodo, href: '/dashboard/table' },
-  { id: 'accounts', label: 'Portfolios', icon: Briefcase, href: '/dashboard/accounts' },
+  { id: 'journal', label: 'Journal', icon: CalendarDays, href: '/dashboard/journal' },
+  { id: 'reports', label: 'Reports', icon: LineChart, href: '/dashboard/reports' },
+  { id: 'table', label: 'Trades', icon: ListTodo, href: '/dashboard/table' },
+  { id: 'accounts', label: 'Accounts', icon: Briefcase, href: '/dashboard/accounts' },
 ]
 
 const toolItems = [
@@ -71,6 +72,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
   const dxfeedSyncContext = useDxFeedSyncContext()
   const rithmicSyncContext = useRithmicSyncContext()
   const [isSyncing, setIsSyncing] = useState(false)
+  const manualSyncRef = useRef<() => void>(() => {})
 
   const handleManualSync = async () => {
     if (isSyncing) return
@@ -148,9 +150,18 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
       setIsSyncing(false)
     }
   }
+  manualSyncRef.current = () => {
+    void handleManualSync()
+  }
+
+  useEffect(() => {
+    const handleMobileSync = () => manualSyncRef.current()
+    window.addEventListener(MOBILE_SYNC_EVENT, handleMobileSync)
+    return () => window.removeEventListener(MOBILE_SYNC_EVENT, handleMobileSync)
+  }, [])
   const isCollapsed = state === 'collapsed' && !isOverlay
 
-  const getDemoAdjustedHref = (href: string) => {
+  const getDemoAdjustedHref = (href: string): any => {
     if (isDemoMode) {
       return href.replace('/dashboard', '/demo')
     }
@@ -290,14 +301,14 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
             </SidebarGroup>
 
             <SidebarGroup className={cn('pt-4', isOverlay ? 'px-0' : 'px-0')}>
-              <SidebarGroupLabel className={cn(isOverlay && 'h-7 px-1 text-[11px] tracking-wide')}>AI Assistant</SidebarGroupLabel>
+              <SidebarGroupLabel className={cn(isOverlay && 'h-7 px-1 text-[11px] tracking-wide')}>Assistant</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className={cn(isOverlay && 'gap-1')}>
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       size={isOverlay ? 'lg' : 'default'}
                       variant={isCollapsed ? 'icon' : 'default'}
-                      tooltip="AI Assistant"
+                      tooltip="Assistant"
                       isActive={activeId === 'ai'}
                       asChild
                       className={cn(
@@ -307,7 +318,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                     >
                       <Link href={getDemoAdjustedHref('/dashboard/ai')} onClick={handleMobileClose}>
                         <Brain />
-                        <span>AI Assistant</span>
+                        <span>Assistant</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

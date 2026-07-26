@@ -336,7 +336,6 @@ export class PhaseEvaluationEngine {
     })
 
     // STEP 2.5: RISK ALERTS - Trigger notifications at 80% and 95% thresholds
-    // Smart invalidation ensures we update existing alerts instead of spamming
     try {
       const userId = masterAccount.userId
 
@@ -678,7 +677,6 @@ export class PhaseEvaluationEngine {
     accountSize: number
   ): DrawdownCalculation {
 
-    // Daily drawdown calculation (always from daily start balance)
     const dailyDrawdownLimit = accountSize * (phaseAccount.dailyDrawdownPercent / 100)
     const dailyDrawdownUsed = Math.max(0, dailyStartBalance - currentEquity)
     const dailyDrawdownRemaining = Math.max(0, dailyDrawdownLimit - dailyDrawdownUsed)

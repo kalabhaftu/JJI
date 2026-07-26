@@ -1,27 +1,9 @@
 'use client'
 
-/**
- * Database Realtime Manager
- * 
- * Professional implementation using Supabase postgres_changes
- * Server pushes changes to client - NO POLLING
- * 
- * How it works:
- * 1. Client subscribes to postgres_changes for relevant tables
- * 2. When ANY client makes a database change, Supabase broadcasts it
- * 3. All connected clients receive the update and refresh their data
- * 
- * Requirements (Supabase Dashboard):
- * 1. Go to Database > Replication
- * 2. Enable realtime for tables: Trade, Account, MasterAccount, PhaseAccount, Payout, DailyNote, Notification
- * 3. Ensure RLS policies allow SELECT for authenticated users
- */
-
 import { createClient } from '@/lib/supabase'
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import logger from '@/lib/logger';
 
-// Tables that need realtime updates
 const REALTIME_TABLES = ['Trade', 'Account', 'MasterAccount', 'PhaseAccount', 'Payout', 'DailyNote', 'Notification'] as const
 type RealtimeTable = typeof REALTIME_TABLES[number]
 const TABLES_WITH_USER_ID_FILTER = new Set<RealtimeTable>(['Trade', 'Account', 'MasterAccount', 'DailyNote', 'Notification'])
@@ -39,13 +21,9 @@ export interface DatabaseChange {
 type ChangeCallback = (change: DatabaseChange) => void
 
 interface SubscriptionOptions {
-  /** Tables to subscribe to */
   tables: RealtimeTable[]
-  /** User ID for filtering (required for RLS) */
   userId: string
-  /** Callback when changes occur */
   onChange: ChangeCallback
-  /** Called when connection status changes */
   onStatusChange?: (status: 'connected' | 'disconnected' | 'error') => void
 }
 
@@ -255,9 +233,9 @@ class DatabaseRealtimeManager {
     }
   }
   
-  /**
-   * Check connection status
-   */
+/**
+ * Check connection status and subscriber count
+ */
   getStatus(): { isConnected: boolean; subscriberCount: number } {
     return {
       isConnected: this.isConnected,
@@ -265,9 +243,9 @@ class DatabaseRealtimeManager {
     }
   }
   
-  /**
-   * Force reconnect (useful after network issues)
-   */
+/**
+ * Force reconnect
+ */
   reconnect() {
     if (this.userId) {
       this.disconnect()

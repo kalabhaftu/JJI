@@ -1,14 +1,3 @@
-/**
- * Unified Account Balance Calculation
- * Single source of truth for all account balance calculations
- * 
- * CRITICAL: This is the ONLY place where balance calculations should be implemented.
- * All UI components MUST use these functions to ensure consistency.
- * 
- * Last updated: 2025-01-07
- * Issue fixed: Inconsistent balance calculations across components
- */
-
 import type { TradeType } from '@/lib/db/schema/trades';
 import type { AccountType } from '@/lib/db/schema/accounts';
 
@@ -27,9 +16,6 @@ export interface BalanceCalculationOptions {
   pnlDisplayMode?: PnlDisplayMode
 }
 
-/**
- * Comprehensive balance result with all financial metrics
- */
 export interface BalanceResult {
   startingBalance: number
   currentBalance: number
@@ -46,9 +32,6 @@ export interface BalanceResult {
   changePercent: number
 }
 
-/**
- * Daily balance point for charts
- */
 interface DailyBalancePoint {
   date: string
   balance: number
@@ -60,22 +43,10 @@ interface DailyBalancePoint {
   losses: number
 }
 
-/**
- * Calculate account balance with unified formula
- * Formula: startingBalance + cumulative PnL (net of commissions and fees)
- * 
- * For prop firms: All phases (Phase 1, 2, Funded) share one balance history
- * The balance is cumulative across the entire journey
- * 
- * @param account - The account to calculate balance for
- * @param trades - All trades for this account
- * @param options - Calculation options
- * @returns Current account balance
- */
 export function calculateAccountBalance(
   account: AccountType | any,
   trades: (TradeType | any)[],
-  transactions: any[] = [], // Add transactions parameter
+  transactions: any[] = [],
   options: BalanceCalculationOptions = {}
 ): number {
   const {
@@ -213,14 +184,6 @@ export function calculateAccountBalances(
   return balanceMap
 }
 
-/**
- * Calculate total equity across all accounts
- * 
- * @param accounts - Array of accounts
- * @param allTrades - All trades for all accounts
- * @param options - Calculation options
- * @returns Total equity
- */
 function calculateTotalEquity(
   accounts: (AccountType | any)[],
   allTrades: (TradeType | any)[],

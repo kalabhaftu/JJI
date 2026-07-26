@@ -147,21 +147,11 @@ const ASSET_ALIASES: Record<string, string> = {
   ...CRYPTO_ALIASES
 }
 
-/**
- * Get the canonical (display) name for an asset
- * @param searchTerm - The search term or asset name
- * @returns The canonical display name if found, otherwise the original term
- */
 function getCanonicalAssetName(searchTerm: string): string {
   const upperSearchTerm = searchTerm.toUpperCase()
   return ASSET_ALIASES[upperSearchTerm] || searchTerm
 }
 
-/**
- * Get all possible search terms for an asset
- * @param canonicalName - The canonical (display) name
- * @returns Array of all possible search terms including the canonical name
- */
 export function getAssetSearchTerms(canonicalName: string): string[] {
   const upperCanonical = canonicalName.toUpperCase()
   const aliases = Object.entries(ASSET_ALIASES)
@@ -171,12 +161,6 @@ export function getAssetSearchTerms(canonicalName: string): string[] {
   return [canonicalName, ...aliases]
 }
 
-/**
- * Check if a search term matches any asset name or alias
- * @param searchTerm - The search term
- * @param assetName - The asset name to check against
- * @returns True if the search term matches the asset or any of its aliases
- */
 function isAssetMatch(searchTerm: string, assetName: string): boolean {
   const canonicalName = getCanonicalAssetName(searchTerm)
   const searchTerms = getAssetSearchTerms(assetName)
@@ -187,11 +171,6 @@ function isAssetMatch(searchTerm: string, assetName: string): boolean {
   )
 }
 
-/**
- * Get asset category for styling or filtering
- * @param assetName - The asset name
- * @returns The category name
- */
 function getAssetCategory(assetName: string): string {
   const upperName = assetName.toUpperCase()
 
@@ -224,7 +203,7 @@ function getAssetAliasGroups() {
   }
 }
 
-// Test function to verify aliases work correctly
+
 const testAliases = () => {
 
   // Test some common aliases

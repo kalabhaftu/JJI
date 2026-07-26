@@ -73,7 +73,6 @@ export async function saveTradesAction(data: Trade[]): Promise<TradeResponse> {
       return buildTradePersistenceData({
         id: cleanTrade.id || crypto.randomUUID(),
         ...cleanTrade,
-        // Ensure required fields have default values
         accountNumber: cleanTrade.accountNumber || '',
         instrument: cleanTrade.instrument || '',
         entryPrice: cleanTrade.entryPrice || '',
@@ -189,7 +188,6 @@ async function getTradesAction(userId: string | null = null, options?: {
       }
 
     if (options?.filters?.dateRange?.from && options?.filters?.dateRange?.to) {
-        // Ensure we pass strings to Prisma if the field is a string
         const fromDate = options.filters.dateRange.from
         const toDate = options.filters.dateRange.to
         

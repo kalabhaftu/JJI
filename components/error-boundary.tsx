@@ -7,28 +7,16 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/componen
 import { Spinner } from '@/components/ui/spinner'
 import logger from "@/lib/logger";
 
-/**
- * Props for ErrorBoundary component
- */
 interface ErrorBoundaryProps {
   children: ReactNode
-  /** Custom fallback component */
   fallback?: ReactNode
-  /** Called when an error is caught */
   onError?: (error: Error, errorInfo: ErrorInfo) => void
-  /** Called when retry is clicked */
   onRetry?: () => void
-  /** Custom error message */
   errorMessage?: string
-  /** Whether to show retry button */
   showRetry?: boolean
-  /** Class name for the error container */
   className?: string
 }
 
-/**
- * State for ErrorBoundary component
- */
 interface ErrorBoundaryState {
   hasError: boolean
   error: Error | null
@@ -36,17 +24,6 @@ interface ErrorBoundaryState {
   isChunkError: boolean
 }
 
-/**
- * Error Boundary Component
- * Catches JavaScript errors in child components and displays a fallback UI
- * 
- * @example
- * ```tsx
- * <ErrorBoundary onRetry={() => refetch()}>
- *   <DashboardComponent />
- * </ErrorBoundary>
- * ```
- */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props)
@@ -146,15 +123,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 }
 
-/**
- * Functional wrapper for ErrorBoundary with hooks support
- */
 interface ErrorBoundaryWrapperProps extends Omit<ErrorBoundaryProps, 'onRetry'> {
-  /** Reset key - changes to this will reset the error boundary */
   resetKey?: string | number
-  /** Context description for error messages */
   context?: string
-  /** Show error details (useful for development) */
   showDetails?: boolean
 }
 
@@ -186,9 +157,6 @@ export function ErrorBoundaryWrapper({
   )
 }
 
-/**
- * Simple inline error display for data fetching
- */
 interface DataErrorProps {
   error: string | null
   onRetry?: () => void
@@ -217,9 +185,6 @@ function DataError({ error, onRetry, className = '' }: DataErrorProps): ReactEle
   )
 }
 
-/**
- * Loading state with optional error handling
- */
 interface LoadingOrErrorProps {
   isLoading: boolean
   error: string | null
@@ -254,9 +219,6 @@ function LoadingOrError({
   return <>{children}</>
 }
 
-/**
- * Widget-specific error boundary with compact styling
- */
 export function WidgetErrorBoundary({
   children,
   widgetId,
@@ -275,9 +237,6 @@ export function WidgetErrorBoundary({
   )
 }
 
-/**
- * Dashboard-level error boundary
- */
 export function DashboardErrorBoundary({
   children,
   context,

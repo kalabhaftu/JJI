@@ -1211,7 +1211,7 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
 
                 // Return different status based on whether transitioning to funded or another eval phase
                 ; (result as any).evaluation = isTransitioningToFunded ? {
-                  // FUNDED: Use pending_approval - notification handles approval flow
+                  // FUNDED: Use pending_approval - notification handles approval
                   status: 'pending_approval',
                   reason: 'awaiting_firm_approval',
                   message: `Congratulations! Your evaluation is complete. Please confirm your firm's approval via notifications.`,

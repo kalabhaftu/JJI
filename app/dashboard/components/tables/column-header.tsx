@@ -42,15 +42,12 @@ export function DataTableColumnHeader<TData, TValue>({
   toggleValue = false,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   const { updateColumnVisibility } = useTableConfigStore()
-  // Initialize filter values from existing filter state
   const currentFilter = column.getFilterValue() as { min?: number; max?: number } | undefined
   const [minValue, setMinValue] = useState(currentFilter?.min?.toString() || '')
   const [maxValue, setMaxValue] = useState(currentFilter?.max?.toString() || '')
 
-  // Extract filter value for dependency array
   const filterValue = column.getFilterValue()
   
-  // Update local state when filter changes externally
   useEffect(() => {
     const filter = filterValue as { min?: number; max?: number } | undefined
     setMinValue(filter?.min?.toString() || '')

@@ -113,7 +113,7 @@ const EMPTY_STATISTICS: StatisticsProps = {
 
 const EMPTY_CALENDAR_DATA: CalendarData = {}
 
-// Removed TickRange - tick details feature has been removed
+
 
 
 // Update Account type to include payouts and balanceToDate

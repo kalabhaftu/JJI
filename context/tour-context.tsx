@@ -82,7 +82,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [createdAccountId, setCreatedAccountId] = useState<string | null>(null)
   const [createdAccountType, setCreatedAccountType] = useState<'live' | 'prop-firm' | null>(null)
 
-  // Define Steps for each Tour (with absolutely zero emojis)
   const tours: Record<TourId, TourStep[]> = {
     onboarding: [
       {

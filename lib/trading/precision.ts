@@ -1,17 +1,9 @@
 import { decimalToNumber } from '@/lib/utils/decimal'
 
-/**
- * Calculates the appropriate number of decimal places for a given instrument and price.
- * 
- * @param instrument - The trading instrument (e.g., 'EURUSD', 'BTCUSD', 'XAUUSD')
- * @param price - The current price or value to format
- * @returns The number of decimal places
- */
 export const getDecimalPlaces = (instrument: string, price: number | unknown): number => {
   const instrumentUpper = instrument?.toUpperCase?.() ?? ''
   const numericPrice = typeof price === 'number' ? price : decimalToNumber(price)
   
-  // Forex Majors/Minors usually 4 or 5 decimals, JPY 2 or 3
   if (instrumentUpper.includes('JPY')) return 3
   if (
     instrumentUpper.includes('USD') ||
@@ -25,9 +17,8 @@ export const getDecimalPlaces = (instrument: string, price: number | unknown): n
     return 4
   }
 
-  // Commodities & Indices
-  if (instrumentUpper.includes('XAU')) return 2 // Gold
-  if (instrumentUpper.includes('XAG')) return 3 // Silver
+  if (instrumentUpper.includes('XAU')) return 2
+  if (instrumentUpper.includes('XAG')) return 3
   if (
     instrumentUpper.includes('US') ||
     instrumentUpper.includes('SPX') ||
@@ -39,7 +30,6 @@ export const getDecimalPlaces = (instrument: string, price: number | unknown): n
     return numericPrice > 1000 ? 1 : 2
   }
 
-  // Crypto - dynamic precision based on magnitude
   const absPrice = Math.abs(numericPrice)
   if (absPrice === 0) return 2
   if (absPrice < 0.0001) return 8
@@ -50,13 +40,6 @@ export const getDecimalPlaces = (instrument: string, price: number | unknown): n
   return 2
 }
 
-/**
- * Formats a trade price based on the instrument's typical precision.
- * 
- * @param price - The price value
- * @param instrument - The trading instrument
- * @returns Formatted price string
- */
 export const formatTradePrice = (price: number | unknown, instrument: string): string => {
   if (price === null || price === undefined || price === '') return '--'
   

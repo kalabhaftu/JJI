@@ -169,7 +169,6 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
     if (files.length <= maxFiles) {
       let changed = false
       const newFiles = files.map((file) => {
-        // Ensure errors array exists before checking
         if (file.errors && file.errors.some((e) => e.code === 'too-many-files')) {
           file.errors = file.errors.filter((e) => e.code !== 'too-many-files')
           changed = true

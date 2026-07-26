@@ -3,7 +3,7 @@ import { inter } from "@/lib/fonts";
 import "./globals.css";
 import { SafeToaster } from "@/components/safe-toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-// Removed Vercel Analytics and Speed Insights to comply with essential-only cookie policy
+
 import { CookieConsent } from "@/components/ui/cookie-consent";
 import { ThemeProvider } from "@/context/theme-provider";
 import { ErrorBoundaryWrapper } from "@/components/error-boundary";

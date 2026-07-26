@@ -44,12 +44,9 @@ export default function PayoutDetailPage() {
 
   const payoutId = params.id as string
 
-  // Fetch payout details
   const fetchPayout = useCallback(async () => {
     try {
       setIsLoading(true)
-      // Fetch payout from account's payout history
-      // First, we need to get all accounts and find the payout
       const accountsResponse = await fetch('/api/v1/prop-firm/accounts')
       if (!accountsResponse.ok) {
         throw new Error('Failed to fetch accounts')
@@ -59,7 +56,6 @@ export default function PayoutDetailPage() {
         throw new Error('Failed to fetch accounts')
       }
 
-      // Find the payout in all accounts' payout history
       let foundPayout = null
 
       for (const account of accountsData.data) {
@@ -90,7 +86,6 @@ export default function PayoutDetailPage() {
     }
   }, [payoutId])
 
-  // Load payout on mount
   useEffect(() => {
     if (user && payoutId) {
       fetchPayout()

@@ -85,9 +85,7 @@ export interface AccessResult {
   reason?: string
 }
 
-/** Check if a user has active access to the platform */
 export async function getUserAccessStatus(userId: string, userRole?: string): Promise<AccessResult> {
-  // Admins always have access
   if (userRole === 'admin') {
     return { hasAccess: true, status: 'admin' as any, subscription: null }
   }
@@ -174,9 +172,6 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
   return { hasAccess: false, status: subscription.status as string, subscription, reason: `Status: ${subscription.status}` }
 }
 
-// Subscription Lifecycle
-
-/** Ensure a subscription record exists for the user */
 async function ensureSubscription(userId: string) {
   let sub = await db.query.Subscription.findFirst({ where: eq(Subscription.userId, userId) })
   if (!sub) {
@@ -201,7 +196,6 @@ async function getLatestPendingPaymentRecord(userId: string, subscriptionId: str
   })
 }
 
-/** Create a payment invoice for a subscription */
 export async function createSubscriptionInvoice(
   userId: string,
   options?: { promoCode?: string; payCurrency?: string; context?: 'signup' | 'renewal' }
@@ -319,9 +313,6 @@ export async function createSubscriptionInvoice(
   }
 }
 
-// IPN Webhook Handler (Idempotent)
-
-/** Process an IPN webhook payload from NOWPayments */
 export async function handleIpnWebhook(payload: IpnPayload) {
   const { payment_id, payment_status, order_id, invoice_id } = payload
 
@@ -510,7 +501,6 @@ async function recordPromoRedemption(promoCodeId: string, userId: string) {
   })
 }
 
-/** Validate a promo code for a user (public API) */
 export async function validatePromoCode(code: string, userId: string) {
   const promo = await validateAndGetPromo(code, userId)
   if (!promo) return null

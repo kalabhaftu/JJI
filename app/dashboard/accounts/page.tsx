@@ -109,7 +109,7 @@ interface Account {
   } | null
 }
 
-// Helper functions
+
 function isFundedPhase(evaluationType: string | undefined, phaseNumber: number | undefined): boolean {
   return isFundedPhaseForEvaluation(evaluationType || '', phaseNumber || 0)
 }

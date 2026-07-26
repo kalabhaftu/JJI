@@ -4,10 +4,8 @@ import NextDynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
-// Import components normally
 import { DashboardErrorBoundary, ErrorBoundaryWrapper } from '@/components/error-boundary'
 
-// Dynamically import heavy components for better performance
 const WidgetCanvas = NextDynamic(() => import('./components/widget-grid'), {
   ssr: false
 })
@@ -53,7 +51,6 @@ export function DashboardClient() {
       return
     }
 
-    // Initial calculation
     updateNavbarHeight()
 
     // Use ResizeObserver for navbar height changes
@@ -82,7 +79,7 @@ export function DashboardClient() {
   return (
     <DashboardErrorBoundary>
       <div className="flex flex-1 flex-col w-full">
-        {/* Edit Mode Controls */}
+        /* ── Edit Mode Controls ── */
         <EditModeControls />
         <ErrorBoundaryWrapper context="Widgets">
           <div className="px-4 pb-24 lg:pb-0 dashboard-page-content">

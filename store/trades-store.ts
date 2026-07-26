@@ -23,7 +23,6 @@ const createSelectors = <S extends UseBoundStore<StoreApi<object>>>(
 }
 
 interface TradesState {
-  // Trades data
   trades: PrismaTrade[]
   setTrades: (trades: PrismaTrade[]) => void
 }

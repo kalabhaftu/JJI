@@ -41,7 +41,6 @@ export default function PayoutsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
 
-  // Fetch payouts
   const fetchPayouts = async () => {
     try {
       setIsLoading(true)
@@ -53,7 +52,6 @@ export default function PayoutsPage() {
 
       const data = await response.json()
       if (data.success) {
-        // Extract payouts from all accounts
         const allPayouts = data.data.flatMap((account: any) => 
           account.payouts ? account.payouts.map((payout: any) => ({
             ...payout,
@@ -74,7 +72,6 @@ export default function PayoutsPage() {
     }
   }
 
-  // Load payouts on mount
   useEffect(() => {
     if (user) {
       fetchPayouts()
@@ -109,7 +106,6 @@ export default function PayoutsPage() {
     return new Date(dateString).toLocaleDateString()
   }
 
-  // Filter payouts based on search term
   const filteredPayouts = payouts.filter(payout =>
     payout.accountNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
     payout.status.toLowerCase().includes(searchTerm.toLowerCase())

@@ -20,10 +20,8 @@ export const useDashboardEditStore = create<DashboardEditState>((set, get) => ({
   setIsCustomizing: (value: boolean) => {
     const state = get()
     if (value && !state.isCustomizing) {
-      // Starting edit mode - store original layout
       set({ isCustomizing: value })
     } else if (!value && state.isCustomizing) {
-      // Exiting edit mode
       set({ isCustomizing: value })
     } else {
       set({ isCustomizing: value })

@@ -112,8 +112,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
       })
     }
     
-    // If no integrations configured, fallback to standard data refresh
-    if (syncPromises.length === 0) {
+      if (syncPromises.length === 0) {
       try {
         await refreshTrades()
         toast.success("Data refreshed")
@@ -125,7 +124,6 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
       return
     }
     
-    // Run all configured sync runs in parallel
     try {
       const results = await Promise.all(syncPromises)
       const failures = results.filter(r => !r.success)

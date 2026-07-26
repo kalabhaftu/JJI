@@ -132,11 +132,6 @@ export function formatTimeInZone(date: Date | string | number, formatStr: string
  * 
  * If timestamps lack timezone info, assumes they are in the broker's local timezone
  * (typically America/New_York for US brokers, or UTC for NinjaTrader exports).
- * 
- * @param entryDate - Trade entry timestamp
- * @param closeDate - Trade close timestamp
- * @param fallbackTimezone - Timezone to assume if timestamps lack timezone info (default: America/New_York)
- * @returns Duration in seconds, or 0 if calculation fails
  */
 export function calculateTradeDuration(
   entryDate: Date | string | number | null | undefined,
@@ -167,10 +162,6 @@ export function calculateTradeDuration(
 
 /**
  * Normalize a date to UTC, handling timezone-naive strings.
- * 
- * @param date - Input date (various formats)
- * @param fallbackTimezone - Timezone to assume for naive timestamps
- * @returns Date object in UTC, or null if parsing fails
  */
 function normalizeToUTC(
   date: Date | string | number,

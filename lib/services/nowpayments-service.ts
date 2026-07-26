@@ -100,7 +100,6 @@ function sortObject(value: unknown): unknown {
   return value
 }
 
-/** Create a hosted invoice page on NOWPayments */
 export async function createInvoice(params: CreateInvoiceParams): Promise<InvoiceResponse> {
   const body = {
     ...params,
@@ -128,7 +127,6 @@ export async function createInvoice(params: CreateInvoiceParams): Promise<Invoic
   return data
 }
 
-/** Get the minimum payment amount for a fiat/crypto pair */
 export async function getMinAmount(currencyFrom: string, currencyTo: string): Promise<number> {
   const query = new URLSearchParams({
     currency_from: currencyFrom,
@@ -150,7 +148,6 @@ export async function getMinAmount(currencyFrom: string, currencyTo: string): Pr
   return Number(data.min_amount || 0)
 }
 
-/** Get payment status by NOWPayments payment ID */
 export async function getPaymentStatus(paymentId: string | number): Promise<PaymentStatusResponse> {
   const res = await fetch(`${API_BASE_URL}/payment/${paymentId}`, {
     method: 'GET',
@@ -166,7 +163,6 @@ export async function getPaymentStatus(paymentId: string | number): Promise<Paym
   return res.json()
 }
 
-/** Verify HMAC-SHA512 IPN signature from NOWPayments */
 export function verifyIpnSignature(payload: Record<string, unknown>, signature: string): boolean {
   if (!IPN_SECRET || !signature) {
     logger.warn('[NOWPayments] Missing IPN secret or signature')

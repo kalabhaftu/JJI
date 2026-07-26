@@ -6,7 +6,7 @@ import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 // Groups removed - no longer used
-// import { GroupWithAccounts } from './groups'
+
 import { createClient, getUserId, getUserIdSafe } from './auth'
 import { Account } from '@/context/data-provider'
 import { revalidateTag, unstable_cache } from 'next/cache'

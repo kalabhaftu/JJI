@@ -1396,7 +1396,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
   }
 ]
 
-// Helper functions
+
 function getNewsByCategory(category: NewsEvent['category']): NewsEvent[] {
   return MAJOR_NEWS_EVENTS.filter(event => event.category === category)
 }

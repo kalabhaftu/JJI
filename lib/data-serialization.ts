@@ -22,9 +22,6 @@ export interface SerializedData<T = any> {
   }
 }
 
-/**
- * DataSerializer class for handling complex data serialization
- */
 export class DataSerializer {
   private static readonly STORAGE_KEYS = {
     USER_PREFERENCES: 'userPreferences',
@@ -32,23 +29,14 @@ export class DataSerializer {
     TABLE_CONFIG: 'tableConfig',
   } as const
 
-  /**
-   * Generic serialize method
-   */
   static serialize<T>(data: T, options?: SerializationOptions): SerializedData<T> {
     return this.createSerializedData(data, options)
   }
 
-  /**
-   * Generic deserialize method
-   */
   static deserialize<T>(serializedData: string): T | null {
     return this.deserializeData(serializedData)
   }
 
-  /**
-   * Generic data serialization
-   */
   static createSerializedData<T>(data: T, options: SerializationOptions = {}): SerializedData<T> {
     const serialized: SerializedData<T> = {
       data,
@@ -64,9 +52,6 @@ export class DataSerializer {
     return serialized
   }
 
-  /**
-   * Generic data deserialization
-   */
   static deserializeData<T>(serializedData: string): T | null {
     try {
       const parsed = JSON.parse(serializedData) as SerializedData<T>
@@ -82,9 +67,6 @@ export class DataSerializer {
     }
   }
 
-  /**
-   * Generate a simple checksum for data integrity
-   */
   private static generateChecksum(data: any): string {
     const str = JSON.stringify(data)
     let hash = 0
@@ -96,9 +78,6 @@ export class DataSerializer {
     return hash.toString(36)
   }
 
-  /**
-   * Compress data using simple RLE (Run Length Encoding)
-   */
   static compressData(data: any): string {
     const str = JSON.stringify(data)
     let compressed = ''
@@ -119,9 +98,6 @@ export class DataSerializer {
     return compressed
   }
 
-  /**
-   * Decompress RLE data
-   */
   static decompressData(compressed: string): any {
     let decompressed = ''
     let i = 0
@@ -144,9 +120,6 @@ export class DataSerializer {
     return JSON.parse(decompressed)
   }
 
-  /**
-   * Save user preferences
-   */
   static saveUserPreferences(preferences: Record<string, any>): void {
     if (typeof window === 'undefined') return
 
@@ -154,9 +127,6 @@ export class DataSerializer {
     localStorage.setItem(this.STORAGE_KEYS.USER_PREFERENCES, JSON.stringify(serialized))
   }
 
-  /**
-   * Get user preferences
-   */
   static getUserPreferences(): Record<string, any> {
     if (typeof window === 'undefined') return {}
 
@@ -164,9 +134,6 @@ export class DataSerializer {
     return stored ? (this.deserializeData(stored) || {}) : {}
   }
 
-  /**
-   * Export all data for backup
-   */
   static exportAllData(): string {
     const allData = {
       // tradingModels: this.getTradingModels(), // Deprecated: Models now stored in database
@@ -178,9 +145,6 @@ export class DataSerializer {
     return JSON.stringify(allData, null, 2)
   }
 
-  /**
-   * Import data from backup
-   */
   static importAllData(jsonData: string): boolean {
     try {
       const parsed = JSON.parse(jsonData)
@@ -199,9 +163,6 @@ export class DataSerializer {
     }
   }
 
-  /**
-   * Clear all stored data
-   */
   static clearAllData(): void {
     if (typeof window === 'undefined') return
 
@@ -210,9 +171,6 @@ export class DataSerializer {
     })
   }
 
-  /**
-   * Get storage usage information
-   */
   static getStorageInfo(): { key: string, size: number, lastModified: number | null }[] {
     if (typeof window === 'undefined') return []
 

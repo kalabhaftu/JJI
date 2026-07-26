@@ -1,8 +1,4 @@
 import logger from '@/lib/logger';
-/**
- * Safe Fetch Wrapper with Error Handling
- * Provides automatic timeout, retry, and structured error responses
- */
 
 import { 
   API_TIMEOUT, 
@@ -11,9 +7,6 @@ import {
   RETRY_MULTIPLIER 
 } from '@/lib/constants'
 
-/**
- * Structured error response for fetch operations
- */
 interface FetchError {
   message: string
   code: string
@@ -24,9 +17,6 @@ interface FetchError {
   originalError?: unknown
 }
 
-/**
- * Options for fetchWithError
- */
 export interface FetchOptions extends RequestInit {
   /** Request timeout in milliseconds */
   timeout?: number
@@ -38,9 +28,6 @@ export interface FetchOptions extends RequestInit {
   retryCondition?: (error: FetchError, attempt: number) => boolean
 }
 
-/**
- * Response wrapper that includes both data and potential error
- */
 export interface FetchResult<T> {
   data: T | null
   error: FetchError | null
@@ -48,9 +35,6 @@ export interface FetchResult<T> {
   ok: boolean
 }
 
-/**
- * Create a structured fetch error
- */
 function createFetchError(
   message: string,
   code: string,
@@ -64,24 +48,15 @@ function createFetchError(
   }
 }
 
-/**
- * Determine if an error is retryable
- */
 function isRetryableError(status: number): boolean {
   // Retry on server errors (5xx) and specific client errors
   return status >= 500 || status === 408 || status === 429
 }
 
-/**
- * Sleep for a specified duration
- */
 function sleep(ms: number): Promise<void> {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-/**
- * Calculate exponential backoff delay
- */
 function getRetryDelay(attempt: number): number {
   return RETRY_BASE_DELAY * Math.pow(RETRY_MULTIPLIER, attempt - 1)
 }
@@ -248,12 +223,6 @@ export async function fetchWithError<T = unknown>(
   }
 }
 
-/**
- * Simplified fetch that throws on error
- * Use when you want to handle errors in a try-catch block
- * 
- * @throws FetchError on failure
- */
 async function fetchOrThrow<T = unknown>(
   url: string,
   options: FetchOptions = {}
@@ -267,9 +236,6 @@ async function fetchOrThrow<T = unknown>(
   return result.data as T
 }
 
-/**
- * Handle fetch error and return user-friendly message
- */
 export function handleFetchError(error: unknown): string {
   if (error && typeof error === 'object' && 'message' in error) {
     const fetchError = error as FetchError
@@ -304,9 +270,6 @@ export function handleFetchError(error: unknown): string {
   return 'An unexpected error occurred. Please try again.'
 }
 
-/**
- * Check if an error is a FetchError
- */
 function isFetchError(error: unknown): error is FetchError {
   return (
     error !== null &&

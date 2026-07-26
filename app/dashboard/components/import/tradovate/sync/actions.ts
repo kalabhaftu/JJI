@@ -16,12 +16,12 @@ import { DEFAULT_INCLUDED_FEE_TYPES, type TradovateIncludedFeeTypes } from './fe
 import { logger as baseLogger } from '@/lib/logger';
 import { DIRECT_SYNC_STATUS, directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
 
-// Helper function to format dates in the required format: 2025-06-05T08:38:40+00:00
+
 function formatDateForAPI(date: Date): string {
   return formatDateToTimestamp(date)
 }
 
-// Helper function to format duration in a readable format (e.g., "1min 34sec")
+
 function formatDuration(seconds: number): string {
   if (seconds < 60) {
     return `${seconds}sec`
@@ -176,7 +176,7 @@ interface TradovateTradesResult {
   error?: string
 }
 
-// Helper function to fetch contract details
+
 async function getContractById(accessToken: string, contractId: number): Promise<TradovateContract | null> {
   try {
     const apiBaseUrl = TRADOVATE_ENVIRONMENTS.demo.api
@@ -200,7 +200,7 @@ async function getContractById(accessToken: string, contractId: number): Promise
   }
 }
 
-// Helper function to fetch multiple fill fees by IDs in batch with fallback
+
 async function getFillFeesByIds(accessToken: string, fillIds: number[]): Promise<TradovateFillFee[]> {
   try {
     if (fillIds.length === 0) return []
@@ -268,7 +268,7 @@ async function getFillFeesByIds(accessToken: string, fillIds: number[]): Promise
   }
 }
 
-// Helper function to fetch fill fees
+
 async function getFillFeeById(accessToken: string, fillId: number): Promise<TradovateFillFee | null> {
   try {
     const apiBaseUrl = TRADOVATE_ENVIRONMENTS.demo.api
@@ -292,7 +292,7 @@ async function getFillFeeById(accessToken: string, fillId: number): Promise<Trad
   }
 }
 
-// Helper function to fetch fill pairs
+
 async function getFillPairs(accessToken: string): Promise<TradovateFillPair[]> {
   try {
     const apiBaseUrl = TRADOVATE_ENVIRONMENTS.demo.api
@@ -316,7 +316,7 @@ async function getFillPairs(accessToken: string): Promise<TradovateFillPair[]> {
   }
 }
 
-// Helper function to fetch multiple fills by IDs in batch with fallback
+
 async function getFillsByIds(accessToken: string, fillIds: number[]): Promise<any[]> {
   try {
     if (fillIds.length === 0) return []
@@ -384,7 +384,7 @@ async function getFillsByIds(accessToken: string, fillIds: number[]): Promise<an
   }
 }
 
-// Helper function to fetch individual fill details
+
 async function getFillById(accessToken: string, fillId: number): Promise<any | null> {
   try {
     const apiBaseUrl = TRADOVATE_ENVIRONMENTS.demo.api
@@ -408,7 +408,7 @@ async function getFillById(accessToken: string, fillId: number): Promise<any | n
   }
 }
 
-// Helper function to fetch multiple orders by IDs in batch with fallback
+
 async function getOrdersByIds(accessToken: string, orderIds: number[]): Promise<any[]> {
   try {
     if (orderIds.length === 0) return []
@@ -476,7 +476,7 @@ async function getOrdersByIds(accessToken: string, orderIds: number[]): Promise<
   }
 }
 
-// Helper function to fetch order details by orderId
+
 async function getOrderById(accessToken: string, orderId: number): Promise<any | null> {
   try {
     const apiBaseUrl = TRADOVATE_ENVIRONMENTS.demo.api

@@ -130,11 +130,9 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [goToNextImage, goToPreviousImage, selectedImageIndex])
 
-  // Chart links
-  const chartLinks = parseTradeChartLinks(tradeData)
+    const chartLinks = parseTradeChartLinks(tradeData)
 
-  // News events
-  const newsEventIds = tradeData.selectedNews
+    const newsEventIds = tradeData.selectedNews
     ? tradeData.selectedNews.split(',').filter(Boolean)
     : []
   const newsEvents = newsEventIds.map((id: string) => getNewsById(id)).filter(Boolean)
@@ -160,9 +158,8 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
     return []
   })()
 
-  // Session & killzone
-  const session = trade.entryTime ? getTradingSession(trade.entryTime) : null
-  const killzone = trade.entryTime ? getKillzoneBadge(trade.entryTime) : null
+    const session = trade.entryTime ? getTradingSession(trade.entryTime) : null
+    const killzone = trade.entryTime ? getKillzoneBadge(trade.entryTime) : null
 
   const handleEdit = () => {
     const params = new URLSearchParams(searchParams.toString())

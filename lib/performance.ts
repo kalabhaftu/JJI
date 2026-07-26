@@ -69,7 +69,6 @@ class PerformanceMonitor {
     }
   }
 
-  // Measure component render time
   measureRender<T>(componentName: string, renderFn: () => T): T {
     const startTime = performance.now();
     const result = renderFn();
@@ -78,7 +77,6 @@ class PerformanceMonitor {
     return result;
   }
 
-  // Measure data processing time
   measureDataProcessing<T>(operationName: string, operation: () => T): T {
     const startTime = performance.now();
     const result = operation();
@@ -87,7 +85,6 @@ class PerformanceMonitor {
     return result;
   }
 
-  // Track component metrics
   trackComponentMetrics(componentName: string, metrics: Partial<PerformanceMetrics>) {
     const existing = this.metrics.get(componentName) || {
       loadTime: 0,
@@ -98,20 +95,17 @@ class PerformanceMonitor {
     this.metrics.set(componentName, { ...existing, ...metrics });
   }
 
-  // Get all metrics
   getMetrics(): Map<string, PerformanceMetrics> {
     return new Map(this.metrics);
   }
 
-  // Memory usage tracking
   getMemoryUsage(): number | undefined {
     return (performance as PerformanceWithMemory).memory?.usedJSHeapSize;
   }
 
-  // Check if performance is degraded
   isPerformanceDegraded(): boolean {
     const memory = this.getMemoryUsage();
-    if (memory && memory > 100 * 1024 * 1024) { // 100MB threshold
+    if (memory && memory > 100 * 1024 * 1024) {
       return true;
     }
     return false;

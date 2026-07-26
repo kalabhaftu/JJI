@@ -1,8 +1,3 @@
-/**
- * Utility functions for filtering accounts across the application
- * This ensures consistent exclusion of failed accounts from all operations
- */
-
 export type AccountStatus = 'active' | 'failed' | 'funded' | 'passed' | 'pending' | null
 
 export interface AccountWithStatus {
@@ -10,38 +5,22 @@ export interface AccountWithStatus {
   [key: string]: any
 }
 
-/**
- * Check if an account should be included in calculations and operations
- * By default, only active and funded accounts are included
- * Passed and failed accounts are excluded from business operations
- */
 export function isAccountActive(account: AccountWithStatus): boolean {
-  // Exclude accounts that are explicitly marked as failed or passed
   if (account.status === 'failed' || account.status === 'passed') {
     return false
   }
   
-  // Include active, funded, and legacy accounts (null/undefined status)
   return true
 }
 
-/**
- * Get list of statuses that should be included in active account filtering
- */
 export function getActiveAccountStatuses(): AccountStatus[] {
-  return ['active', 'funded'] // Exclude 'failed' and 'passed'
+  return ['active', 'funded']
 }
 
-/**
- * Get list of statuses that should be excluded from active account filtering
- */
 export function getInactiveAccountStatuses(): AccountStatus[] {
   return ['failed', 'passed']
 }
 
-/**
- * Filter out failed accounts from an array of accounts
- */
 export function filterActiveAccounts<T extends AccountWithStatus>(accounts: T[]): T[] {
   return accounts.filter(isAccountActive)
 }

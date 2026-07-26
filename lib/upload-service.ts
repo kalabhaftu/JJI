@@ -171,43 +171,8 @@ class MediaUploadService {
   }
 
   private async ensureBucket(): Promise<string> {
-    // Return the known bucket name directly to avoid permission issues with listBuckets
     return STORAGE_BUCKETS.TRADES
   }
-
-  /* WebP Compression - Disabled
-   * Enable when experiencing large image sizes
-   * Recommended: Max 1920px, 95% quality, WebP format
-   * Install: npm install browser-image-compression
-   */
-  
-  // private async compressImage(file: File): Promise<File> {
-  //   try {
-  //     // Import compression library
-  //     const imageCompression = (await import('browser-image-compression')).default
-  //     
-  //     const options = {
-  //       maxWidthOrHeight: 1920,  // Preserves chart details
-  //       useWebWorker: true,      // Better performance
-  //       fileType: 'image/webp',  // Modern format
-  //       initialQuality: 0.95,    // Visually lossless
-  //     }
-  //     
-  //     const compressedFile = await imageCompression(file, options)
-  //     
-  //     // Log compression results
-  //     logger.info(`Compressed: ${(file.size / 1024).toFixed(2)}KB → ${(compressedFile.size / 1024).toFixed(2)}KB`)
-  //     
-  //     return compressedFile
-  //   } catch (error) {
-  //     logger.warn('Compression failed, using original:', error)
-  //     return file
-  //   }
-  // }
-  
-  // To use compression, modify uploadToSupabase:
-  // const compressedFile = await this.compressImage(file)
-  // Then upload compressedFile instead of file
 }
 
 export const uploadService = new MediaUploadService()

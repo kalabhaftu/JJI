@@ -3,7 +3,9 @@ export type MobileNavId =
   | 'journal'
   | 'reports'
   | 'table'
-  | 'accounts'
+  | 'more'
+
+export const MOBILE_SYNC_EVENT = 'jji:manual-sync'
 
 export const MOBILE_NAV_DESTINATIONS: ReadonlyArray<{
   id: MobileNavId
@@ -12,9 +14,9 @@ export const MOBILE_NAV_DESTINATIONS: ReadonlyArray<{
 }> = [
   { id: 'widgets', label: 'Overview', href: '/dashboard' },
   { id: 'journal', label: 'Journal', href: '/dashboard/journal' },
-  { id: 'reports', label: 'Analytics', href: '/dashboard/reports' },
-  { id: 'table', label: 'Log', href: '/dashboard/table' },
-  { id: 'accounts', label: 'Portfolios', href: '/dashboard/accounts' },
+  { id: 'table', label: 'Trades', href: '/dashboard/table' },
+  { id: 'reports', label: 'Reports', href: '/dashboard/reports' },
+  { id: 'more', label: 'More', href: '#more' },
 ]
 
 export function getMobileNavHref(href: string, isDemoMode: boolean): string {
@@ -31,6 +33,6 @@ export function getActiveMobileNavId(
   if (pathname.startsWith(`${base}/reports`)) return 'reports'
   if (pathname.startsWith(`${base}/table`)) return 'table'
   if (pathname.startsWith(`${base}/journal`)) return 'journal'
-  if (pathname.startsWith(`${base}/accounts`)) return 'accounts'
+  if (pathname.startsWith(base)) return 'more'
   return null
 }

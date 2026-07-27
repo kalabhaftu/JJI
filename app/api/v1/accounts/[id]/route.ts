@@ -8,7 +8,7 @@ import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { logActivity, getClientIp } from '@/lib/activity-logger'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger';
-import { withCache } from '@/lib/cache/helpers'
+import { withCache, getUserCacheVersion } from '@/lib/cache/helpers'
 import { CacheKeys, CacheTTL } from '@/lib/cache/keys'
 
 interface RouteParams {
@@ -27,9 +27,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { id: accountId } = await params
     const internalUserId = identity.internalUserId
+    const userVersion = await getUserCacheVersion(internalUserId)
 
     const data = await withCache(
-      CacheKeys.accountMetrics(accountId),
+      CacheKeys.accountMetrics(accountId, userVersion),
       CacheTTL.accountMetrics,
       async () => {
         const account = await db.query.Account.findFirst({

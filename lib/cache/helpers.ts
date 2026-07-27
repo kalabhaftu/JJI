@@ -43,7 +43,7 @@ export async function withCache<T>(
  * Delete one or more cache keys.
  * Fails silently - a cache invalidation failure is not fatal.
  */
-async function invalidateCache(...keys: string[]): Promise<void> {
+export async function invalidateCache(...keys: string[]): Promise<void> {
   if (keys.length === 0) return
   try {
     await redis.del(...keys)
@@ -54,21 +54,72 @@ async function invalidateCache(...keys: string[]): Promise<void> {
 }
 
 /**
- * Invalidate all cache keys for a given account.
+ * Get current user cache version for atomic cache invalidation.
+ * Defaults to 1 if missing or on error.
+ */
+export async function getUserCacheVersion(userId: string): Promise<number> {
+  try {
+    const { CacheKeys } = await import('./keys')
+    const verKey = CacheKeys.userVersion(userId)
+    const ver = await redis.get<number>(verKey)
+    if (typeof ver === 'number' && ver > 0) {
+      return ver
+    }
+    // Initialize version to 1 if not set
+    await redis.set(verKey, 1)
+    return 1
+  } catch (err) {
+    logger.warn({ userId, err }, 'cache:get-user-version-failed - fallback to 1')
+    return 1
+  }
+}
+
+/**
+ * Bump user cache version.
+ * Atomically invalidates all versioned user cache keys in 1 fast Redis command.
+ */
+export async function bumpUserCacheVersion(userId: string): Promise<number> {
+  try {
+    const { CacheKeys } = await import('./keys')
+    const verKey = CacheKeys.userVersion(userId)
+    // Upstash Redis incr command increments numeric key atomically
+    const newVer = await redis.incr(verKey)
+    logger.debug({ userId, newVer }, 'cache:user-version-bumped')
+    return typeof newVer === 'number' ? newVer : 1
+  } catch (err) {
+    logger.warn({ userId, err }, 'cache:bump-user-version-failed')
+    return 1
+  }
+}
+
+/**
+ * Invalidate all cache keys for a given account & user.
  * Call this after any trade mutation (import, edit, delete).
  */
 export async function invalidateAccountCache(
   userId: string,
   accountId: string,
 ): Promise<void> {
-  // We can't enumerate pattern-matched keys on Upstash free tier (no SCAN),
-  // so we invalidate the known fixed keys and accept that date-range keys
-  // will expire naturally via TTL.
   const { CacheKeys } = await import('./keys')
+  // Bump version to instantly invalidate all versioned queries for this user
+  await bumpUserCacheVersion(userId)
+
+  // Also delete explicit non-versioned legacy keys
   await invalidateCache(
     CacheKeys.accountMetrics(accountId),
     CacheKeys.tradeStats(accountId),
     CacheKeys.propFirmPhase(accountId),
     CacheKeys.userAccounts(userId),
+  )
+}
+
+/**
+ * Invalidate all caches for a user (account list, metrics, trade lists, etc.)
+ */
+export async function invalidateUserCache(userId: string): Promise<void> {
+  const { CacheKeys } = await import('./keys')
+  await bumpUserCacheVersion(userId)
+  await invalidateCache(
+    CacheKeys.userAccounts(userId)
   )
 }

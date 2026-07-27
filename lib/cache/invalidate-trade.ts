@@ -1,7 +1,10 @@
-import { invalidateAccountCache } from './helpers'
+import { invalidateAccountCache, bumpUserCacheVersion } from './helpers'
 import { db } from '../db/client'
 
 export async function invalidateTradesCache(userId: string, accountId?: string | null) {
+  // Always bump user cache version so all versioned trade lists and analytics are invalidated immediately
+  await bumpUserCacheVersion(userId)
+
   if (accountId) {
     await invalidateAccountCache(userId, accountId)
     return
@@ -17,3 +20,4 @@ export async function invalidateTradesCache(userId: string, accountId?: string |
     accounts.map(acc => invalidateAccountCache(userId, acc.id))
   )
 }
+

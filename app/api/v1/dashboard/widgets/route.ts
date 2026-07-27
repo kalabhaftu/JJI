@@ -20,7 +20,7 @@ import { calculateBalanceInfo } from '@/lib/utils/balance-calculator'
 import { normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { getRuntimePnlDisplayMode } from '@/server/user-settings'
 import { eq, inArray } from 'drizzle-orm'
-import { withCache } from '@/lib/cache/helpers'
+import { withCache, getUserCacheVersion } from '@/lib/cache/helpers'
 import { CacheKeys, CacheTTL } from '@/lib/cache/keys'
 
 export async function GET(request: NextRequest) {
@@ -37,9 +37,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Define unique parameters for cache key
+  // Define unique parameters for cache key with user versioning
+  const userVersion = await getUserCacheVersion(internalUserId)
   const queryParams = request.nextUrl.searchParams.toString()
-  const cacheKey = CacheKeys.widgetData(internalUserId, type, queryParams)
+  const cacheKey = CacheKeys.widgetData(internalUserId, type, queryParams, userVersion)
 
   const cachedResult = await withCache(
     cacheKey,

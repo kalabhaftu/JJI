@@ -29,6 +29,9 @@ import { calculateBalanceInfo } from '@/lib/utils/balance-calculator'
 import { CacheHeaders } from '@/lib/api-cache-headers'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
+import { withCache, getUserCacheVersion } from '@/lib/cache/helpers'
+import { CacheKeys, CacheTTL } from '@/lib/cache/keys'
+import crypto from 'crypto'
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { getTradeNetPnl, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { eq, and, or, inArray, desc, gte, lte, lt, ilike, arrayOverlaps, isNotNull, SQL } from 'drizzle-orm'
@@ -180,322 +183,334 @@ export async function GET(request: NextRequest) {
     const limitMax = needsAnalytics ? MAX_ANALYTICS_TRADE_LIMIT : MAX_TABLE_PAGE_LIMIT
     const limit = (!isNaN(rawLimit)) ? Math.min(limitMax, Math.max(1, rawLimit)) : limitFallback
     
-    // Build Drizzle where clause - ALL filtering server-side
-    const whereConditions: SQL[] = [eq(schema.Trade.userId, internalUserId)]
+    const userVersion = await getUserCacheVersion(internalUserId)
+    const paramsHash = crypto.createHash('sha256').update(JSON.stringify({ ...parsedParams.data, limit })).digest('hex').slice(0, 16)
+    const cacheKey = CacheKeys.tradeList(internalUserId, userVersion, paramsHash)
 
-    if (liveOnly) {
-      whereConditions.push(isNotNull(schema.Trade.tradeIdentityKey))
-    }
-    
-    if (accountNumbers.length > 0) {
-      // Find the user's regular accounts matching these accountNumbers (either by ID or number)
-      const userAccounts = await db.query.Account.findMany({
-        where: (table, { or, inArray }) => or(
-          inArray(table.id, accountNumbers),
-          inArray(table.number, accountNumbers)
-        ),
-        columns: { id: true, number: true }
-      })
+    const payload = await withCache(
+      cacheKey,
+      CacheTTL.tradeList,
+      async () => {
+        // Build Drizzle where clause - ALL filtering server-side
+        const whereConditions: SQL[] = [eq(schema.Trade.userId, internalUserId)]
 
-      // Find the user's phase accounts matching these accountNumbers (either by ID or phaseId)
-      const userPhaseAccounts = await db.query.PhaseAccount.findMany({
-        where: (table, { or, inArray }) => or(
-          inArray(table.id, accountNumbers),
-          inArray(table.phaseId, accountNumbers)
-        ),
-        columns: { id: true, phaseId: true }
-      })
+        if (liveOnly) {
+          whereConditions.push(isNotNull(schema.Trade.tradeIdentityKey))
+        }
+        
+        if (accountNumbers.length > 0) {
+          // Find the user's regular accounts matching these accountNumbers (either by ID or number)
+          const userAccounts = await db.query.Account.findMany({
+            where: (table, { or, inArray }) => or(
+              inArray(table.id, accountNumbers),
+              inArray(table.number, accountNumbers)
+            ),
+            columns: { id: true, number: true }
+          })
 
-      const resolvedAccountIds = userAccounts.map(a => a.id)
-      const resolvedAccountNumbers = userAccounts.map(a => a.number)
-      
-      const resolvedPhaseAccountIds = userPhaseAccounts.map(pa => pa.id)
-      const resolvedPhaseIds = userPhaseAccounts.map(pa => pa.phaseId).filter(Boolean) as string[]
+          // Find the user's phase accounts matching these accountNumbers (either by ID or phaseId)
+          const userPhaseAccounts = await db.query.PhaseAccount.findMany({
+            where: (table, { or, inArray }) => or(
+              inArray(table.id, accountNumbers),
+              inArray(table.phaseId, accountNumbers)
+            ),
+            columns: { id: true, phaseId: true }
+          })
 
-      // For any value in accountNumbers that was NOT a UUID (i.e. did not match any ID),
-      // we treat it as a raw number/phaseId directly (for backward compatibility).
-      const rawNumbers = accountNumbers.filter(
-        num => !resolvedAccountIds.includes(num) && !resolvedPhaseAccountIds.includes(num)
-      )
+          const resolvedAccountIds = userAccounts.map(a => a.id)
+          const resolvedAccountNumbers = userAccounts.map(a => a.number)
+          
+          const resolvedPhaseAccountIds = userPhaseAccounts.map(pa => pa.id)
+          const resolvedPhaseIds = userPhaseAccounts.map(pa => pa.phaseId).filter(Boolean) as string[]
 
-      const accountOrConditions = []
-      if (resolvedAccountIds.length > 0) {
-        accountOrConditions.push(inArray(schema.Trade.accountId, resolvedAccountIds))
-      }
-      if (resolvedPhaseAccountIds.length > 0) {
-        accountOrConditions.push(inArray(schema.Trade.phaseAccountId, resolvedPhaseAccountIds))
-      }
-      
-      const numberValues = [...resolvedAccountNumbers, ...resolvedPhaseIds, ...rawNumbers]
-      if (numberValues.length > 0) {
-        accountOrConditions.push(
-          and(
-            inArray(schema.Trade.accountNumber, numberValues)
-          )!
-        )
-      }
-
-      if (accountOrConditions.length > 0) {
-        whereConditions.push(or(...accountOrConditions)!)
-      }
-    }
-    
-    if (tradeDate) {
-      whereConditions.push(
-        or(
-          and(
-            gte(schema.Trade.closeDate, `${tradeDate}T00:00:00.000Z`),
-            lte(schema.Trade.closeDate, `${tradeDate}T23:59:59.999Z`)
-          ),
-          and(
-            eq(schema.Trade.closeDate, ''),
-            gte(schema.Trade.entryDate, `${tradeDate}T00:00:00.000Z`),
-            lte(schema.Trade.entryDate, `${tradeDate}T23:59:59.999Z`)
+          // For any value in accountNumbers that was NOT a UUID (i.e. did not match any ID),
+          // we treat it as a raw number/phaseId directly (for backward compatibility).
+          const rawNumbers = accountNumbers.filter(
+            num => !resolvedAccountIds.includes(num) && !resolvedPhaseAccountIds.includes(num)
           )
-        )!
-      )
-    } else if (dateFrom || dateTo) {
-      if (dateFrom) {
-        whereConditions.push(gte(schema.Trade.entryDate, dateFrom.includes('T') ? dateFrom : `${dateFrom}T00:00:00.000Z`))
-      }
-      if (dateTo) {
-        whereConditions.push(lte(schema.Trade.entryDate, dateTo.includes('T') ? dateTo : `${dateTo}T23:59:59.999Z`))
-      }
-    }
 
-    if (instruments.length > 0) {
-      whereConditions.push(inArray(schema.Trade.instrument, instruments))
-    }
-    
-    if (pnlMin !== undefined || pnlMax !== undefined) {
-      if (pnlMin !== undefined) whereConditions.push(gte(schema.Trade.pnl, pnlMin))
-      if (pnlMax !== undefined) whereConditions.push(lte(schema.Trade.pnl, pnlMax))
-    }
-    
-    if (timeRange) {
-      const timeRanges: Record<string, [number, number]> = {
-        'under1min': [0, 60],
-        '1to5min': [60, 300],
-        '5to10min': [300, 600],
-        '10to15min': [600, 900],
-        '15to30min': [900, 1800],
-        '30to60min': [1800, 3600],
-        '1to2hours': [3600, 7200],
-        '2to5hours': [7200, 18000],
-        'over5hours': [18000, 999999999],
-      }
-      const range = timeRanges[timeRange]
-      if (range) {
-        whereConditions.push(gte(schema.Trade.timeInPosition, range[0]))
-        whereConditions.push(lt(schema.Trade.timeInPosition, range[1]))
-      }
-    }
-    
-    if (tagIds.length > 0) {
-      whereConditions.push(arrayOverlaps(schema.Trade.tags, tagIds))
-    }
+          const accountOrConditions = []
+          if (resolvedAccountIds.length > 0) {
+            accountOrConditions.push(inArray(schema.Trade.accountId, resolvedAccountIds))
+          }
+          if (resolvedPhaseAccountIds.length > 0) {
+            accountOrConditions.push(inArray(schema.Trade.phaseAccountId, resolvedPhaseAccountIds))
+          }
+          
+          const numberValues = [...resolvedAccountNumbers, ...resolvedPhaseIds, ...rawNumbers]
+          if (numberValues.length > 0) {
+            accountOrConditions.push(
+              and(
+                inArray(schema.Trade.accountNumber, numberValues)
+              )!
+            )
+          }
 
-    if (side) {
-      whereConditions.push(ilike(schema.Trade.side, side))
-    }
+          if (accountOrConditions.length > 0) {
+            whereConditions.push(or(...accountOrConditions)!)
+          }
+        }
+        
+        if (tradeDate) {
+          whereConditions.push(
+            or(
+              and(
+                gte(schema.Trade.closeDate, `${tradeDate}T00:00:00.000Z`),
+                lte(schema.Trade.closeDate, `${tradeDate}T23:59:59.999Z`)
+              ),
+              and(
+                eq(schema.Trade.closeDate, ''),
+                gte(schema.Trade.entryDate, `${tradeDate}T00:00:00.000Z`),
+                lte(schema.Trade.entryDate, `${tradeDate}T23:59:59.999Z`)
+              )
+            )!
+          )
+        } else if (dateFrom || dateTo) {
+          if (dateFrom) {
+            whereConditions.push(gte(schema.Trade.entryDate, dateFrom.includes('T') ? dateFrom : `${dateFrom}T00:00:00.000Z`))
+          }
+          if (dateTo) {
+            whereConditions.push(lte(schema.Trade.entryDate, dateTo.includes('T') ? dateTo : `${dateTo}T23:59:59.999Z`))
+          }
+        }
 
-    if (search) {
-      whereConditions.push(
-        or(
-          ilike(schema.Trade.instrument, `%${search}%`),
-          ilike(schema.Trade.symbol, `%${search}%`),
-          ilike(schema.Trade.comment, `%${search}%`)
-        )!
-      )
-    }
-    
-    const finalWhere = and(...whereConditions)
+        if (instruments.length > 0) {
+          whereConditions.push(inArray(schema.Trade.instrument, instruments))
+        }
+        
+        if (pnlMin !== undefined || pnlMax !== undefined) {
+          if (pnlMin !== undefined) whereConditions.push(gte(schema.Trade.pnl, pnlMin))
+          if (pnlMax !== undefined) whereConditions.push(lte(schema.Trade.pnl, pnlMax))
+        }
+        
+        if (timeRange) {
+          const timeRanges: Record<string, [number, number]> = {
+            'under1min': [0, 60],
+            '1to5min': [60, 300],
+            '5to10min': [300, 600],
+            '10to15min': [600, 900],
+            '15to30min': [900, 1800],
+            '30to60min': [1800, 3600],
+            '1to2hours': [3600, 7200],
+            '2to5hours': [7200, 18000],
+            'over5hours': [18000, 999999999],
+          }
+          const range = timeRanges[timeRange]
+          if (range) {
+            whereConditions.push(gte(schema.Trade.timeInPosition, range[0]))
+            whereConditions.push(lt(schema.Trade.timeInPosition, range[1]))
+          }
+        }
+        
+        if (tagIds.length > 0) {
+          whereConditions.push(arrayOverlaps(schema.Trade.tags, tagIds))
+        }
 
-    // PERF: Fetch trades (slim select) + accounts (both regular and prop firm) in parallel
-    const useDirectPagination = !needsAnalytics && pageLimit !== null && weekday === null && hour === null && !outcome
-    const tradeQuery = {
-      where: finalWhere,
-      orderBy: (table: any, { desc }: any) => [desc(table.entryDate)],
-      limit: useDirectPagination ? pageLimit : limit,
-      ...(useDirectPagination ? { offset: pageOffset } : {}),
-      columns: TRADE_SELECT,
-      with: { TradingModel: { columns: { id: true, name: true } } },
-    }
+        if (side) {
+          whereConditions.push(ilike(schema.Trade.side, side))
+        }
 
-    const rawTrades = await db.query.Trade.findMany(tradeQuery)
-    const totalForDirectPagination = useDirectPagination
-      ? await db.$count(schema.Trade, finalWhere)
-      : null
-    const userSettings = await db.query.UserSettings.findFirst({
-      where: (table, { eq }) => eq(table.userId, internalUserId),
-      columns: {
-        breakEvenThreshold: true,
-        pnlDisplayMode: true,
-      }
-    })
-    const regularAccounts = includeStats ? await db.query.Account.findMany({
-      where: (table, { eq }) => eq(table.userId, internalUserId),
-      columns: { id: true, number: true, startingBalance: true }
-    }) : []
-    const propFirmAccounts = includeStats ? await db.query.MasterAccount.findMany({
-      where: (table, { eq }) => eq(table.userId, internalUserId),
-      with: {
-        PhaseAccount: {
-          columns: { id: true, phaseId: true, phaseNumber: true, status: true }
+        if (search) {
+          whereConditions.push(
+            or(
+              ilike(schema.Trade.instrument, `%${search}%`),
+              ilike(schema.Trade.symbol, `%${search}%`),
+              ilike(schema.Trade.comment, `%${search}%`)
+            )!
+          )
+        }
+        
+        const finalWhere = and(...whereConditions)
+
+        // PERF: Fetch trades (slim select) + accounts (both regular and prop firm) in parallel
+        const useDirectPagination = !needsAnalytics && pageLimit !== null && weekday === null && hour === null && !outcome
+        const tradeQuery = {
+          where: finalWhere,
+          orderBy: (table: any, { desc }: any) => [desc(table.entryDate)],
+          limit: useDirectPagination ? pageLimit : limit,
+          ...(useDirectPagination ? { offset: pageOffset } : {}),
+          columns: TRADE_SELECT,
+          with: { TradingModel: { columns: { id: true, name: true } } },
+        }
+
+        const rawTrades = await db.query.Trade.findMany(tradeQuery)
+        const totalForDirectPagination = useDirectPagination
+          ? await db.$count(schema.Trade, finalWhere)
+          : null
+        const userSettings = await db.query.UserSettings.findFirst({
+          where: (table, { eq }) => eq(table.userId, internalUserId),
+          columns: {
+            breakEvenThreshold: true,
+            pnlDisplayMode: true,
+          }
+        })
+        const regularAccounts = includeStats ? await db.query.Account.findMany({
+          where: (table, { eq }) => eq(table.userId, internalUserId),
+          columns: { id: true, number: true, startingBalance: true }
+        }) : []
+        const propFirmAccounts = includeStats ? await db.query.MasterAccount.findMany({
+          where: (table, { eq }) => eq(table.userId, internalUserId),
+          with: {
+            PhaseAccount: {
+              columns: { id: true, phaseId: true, phaseNumber: true, status: true }
+            }
+          }
+        }) : []
+
+        const breakEvenThreshold = getBreakEvenThreshold(userSettings?.breakEvenThreshold)
+        const pnlDisplayMode = normalizePnlDisplayMode(userSettings?.pnlDisplayMode)
+        
+        // Combine regular accounts + transform prop firm phases to unified format with startingBalance
+        const accounts = [
+          ...regularAccounts,
+          ...propFirmAccounts.flatMap((master: any) => 
+            (master.PhaseAccount || []).map((phase: any) => ({
+              id: phase.id,
+              number: phase.phaseId,
+              startingBalance: master.accountSize, // Use master account size
+              accountType: 'prop-firm' as const,
+              status: phase.status,
+              currentPhaseDetails: {
+                phaseNumber: phase.phaseNumber,
+                status: phase.status,
+                masterAccountId: master.id,
+                masterAccountName: master.accountName,
+              }
+            }))
+          )
+        ]
+        
+        // Convert decimals
+        let trades = rawTrades.map((trade: any) => ({
+          ...trade,
+          entryPrice: convertDecimal(trade.entryPrice),
+          closePrice: convertDecimal(trade.closePrice),
+          stopLoss: convertDecimal(trade.stopLoss),
+          takeProfit: convertDecimal(trade.takeProfit),
+          tradingModel: trade.TradingModel?.name || null,
+        }))
+
+        // Post-query filters (can't be done in Prisma WHERE)
+        if (weekday !== null) {
+          trades = trades.filter((trade: any) => {
+            if (!trade.entryDate) return false
+            return new Date(trade.entryDate).getDay() === weekday
+          })
+        }
+        if (hour !== null) {
+          trades = trades.filter((trade: any) => {
+            if (!trade.entryDate) return false
+            return new Date(trade.entryDate).getHours() === hour
+          })
+        }
+        if (outcome === 'win' || outcome === 'loss' || outcome === 'breakeven') {
+          trades = trades.filter((trade: any) => {
+            const pnl = getTradeNetPnl(trade)
+            return classifyTrade(pnl, breakEvenThreshold) === outcome
+          })
+        }
+        
+        // PERF: Group trades ONCE, pass to all grouped consumers
+        const grouped = (includeStats || includeCalendar || groupByExecution)
+          ? groupTradesByExecution(trades)
+          : undefined
+        const statistics = includeStats ? calculateStatistics(trades, accounts, grouped, breakEvenThreshold) : null
+        const calendarData = includeCalendar ? formatCalendarData(trades, accounts, timezone, grouped) : null
+
+        const responseTrades = groupByExecution ? (grouped ?? groupTradesByExecution(trades)) : trades
+
+        // Filter accounts to match selected account numbers (for balance calculation)
+        const filteredAccounts = accountNumbers.length > 0
+          ? accounts.filter((acc: any) => accountNumbers.includes(acc.number) || accountNumbers.includes(acc.id))
+          : accounts
+        
+        // PERF: Compute all widget chart data server-side (trades already in memory)
+        // This eliminates 6 separate /api/v1/dashboard/widgets calls
+        const widgetCalendarData = includeWidgets
+          ? (calendarData || formatCalendarData(trades as any, accounts as any, timezone, grouped as any))
+          : null
+
+        let relevantTransactions: any[] = []
+        try {
+          const liveAccountIds = filteredAccounts
+            .filter((account: any) => account.accountType === 'live')
+            .map((account: any) => account.id)
+            .filter(Boolean)
+          if (liveAccountIds.length > 0) {
+            relevantTransactions = await db.query.LiveAccountTransaction.findMany({
+              where: (table, { and, inArray }) => and(
+                eq(table.userId, internalUserId),
+                inArray(table.accountId, liveAccountIds)
+              ),
+              columns: { accountId: true, amount: true },
+            })
+          }
+        } catch (error) {
+          Sentry.captureException(error, { extra: { route: '/api/v1/trades' } })
+          relevantTransactions = []
+        }
+
+        const safeWidget = <T>(fn: () => T, fallback: T): T => {
+          try { return fn() } catch (error) {
+            Sentry.captureException(error, { extra: { route: '/api/v1/trades', widget: 'safeWidget' } })
+            return fallback
+          }
+        }
+        const zeroBalanceResult = {
+          startingBalance: 0, currentBalance: 0, currentGrossBalance: 0,
+          totalPnL: 0, grossPnL: 0, totalFees: 0, totalCommissions: 0,
+          netPnL: 0, displayPnL: 0, displayBalance: 0, pnlDisplayMode: 'net' as const,
+          changeAmount: 0, changePercent: 0,
+        }
+        const widgets = includeWidgets ? {
+          equityCurve: safeWidget(() => calculateEquityCurve(trades), []),
+          netDailyPnl: safeWidget(() => calculateNetDailyPnl(trades, breakEvenThreshold), []),
+          dailyCumulativePnl: safeWidget(() => calculateDailyCumulativePnl(trades, breakEvenThreshold), []),
+          outcomeDistribution: safeWidget(() => calculateOutcomeDistribution(trades, breakEvenThreshold), { data: [], totalTrades: 0 } as any),
+          dayOfWeekPerformance: safeWidget(() => calculateDayOfWeekPerformance(trades, breakEvenThreshold), []),
+          accountBalanceChart: safeWidget(() => calculateAccountBalanceChart(trades, filteredAccounts, breakEvenThreshold), []),
+          pnlByStrategy: safeWidget(() => calculatePnlByStrategy(trades, breakEvenThreshold), []),
+          pnlByInstrument: safeWidget(() => calculatePnlByInstrument(trades, breakEvenThreshold), []),
+          winRateByStrategy: safeWidget(() => calculateWinRateByStrategy(trades, breakEvenThreshold), []),
+          tradeDurationPerformance: safeWidget(() => calculateTradeDurationPerformance(trades, breakEvenThreshold), []),
+          weekdayPnl: safeWidget(() => calculateWeekdayPnl(trades, breakEvenThreshold), []),
+          performanceScore: safeWidget(() => calculatePerformanceScoreResult(trades, breakEvenThreshold), { hasData: false } as any),
+          performanceSummary: safeWidget(() => calculatePerformanceSummaryMetrics(trades), { maxDrawdown: 0, avgDrawdown: 0, rCoverage: { total: 0, valid: 0, all: 0 } }),
+          sessionAnalysis: safeWidget(() => calculateSessionAnalysis(trades, breakEvenThreshold), {} as any),
+          accountProgression: safeWidget(() => calculateAccountProgression(trades, filteredAccounts, breakEvenThreshold), { cumulative: [], balance: [], summary: {} } as any),
+          tagPerformance: safeWidget(() => calculateTagPerformance(trades, breakEvenThreshold), {} as any),
+          timeOfDayPerformance: safeWidget(() => calculateTimeOfDayPerformance(trades, breakEvenThreshold), []),
+          disciplineAnalytics: safeWidget(() => calculateDisciplineAnalytics(trades, breakEvenThreshold), { totalTrades: 0, brokenRules: 0, ruleBrokenRate: 0, ruleCoverage: 0, avgRulesPerTaggedTrade: 0, playbooks: [] } as any),
+          calendarData: widgetCalendarData,
+          accountBalancePnl: safeWidget(() => calculateBalanceInfo(filteredAccounts, trades, relevantTransactions, { pnlDisplayMode }), zeroBalanceResult),
+        } : null
+
+        const total = useDirectPagination ? (totalForDirectPagination ?? rawTrades.length) : responseTrades.length
+        const pagedTrades = useDirectPagination
+          ? responseTrades
+          : pageLimit !== null && pageLimit > 0
+            ? responseTrades.slice(pageOffset, pageOffset + pageLimit)
+            : responseTrades
+        const truncated = needsAnalytics && rawTrades.length >= MAX_ANALYTICS_TRADE_LIMIT
+
+        return {
+          trades: pagedTrades,
+          total,
+          page: pageLimit !== null ? { limit: pageLimit, offset: pageOffset } : null,
+          meta: { directPagination: useDirectPagination, truncated },
+          breakEvenThreshold,
+          pnlDisplayMode,
+          statistics,
+          calendarData,
+          widgets,
         }
       }
-    }) : []
+    )
 
-    const breakEvenThreshold = getBreakEvenThreshold(userSettings?.breakEvenThreshold)
-    const pnlDisplayMode = normalizePnlDisplayMode(userSettings?.pnlDisplayMode)
-    
-    // Combine regular accounts + transform prop firm phases to unified format with startingBalance
-    const accounts = [
-      ...regularAccounts,
-      ...propFirmAccounts.flatMap((master: any) => 
-        (master.PhaseAccount || []).map((phase: any) => ({
-          id: phase.id,
-          number: phase.phaseId,
-          startingBalance: master.accountSize, // Use master account size
-          accountType: 'prop-firm' as const,
-          status: phase.status,
-          currentPhaseDetails: {
-            phaseNumber: phase.phaseNumber,
-            status: phase.status,
-            masterAccountId: master.id,
-            masterAccountName: master.accountName,
-          }
-        }))
-      )
-    ]
-    
-    // Convert decimals
-    let trades = rawTrades.map((trade: any) => ({
-      ...trade,
-      entryPrice: convertDecimal(trade.entryPrice),
-      closePrice: convertDecimal(trade.closePrice),
-      stopLoss: convertDecimal(trade.stopLoss),
-      takeProfit: convertDecimal(trade.takeProfit),
-      tradingModel: trade.TradingModel?.name || null,
-    }))
-
-    // Post-query filters (can't be done in Prisma WHERE)
-    if (weekday !== null) {
-      trades = trades.filter((trade: any) => {
-        if (!trade.entryDate) return false
-        return new Date(trade.entryDate).getDay() === weekday
-      })
-    }
-    if (hour !== null) {
-      trades = trades.filter((trade: any) => {
-        if (!trade.entryDate) return false
-        return new Date(trade.entryDate).getHours() === hour
-      })
-    }
-    if (outcome === 'win' || outcome === 'loss' || outcome === 'breakeven') {
-      trades = trades.filter((trade: any) => {
-        const pnl = getTradeNetPnl(trade)
-        return classifyTrade(pnl, breakEvenThreshold) === outcome
-      })
-    }
-    
-    // PERF: Group trades ONCE, pass to all grouped consumers
-    const grouped = (includeStats || includeCalendar || groupByExecution)
-      ? groupTradesByExecution(trades)
-      : undefined
-    const statistics = includeStats ? calculateStatistics(trades, accounts, grouped, breakEvenThreshold) : null
-    const calendarData = includeCalendar ? formatCalendarData(trades, accounts, timezone, grouped) : null
-
-    const responseTrades = groupByExecution ? (grouped ?? groupTradesByExecution(trades)) : trades
-
-    // Filter accounts to match selected account numbers (for balance calculation)
-    const filteredAccounts = accountNumbers.length > 0
-      ? accounts.filter((acc: any) => accountNumbers.includes(acc.number) || accountNumbers.includes(acc.id))
-      : accounts
-    
-    // PERF: Compute all widget chart data server-side (trades already in memory)
-    // This eliminates 6 separate /api/v1/dashboard/widgets calls
-    const widgetCalendarData = includeWidgets
-      ? (calendarData || formatCalendarData(trades as any, accounts as any, timezone, grouped as any))
-      : null
-
-    let relevantTransactions: any[] = []
-    try {
-      const liveAccountIds = filteredAccounts
-        .filter((account: any) => account.accountType === 'live')
-        .map((account: any) => account.id)
-        .filter(Boolean)
-      if (liveAccountIds.length > 0) {
-        relevantTransactions = await db.query.LiveAccountTransaction.findMany({
-          where: (table, { and, inArray }) => and(
-            eq(table.userId, internalUserId),
-            inArray(table.accountId, liveAccountIds)
-          ),
-          columns: { accountId: true, amount: true },
-        })
-      }
-    } catch (error) {
-      Sentry.captureException(error, { extra: { route: '/api/v1/trades' } })
-      relevantTransactions = []
-    }
-
-    const safeWidget = <T>(fn: () => T, fallback: T): T => {
-      try { return fn() } catch (error) {
-        Sentry.captureException(error, { extra: { route: '/api/v1/trades', widget: 'safeWidget' } })
-        return fallback
-      }
-    }
-    const zeroBalanceResult = {
-      startingBalance: 0, currentBalance: 0, currentGrossBalance: 0,
-      totalPnL: 0, grossPnL: 0, totalFees: 0, totalCommissions: 0,
-      netPnL: 0, displayPnL: 0, displayBalance: 0, pnlDisplayMode: 'net' as const,
-      changeAmount: 0, changePercent: 0,
-    }
-    const widgets = includeWidgets ? {
-      equityCurve: safeWidget(() => calculateEquityCurve(trades), []),
-      netDailyPnl: safeWidget(() => calculateNetDailyPnl(trades, breakEvenThreshold), []),
-      dailyCumulativePnl: safeWidget(() => calculateDailyCumulativePnl(trades, breakEvenThreshold), []),
-      outcomeDistribution: safeWidget(() => calculateOutcomeDistribution(trades, breakEvenThreshold), { data: [], totalTrades: 0 } as any),
-      dayOfWeekPerformance: safeWidget(() => calculateDayOfWeekPerformance(trades, breakEvenThreshold), []),
-      accountBalanceChart: safeWidget(() => calculateAccountBalanceChart(trades, filteredAccounts, breakEvenThreshold), []),
-      pnlByStrategy: safeWidget(() => calculatePnlByStrategy(trades, breakEvenThreshold), []),
-      pnlByInstrument: safeWidget(() => calculatePnlByInstrument(trades, breakEvenThreshold), []),
-      winRateByStrategy: safeWidget(() => calculateWinRateByStrategy(trades, breakEvenThreshold), []),
-      tradeDurationPerformance: safeWidget(() => calculateTradeDurationPerformance(trades, breakEvenThreshold), []),
-      weekdayPnl: safeWidget(() => calculateWeekdayPnl(trades, breakEvenThreshold), []),
-      performanceScore: safeWidget(() => calculatePerformanceScoreResult(trades, breakEvenThreshold), { hasData: false } as any),
-      performanceSummary: safeWidget(() => calculatePerformanceSummaryMetrics(trades), { maxDrawdown: 0, avgDrawdown: 0, rCoverage: { total: 0, valid: 0, all: 0 } }),
-      sessionAnalysis: safeWidget(() => calculateSessionAnalysis(trades, breakEvenThreshold), {} as any),
-      accountProgression: safeWidget(() => calculateAccountProgression(trades, filteredAccounts, breakEvenThreshold), { cumulative: [], balance: [], summary: {} } as any),
-      tagPerformance: safeWidget(() => calculateTagPerformance(trades, breakEvenThreshold), {} as any),
-      timeOfDayPerformance: safeWidget(() => calculateTimeOfDayPerformance(trades, breakEvenThreshold), []),
-      disciplineAnalytics: safeWidget(() => calculateDisciplineAnalytics(trades, breakEvenThreshold), { totalTrades: 0, brokenRules: 0, ruleBrokenRate: 0, ruleCoverage: 0, avgRulesPerTaggedTrade: 0, playbooks: [] } as any),
-      calendarData: widgetCalendarData,
-      accountBalancePnl: safeWidget(() => calculateBalanceInfo(filteredAccounts, trades, relevantTransactions, { pnlDisplayMode }), zeroBalanceResult),
-    } : null
-
-    const total = useDirectPagination ? (totalForDirectPagination ?? rawTrades.length) : responseTrades.length
-    const pagedTrades = useDirectPagination
-      ? responseTrades
-      : pageLimit !== null && pageLimit > 0
-        ? responseTrades.slice(pageOffset, pageOffset + pageLimit)
-        : responseTrades
-    const truncated = needsAnalytics && rawTrades.length >= MAX_ANALYTICS_TRADE_LIMIT
-
-    const response = NextResponse.json({
-      trades: pagedTrades,
-      total,
-      page: pageLimit !== null ? { limit: pageLimit, offset: pageOffset } : null,
-      meta: { directPagination: useDirectPagination, truncated },
-      breakEvenThreshold,
-      pnlDisplayMode,
-      statistics,
-      calendarData,
-      widgets,
-    })
+    const response = NextResponse.json(payload)
     Object.entries(CacheHeaders.privateShort).forEach(([k, v]) => response.headers.set(k, v))
 
-    logger.info({ latencyMs: Date.now() - start, total: trades.length, layer: 'api' }, 'GET /api/v1/trades')
+    logger.info({ latencyMs: Date.now() - start, total: payload.trades?.length ?? 0, layer: 'api' }, 'GET /api/v1/trades')
     return response
 
   } catch (error: any) {

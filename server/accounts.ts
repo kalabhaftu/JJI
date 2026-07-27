@@ -717,6 +717,14 @@ async function checkAndResetAccountsAction() {
 
 export async function invalidateUserCaches(userId: string) {
   try {
+    const { invalidateUserCache, bumpUserCacheVersion } = await import('@/lib/cache/helpers')
+    await bumpUserCacheVersion(userId)
+    await invalidateUserCache(userId)
+  } catch (error) {
+    // Fail silently if Redis invalidation error
+  }
+
+  try {
     const { revalidateTag } = await import('next/cache')
     revalidateTag(`accounts-${userId}`)
     revalidateTag(`user-data-${userId}`)

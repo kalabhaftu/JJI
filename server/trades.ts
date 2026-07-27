@@ -9,6 +9,8 @@ import { ImageCompressor } from '@/lib/image-compression';
 import { deletePublicStorageUrls } from '@/server/storage-admin';
 import { parseTradeUpdate } from '@/lib/trades/update-schema';
 
+import { invalidateTradesCache } from '@/lib/cache/invalidate-trade';
+
 async function deleteTrade(tradeId: string) {
   try {
     const userId = await getUserIdSafe()
@@ -23,6 +25,7 @@ async function deleteTrade(tradeId: string) {
     const trade = await db.query.Trade.findFirst({
       where: (table, { eq }) => and(eq(table.id, tradeId), eq(table.userId, userId)),
       columns: {
+        accountId: true,
         imageOne: true,
         imageTwo: true,
         imageThree: true,
@@ -55,6 +58,7 @@ async function deleteTrade(tradeId: string) {
     }
 
     await db.delete(schema.Trade).where(and(eq(schema.Trade.id, tradeId), eq(schema.Trade.userId, userId)))
+    await invalidateTradesCache(userId, trade?.accountId ?? null)
 
     return {
       success: true,
@@ -83,6 +87,7 @@ async function updateTradeImage(
   let processedImage = imageUrl
 
     await db.update(schema.Trade).set({ [fieldName]: processedImage }).where(and(inArray(schema.Trade.id, tradeIds), eq(schema.Trade.userId, userId)))
+    await invalidateTradesCache(userId)
 
     return {
       success: true,
@@ -102,6 +107,7 @@ export async function updateTradeAction(tradeId: string, data: any) {
 
     const update = parseTradeUpdate(data)
     const updated = (await db.update(schema.Trade).set(update).where(and(eq(schema.Trade.id, tradeId), eq(schema.Trade.userId, userId))).returning())[0]
+    await invalidateTradesCache(userId, updated?.accountId ?? null)
 
     return {
       success: true,

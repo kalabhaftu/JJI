@@ -119,7 +119,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       const updatedMasterAccount = (await tx.update(schema.MasterAccount)
         .set({
           currentPhase: nextPhaseNumber,
-          ...(isTransitioningToFunded && { status: 'funded' })
+          status: isTransitioningToFunded ? 'funded' : 'active',
+          updatedAt: new Date()
         })
         .where(eq(schema.MasterAccount.id, masterAccountId))
         .returning())[0]

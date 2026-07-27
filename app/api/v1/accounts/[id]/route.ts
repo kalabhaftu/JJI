@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
@@ -93,7 +94,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       success: true,
       data
     })
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/accounts/[id]', method: 'GET' } })
     return NextResponse.json(
       { success: false, error: 'Failed to fetch account' },
       { status: 500 }
@@ -203,7 +205,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         isConfigured: updatedAccount.isConfigured,
       }
     })
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/accounts/[id]', method: 'PATCH' } })
     return NextResponse.json(
       { success: false, error: 'Failed to update account' },
       { status: 500 }
@@ -287,7 +290,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       success: true,
       message: 'Account and all associated trades deleted successfully'
     })
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/accounts/[id]', method: 'DELETE' } })
     return NextResponse.json(
       { success: false, error: 'Failed to delete account' },
       { status: 500 }

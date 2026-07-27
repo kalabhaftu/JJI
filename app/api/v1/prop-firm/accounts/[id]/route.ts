@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { z } from 'zod'
 import { db } from '@/lib/db/client'
@@ -46,7 +47,8 @@ function normalizeTimeZone(value: string | null) {
   try {
     Intl.DateTimeFormat('en-US', { timeZone: value }).format(new Date())
     return value
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/prop-firm/accounts/[id]', phase: 'timezone-validation' } })
     return 'UTC'
   }
 }

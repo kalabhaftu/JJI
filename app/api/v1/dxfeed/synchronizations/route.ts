@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import * as Sentry from '@sentry/nextjs'
 import { NextRequest, NextResponse } from "next/server";
 import {
   getDxFeedSynchronizations,
@@ -26,9 +27,10 @@ export async function GET(request: NextRequest) {
         try {
           const parsed = JSON.parse(sync.token || '{}');
           return parsed.accountNumbers || [];
-        } catch {
-          return [];
-        }
+         } catch (error) {
+           Sentry.captureException(error, { extra: { route: '/api/v1/dxfeed/synchronizations' } })
+           return [];
+         }
       })()
     }));
 

@@ -1,4 +1,5 @@
 'use server'
+import * as Sentry from '@sentry/nextjs'
 import { createClient, ensureUserInDatabase } from '@/server/auth'
 import { NextResponse } from 'next/server'
 import { logActivity } from '@/lib/activity-logger'
@@ -48,9 +49,10 @@ export async function GET(request: Request) {
             8_000,
             'ensureUserInDatabase'
           )
-        } catch {
-          // Auth succeeded; DB sync can happen on the next page load.
-        }
+         } catch (error) {
+           Sentry.captureException(error, { extra: { route: '/api/auth/callback', phase: 'ensureUserInDatabase' } })
+           // Auth succeeded; DB sync can happen on the next page load.
+         }
 
         logActivity({ userId: data.user.id, action: 'USER_LOGIN', entity: 'Auth' })
 
@@ -68,9 +70,10 @@ export async function GET(request: Request) {
       }
 
       return NextResponse.redirect(new URL('/', baseUrl))
-    } catch {
-      return NextResponse.redirect(new URL('/', baseUrl))
-    }
+     } catch (error) {
+       Sentry.captureException(error, { extra: { route: '/api/auth/callback' } })
+       return NextResponse.redirect(new URL('/', baseUrl))
+     }
   }
 
   return NextResponse.redirect(new URL('/', baseUrl))

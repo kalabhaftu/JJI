@@ -76,7 +76,8 @@ export async function POST(req: NextRequest) {
     Sentry.captureException(error, context)
 
     return NextResponse.json({ success: true })
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/errors' } })
     return NextResponse.json({ success: false }, { status: 500 })
   }
 }

@@ -1,4 +1,5 @@
 import { NextResponse, NextRequest } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import { applyRateLimit, publicLimiter } from '@/lib/rate-limiter'
 
@@ -14,7 +15,8 @@ export async function GET(req: NextRequest) {
     })
 
     return NextResponse.json({ success: true, data: addresses })
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/donations' } })
     return NextResponse.json({ success: false, error: 'Failed to fetch addresses' }, { status: 500 })
   }
 }

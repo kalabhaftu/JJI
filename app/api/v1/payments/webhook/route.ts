@@ -6,6 +6,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { verifyIpnSignature, type IpnPayload } from '@/lib/services/nowpayments-service'
 import { handleIpnWebhook } from '@/lib/services/subscription-service'
 import { logger } from '@/lib/logger'
@@ -24,7 +25,8 @@ export async function POST(request: NextRequest) {
     let payload: IpnPayload
     try {
       payload = JSON.parse(rawBody)
-    } catch {
+    } catch (error) {
+      Sentry.captureException(error, { extra: { route: '/api/v1/payments/webhook' } })
       logger.warn('Invalid NOWPayments webhook JSON')
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }

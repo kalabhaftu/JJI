@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentity } from '@/server/user-identity'
@@ -433,12 +434,16 @@ export async function GET(request: NextRequest) {
           columns: { accountId: true, amount: true },
         })
       }
-    } catch {
+    } catch (error) {
+      Sentry.captureException(error, { extra: { route: '/api/v1/trades' } })
       relevantTransactions = []
     }
 
     const safeWidget = <T>(fn: () => T, fallback: T): T => {
-      try { return fn() } catch { return fallback }
+      try { return fn() } catch (error) {
+        Sentry.captureException(error, { extra: { route: '/api/v1/trades', widget: 'safeWidget' } })
+        return fallback
+      }
     }
     const zeroBalanceResult = {
       startingBalance: 0, currentBalance: 0, currentGrossBalance: 0,
@@ -494,6 +499,7 @@ export async function GET(request: NextRequest) {
     return response
 
   } catch (error: any) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/trades' } })
     logger.error({ error: error?.message, latencyMs: Date.now() - start, layer: 'api' }, 'GET /api/v1/trades failed')
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

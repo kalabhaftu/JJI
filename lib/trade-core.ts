@@ -178,6 +178,8 @@ export function buildSyntheticExecutionsFromTrade(trade: TradeLike) {
     legacySourceTradeId: String(trade.id || ''),
     rawSymbol: normalizeString(trade.symbol) || null,
     closeReason: null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 
   const exitExecution = {
@@ -194,6 +196,8 @@ export function buildSyntheticExecutionsFromTrade(trade: TradeLike) {
     legacySourceTradeId: String(trade.id || ''),
     rawSymbol: normalizeString(trade.symbol) || null,
     closeReason: normalizeString(trade.closeReason) || null,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 
   return [entryExecution, exitExecution]

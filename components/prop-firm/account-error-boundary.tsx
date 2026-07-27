@@ -1,6 +1,7 @@
 'use client'
 
 import React, { Component, ReactNode } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -27,7 +28,9 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
     return { hasError: true, error }
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {}
+  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+    Sentry.captureException(error, { extra: { errorInfo } })
+  }
 
   handleReset = () => {
     this.setState({ hasError: false } as unknown as ErrorBoundaryState)

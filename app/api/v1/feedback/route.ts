@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import * as Sentry from '@sentry/nextjs'
 import { NextResponse, NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
@@ -137,10 +138,11 @@ export async function POST(req: NextRequest) {
           type: file.type,
           url: `storage://feedback-attachments/${uploadData.path}`,
         })
-      } catch {
-        logger.warn(`Feedback attachment upload failed (type: ${file.type}, size: ${file.size})`)
-        return createErrorResponse('Unable to upload feedback attachment', 503, undefined, 'ATTACHMENT_UPLOAD_FAILED')
-      }
+       } catch (error) {
+         Sentry.captureException(error, { extra: { route: '/api/v1/feedback', phase: 'attachment-upload' } })
+         logger.warn(`Feedback attachment upload failed (type: ${file.type}, size: ${file.size})`)
+         return createErrorResponse('Unable to upload feedback attachment', 503, undefined, 'ATTACHMENT_UPLOAD_FAILED')
+       }
     }
 
     const ip = extractIP(req.headers)

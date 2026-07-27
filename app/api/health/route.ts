@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import { isRedisConfigured, redis } from '@/lib/cache/client'
 
@@ -21,7 +22,8 @@ export async function GET() {
     // Check DB
     await db.execute('SELECT 1')
     status.database = 'up'
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/health', phase: 'database-check' } })
     status.database = 'down'
   }
 
@@ -31,9 +33,10 @@ export async function GET() {
     try {
       const ping = await redis.ping()
       if (ping === 'PONG') status.redis = 'up'
-    } catch {
-      status.redis = 'down'
-    }
+     } catch (error) {
+       Sentry.captureException(error, { extra: { route: '/api/health', phase: 'redis-check' } })
+       status.redis = 'down'
+     }
   }
 
   if (status.database === 'up' && status.redis === 'up') {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import { ADMIN_WIDGET_DEFAULTS } from '@/lib/admin-control-plane'
 
@@ -12,7 +13,8 @@ export async function GET() {
     }))
 
     return NextResponse.json({ success: true, data })
-  } catch {
-    return NextResponse.json({ success: true, data: ADMIN_WIDGET_DEFAULTS, fallback: true })
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/dashboard/widget-catalog' } })
+    return NextResponse.json({ success: false, error: 'Failed to fetch widget catalog' }, { status: 500 })
   }
 }

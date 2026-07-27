@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { GET as getTrades } from '@/app/api/v1/trades/route'
 import {
   calculateDayOfWeekPerformance,
@@ -116,7 +117,8 @@ export async function GET(request: NextRequest) {
                 columns: { accountId: true, amount: true }
               })
             }
-          } catch {
+          } catch (error) {
+            Sentry.captureException(error, { extra: { route: '/api/v1/dashboard/widgets' } })
             transactions = []
           }
           let pnlDisplayMode = 'net'

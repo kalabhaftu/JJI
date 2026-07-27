@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
@@ -60,7 +61,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       success: true,
       data: trades
     })
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/accounts/[id]/trades' } })
     return NextResponse.json(
       { success: false, error: 'Failed to fetch trades' },
       { status: 500 }

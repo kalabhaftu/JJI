@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import * as Sentry from '@sentry/nextjs'
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { z } from "zod"
 
@@ -63,11 +64,12 @@ export async function POST(request: NextRequest) {
     return errorResponse
   }
 
-  try {
-    await ensureUserInDatabase(data.user, "en")
-  } catch {
-    // Auth restoration should not fail because the profile sync is temporarily unavailable.
-  }
+   try {
+     await ensureUserInDatabase(data.user, "en")
+   } catch (error) {
+     Sentry.captureException(error, { extra: { route: '/api/auth/restore' } })
+     // Auth restoration should not fail because the profile sync is temporarily unavailable.
+   }
 
   const response = NextResponse.json(
     {

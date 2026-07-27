@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
@@ -40,7 +41,8 @@ export async function GET(request: NextRequest) {
               cookiesToSet.forEach(({ name, value, options }) =>
                 cookieStore.set(name, value, options)
               )
-            } catch {
+            } catch (error) {
+              Sentry.captureException(error, { extra: { route: '/api/auth/check', phase: 'cookie-set' } })
               // Ignore cookie setting errors in middleware context
             }
           },

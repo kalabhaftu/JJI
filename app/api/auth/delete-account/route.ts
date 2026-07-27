@@ -1,5 +1,6 @@
 'use server'
 
+import * as Sentry from '@sentry/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserId } from '@/server/auth'
 import { db } from '@/lib/db/client'
@@ -70,11 +71,12 @@ export async function DELETE(request: NextRequest) {
         )
       }
 
-      try {
-        await db.delete(schema.User).where(eq(schema.User.id, dbUser.id))
-      } catch {
-        // If the auth->public FK cascade already removed the row, there's nothing left to do.
-      }
+       try {
+         await db.delete(schema.User).where(eq(schema.User.id, dbUser.id))
+       } catch (error) {
+         Sentry.captureException(error, { extra: { route: '/api/auth/delete-account' } })
+         // If the auth->public FK cascade already removed the row, there's nothing left to do.
+       }
     }
 
     return NextResponse.json({

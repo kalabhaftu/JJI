@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentity } from '@/server/user-identity'
@@ -109,9 +110,10 @@ export async function POST(request: NextRequest) {
     try {
       const rawBody = await request.text()
       requestBody = weeklyReviewRequestSchema.parse(rawBody ? JSON.parse(rawBody) : {})
-    } catch {
-      return NextResponse.json({ error: 'Invalid review request' }, { status: 400 })
-    }
+     } catch (error) {
+       Sentry.captureException(error, { extra: { route: '/api/v1/weekly-review' } })
+       return NextResponse.json({ error: 'Invalid review request' }, { status: 400 })
+     }
 
     const now = requestBody.clientDate ? new Date(requestBody.clientDate) : new Date()
     const dayOfWeek = now.getDay() // 0 = Sunday, 1 = Monday, ..., 6 = Saturday

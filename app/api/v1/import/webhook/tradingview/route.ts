@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { nanoid } from 'nanoid'
@@ -67,9 +68,10 @@ export async function POST(req: NextRequest) {
     let body: unknown
     try {
       body = JSON.parse(rawBody)
-    } catch {
-      return createErrorResponse('Invalid JSON body', 400, undefined, 'INVALID_JSON')
-    }
+     } catch (error) {
+       Sentry.captureException(error, { extra: { route: '/api/v1/import/webhook/tradingview' } })
+       return createErrorResponse('Invalid JSON body', 400, undefined, 'INVALID_JSON')
+     }
 
     const parsed = tradingViewPayloadSchema.safeParse(body)
     if (!parsed.success) {

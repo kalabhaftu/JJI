@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
@@ -196,9 +197,10 @@ export async function GET(request: NextRequest) {
            where: (table, { inArray }) => inArray(table.accountId, relevantIds)
         })
       }
-    } catch {
+    } catch (error) {
+       Sentry.captureException(error, { extra: { route: '/api/v1/accounts' } })
        // Ignore if not present
-    }
+     }
     
     // 7. Calculate true equity & grouped counts
     const finalAccounts = paginated.map(acc => {

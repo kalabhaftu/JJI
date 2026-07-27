@@ -79,7 +79,6 @@ export function DashboardClient() {
   return (
     <DashboardErrorBoundary>
       <div className="flex flex-1 flex-col w-full">
-        /* ── Edit Mode Controls ── */
         <EditModeControls />
         <ErrorBoundaryWrapper context="Widgets">
           <div className="px-4 pb-24 lg:pb-0 dashboard-page-content">

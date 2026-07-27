@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { format } from 'date-fns'
 import {
   Dialog,
@@ -107,7 +108,8 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
         } else {
           setReviews([])
         }
-      } catch {
+      } catch (error) {
+        Sentry.captureException(error, { extra: { route: 'components/notifications/weekly-review-dialog' } })
         setReviews([])
       } finally {
         setIsLoading(false)

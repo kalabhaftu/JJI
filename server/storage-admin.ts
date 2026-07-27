@@ -1,4 +1,5 @@
 import { getSupabaseAdminClient } from '@/server/supabase-admin'
+import * as Sentry from '@sentry/nextjs'
 
 const ALLOWED_PUBLIC_DELETE_BUCKETS = new Set(['trade-images', 'feedback-attachments'])
 
@@ -13,7 +14,8 @@ function isExpectedStorageOrigin(parsed: URL) {
 
   try {
     return parsed.origin === new URL(configuredUrl).origin
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'server/storage-admin', phase: 'isValidOrigin' } })
     return false
   }
 }
@@ -48,7 +50,8 @@ function parsePublicStorageUrl(url: string): StorageObjectRef | null {
       bucket: decodedBucket,
       path: pathParts.map((part) => decodeURIComponent(part)).join('/'),
     }
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'server/storage-admin', phase: 'parsePublicStorageUrl' } })
     return null
   }
 }

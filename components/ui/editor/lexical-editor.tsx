@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import * as Sentry from '@sentry/nextjs'
 import logger from '@/lib/logger'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
@@ -118,7 +119,8 @@ function toLexicalStateString(value?: string): string {
   try {
     const parsed = JSON.parse(value)
     return JSON.stringify(sanitizeLexicalState(parsed))
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'components/ui/editor/lexical-editor', phase: 'parseState' } })
     // Migrate legacy plain text notes to a safe Lexical paragraph state.
     return JSON.stringify({
       root: {

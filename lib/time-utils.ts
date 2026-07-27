@@ -1,4 +1,5 @@
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import * as Sentry from '@sentry/nextjs'
 
 export const DEFAULT_TIMEZONE = 'America/New_York';
 
@@ -155,7 +156,8 @@ export function calculateTradeDuration(
     }
     
     return Math.round(durationMs / 1000); // Convert to seconds
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'formatDuration' } })
     return 0;
   }
 }
@@ -196,10 +198,11 @@ function normalizeToUTC(
       const zonedDate = toZonedTime(new Date(dateStr + 'Z'), fallbackTimezone);
       const offset = getTimezoneOffset(fallbackTimezone, new Date(dateStr));
       const utcDate = new Date(zonedDate.getTime() - offset);
-      return isNaN(utcDate.getTime()) ? new Date(dateStr) : utcDate;
-    } catch {
-      return new Date(dateStr);
-    }
+       return isNaN(utcDate.getTime()) ? new Date(dateStr) : utcDate;
+     } catch (error) {
+       Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'parseDate' } })
+       return new Date(dateStr);
+     }
   }
   
   // Plain date format (various) - parse and assume fallback timezone
@@ -216,7 +219,8 @@ function getTimezoneOffset(timezone: string, date: Date): number {
     const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
     const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
     return tzDate.getTime() - utcDate.getTime();
-  } catch {
-    return 0;
-  }
+   } catch (error) {
+     Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'getTimezoneOffset' } })
+     return 0;
+   }
 }

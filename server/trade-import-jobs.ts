@@ -1,4 +1,5 @@
 import { db } from '@/lib/db/client'
+import * as Sentry from '@sentry/nextjs'
 import * as schema from '@/lib/db/schema'
 import { generateTradeHash } from '@/lib/utils'
 import { PhaseEvaluationEngine } from '@/lib/prop-firm/phase-evaluation-engine'
@@ -489,7 +490,8 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
             evaluationType: state.evaluationType,
             propFirmName: state.propFirmName,
           }
-        } catch {
+        } catch (error) {
+          Sentry.captureException(error, { extra: { route: 'server/trade-import-jobs', phase: 'evaluation' } })
           // Keep import completion successful even if evaluation fails
         }
       }

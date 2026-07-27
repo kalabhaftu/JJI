@@ -1,4 +1,5 @@
 import type { TradeType } from '@/lib/db/schema/trades';
+import * as Sentry from '@sentry/nextjs'
 import type { AccountType } from '@/lib/db/schema/accounts';
 
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, differenceInDays, getDay } from 'date-fns'
@@ -638,7 +639,8 @@ export function calculateSessionAnalysis(
                   stats[session].wins++
               }
           }
-      } catch {
+      } catch (error) {
+        Sentry.captureException(error, { extra: { route: 'lib/dashboard/analytics-calculations' } })
       }
   })
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
@@ -21,7 +22,8 @@ export function ServiceWorkerRegister() {
         if (registration.waiting) {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' })
         }
-      } catch {
+      } catch (error) {
+        Sentry.captureException(error, { extra: { route: 'components/service-worker-register' } })
         // The app should still work even if service worker registration fails.
       }
     }

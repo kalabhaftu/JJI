@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/nextjs'
+
 const DEFAULT_PRODUCTION_ORIGIN = 'https://justjournalit.vercel.app'
 
 const LOCALHOST_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1'])
@@ -9,7 +11,8 @@ function normalizeOrigin(value: string | undefined | null): string | null {
     const input = value.startsWith('http') ? value : `https://${value}`
     const url = new URL(input)
     return url.origin
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'normalizeOrigin' } })
     return null
   }
 }
@@ -58,7 +61,8 @@ function isLocalOrigin(origin: string) {
   try {
     const url = new URL(origin)
     return LOCALHOST_HOSTS.has(url.hostname)
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'isLocalhostOrigin' } })
     return false
   }
 }
@@ -97,7 +101,8 @@ export function assertProductionUrl(name: string, value: string | undefined | nu
   let url: URL
   try {
     url = new URL(value.startsWith('http') ? value : `https://${value}`)
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'validateOrigin' } })
     return `${name} must be a valid URL`
   }
 

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { format, startOfWeek, subWeeks } from 'date-fns'
 import { useUserStore } from '@/store/user-store'
 
@@ -90,7 +91,8 @@ export function WeeklyReviewTrigger() {
           return
         }
         scheduleRetry()
-      } catch {
+      } catch (error) {
+        Sentry.captureException(error, { extra: { route: 'components/weekly-review-trigger' } })
         scheduleRetry()
       }
     }

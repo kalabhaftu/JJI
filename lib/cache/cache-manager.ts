@@ -5,6 +5,7 @@
 
 import { CACHE_DURATION_SHORT, MAX_CACHE_ITEMS } from '@/lib/constants'
 import logger from "@/lib/logger";
+import * as Sentry from '@sentry/nextjs'
 
 interface CacheEntry<T> {
   data: T
@@ -184,7 +185,8 @@ class CacheManagerClass {
       try {
         localStorage.removeItem('accounts-store')
         localStorage.removeItem('equity-chart-store')
-      } catch {
+      } catch (error) {
+        Sentry.captureException(error, { extra: { route: 'lib/cache/cache-manager', phase: 'clearLocalStorage' } })
         // Ignore localStorage errors
       }
     }

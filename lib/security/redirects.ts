@@ -1,10 +1,13 @@
+import * as Sentry from '@sentry/nextjs'
+
 export function getSafeRedirectPath(next: string | null | undefined, fallback = '/dashboard') {
   if (!next) return fallback
 
   let decoded: string
   try {
     decoded = decodeURIComponent(next)
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/security/redirects', phase: 'decodeURI' } })
     return fallback
   }
 

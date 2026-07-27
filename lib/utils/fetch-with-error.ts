@@ -1,4 +1,5 @@
 import logger from '@/lib/logger';
+import * as Sentry from '@sentry/nextjs'
 
 import { 
   API_TIMEOUT, 
@@ -119,7 +120,8 @@ export async function fetchWithError<T = unknown>(
       if (contentType?.includes('application/json')) {
         try {
           data = await response.json()
-        } catch {
+        } catch (error) {
+          Sentry.captureException(error, { extra: { route: 'lib/utils/fetch-with-error', phase: 'parseJSON' } })
           // Response is not valid JSON
           data = null
         }

@@ -1,4 +1,5 @@
 import { createServerClient } from '@supabase/ssr'
+import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 
 export async function createClient() {
@@ -17,7 +18,8 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }: any) =>
               cookieStore.set(name, value, options)
             )
-          } catch {
+          } catch (error) {
+            Sentry.captureException(error, { extra: { route: 'lib/supabase/server', phase: 'cookieSet' } })
             // The `setAll` method was called from a Server Component.
             // This can be ignored if you have middleware refreshing
             // user sessions.

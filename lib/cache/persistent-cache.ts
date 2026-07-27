@@ -1,6 +1,6 @@
 /**
  * Comprehensive Cache Management System
- * 
+ *
  * This module provides centralized cache management for:
  * - In-memory caches (React hooks)
  * - LocalStorage (Zustand stores, user preferences)
@@ -8,6 +8,8 @@
  * - Next.js server caches
  * - Service Worker caches
  */
+
+import * as Sentry from '@sentry/nextjs'
 
 const CACHE_VERSION_KEY = 'app_cache_version'
 const CURRENT_CACHE_VERSION = '2.0.0' // Increment to force cache clear
@@ -26,7 +28,8 @@ function checkCacheVersion(): boolean {
     }
     
     return true
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
     return true
   }
 }
@@ -36,7 +39,8 @@ function updateCacheVersion(): void {
   
   try {
     localStorage.setItem(CACHE_VERSION_KEY, CURRENT_CACHE_VERSION)
-    } catch {
+    } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
 }
 
@@ -79,7 +83,8 @@ function getAllCacheKeys(excludeKeys: string[] = []): string[] {
         keys.push(key)
       }
     }
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return keys
@@ -110,7 +115,8 @@ function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner
         clearedCount++
       }
     }
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -126,7 +132,8 @@ function clearSessionStorage(): number {
     const length = sessionStorage.length
     sessionStorage.clear()
     return length
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
     return 0
   }
 }
@@ -147,7 +154,8 @@ async function clearServiceWorkerCaches(): Promise<number> {
         clearedCount++
       })
     )
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -170,7 +178,8 @@ export async function clearIndexedDB(): Promise<number> {
         clearedCount++
       }
     }
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -186,7 +195,8 @@ function clearNextJSCache(): void {
     if ('__NEXT_DATA__' in window) {
       Reflect.deleteProperty(window, '__NEXT_DATA__')
     }
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
 }
 
@@ -280,7 +290,8 @@ export function clearAccountCaches(): number {
         clearedCount++
       }
     }
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -319,7 +330,8 @@ export function getCacheStats(): {
     }
     
     sessionStorageKeys = sessionStorage.length
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return {

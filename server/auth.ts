@@ -1,5 +1,6 @@
 'use server'
 import { createServerClient } from '@supabase/ssr'
+import * as Sentry from '@sentry/nextjs'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import type { Route } from 'next'
@@ -113,11 +114,12 @@ export async function createClient() {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
-          } catch {
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
-          }
+           } catch (error) {
+             Sentry.captureException(error, { extra: { route: 'server/auth', phase: 'cookie-set' } })
+             // The `setAll` method was called from a Server Component.
+             // This can be ignored if you have middleware refreshing
+             // user sessions.
+           }
         },
       },
     }
@@ -761,7 +763,8 @@ async function getUserEmail(): Promise<string> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     return user?.email || ""
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'server/auth', phase: 'getUser' } })
     return ""
   }
 }

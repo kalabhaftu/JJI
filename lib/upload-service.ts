@@ -4,6 +4,7 @@
  */
 
 import { createClient } from '@/lib/supabase'
+import * as Sentry from '@sentry/nextjs'
 import { STORAGE_BUCKETS } from '@/lib/constants/storage'
 import { buildTradeImagePath } from '@/lib/storage/paths'
 import logger from '@/lib/logger';
@@ -116,7 +117,8 @@ class MediaUploadService {
       }
 
       return { valid: true }
-    } catch {
+    } catch (error) {
+      Sentry.captureException(error, { extra: { route: 'lib/upload-service', phase: 'validateFile' } })
       return {
         valid: false,
         error: 'Could not validate file content'

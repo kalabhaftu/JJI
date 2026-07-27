@@ -1,6 +1,7 @@
 'use server'
 
 import { db } from '@/lib/db/client'
+import * as Sentry from '@sentry/nextjs'
 import * as schema from '@/lib/db/schema'
 import { eq, and, count } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
@@ -187,7 +188,10 @@ export async function createRiskAlert(
                            <p>Current: $${metadata.used.toFixed(2)} / Limit: $${metadata.limit.toFixed(2)} (${currentPercentage.toFixed(1)}%)</p>`
                 })
             }
-        } catch { /* Notification still persists when email delivery is unavailable. */ }
+         } catch (error) {
+           Sentry.captureException(error, { extra: { route: 'lib/services/notification-service', phase: 'send-email' } })
+           /* Notification still persists when email delivery is unavailable. */
+         }
     }
 
     return await createOrUpdateNotification(userId, {

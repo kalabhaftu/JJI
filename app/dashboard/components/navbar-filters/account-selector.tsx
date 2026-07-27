@@ -107,6 +107,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         phaseDetails: any
         phaseId?: string
         currentPhase?: number
+        accountType?: string
       }>
     }> = {}
 
@@ -131,7 +132,8 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         tradeCount: account.tradeCount || 0,
         phaseDetails: account.currentPhaseDetails,
         phaseId: account.currentPhaseDetails?.phaseId || account.number,
-        currentPhase: account.currentPhase || account.currentPhaseDetails?.phaseNumber
+        currentPhase: account.currentPhase || account.currentPhaseDetails?.phaseNumber,
+        accountType: account.accountType
       })
     })
 
@@ -462,6 +464,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
                                 </Badge>
                                 <Badge variant="outline" className="text-[10px] h-4 px-1.5 min-w-[2.5rem] justify-center">
                                   {(() => {
+                                    if (phase.accountType === 'live') return 'Live'
                                     const phaseNum = phase.currentPhase || phase.phaseDetails?.phaseNumber
                                     if (!phaseNum) return 'N/A'
                                     const evalType = phase.phaseDetails?.evaluationType

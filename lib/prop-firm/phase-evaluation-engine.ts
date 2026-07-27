@@ -160,6 +160,7 @@ export class PhaseEvaluationEngine {
           accountSize: masterAccount.accountSize,
           dailyStartBalance: historicalBreachCheck.dayStartBalance,
           notes: `Daily drawdown breach on ${historicalBreachCheck.breachDate}. Lost $${historicalBreachCheck.dayLoss.toFixed(2)} on this day, exceeding the $${historicalBreachCheck.dailyLimit.toFixed(2)} daily limit by $${(historicalBreachCheck.breachAmount || 0).toFixed(2)}.`,
+          breachTime: historicalBreachCheck.breachTime,
           updatedAt: new Date()
         })
         this.log(`[EVAL] BreachRecord created for daily drawdown breach`)
@@ -240,6 +241,7 @@ export class PhaseEvaluationEngine {
           accountSize: masterAccount.accountSize,
           highWaterMark,
           notes: `Historical max drawdown breach detected. Balance dipped to $${historicalMaxDDCheck.lowestBalance.toFixed(2)}, below the $${historicalMaxDDCheck.minAllowedBalance.toFixed(2)} limit by $${(historicalMaxDDCheck.breachAmount || 0).toFixed(2)}.`,
+          breachTime: historicalMaxDDCheck.breachTime,
           updatedAt: new Date()
         })
         this.log(`[EVAL] BreachRecord created for max drawdown breach`)

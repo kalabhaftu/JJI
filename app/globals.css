@@ -60,8 +60,19 @@
 
   /* Firefox scrollbar styles */
   * {
-    scrollbar-width: thin !important;
-    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent !important;
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+
+  /* Radix UI ScrollArea explicitly hides the native scrollbar, but our globals might override it */
+  [data-radix-scroll-area-viewport] {
+    scrollbar-width: none !important;
+  }
+  
+  [data-radix-scroll-area-viewport]::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 }
 

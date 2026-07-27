@@ -385,8 +385,8 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         )}
       </div>
 
-      {/* Account List - flex-1 so it takes remaining space; min-h-0 allows shrinking */}
-      <ScrollArea className="flex-1 min-h-0 px-3 sm:px-4">
+      {/* Account List - explicit height so Radix ScrollArea calculates scroll bounds properly */}
+      <ScrollArea className="h-[280px] sm:h-[340px] px-3 sm:px-4">
         <div className="pb-2">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center space-y-3">

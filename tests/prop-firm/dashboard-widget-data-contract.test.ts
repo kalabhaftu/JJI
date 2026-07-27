@@ -20,7 +20,7 @@ describe('prop firm dashboard widget data contract', () => {
 
     expect(accountRoute).toContain('const widgetMetrics = await withCache')
     expect(accountRoute).toContain('withCache(')
-    expect(accountRoute).toContain('CacheKeys.propFirmWidgetMetrics(masterAccountId, resetTimezone)')
+    expect(accountRoute).toContain('CacheKeys.propFirmWidgetMetrics(masterAccountId, resetTimezone, widgetMetricsVersion)')
     expect(accountRoute).toContain('buildPropFirmGrowth(accountData, currentPhaseGroupedTrades, resetTimezone)')
     expect(accountRoute).toContain('buildPropFirmDailyDrawdown(accountData, currentPhaseGroupedTrades, resetTimezone, referenceDate, drawdownData)')
     expect(accountRoute).toContain('widgetMetrics,')

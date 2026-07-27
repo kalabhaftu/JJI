@@ -20,7 +20,7 @@ import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData, buildTrad
 import { getRuntimeAutoAdjustAccountDate, getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { deletePublicStorageUrls } from '@/server/storage-admin'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
-import { eq, and, or, inArray, desc, asc } from 'drizzle-orm'
+import { eq, and, or, inArray, desc, asc, sql } from 'drizzle-orm'
 
 function isFundedPhase(evaluationType: string, phaseNumber: number): boolean {
   return isFundedPhaseForEvaluation(evaluationType, phaseNumber)
@@ -33,43 +33,7 @@ function getPhaseDisplayName(evaluationType: string, phaseNumber: number): strin
   return `Phase ${phaseNumber}`
 }
 
-type GroupedTrades = Record<string, Record<string, TradeType[]>>
 
-interface FetchTradesResult {
-  groupedTrades: GroupedTrades;
-  flattenedTrades: TradeType[];
-}
-
-async function fetchGroupedTradesAction(userId: string): Promise<FetchTradesResult> {
-  const trades = await db.query.Trade.findMany({
-    where: (table, { eq }) => eq(table.userId, userId),
-    orderBy: (table, { asc }) => [asc(table.accountNumber), asc(table.instrument)]
-  })
-
-  const serializedTrades = trades.map(trade => ({
-    ...trade,
-    entryPrice: convertDecimal(trade.entryPrice),
-    closePrice: convertDecimal(trade.closePrice),
-    stopLoss: convertDecimal(trade.stopLoss),
-    takeProfit: convertDecimal(trade.takeProfit),
-  })) as any
-
-  const groupedTrades = serializedTrades.reduce((acc: any, trade: any) => {
-    if (!acc[trade.accountNumber]) {
-      acc[trade.accountNumber] = {}
-    }
-    if (!acc[trade.accountNumber][trade.instrument]) {
-      acc[trade.accountNumber][trade.instrument] = []
-    }
-    acc[trade.accountNumber][trade.instrument].push(trade)
-    return acc
-  }, {})
-
-  return JSON.parse(JSON.stringify({
-    groupedTrades,
-    flattenedTrades: serializedTrades
-  }))
-}
 
 export async function removeAccountsFromTradesAction(accountNumbers: string[]): Promise<void> {
   const userId = await getUserId()
@@ -456,20 +420,40 @@ export async function getAccountsAction(options?: { includeArchived?: boolean })
           return []
         }
 
-        // PERFORMANCE FIX: Single trade count query instead of duplicate
-        // Both live and prop-firm accounts use accountNumber field, so one query is sufficient
-        const allTrades = await db.query.Trade.findMany({
-          where: (table, { eq }) => eq(table.userId, userId),
-          columns: TRADE_COUNT_SELECT,
+        // PERFORMANCE FIX: Use SQL aggregation for trade counts instead of pulling all rows into memory
+        const sqlCounts = await db.select({
+          accountNumber: schema.Trade.accountNumber,
+          phaseAccountId: schema.Trade.phaseAccountId,
+          count: sql<number>`count(distinct coalesce(
+            nullif(trim(${schema.Trade.entryId}), ''),
+            ${schema.Trade.instrument} || ':' || date_trunc('minute', coalesce(${schema.Trade.entryTime}, ${schema.Trade.entryDate}::timestamp)) || ':' || ${schema.Trade.side}
+          ))`.mapWith(Number)
         })
-        const groupedCounts = buildGroupedTradeCountSummary(allTrades as any)
+        .from(schema.Trade)
+        .where(sql`${schema.Trade.userId} = ${userId}`)
+        .groupBy(schema.Trade.accountNumber, schema.Trade.phaseAccountId);
+
+        const countByLiveAccount = new Map<string, number>();
+        const countByPhaseAccount = new Map<string, number>();
+        const countByPhaseAccountLegacy = new Map<string, number>(); // Fallback if phaseAccountId is not used correctly
+
+        for (const row of sqlCounts) {
+          if (row.phaseAccountId) {
+            countByPhaseAccount.set(row.phaseAccountId, row.count);
+          } else {
+            countByLiveAccount.set(row.accountNumber, row.count);
+          }
+          // Also store by account number as a fallback for prop firm accounts
+          const existing = countByPhaseAccountLegacy.get(row.accountNumber) || 0;
+          countByPhaseAccountLegacy.set(row.accountNumber, existing + row.count);
+        }
 
         const transformedAccounts = accounts.map((account: any) => ({
           ...account,
           propfirm: '',
           accountType: 'live' as const,
           displayName: account.name || account.number,
-          tradeCount: groupedCounts.groupedCountByLiveAccountNumber.get(account.number) || 0,
+          tradeCount: countByLiveAccount.get(account.number) || 0,
           owner: { id: userId, email: '' },
           isOwner: true,
           status: 'active' as const,
@@ -495,8 +479,8 @@ export async function getAccountsAction(options?: { includeArchived?: boolean })
               // Always use individual phase trade count
               // Aggregation for failed phases will be calculated on the client side (accounts page)
               const phaseTradeCount =
-                groupedCounts.groupedCountByPhaseAccountId.get(phase.id) ||
-                groupedCounts.groupedCountByAccountNumber.get(phase.phaseId) ||
+                countByPhaseAccount.get(phase.id) ||
+                countByPhaseAccountLegacy.get(phase.phaseId) ||
                 0
 
               transformedMasterAccounts.push({

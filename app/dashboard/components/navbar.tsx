@@ -1,6 +1,5 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { useData } from "@/context/data-provider"
 import { useAuth } from "@/context/auth-provider"
@@ -17,15 +16,8 @@ import { ThemeSwitcher } from '@/components/theme-switcher'
 import { TemplateSelector } from './template-selector'
 import { DashboardDisplayModeSelector } from './navbar-display-mode'
 import { signOut } from '@/server/auth'
-import { Settings, LogOut, Wallet, Plus, SlidersHorizontal } from 'lucide-react'
+import { Plus, Wallet } from 'lucide-react'
 import { useQuickAddStore } from '@/store/quick-add-store'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import {
   Popover,
   PopoverContent,
@@ -41,6 +33,7 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Logo } from '@/components/logo'
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/user-avatar'
+import { HeaderActionGroup, MobileHeaderActions, ProfileMenu } from './header-actions'
 
 export default function Navbar() {
   const storeUser = useUserStore(state => state.supabaseUser)
@@ -80,9 +73,9 @@ export default function Navbar() {
 
   return (
     <nav
-      className="navbar-slide-in sticky top-0 z-40 flex w-full items-center border-b border-sidebar-border/60 dark:border-sidebar-border/40 bg-sidebar lg:bg-sidebar/80 text-foreground lg:backdrop-blur-md"
+      className="navbar-slide-in relative sticky top-0 z-40 flex w-full items-center overflow-hidden border-b border-sidebar-border/60 dark:border-sidebar-border/40 bg-sidebar lg:bg-sidebar/80 text-foreground lg:backdrop-blur-md"
     >
-      <div className="flex items-center justify-between w-full px-4 h-12">
+      <div className="relative z-10 flex items-center justify-between w-full px-4 h-12">
         {/* Left: Sidebar mobile trigger & logo */}
         <div className="flex items-center gap-3">
           <SidebarTrigger className="lg:hidden w-8 h-8" />
@@ -93,26 +86,10 @@ export default function Navbar() {
 
         {/* Right: Account Selector + Filters + Template + Import + Notifications + Theme + Profile */}
         <div className="flex items-center gap-1 sm:gap-1.5">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:hidden"
-            onClick={() => setMobileAccountsOpen(true)}
-            aria-label="Select accounts"
-          >
-            <Wallet className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:hidden"
-            onClick={() => setMobileFiltersOpen(true)}
-            aria-label="Open filters"
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-          </Button>
+          <MobileHeaderActions onAccounts={() => setMobileAccountsOpen(true)} onFilters={() => setMobileFiltersOpen(true)} />
 
           {/* Account Selector */}
+          <HeaderActionGroup className="hidden sm:flex">
           <Popover open={!isMobile && accountPopoverOpen} onOpenChange={setAccountPopoverOpen}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" data-tour="navbar-accounts-btn" className="hidden h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:flex" aria-label="Trading accounts">
@@ -142,6 +119,7 @@ export default function Navbar() {
               onOpenChange={setFiltersPopoverOpen}
             />
           </div>
+          </HeaderActionGroup>
 
           {/* Template Selector - hidden on mobile */}
           <div className="hidden md:block">
@@ -149,6 +127,7 @@ export default function Navbar() {
           </div>
 
           {/* Quick Add Trade - always visible on desktop */}
+          <HeaderActionGroup className="hidden sm:flex">
           <Button
             variant="ghost"
             size="icon"
@@ -171,74 +150,18 @@ export default function Navbar() {
           <div className="hidden sm:block">
             <ThemeSwitcher />
           </div>
+          </HeaderActionGroup>
 
-          {/* Profile dropdown - includes mobile-only items */}
-          <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0" aria-label="Open profile menu">
-                <Avatar className="h-8 w-8">
-                  <AvatarImage key={avatarUrl ?? 'navbar-avatar-fallback'} src={avatarUrl} referrerPolicy="no-referrer" />
-                  <AvatarFallback className="uppercase text-xs bg-muted text-foreground font-medium">
-                    {user?.email?.[0] || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-[min(14rem,calc(100vw-1rem))]" align="end" sideOffset={8}>
-              <div className="flex items-center gap-3 p-3">
-                <Avatar className="h-9 w-9">
-                  <AvatarImage key={avatarUrl ?? 'navbar-menu-avatar-fallback'} src={avatarUrl} referrerPolicy="no-referrer" />
-                  <AvatarFallback className="uppercase text-xs bg-muted text-foreground font-medium">
-                    {user?.email?.[0] || 'U'}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex flex-col space-y-0.5 leading-none">
-                  <p className="text-sm font-semibold truncate max-w-[160px]">
-                    {displayName}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate max-w-[160px]">
-                    {user?.email || ''}
-                  </p>
-                </div>
-              </div>
-              <DropdownMenuSeparator />
-
-              <div className="sm:hidden px-2 py-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">View</span>
-                  <DashboardDisplayModeSelector mobile />
-                </div>
-              </div>
-
-              <DropdownMenuItem asChild>
-                <Link
-                  href={isDemoMode ? "/demo/settings" : "/dashboard/settings"}
-                  className="cursor-pointer"
-                  onClick={() => setProfileMenuOpen(false)}
-                >
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </Link>
-              </DropdownMenuItem>
-
-              {/* Mobile-only: Theme toggle in menu */}
-              <div className="sm:hidden px-2 py-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm">Theme</span>
-                  <ThemeSwitcher />
-                </div>
-              </div>
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={handleLogout}
-                className="text-destructive focus:text-destructive cursor-pointer"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Log Out
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <ProfileMenu
+            email={user?.email}
+            displayName={displayName}
+            avatarUrl={avatarUrl}
+            initial={user?.email?.[0] || 'U'}
+            isDemoMode={Boolean(isDemoMode)}
+            open={profileMenuOpen}
+            onOpenChange={setProfileMenuOpen}
+            onLogout={handleLogout}
+          />
         </div>
       </div>
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useUserStore } from '@/store/user-store'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 const ACCOUNT_STORAGE_KEY = 'dashboard.propFirmWidgets.selectedMasterAccountId'
 const RESET_TIMEZONE_STORAGE_KEY = 'dashboard.propFirmWidgets.resetTimezone'
@@ -87,7 +88,7 @@ function getPreferredAccount(accounts: DashboardPropFirmAccountOption[]) {
 
 export function useDashboardPropFirmAccount() {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const [accounts, setAccounts] = useState<DashboardPropFirmAccountOption[]>([])
   const [selectedMasterAccountId, setSelectedMasterAccountIdState] = useState<string | null>(null)

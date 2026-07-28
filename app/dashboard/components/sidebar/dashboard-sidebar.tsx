@@ -48,6 +48,7 @@ import { toast } from 'sonner'
 import { useEffect, useRef, useState } from 'react'
 import { logger } from '@/lib/logger';
 import { MOBILE_SYNC_EVENT } from '@/lib/navigation/mobile-nav'
+import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 
 const coreNavItems = [
   { id: 'widgets', label: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
@@ -66,6 +67,7 @@ const toolItems = [
 export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSettingsPayload }) {
   const pathname = usePathname()
   const { refreshTrades, isDemoMode } = useData()
+  const { demoAwarePathname, demoRouteHref, docsHref, exitDemoHref } = usePublicSurfaceRouting()
   const { state, toggleSidebar, isOverlay, setOpenMobile } = useSidebar()
   
   const tradovateSyncContext = useTradovateSyncContext()
@@ -160,10 +162,8 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
   const isCollapsed = state === 'collapsed' && !isOverlay
 
   const getDemoAdjustedHref = (href: string): any => {
-    if (isDemoMode) {
-      return href.replace('/dashboard', '/demo')
-    }
-    return href
+    if (href.startsWith('/docs')) return docsHref(href)
+    return demoRouteHref(href, Boolean(isDemoMode))
   }
 
   const utilityItems = [
@@ -179,8 +179,8 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
   ]
 
   const getActiveId = () => {
-    const p = pathname || ''
-    const isDemo = p.startsWith('/demo')
+    const p = demoAwarePathname(pathname || '', Boolean(isDemoMode))
+    const isDemo = Boolean(isDemoMode)
     const base = isDemo ? '/demo' : '/dashboard'
 
     if (p === base) return 'widgets'
@@ -226,7 +226,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                 tooltip="Dashboard Home"
               >
                 <Link
-                  href={isDemoMode ? "/demo" : "/dashboard"}
+                  href={demoRouteHref('/dashboard', Boolean(isDemoMode))}
                   onClick={handleMobileClose}
                   className={cn('flex w-full items-center', isCollapsed ? 'justify-center' : 'gap-3')}
                 >
@@ -389,7 +389,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                   onClick={() => {
                     localStorage.removeItem('settings-cache');
                     localStorage.removeItem('active-accounts');
-                    window.location.href = '/';
+                    window.location.href = exitDemoHref;
                   }}
                   tooltip="Exit Demo"
                   className={cn(

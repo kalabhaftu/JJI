@@ -2,6 +2,7 @@
 
 import { useLayoutEffect } from 'react'
 import * as mockData from '@/lib/demo/mock-data'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 export function DemoNetworkInterceptor() {
   useLayoutEffect(() => {
@@ -14,7 +15,7 @@ export function DemoNetworkInterceptor() {
     })
 
     window.fetch = async function (input, init) {
-      if (!window.location.pathname.startsWith('/demo')) {
+      if (!isDemoSurface(window.location.hostname, window.location.pathname)) {
         return originalFetch.apply(this, [input, init])
       }
       const request = input instanceof Request ? input : null
@@ -264,4 +265,3 @@ export function DemoNetworkInterceptor() {
 
   return null
 }
-

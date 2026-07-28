@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import * as Sentry from '@sentry/nextjs'
 import { format, startOfWeek, subWeeks } from 'date-fns'
 import { useUserStore } from '@/store/user-store'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 /**
  * Invisible component that triggers weekly AI review generation.
@@ -24,7 +25,7 @@ export function WeeklyReviewTrigger() {
   const internalUser = useUserStore(state => state.user)
 
   useEffect(() => {
-    const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+    const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
     if (isDemo || !supabaseUser?.id || !internalUser?.id || internalUser?.id === 'demo-user') return
     if (checkedRef.current) return
     checkedRef.current = true

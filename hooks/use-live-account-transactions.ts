@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useUserStore } from '@/store/user-store'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 interface Transaction {
   id: string
@@ -12,7 +13,7 @@ interface Transaction {
 
 export function useLiveAccountTransactions() {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -58,4 +59,3 @@ export function useLiveAccountTransactions() {
 
   return { transactions, isLoading, error }
 }
-

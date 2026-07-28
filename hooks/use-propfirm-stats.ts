@@ -1,10 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import type { PropFirmSummaryDTO } from '@/lib/statistics/propfirm-statistics'
 import { useUserStore } from '@/store/user-store'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 export function usePropFirmStats(initialData?: PropFirmSummaryDTO) {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   return useQuery<PropFirmSummaryDTO>({
     queryKey: ['propfirm-stats', isDemo],

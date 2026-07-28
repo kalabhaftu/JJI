@@ -1,9 +1,12 @@
+'use client'
+
 import { ReactNode } from 'react'
 import Link from 'next/link'
 import { type LucideIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { cn } from '@/lib/utils'
 
 export function DocsPage({
@@ -134,12 +137,14 @@ export function DocsLinkList({
 }: {
   links: Array<{ href: string; label: string; description: string }>
 }) {
+  const { docsHref } = usePublicSurfaceRouting()
+
   return (
     <div className="grid gap-3 md:grid-cols-2">
       {links.map((link) => (
         <Link
           key={link.href}
-          href={link.href as any}
+          href={docsHref(link.href) as any}
           className="rounded-2xl border border-border/70 bg-card/55 p-4 no-underline transition-colors hover:border-primary/40 hover:bg-accent/25"
         >
           <p className="m-0 text-base font-semibold text-foreground">{link.label}</p>

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AccountFilterSettings, DEFAULT_FILTER_SETTINGS } from '@/types/account-filter-settings'
 import { useUserStore } from '@/store/user-store'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 const QUERY_KEY = ['account-filter-settings'] as const
 
@@ -40,7 +41,7 @@ export interface UseAccountFilterSettingsResult {
 export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
   const queryClient = useQueryClient()
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const { data: settings = DEFAULT_FILTER_SETTINGS, isLoading, error, refetch } = useQuery({
     queryKey: [...QUERY_KEY, isDemo],

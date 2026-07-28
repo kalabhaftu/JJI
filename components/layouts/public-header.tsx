@@ -1,9 +1,10 @@
 import Link from 'next/link'
-import { cookies } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { Menu } from 'lucide-react'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
+import { getDocsHref, isProductionSurfaceHost, MAIN_APP_ORIGIN } from '@/lib/public-surface-routing'
 import { cn } from '@/lib/utils'
 
 type PublicHeaderNavItem = {
@@ -27,7 +28,11 @@ export async function PublicHeader({
   containerClassName,
 }: PublicHeaderProps) {
   const cookieStore = await cookies()
+  const requestHeaders = await headers()
+  const hostname = requestHeaders.get('host')
   const isSignedIn = hasSupabaseSessionCookie(cookieStore.getAll().map((cookie) => cookie.name))
+  const mainHref = isProductionSurfaceHost(hostname) ? MAIN_APP_ORIGIN : '/'
+  const appHref = isProductionSurfaceHost(hostname) ? `${MAIN_APP_ORIGIN}/dashboard` : '/dashboard'
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/70 bg-background/88 backdrop-blur-xl">
@@ -38,7 +43,7 @@ export async function PublicHeader({
         )}
       >
         <Link
-          href="/"
+          href={mainHref}
           className="flex min-w-0 items-center gap-3 transition-opacity hover:opacity-80"
         >
           <Logo className="h-7 w-7 shrink-0" />
@@ -51,6 +56,7 @@ export async function PublicHeader({
           <div className="hidden items-center gap-1 sm:flex">
             {navItems.map((item) => {
               const isActive = activeHref === item.href
+              const href = item.href.startsWith('/docs') ? getDocsHref(item.href, hostname) : item.href
 
               return (
                 <Button
@@ -63,7 +69,7 @@ export async function PublicHeader({
                     isActive && 'bg-accent/70 text-foreground'
                   )}
                 >
-                  <Link href={item.href as any}>{item.label}</Link>
+                  <Link href={href as any}>{item.label}</Link>
                 </Button>
               )
             })}
@@ -76,7 +82,11 @@ export async function PublicHeader({
             </summary>
             <div className="absolute right-0 top-11 z-50 min-w-44 rounded-2xl border border-border/80 bg-popover p-2 shadow-xl">
               {navItems.map((item) => (
-                <Link key={item.href} href={item.href as any} className="block rounded-xl px-3 py-2 text-sm text-popover-foreground hover:bg-accent">
+                <Link
+                  key={item.href}
+                  href={(item.href.startsWith('/docs') ? getDocsHref(item.href, hostname) : item.href) as any}
+                  className="block rounded-xl px-3 py-2 text-sm text-popover-foreground hover:bg-accent"
+                >
                   {item.label}
                 </Link>
               ))}
@@ -87,7 +97,7 @@ export async function PublicHeader({
           </details>
 
           <Button asChild size="sm" className="h-9 rounded-xl px-4 text-xs font-semibold">
-            <Link href={isSignedIn ? '/dashboard' : '/'}>
+            <Link href={isSignedIn ? appHref : mainHref}>
               {isSignedIn ? 'Back to App' : 'Sign In'}
             </Link>
           </Button>

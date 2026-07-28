@@ -1,3 +1,5 @@
+import { getDemoAwarePathname, getDemoRouteHref } from '@/lib/public-surface-routing'
+
 export type MobileNavId =
   | 'widgets'
   | 'journal'
@@ -19,20 +21,23 @@ export const MOBILE_NAV_DESTINATIONS: ReadonlyArray<{
   { id: 'more', label: 'More', href: '#more' },
 ]
 
-export function getMobileNavHref(href: string, isDemoMode: boolean): string {
-  return isDemoMode ? href.replace('/dashboard', '/demo') : href
+export function getMobileNavHref(href: string, isDemoMode: boolean, hostname?: string | null): string {
+  if (href.startsWith('#')) return href
+  return getDemoRouteHref(href, isDemoMode, hostname)
 }
 
 export function getActiveMobileNavId(
   pathname: string,
   isDemoMode: boolean,
+  hostname?: string | null,
 ): MobileNavId | null {
+  const resolvedPathname = getDemoAwarePathname(pathname, isDemoMode, hostname)
   const base = isDemoMode ? '/demo' : '/dashboard'
 
-  if (pathname === base) return 'widgets'
-  if (pathname.startsWith(`${base}/reports`)) return 'reports'
-  if (pathname.startsWith(`${base}/table`)) return 'table'
-  if (pathname.startsWith(`${base}/journal`)) return 'journal'
-  if (pathname.startsWith(base)) return 'more'
+  if (resolvedPathname === base) return 'widgets'
+  if (resolvedPathname.startsWith(`${base}/reports`)) return 'reports'
+  if (resolvedPathname.startsWith(`${base}/table`)) return 'table'
+  if (resolvedPathname.startsWith(`${base}/journal`)) return 'journal'
+  if (resolvedPathname.startsWith(base)) return 'more'
   return null
 }

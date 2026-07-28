@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 
+import { DEMO_ORIGIN, DOCS_ORIGIN } from '@/lib/public-surface-routing'
+
 const PRODUCTION_ORIGIN = 'https://www.justjournalit.site'
 const PREVIEW_ORIGIN = 'https://justjournalit.vercel.app'
 
@@ -39,6 +41,8 @@ function getCanonicalOrigin() {
 export function getAllowedOrigins() {
   const origins = new Set<string>([
     PRODUCTION_ORIGIN,
+    DOCS_ORIGIN,
+    DEMO_ORIGIN,
     PREVIEW_ORIGIN,
     ...splitOrigins(process.env.NEXT_PUBLIC_ALLOWED_ORIGINS),
     ...splitOrigins(process.env.ALLOWED_ORIGINS),

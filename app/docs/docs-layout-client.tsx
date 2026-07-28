@@ -26,6 +26,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { cn } from '@/lib/utils'
 
 type DocsNavItem = {
@@ -157,14 +158,20 @@ const docsSearch = new Fuse(searchablePages, {
 })
 
 function normalizeHref(href: string) {
-  return href.split('#')[0]
+  try {
+    return new URL(href, 'https://justjournalit.site').pathname
+  } catch {
+    return href.split('#')[0]
+  }
 }
 
 function DocsNav({
   pathname,
+  docsHref,
   onNavigate,
 }: {
   pathname: string
+  docsHref: (href?: string) => string
   onNavigate?: () => void
 }) {
   return (
@@ -178,13 +185,14 @@ function DocsNav({
 
           <div className="space-y-1">
             {section.items.map((item) => {
-              const itemPath = normalizeHref(item.href)
+              const itemHref = docsHref(item.href)
+              const itemPath = normalizeHref(itemHref)
               const itemActive = pathname === itemPath
 
               return (
                 <div key={item.href} className="space-y-1">
                   <Link
-                    href={item.href as any}
+                    href={itemHref as any}
                     {...(onNavigate !== undefined && { onClick: onNavigate as any })}
                     className={cn(
                       'group flex items-center gap-2 rounded-2xl px-3 py-2.5 text-sm transition-colors',
@@ -207,7 +215,7 @@ function DocsNav({
                       {item.subsections.map((subsection) => (
                         <Link
                           key={subsection.href}
-                          href={subsection.href as any}
+                          href={docsHref(subsection.href) as any}
                           {...(onNavigate !== undefined && { onClick: onNavigate as any })}
                           className="block rounded-lg px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
                         >
@@ -230,10 +238,12 @@ function DocsSearchPanel({
   searchQuery,
   setSearchQuery,
   searchResults,
+  docsHref,
 }: {
   searchQuery: string
   setSearchQuery: (value: string) => void
   searchResults: Array<{ title: string; href: string; section: string; parentTitle: string | null }>
+  docsHref: (href?: string) => string
 }) {
   const showResults = searchQuery.trim().length >= 2
 
@@ -254,7 +264,7 @@ function DocsSearchPanel({
               searchResults.map((result) => (
                 <Link
                   key={result.href}
-                  href={result.href as any}
+                  href={docsHref(result.href) as any}
                   className="flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/60"
                   onClick={() => setSearchQuery('')}
                 >
@@ -297,6 +307,7 @@ function OpenSourceNotice() {
 
 export function DocsLayoutClient({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const { docsHref } = usePublicSurfaceRouting()
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
@@ -337,6 +348,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
                   searchResults={searchResults}
+                  docsHref={docsHref}
                 />
                 <div className="mt-3">
                   <OpenSourceNotice />
@@ -344,7 +356,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-                <DocsNav pathname={pathname} />
+                <DocsNav pathname={pathname} docsHref={docsHref} />
               </div>
             </div>
           </div>
@@ -373,6 +385,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
                         searchResults={searchResults}
+                        docsHref={docsHref}
                       />
                     </div>
                     <div className="mt-3">
@@ -380,7 +393,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
                     </div>
                   </div>
                   <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-                    <DocsNav pathname={pathname} onNavigate={() => setMobileMenuOpen(false)} />
+                    <DocsNav pathname={pathname} docsHref={docsHref} onNavigate={() => setMobileMenuOpen(false)} />
                   </div>
                 </div>
               </SheetContent>

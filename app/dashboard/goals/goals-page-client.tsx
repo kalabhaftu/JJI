@@ -27,6 +27,7 @@ import {
 import { toast } from "sonner"
 import { Target, Plus, Trash2, CheckCircle2, TrendingUp, Trophy, DollarSign, Flame, BarChart2, TrendingDown, Star, Pencil } from "lucide-react"
 import { GoalsPageSkeleton } from "./components/goals-page-skeleton"
+import { isDemoSurface } from "@/lib/public-surface-routing"
 
 type GoalMetric = "pnl" | "winRate" | "trades" | "streak" | "drawdown" | "custom"
 type GoalPeriod = "daily" | "weekly" | "monthly" | "all-time"
@@ -185,7 +186,7 @@ import { useUserStore } from "@/store/user-store"
 export function GoalsPageClient() {
   const qc = useQueryClient()
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [form, setForm] = useState({

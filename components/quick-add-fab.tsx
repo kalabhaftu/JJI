@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import { useUserStore } from '@/store/user-store'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 interface QuickAddFABProps {
     className?: string
@@ -34,7 +35,7 @@ export function QuickAddFAB({ className }: QuickAddFABProps) {
     const closeQuickAdd = useQuickAddStore((state) => state.closeQuickAdd)
     const setQuickAddOpen = useQuickAddStore((state) => state.setQuickAddOpen)
     const user = useUserStore((state) => state.user)
-    const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+    const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [formData, setFormData] = useState({
         instrument: '',

@@ -5,6 +5,7 @@ import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
 import logger from '@/lib/logger'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 
 interface UnifiedAccount {
   id: string
@@ -84,7 +85,7 @@ export function useAccounts(options: UseAccountsOptions = {}) {
   
   const router = useRouter()
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const url = (user?.id || isDemo) ? `/api/v1/accounts?page=${page}&limit=${limit}&status=${status}&type=${type}&search=${encodeURIComponent(search)}` : null
   

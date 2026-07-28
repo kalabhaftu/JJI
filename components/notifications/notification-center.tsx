@@ -27,6 +27,7 @@ import { toast } from 'sonner'
 
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { useUserStore } from '@/store/user-store'
+import { isDemoSurface } from '@/lib/public-surface-routing'
 import { Spinner } from '@/components/ui/spinner'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { LexicalRenderer } from '@/components/ui/editor/lexical-renderer'
@@ -73,7 +74,7 @@ export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false)
   const [selectedFilter, setSelectedFilter] = useState<FilterCategory>('all')
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
+  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false)
   const [phaseTransitionDialogOpen, setPhaseTransitionDialogOpen] = useState(false)

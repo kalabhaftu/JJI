@@ -22,6 +22,7 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { useData } from '@/context/data-provider'
 import { Button } from '@/components/ui/button'
+import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import {
   Dialog,
   DialogContent,
@@ -61,9 +62,10 @@ export function MobileBottomNav() {
   const pathname = usePathname()
   const data = useData()
   const isDemoMode = data?.isDemoMode
+  const { docsHref, hostname } = usePublicSurfaceRouting()
   const [moreOpen, setMoreOpen] = useState(false)
 
-  const activeTab = getActiveMobileNavId(pathname || '', Boolean(isDemoMode))
+  const activeTab = getActiveMobileNavId(pathname || '', Boolean(isDemoMode), hostname)
   const moreItems = [
     { label: 'Accounts', href: '/dashboard/accounts', icon: Briefcase },
     { label: 'Playbook', href: '/dashboard/playbook', icon: BookOpen },
@@ -109,7 +111,7 @@ export function MobileBottomNav() {
           return (
             <Link
               key={item.id}
-              href={getMobileNavHref(item.href, Boolean(isDemoMode)) as any}
+              href={getMobileNavHref(item.href, Boolean(isDemoMode), hostname) as any}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
                 "flex min-h-14 min-w-[60px] flex-col items-center justify-center rounded-xl px-2 py-1 touch-manipulation transition-colors",
@@ -143,7 +145,10 @@ export function MobileBottomNav() {
           <div className="grid grid-cols-2 gap-2">
             {moreItems.map(({ label, href, icon: MoreIcon }) => (
               <Button key={label} asChild variant="outline" className="h-12 justify-start gap-3">
-                <Link href={getMobileNavHref(href, Boolean(isDemoMode)) as any} onClick={() => setMoreOpen(false)}>
+                <Link
+                  href={(href.startsWith('/docs') ? docsHref(href) : getMobileNavHref(href, Boolean(isDemoMode), hostname)) as any}
+                  onClick={() => setMoreOpen(false)}
+                >
                   <MoreIcon className="h-4 w-4" />
                   {label}
                 </Link>

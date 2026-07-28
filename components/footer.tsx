@@ -5,7 +5,7 @@ import { Logo } from '@/components/logo'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 
 export function Footer() {
-  const { docsHref } = usePublicSurfaceRouting()
+  const { docsHref, mainAppHref } = usePublicSurfaceRouting()
 
   return (
     <footer className="border-t border-border/20 py-8 px-6 bg-background mt-auto">
@@ -20,13 +20,13 @@ export function Footer() {
           <Link href={docsHref()} className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
             Docs
           </Link>
-          <Link href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
+          <Link href={mainAppHref('/privacy')} className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
             Privacy
           </Link>
-          <Link href="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
+          <Link href={mainAppHref('/terms')} className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
             Terms
           </Link>
-          <Link href="/contact" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
+          <Link href={mainAppHref('/contact')} className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
             Contact
           </Link>
         </div>

@@ -7,6 +7,9 @@ import {
   getDemoHref,
   getDemoRouteHref,
   getDocsHref,
+  getMainAppHref,
+  getMainAppLaunchHref,
+  MAIN_APP_ORIGIN,
   isDemoSurface,
 } from '@/lib/public-surface-routing'
 
@@ -24,6 +27,19 @@ describe('public surface routing', () => {
 
   it('keeps preview docs links path-based', () => {
     expect(getDocsHref('/docs/getting-started', 'justjournalit.vercel.app')).toBe('/docs/getting-started')
+  })
+
+  it('sends production surface app links back to the main app host', () => {
+    expect(getMainAppHref('/dashboard', 'docs.justjournalit.site')).toBe(`${MAIN_APP_ORIGIN}/dashboard`)
+    expect(getMainAppHref('/contact', 'demo.justjournalit.site')).toBe(`${MAIN_APP_ORIGIN}/contact`)
+    expect(getMainAppLaunchHref('/dashboard', 'docs.justjournalit.site')).toBe(
+      `${MAIN_APP_ORIGIN}/app-launch?next=%2Fdashboard`
+    )
+  })
+
+  it('keeps preview app links path-based', () => {
+    expect(getMainAppHref('/dashboard', 'justjournalit.vercel.app')).toBe('/dashboard')
+    expect(getMainAppLaunchHref('/dashboard', 'justjournalit.vercel.app')).toBe('/app-launch?next=%2Fdashboard')
   })
 
   it('keeps demo links clean on the demo host', () => {

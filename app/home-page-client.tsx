@@ -66,14 +66,14 @@ const workflow = [
 
 export default function HomePage() {
   const { theme, toggleTheme } = useTheme()
-  const { docsHref, demoHref } = usePublicSurfaceRouting()
-  const primaryHref = '/app-launch?next=/dashboard'
+  const { docsHref, demoHref, mainAppHref, mainAppLaunchHref } = usePublicSurfaceRouting()
+  const primaryHref = mainAppLaunchHref('/dashboard')
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/30">
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex min-w-0 items-center gap-3" aria-label="JJI home">
+          <Link href={mainAppHref('/')} className="flex min-w-0 items-center gap-3" aria-label="JJI home">
             <Logo className="h-8 w-8 shrink-0" />
             <div className="min-w-0 leading-none">
               <span className="block text-sm font-black tracking-tight text-foreground">{BRAND.name}</span>
@@ -87,7 +87,7 @@ export default function HomePage() {
             <Link href="#features" className="transition-colors hover:text-foreground">Features</Link>
             <Link href="#workflow" className="transition-colors hover:text-foreground">How it works</Link>
             <Link href={docsHref()} className="transition-colors hover:text-foreground">Docs</Link>
-            <Link href="/contact" className="transition-colors hover:text-foreground">Contact</Link>
+            <Link href={mainAppHref('/contact')} className="transition-colors hover:text-foreground">Contact</Link>
           </div>
 
           <div className="flex items-center gap-2">

@@ -7,9 +7,10 @@ import {
   getDemoHref,
   getDemoRouteHref,
   getDocsHref,
+  getMainAppHref,
+  getMainAppLaunchHref,
   isDemoHost,
   isDemoSurface,
-  MAIN_APP_ORIGIN,
 } from '@/lib/public-surface-routing'
 
 export function useCurrentHostname() {
@@ -32,10 +33,12 @@ export function usePublicSurfaceRouting() {
       isDemoSurface: (pathname?: string | null) => isDemoSurface(hostname, pathname ?? null),
       docsHref: (href?: string) => getDocsHref(href, hostname) as any,
       demoHref: (href?: string) => getDemoHref(href, hostname) as any,
+      mainAppHref: (href?: string) => getMainAppHref(href, hostname) as any,
+      mainAppLaunchHref: (nextPath?: string) => getMainAppLaunchHref(nextPath, hostname) as any,
       demoRouteHref: (href: string, isDemoMode: boolean) => getDemoRouteHref(href, isDemoMode, hostname) as any,
       demoAwarePathname: (pathname: string, isDemoMode: boolean) =>
         getDemoAwarePathname(pathname, isDemoMode, hostname),
-      exitDemoHref: isDemoHost(hostname) ? MAIN_APP_ORIGIN : '/',
+      exitDemoHref: getMainAppHref('/', hostname),
     }),
     [hostname]
   )

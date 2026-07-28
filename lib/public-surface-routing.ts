@@ -80,6 +80,21 @@ export function getDemoHref(href = '/demo', hostname?: string | null) {
   return addBasePath(cleanHref, '/demo')
 }
 
+export function getMainAppHref(href = '/', hostname?: string | null) {
+  const { pathname, suffix } = splitHref(href)
+  const cleanHref = `${pathname.startsWith('/') ? pathname : `/${pathname}`}${suffix}`
+
+  if (isProductionSurfaceHost(hostname)) {
+    return withOrigin(MAIN_APP_ORIGIN, cleanHref)
+  }
+
+  return cleanHref
+}
+
+export function getMainAppLaunchHref(nextPath = '/dashboard', hostname?: string | null) {
+  return getMainAppHref(`/app-launch?next=${encodeURIComponent(nextPath)}`, hostname)
+}
+
 export function getDemoRouteHref(href: string, isDemoMode: boolean, hostname?: string | null) {
   if (!isDemoMode) return href
   return getDemoHref(href, hostname)

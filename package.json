@@ -2,6 +2,7 @@
   "name": "jji",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "bun@1.3.14",
   "engines": {
     "node": "24.x"
   },
@@ -20,7 +21,7 @@
     "clean": "rimraf .next .next-dev .next-analyze node_modules/.cache",
     "type-check": "tsc --noEmit",
     "security:scan-console": "node scripts/security-scan-console.js",
-    "security:check": "bun run type-check && bun run lint && bun run test -- --run && bun run build && bun pm audit && bun run security:scan-console",
+    "security:check": "bun run type-check && bun run lint && bun run test -- --run && bun run build && bun audit && bun run security:scan-console",
     "test": "vitest",
     "test:ui-contracts": "vitest run tests/ui tests/dashboard/mobile-widget-layout.test.ts tests/security/service-worker-privacy.test.ts",
     "test:ui": "vitest --ui",

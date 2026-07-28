@@ -18,9 +18,9 @@
     }
   },
   "github": {
-    "buildCommand": "npm run build"
+    "buildCommand": "bun run build"
   },
-  "buildCommand": "npm run build",
+  "buildCommand": "bun run build",
   "outputDirectory": ".next",
-  "installCommand": "npm ci"
+  "installCommand": "bun install --frozen-lockfile"
 }

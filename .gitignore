@@ -1,28 +1,6 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# Dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
-bun.lockb
-
-# Testing
-/coverage
-*.lcov
-/scratch
-
-# Next.js
-/.next/
-/.next-dev/
-/.next-analyze/
-/out/
-
-# Production builds
-/build
-/dist
-
-# Environment variables
+# ==========================================
+# 1. Environment Variables & Secrets
+# ==========================================
 .env
 .env.local
 .env.development.local
@@ -32,174 +10,12 @@ bun.lockb
 .env.*
 !.env.example
 vercel-env.txt
+temp_key.txt
+update-env.txt
+env-fix-port5432.txt
+config/firebase-admin.json
 
-
-# Vercel
-.vercel
-
-# TypeScript
-*.tsbuildinfo
-next-env.d.ts
-
-# Debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-bun-debug.log*
-.npm-cache/
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Optional stylelint cache
-.stylelintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-out
-
-# Nuxt.js build / generate output
-.nuxt
-dist
-
-# Gatsby files
-.cache/
-# Note: Don't ignore public/ for Next.js projects - it contains essential web assets
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
-tmp/
-temp/
-
-# Logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# JetBrains IDEs
-.idea/
-*.iml
-*.ipr
-*.iws
-
-# Sublime Text
-*.tmlanguage.cache
-*.tmPreferences.cache
-*.stTheme.cache
-*.sublime-workspace
-*.sublime-project
-
-# Vim
-*.swp
-*.swo
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
-auto-save-list
-tramp
-.\#*
-
-# Database
-*.db
-*.sqlite
-*.sqlite3
-**.db
-supabase/.temp/
-
-# Prisma
-# Keep schema.prisma and migrations, but ignore generated client
-# /prisma/generated/
-
-# Media files (only ignore if they're in specific temp/cache directories)
-# Note: Don't blanket ignore video files as they might be needed for the web app
-# /tmp/**/*.mp4
-# /cache/**/*.mp4
-# Add specific paths if you have large media files you don't want to track
-
-# CSV files
-*.csv
-
-# Backup files
-*.bak
-*.backup
-*.tmp
-
-# Compressed files
-*.7z
-*.dmg
-*.gz
-*.iso
-*.jar
-*.rar
-*.tar
-*.zip
-
-# Security
+# Security / Certs
 *.pem
 *.key
 *.p12
@@ -208,65 +24,86 @@ supabase/.temp/
 *.crt
 *.der
 
-# Misc
-.cursorrules
-nul
-et --hard HEAD~1
-temp_key.txt
-update-env.txt
-env-fix-port5432.txt
-
-# TradingView charting library
-charting_library/
-datafeeds/
-
-# Market data
-**/market/**
-
-# Service worker (only ignore if auto-generated, keep if manually created)
-# /public/sw.js
-# /public/workbox-*.js
-
-# Analytics
-.vercel/
-.turbo/
-
-# Bun
+# ==========================================
+# 2. Dependencies
+# ==========================================
+node_modules/
+.pnp
+.pnp.js
+.yarn/install-state.gz
+.yarn-integrity
+jspm_packages/
+.npm
+.npm-cache/
 .bun
+# Note: DO NOT ignore bun.lockb or package-lock.json
 
-# Sentry
-.sentryclirc
+# ==========================================
+# 3. Build Outputs & Frameworks (Next.js)
+# ==========================================
+.next/
+.next-dev/
+.next-analyze/
+out/
+build/
+dist/
+.nuxt/
+.cache/
+.parcel-cache/
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+*.tsbuildinfo
+next-env.d.ts
+storybook-static/
+.out/
+.storybook-out/
 
-# PWA files (only ignore if auto-generated)
-# **/sw.js
-# **/workbox-*.js
+# ==========================================
+# 4. Database & ORM
+# ==========================================
+*.db
+*.sqlite
+*.sqlite3
+**.db
+supabase/.temp/
 
-# Cypress
-cypress/videos
-cypress/screenshots
-
-# Playwright
+# ==========================================
+# 5. Testing & Coverage
+# ==========================================
+coverage/
+*.lcov
+.nyc_output
+cypress/videos/
+cypress/screenshots/
 test-results/
 playwright-report/
 playwright/.cache/
-
-# Storybook
-storybook-static
-
-# Chromatic
 build-storybook.log
 
-# Local History for Visual Studio Code
-.history/
+# ==========================================
+# 6. Logging & Diagnostics
+# ==========================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+bun-debug.log*
+lerna-debug.log*
+.codex-logs/
+.codex-*.log
+build-error.log
+build-output.log
+diagnostics/
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
+# ==========================================
+# 7. OS Generated Files
+# ==========================================
 # macOS
 .DS_Store
+.DS_Store?
 .AppleDouble
 .LSOverride
 Icon
@@ -284,6 +121,12 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
 # Linux
 *~
 .fuse_hidden*
@@ -291,34 +134,93 @@ Temporary Items
 .Trash-*
 .nfs*
 
-.cursor/
-/temp filesenv-temp.txt
-temp.txt
-.agents
+# ==========================================
+# 8. IDEs & Editors
+# ==========================================
+.vscode/
+.idea/
+.history/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+*.tmlanguage.cache
+*.tmPreferences.cache
+*.stTheme.cache
+*.sublime-workspace
+*.sublime-project
+.eslintcache
+.stylelintcache
+.node_repl_history
 
+# ==========================================
+# 9. AI Agents & Workspaces
+# ==========================================
+.cursor/
+.cursorrules
+.agents
 .agent/
 .kilo/
 .claude/
-.claude/worktrees
 
-# Local diagnostics and debug artifacts
-diagnostics/
-.codex-logs/
-.codex-*.log
-build-error.log
-build-output.log
+# ==========================================
+# 10. Scratch, Temp & Archives
+# ==========================================
+tmp/
+temp/
+scratch/
+/temp filesenv-temp.txt
+temp.txt
+*.bak
+*.backup
+*.tmp
+nul
+et --hard HEAD~1
+*.tgz
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+*.csv
 
-# Local scratch notes
+# Local scratch notes (Keep standard docs)
 *.txt
 *.md
 !AGENTS.md
 !CONTRIBUTING.md
 !SECURITY.md
+!README.md
 !docs/**/*.md
+!tradelytix-*.md
+!LOOP_STATE_*.md
 
-# Firebase Service Account Credentials
-config/firebase-admin.json
-
-# Sentry Config File
+# ==========================================
+# 11. External Tools (Sentry, Vercel, etc.)
+# ==========================================
+.vercel/
+.turbo/
+.sentryclirc
 .env.sentry-build-plugin
 app/sentry-example-page/page.tsx
+charting_library/
+datafeeds/
+**/market/**
+
+# ==========================================
+# 12. PWA / Service Workers
+# ==========================================
+# **/sw.js
+# **/workbox-*.js

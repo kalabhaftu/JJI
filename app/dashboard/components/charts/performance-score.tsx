@@ -160,7 +160,7 @@ export default function PerformanceScore({ size = 'small-long' }: PerformanceSco
                   </p>
                 </div>
                 <div>
-                  <p className="text-xxs text-muted-foreground uppercase tracking-wider">Progress</p>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider">Progress</p>
                   <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
                     <div
                       className={cn("h-full transition-colors duration-500 rounded-full", getScoreBarColor(overallScore))}

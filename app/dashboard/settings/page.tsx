@@ -72,79 +72,16 @@ import {
   Eye,
 } from "lucide-react"
 import { motion } from "framer-motion"
+import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from "sonner"
 import { CacheManagement } from "./components/cache-management"
+import { SettingRow } from './components/setting-row'
+import { buildTradingViewWebhookExample, defaultAiSettings, timezones } from './components/settings-config'
 import { PageHeader } from "@/components/ui/page-header"
 import { getUserAvatarUrl } from "@/lib/user-avatar"
 import { useTour } from '@/context/tour-context'
-
-const timezones = [
-  'UTC',
-  'Europe/Paris',
-  'America/New_York',
-  'America/Chicago',
-  'America/Los_Angeles',
-  'Asia/Tokyo',
-  'Asia/Shanghai',
-  'Australia/Sydney',
-]
-
-const defaultAiSettings = {
-  autoGenerateInsights: false,
-  includeAiInsightsInNotifications: false,
-}
-
-function SettingRow({
-  icon: Icon,
-  label,
-  description,
-  action,
-  className
-}: {
-  icon: any
-  label: string
-  description?: string
-  action: React.ReactNode
-  className?: string
-}) {
-  return (
-    <div className={cn("grid grid-cols-1 gap-3 py-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-center md:gap-4", className)}>
-      <div className="flex min-w-0 items-start gap-3">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-          <Icon className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="min-w-0 pt-0.5">
-          <p className="text-sm font-medium">{label}</p>
-          {description && (
-            <p className="text-xs text-muted-foreground/85">{description}</p>
-          )}
-        </div>
-      </div>
-      <div className="flex w-full min-w-0 md:w-auto md:justify-end">
-        {action}
-      </div>
-    </div>
-  )
-}
-
-function buildTradingViewWebhookExample(token: string | null) {
-  return JSON.stringify({
-    token: token || "your_webhook_token",
-    symbol: "EURUSD",
-    side: "BUY",
-    entry_price: 1.085,
-    close_price: 1.092,
-    quantity: 0.1,
-    pnl: 70,
-    entry_time: "2026-05-07T14:30:00Z",
-    close_time: "2026-05-07T18:45:00Z",
-    stop_loss: 1.08,
-    take_profit: 1.095,
-    comment: "Imported via TradingView alert"
-  }, null, 2)
-}
 
 export default function SettingsPage() {
   const { theme, setTheme, accentPack, setAccentPack, widgetStyle, setWidgetStyle, chartStyle, setChartStyle } = useTheme()
@@ -251,9 +188,10 @@ export default function SettingsPage() {
         setIsLoadingWebhook(true)
         const res = await fetch('/api/v1/auth/webhook-token')
         const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Failed to fetch webhook token')
         if (data.token) setWebhookToken(data.token)
-      } catch {
-        // webhook feature unavailable (migration may not be applied yet)
+      } catch (error) {
+        Sentry.captureException(error, { tags: { surface: 'settings', operation: 'load-webhook-token' } })
       } finally {
         setIsLoadingWebhook(false)
       }
@@ -267,9 +205,11 @@ export default function SettingsPage() {
         setIsLoadingSubscription(true)
         const res = await fetch('/api/v1/subscription/status')
         const data = await res.json()
-        if (data.success) setSubscriptionData(data.data)
-      } catch {
-        // subscription check unavailable
+        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to load subscription status')
+        setSubscriptionData(data.data)
+      } catch (error) {
+        Sentry.captureException(error, { tags: { surface: 'settings', operation: 'load-subscription' } })
+        setSubscriptionData(null)
       } finally {
         setIsLoadingSubscription(false)
       }
@@ -290,14 +230,16 @@ export default function SettingsPage() {
       setIsRegeneratingWebhook(true)
       const res = await fetch('/api/v1/auth/webhook-token', { method: 'POST' })
       const data = await res.json()
-      if (data.token) {
-        setWebhookToken(data.token)
-        setWebhookCopied(false)
-        toast.success('Token regenerated', {
-          description: 'Your TradingView webhook token has been regenerated. Update your TradingView alert.',
-          duration: 4000,
-        })
+      if (!res.ok || typeof data.token !== 'string' || data.token.length === 0) {
+        throw new Error(data.error || 'Failed to regenerate token')
       }
+
+      setWebhookToken(data.token)
+      setWebhookCopied(false)
+      toast.success('Token regenerated', {
+        description: 'Your TradingView webhook token has been regenerated. Update your TradingView alert.',
+        duration: 4000,
+      })
     } catch {
       toast.error('Failed to regenerate token')
     } finally {
@@ -307,10 +249,14 @@ export default function SettingsPage() {
 
   const copyWebhookUrl = async () => {
     if (!webhookToken) return
-    const url = `${window.location.origin}/api/v1/import/webhook/tradingview?token=${webhookToken}`
-    await navigator.clipboard.writeText(url)
-    setWebhookCopied(true)
-    setTimeout(() => setWebhookCopied(false), 2500)
+    try {
+      const url = `${window.location.origin}/api/v1/import/webhook/tradingview?token=${webhookToken}`
+      await navigator.clipboard.writeText(url)
+      setWebhookCopied(true)
+      setTimeout(() => setWebhookCopied(false), 2500)
+    } catch {
+      toast.error('Could not copy webhook URL')
+    }
   }
 
   useEffect(() => {
@@ -320,29 +266,33 @@ export default function SettingsPage() {
         const response = await fetch('/api/auth/profile')
         const result = await response.json()
 
-        if (result.success) {
-          const nextFirstName = result.data.firstName || ''
-          const nextLastName = result.data.lastName || ''
-          setProfileData({
-            firstName: nextFirstName,
-            lastName: nextLastName,
-            email: result.data.email || '',
-            autoAdjustAccountDate: result.data.autoAdjustAccountDate ?? false,
-            breakEvenThreshold: typeof result.data.breakEvenThreshold === 'number' ? result.data.breakEvenThreshold : 10,
-            pnlDisplayMode: normalizePnlDisplayMode(result.data.pnlDisplayMode),
-            aiSettings: {
-              ...defaultAiSettings,
-              ...(result.data.aiSettings || {})
-            }
-          })
-          setSavedProfileNames({
-            firstName: nextFirstName,
-            lastName: nextLastName,
-          })
-          const safeThreshold = typeof result.data.breakEvenThreshold === 'number' ? result.data.breakEvenThreshold : 10
-          setBreakEvenDraft(String(safeThreshold))
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Failed to load profile')
         }
+
+        const nextFirstName = result.data.firstName || ''
+        const nextLastName = result.data.lastName || ''
+        setProfileData({
+          firstName: nextFirstName,
+          lastName: nextLastName,
+          email: result.data.email || '',
+          autoAdjustAccountDate: result.data.autoAdjustAccountDate ?? false,
+          breakEvenThreshold: typeof result.data.breakEvenThreshold === 'number' ? result.data.breakEvenThreshold : 10,
+          pnlDisplayMode: normalizePnlDisplayMode(result.data.pnlDisplayMode),
+          aiSettings: {
+            ...defaultAiSettings,
+            ...(result.data.aiSettings || {})
+          }
+        })
+        setSavedProfileNames({
+          firstName: nextFirstName,
+          lastName: nextLastName,
+        })
+        const safeThreshold = typeof result.data.breakEvenThreshold === 'number' ? result.data.breakEvenThreshold : 10
+        setBreakEvenDraft(String(safeThreshold))
       } catch (error) {
+        Sentry.captureException(error, { tags: { surface: 'settings', operation: 'load-profile' } })
+        toast.error('Could not load your profile settings')
       } finally {
         setIsLoadingProfile(false)
       }
@@ -390,18 +340,21 @@ export default function SettingsPage() {
   }
 
   const handleTimezoneChange = async (value: string) => {
+    const previous = timezone
     setTimezone(value)
     try {
-      await fetch('/api/auth/profile', {
+      const response = await fetch('/api/auth/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timezone: value }),
       })
+      if (!response.ok) throw new Error('Failed to save timezone')
       toast.success("Timezone updated", {
         description: `Timezone changed to ${value.replace('_', ' ')}.`,
         duration: 2000
       })
     } catch {
+      setTimezone(previous)
       toast.error("Failed to sync timezone")
     }
   }
@@ -770,11 +723,11 @@ export default function SettingsPage() {
             </Avatar>
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate text-heading-text">{user?.email}</p>
-              <p className="text-xxs text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Member since {new Date(user?.created_at || '').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
               </p>
             </div>
-            <Badge variant="secondary" className="shrink-0 bg-muted text-muted-foreground border-border/25 text-xxs font-normal">Active</Badge>
+            <Badge variant="secondary" className="shrink-0 bg-muted text-muted-foreground border-border/25 text-xs font-normal">Active</Badge>
           </div>
 
           {isLoadingProfile ? (
@@ -1350,8 +1303,13 @@ export default function SettingsPage() {
                 className="h-7 gap-1 px-2 text-xs hover:bg-muted/50 font-medium"
                 disabled={!webhookToken || isLoadingWebhook}
                 onClick={async () => {
-                  await navigator.clipboard.writeText(buildTradingViewWebhookExample(webhookToken))
-                  toast.success('Webhook example copied')
+                  try {
+                    await navigator.clipboard.writeText(buildTradingViewWebhookExample(webhookToken))
+                    toast.success('Webhook example copied')
+                  } catch (error) {
+                    Sentry.captureException(error, { tags: { surface: 'settings', operation: 'copy-webhook-example' } })
+                    toast.error('Could not copy webhook example')
+                  }
                 }}
               >
                 <Copy className="h-3.5 w-3.5" />
@@ -1362,7 +1320,7 @@ export default function SettingsPage() {
               {buildTradingViewWebhookExample(webhookToken)}
             </pre>
             <p className="text-[10px] text-muted-foreground/70 leading-4">
-              Required fields: <code className="text-xxs bg-muted px-1 py-0.5 rounded text-foreground font-mono">token</code>, <code className="text-xxs bg-muted px-1 py-0.5 rounded text-foreground font-mono">symbol</code>, <code className="text-xxs bg-muted px-1 py-0.5 rounded text-foreground font-mono">side</code>, <code className="text-xxs bg-muted px-1 py-0.5 rounded text-foreground font-mono">entry_price</code>, <code className="text-xxs bg-muted px-1 py-0.5 rounded text-foreground font-mono">close_price</code>. If quantity, pnl, or timestamps are missing, the import still succeeds but with reduced detail.
+              Required fields: <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">token</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">symbol</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">side</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">entry_price</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">close_price</code>. If quantity, pnl, or timestamps are missing, the import still succeeds but with reduced detail.
             </p>
           </div>
         </div>
@@ -1475,7 +1433,7 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(cat.id)}
                 data-tour={`settings-tab-${cat.id}`}
                 className={cn(
-                  "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-nowrap md:w-full text-left shrink-0",
+                  "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap md:w-full text-left shrink-0",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"

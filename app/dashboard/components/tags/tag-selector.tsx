@@ -55,6 +55,8 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
           >
             {tag.name}
             <button
+              type="button"
+              aria-label={`Remove tag ${tag.name}`}
               onClick={() => handleRemoveTag(tag.id)}
               className="ml-1 hover:bg-black/20 rounded-full p-0.5"
             >

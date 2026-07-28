@@ -10,15 +10,17 @@ export default function TechStackDocsPage() {
     >
       <DocsSection title="Web application">
         <ul>
-          <li><strong>Framework:</strong> Next.js 16 (canary) with App Router</li>
+          <li><strong>Framework:</strong> Next.js 15.5.21 with App Router</li>
           <li><strong>Language:</strong> TypeScript 5</li>
-          <li><strong>Styling:</strong> Tailwind CSS 3, shadcn/ui components</li>
+          <li><strong>Styling:</strong> Tailwind CSS 3 with local New York-style shadcn/ui primitives backed by Radix UI</li>
           <li><strong>Animations:</strong> Framer Motion</li>
-          <li><strong>Charts:</strong> Recharts, lightweight-charts by TradingView, d3</li>
+          <li><strong>Charts:</strong> Recharts and lightweight-charts by TradingView</li>
           <li><strong>Rich Text:</strong> Lexical editor by Meta</li>
           <li><strong>Forms:</strong> react-hook-form + Zod validation</li>
-          <li><strong>Drag &amp; Drop:</strong> react-grid-layout, @dnd-kit</li>
-          <li><strong>Tables:</strong> @tanstack/react-table with react-virtual</li>
+          <li><strong>Drag &amp; Drop:</strong> react-grid-layout</li>
+          <li><strong>Tables:</strong> @tanstack/react-table</li>
+          <li><strong>Client data:</strong> TanStack Query for server state, Zustand for local state</li>
+          <li><strong>Icons:</strong> Lucide React</li>
         </ul>
       </DocsSection>
 

@@ -8,7 +8,7 @@ const MOBILE_WIDGET_HEIGHTS: Readonly<Record<string, number>> = {
 const MIN_WIDGET_HEIGHT = 180
 const CONTENT_SIZED_WIDGET_MIN_HEIGHTS: Readonly<Record<string, number>> = {
   performanceSummary: 520,
-  propFirmObjectivesToday: 780,
+  propFirmObjectivesToday: 640,
   propFirmAccountStatistics: 720,
 }
 export const MAX_MOBILE_WIDGET_HEIGHT = Math.max(

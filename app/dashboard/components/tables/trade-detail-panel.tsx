@@ -263,6 +263,8 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
                       {formatTradePrice(tradeData.stopLoss, trade.instrument)}
                     </span>
                     <button
+                      type="button"
+                      aria-label={copiedField === 'Stop Loss' ? 'Stop Loss copied' : 'Copy Stop Loss'}
                       onClick={() => copyToClipboard(formatTradePrice(tradeData.stopLoss, trade.instrument), 'Stop Loss')}
                       className="p-1 hover:bg-accent rounded-md"
                     >
@@ -277,6 +279,8 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
                       {formatTradePrice(tradeData.takeProfit, trade.instrument)}
                     </span>
                     <button
+                      type="button"
+                      aria-label={copiedField === 'Take Profit' ? 'Take Profit copied' : 'Copy Take Profit'}
                       onClick={() => copyToClipboard(formatTradePrice(tradeData.takeProfit, trade.instrument), 'Take Profit')}
                       className="p-1 hover:bg-accent rounded-md"
                     >

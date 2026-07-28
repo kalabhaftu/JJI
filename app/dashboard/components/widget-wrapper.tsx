@@ -1,6 +1,7 @@
 'use client'
 
 import React, { Component, type ReactNode } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -27,29 +28,36 @@ export class WidgetErrorBoundary extends Component<WidgetErrorBoundaryProps, Wid
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(`Widget Error (${this.props.title || this.props.widgetId || 'Unknown'}):`, error, errorInfo)
+    Sentry.captureException(error, {
+      tags: { surface: 'dashboard-widget' },
+      extra: {
+        widgetId: this.props.widgetId,
+        widgetTitle: this.props.title,
+        componentStack: errorInfo.componentStack,
+      },
+    })
   }
 
   render() {
     if (this.state.hasError) {
       return (
-        <Card className="h-full w-full border-red-500/20 bg-red-500/5 dark:bg-red-500/10">
-          <CardContent className="flex h-full flex-col items-center justify-center space-y-4 p-6 text-center">
-            <div className="rounded-full bg-red-500/20 p-3">
-              <AlertCircle className="h-6 w-6 text-red-500" />
+        <Card className="h-full w-full border-destructive/20 bg-destructive/5">
+          <CardContent className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
+            <div className="rounded-full bg-destructive/20 p-3">
+              <AlertCircle className="h-6 w-6 text-destructive" />
             </div>
-            <div className="space-y-1">
-              <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
+            <div className="flex flex-col gap-1">
+              <h3 className="text-sm font-medium text-destructive">
                 Failed to load widget
               </h3>
-              <p className="text-xs text-red-600/80 dark:text-red-300/80 max-w-[200px] truncate">
-                {this.state.error?.message || 'An unexpected error occurred'}
+              <p className="max-w-[200px] truncate text-xs text-destructive/80">
+                An unexpected error occurred. Try again.
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="mt-2 h-8 border-red-500/20 text-red-600 hover:bg-red-500/10 hover:text-red-700"
+              className="mt-2 h-8 border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() => this.setState({ hasError: false, error: null })}
             >
               Try again

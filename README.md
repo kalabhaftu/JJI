@@ -8,7 +8,7 @@ Production trading journal, performance analytics, prop-firm tracking, and conse
 - Staging branch: `preview`
 - Production branch: `main`
 - Runtime: Node.js 24
-- Package manager: npm
+- Package manager: Bun (lockfile: `bun.lock`)
 
 ## Product
 
@@ -66,7 +66,7 @@ docs/                   Maintainer and operations documentation
 ### Requirements
 
 - Node.js 24
-- npm
+- Bun
 - Supabase development project
 - PostgreSQL pooled and direct connection strings
 
@@ -74,10 +74,9 @@ docs/                   Maintainer and operations documentation
 
 ```bash
 git clone <repository-url>
-cd tradelytix
-npm ci
+bun install
 cp .env.example .env.local
-npm run dev
+bun run dev
 ```
 
 Open `http://localhost:3000`. `/demo` runs without authentication.
@@ -87,20 +86,20 @@ Environment variables are documented in [.env.example](.env.example). Keep crede
 ## Commands
 
 ```bash
-npm run dev                 Start the development server
-npm run type-check          Run TypeScript validation
-npm run lint                Run ESLint
-npm test -- --run           Run all Vitest suites
-npm run test:ui-contracts   Run deterministic UI and accessibility contracts
-npm run security:scan-console
-npm audit --audit-level=low
-npm run build               Build the production application
-npm run build:analyze       Generate bundle analyzer reports
-npm run db:generate         Generate a reviewed Drizzle migration
-npm run db:studio           Open Drizzle Studio
+bun run dev                 Start the development server
+bun run type-check          Run TypeScript validation
+bun run lint                Run ESLint
+bun test --run              Run all Vitest suites
+bun run test:ui-contracts   Run deterministic UI and accessibility contracts
+bun run security:scan-console
+bun audit
+bun run build               Build the production application
+bun run build:analyze       Generate bundle analyzer reports
+bun run db:generate         Generate a reviewed Drizzle migration
+bun run db:studio           Open Drizzle Studio
 ```
 
-`npm run db:push` is development-only. Production database changes use reviewed files under `supabase/migrations/`, staging rehearsal, backup, apply, and verification.
+`bun run db:push` is development-only. Production database changes use reviewed files under `supabase/migrations/`, staging rehearsal, backup, apply, and verification.
 
 ## Data boundaries
 

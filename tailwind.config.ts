@@ -15,11 +15,6 @@ const config: Config = {
 				sans: ['var(--font-system)', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
 				satoshi: ['var(--font-system)', '-apple-system', 'BlinkMacSystemFont', 'SF Pro Display', 'SF Pro Text', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
 			},
-			fontSize: {
-				'xxs': ['0.75rem', { lineHeight: '1rem' }],
-				'xxxs': ['0.75rem', { lineHeight: '1rem' }],
-				'nano': ['0.75rem', { lineHeight: '1rem' }],
-			},
 			backgroundImage: {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(at 50% 50%, var(--tw-gradient-stops))'

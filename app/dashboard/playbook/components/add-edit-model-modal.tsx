@@ -319,6 +319,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                       <span className="text-[11px] font-bold text-primary">{setup}</span>
                       <button
                         type="button"
+                        aria-label={`Remove setup ${setup}`}
                         onClick={() => setSetups(setups.filter((_, idx) => idx !== i))}
                         className="text-muted-foreground/40 hover:text-destructive transition-colors"
                       >

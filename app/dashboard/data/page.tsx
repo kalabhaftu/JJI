@@ -49,7 +49,7 @@ function DashboardContent() {
                 key={cat.id}
                 onClick={() => handleTabChange(cat.id)}
                 className={cn(
-                  "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors w-nowrap md:w-full text-left shrink-0",
+                  "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap md:w-full text-left shrink-0",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground hover:bg-muted/40"

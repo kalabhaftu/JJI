@@ -220,7 +220,7 @@ export const TourTooltip: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={prevStep}
-                      className="h-7 text-xxs px-2 text-muted-foreground hover:text-foreground"
+                      className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground"
                     >
                       <ArrowLeft className="h-3 w-3 mr-1" />
                       Back
@@ -235,7 +235,7 @@ export const TourTooltip: React.FC = () => {
                     <Button
                       size="sm"
                       onClick={nextStep}
-                      className="h-7 text-xxs px-3 font-semibold shadow-sm"
+                      className="h-7 text-xs px-3 font-semibold shadow-sm"
                     >
                       Next
                       <ArrowRight className="h-3 w-3 ml-1" />
@@ -244,7 +244,7 @@ export const TourTooltip: React.FC = () => {
                     <Button
                       size="sm"
                       onClick={completeTour}
-                      className="h-7 text-xxs px-3 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
+                      className="h-7 text-xs px-3 font-semibold bg-success hover:bg-success/90 text-success-foreground shadow-sm"
                     >
                       Got it
                     </Button>
@@ -340,7 +340,7 @@ export const TourTooltip: React.FC = () => {
                     variant="ghost"
                     size="sm"
                     onClick={prevStep}
-                    className="h-7 text-xxs px-2 text-muted-foreground hover:text-foreground"
+                    className="h-7 text-xs px-2 text-muted-foreground hover:text-foreground"
                   >
                     <ArrowLeft className="h-3 w-3 mr-1" />
                     Back
@@ -355,7 +355,7 @@ export const TourTooltip: React.FC = () => {
                   <Button
                     size="sm"
                     onClick={nextStep}
-                    className="h-7 text-xxs px-3 font-semibold shadow-sm"
+                    className="h-7 text-xs px-3 font-semibold shadow-sm"
                   >
                     Next
                     <ArrowRight className="h-3 w-3 ml-1" />
@@ -364,7 +364,7 @@ export const TourTooltip: React.FC = () => {
                   <Button
                     size="sm"
                     onClick={completeTour}
-                    className="h-7 text-xxs px-3 font-semibold bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
+                    className="h-7 text-xs px-3 font-semibold bg-success hover:bg-success/90 text-success-foreground shadow-sm"
                   >
                     Got it
                   </Button>

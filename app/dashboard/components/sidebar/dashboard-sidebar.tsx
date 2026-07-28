@@ -393,7 +393,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                   }}
                   tooltip="Exit Demo"
                   className={cn(
-                    'w-full text-red-500 hover:text-red-400 hover:bg-red-500/10 transition-colors font-semibold',
+                    'w-full text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors font-semibold',
                     isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
                     !isOverlay && !isCollapsed && 'justify-start px-3'
                   )}

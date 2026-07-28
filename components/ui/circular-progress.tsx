@@ -132,11 +132,11 @@ export function CircularProgress({
       {/* Segment counts below gauge */}
       {isSegmented && segmentData && segments && (
         <div className="flex items-center justify-center gap-3 mt-1">
-          <span className="text-xxs font-bold text-profit">{segments.wins}</span>
+          <span className="text-xs font-bold text-profit">{segments.wins}</span>
           {segments.breakeven > 0 && (
-            <span className="text-xxs font-bold text-muted-foreground">{segments.breakeven}</span>
+          <span className="text-xs font-bold text-muted-foreground">{segments.breakeven}</span>
           )}
-          <span className="text-xxs font-bold text-loss">{segments.losses}</span>
+          <span className="text-xs font-bold text-loss">{segments.losses}</span>
         </div>
       )}
 

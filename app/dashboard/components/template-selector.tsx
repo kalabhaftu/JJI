@@ -201,6 +201,8 @@ export function TemplateSelector() {
               </div>
               {!t.isDefault && (
                 <button
+                  type="button"
+                  aria-label={`Delete template ${t.name}`}
                   className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5"
                   onClick={(e) => {
                     e.stopPropagation()

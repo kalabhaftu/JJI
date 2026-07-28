@@ -15,7 +15,7 @@ export function SettingsPageSkeleton() {
           {Array.from({ length: 6 }).map((_, i) => (
             <div
               key={i}
-              className="flex items-center gap-3 px-3 py-2.5 rounded-lg w-nowrap md:w-full shrink-0"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg whitespace-nowrap md:w-full shrink-0"
             >
               <Skeleton className="h-4 w-4 bg-muted/30 rounded-md shrink-0" />
               <Skeleton className="h-4 w-28 bg-muted/25 rounded-md" />

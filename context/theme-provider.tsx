@@ -1,12 +1,35 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
+import { toast } from 'sonner'
 import { useUserStore } from '@/store/user-store'
 
 type Theme = 'light' | 'dark' | 'system'
 type AccentPack = 'classic' | 'reports' | 'violet' | 'slate'
 type WidgetSurfaceStyle = 'default' | 'glass'
 type ChartStyle = 'smooth' | 'sharp'
+
+const THEMES = ['light', 'dark', 'system'] as const
+const ACCENT_PACKS = ['classic', 'reports', 'violet', 'slate'] as const
+const WIDGET_STYLES = ['default', 'glass'] as const
+const CHART_STYLES = ['smooth', 'sharp'] as const
+
+function isTheme(value: unknown): value is Theme {
+  return typeof value === 'string' && THEMES.includes(value as Theme)
+}
+
+function isAccentPack(value: unknown): value is AccentPack {
+  return typeof value === 'string' && ACCENT_PACKS.includes(value as AccentPack)
+}
+
+function isWidgetStyle(value: unknown): value is WidgetSurfaceStyle {
+  return typeof value === 'string' && WIDGET_STYLES.includes(value as WidgetSurfaceStyle)
+}
+
+function isChartStyle(value: unknown): value is ChartStyle {
+  return typeof value === 'string' && CHART_STYLES.includes(value as ChartStyle)
+}
 
 type ThemeContextType = {
   theme: Theme
@@ -61,6 +84,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [chartStyle, setChartStyleState] = useState<ChartStyle>('smooth')
   const [mounted, setMounted] = useState(false)
   const user = useUserStore(state => state.user)
+  const preferenceRequestVersions = React.useRef<Record<string, number>>({})
 
   const resolveEffective = useCallback((t: Theme): 'light' | 'dark' => {
     if (t === 'system') return getSystemTheme()
@@ -86,29 +110,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setMounted(true)
 
     // Restore theme from localStorage as immediate source
-    const savedTheme = localStorage.getItem('theme') as Theme | null
-    const validThemes: Theme[] = ['light', 'dark', 'system']
-    const resolved = savedTheme && validThemes.includes(savedTheme) ? savedTheme : 'dark'
+    const savedTheme = localStorage.getItem('theme')
+    const resolved = isTheme(savedTheme) ? savedTheme : 'dark'
     setThemeState(resolved)
     applyTheme(resolved)
 
     // Restore accent pack from localStorage as immediate source
-    const savedAccent = localStorage.getItem('accentPack') as AccentPack | null
-    const validAccents: AccentPack[] = ['classic', 'reports', 'violet', 'slate']
-    const resolvedAccent = savedAccent && validAccents.includes(savedAccent) ? savedAccent : 'classic'
+    const savedAccent = localStorage.getItem('accentPack')
+    const resolvedAccent = isAccentPack(savedAccent) ? savedAccent : 'classic'
     setAccentPackState(resolvedAccent)
     applyAccentClass(resolvedAccent)
 
     // Restore widget style from localStorage
-    const savedWidget = localStorage.getItem('widgetStyle') as WidgetSurfaceStyle | null
-    const validWidgets: WidgetSurfaceStyle[] = ['default', 'glass']
-    const resolvedWidget = savedWidget && validWidgets.includes(savedWidget) ? savedWidget : 'default'
+    const savedWidget = localStorage.getItem('widgetStyle')
+    const resolvedWidget = isWidgetStyle(savedWidget) ? savedWidget : 'default'
     setWidgetStyleState(resolvedWidget)
 
     // Restore chart style from localStorage
-    const savedChart = localStorage.getItem('chartStyle') as ChartStyle | null
-    const validCharts: ChartStyle[] = ['smooth', 'sharp']
-    const resolvedChart = savedChart && validCharts.includes(savedChart) ? savedChart : 'smooth'
+    const savedChart = localStorage.getItem('chartStyle')
+    const resolvedChart = isChartStyle(savedChart) ? savedChart : 'smooth'
     setChartStyleState(resolvedChart)
 
     // Listen for system preference changes when in system mode
@@ -125,9 +145,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (mounted && user) {
       if (user.theme) {
-        const dbTheme = user.theme as Theme
+        const dbTheme = isTheme(user.theme) ? user.theme : null
         const currentTheme = localStorage.getItem('theme') as Theme | null
-        if (dbTheme !== currentTheme) {
+        if (dbTheme && dbTheme !== currentTheme) {
           setThemeState(dbTheme)
           applyTheme(dbTheme)
           localStorage.setItem('theme', dbTheme)
@@ -135,9 +155,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
       
       if (user.accentPack) {
-        const dbAccent = user.accentPack as AccentPack
+        const dbAccent = isAccentPack(user.accentPack) ? user.accentPack : null
         const currentAccent = localStorage.getItem('accentPack') as AccentPack | null
-        if (dbAccent !== currentAccent) {
+        if (dbAccent && dbAccent !== currentAccent) {
           setAccentPackState(dbAccent)
           applyAccentClass(dbAccent)
           localStorage.setItem('accentPack', dbAccent)
@@ -145,18 +165,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (user.widgetStyle) {
-        const dbWidget = user.widgetStyle as WidgetSurfaceStyle
+        const dbWidget = isWidgetStyle(user.widgetStyle) ? user.widgetStyle : null
         const currentWidget = localStorage.getItem('widgetStyle') as WidgetSurfaceStyle | null
-        if (dbWidget !== currentWidget) {
+        if (dbWidget && dbWidget !== currentWidget) {
           setWidgetStyleState(dbWidget)
           localStorage.setItem('widgetStyle', dbWidget)
         }
       }
 
       if (user.chartStyle) {
-        const dbChart = user.chartStyle as ChartStyle
+        const dbChart = isChartStyle(user.chartStyle) ? user.chartStyle : null
         const currentChart = localStorage.getItem('chartStyle') as ChartStyle | null
-        if (dbChart !== currentChart) {
+        if (dbChart && dbChart !== currentChart) {
           setChartStyleState(dbChart)
           localStorage.setItem('chartStyle', dbChart)
         }
@@ -190,42 +210,59 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     }
   }, [chartStyle, mounted])
 
+  const persistPreference = useCallback(async (
+    preference: string,
+    value: string,
+    rollback: () => void,
+  ) => {
+    const version = (preferenceRequestVersions.current[preference] ?? 0) + 1
+    preferenceRequestVersions.current[preference] = version
+
+    try {
+      const response = await fetch('/api/auth/profile', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [preference]: value }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to save ${preference} preference (${response.status})`)
+      }
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { surface: 'theme-preferences' },
+        extra: { preference },
+      })
+
+      if (preferenceRequestVersions.current[preference] === version) {
+        rollback()
+        toast.error('Could not save that display preference.')
+      }
+    }
+  }, [])
+
   const setTheme = (newTheme: Theme) => {
+    const previousTheme = theme
     setThemeState(newTheme)
-    // Persist to backend
-    fetch('/api/auth/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ theme: newTheme }),
-    }).catch(() => {})
+    void persistPreference('theme', newTheme, () => setThemeState(previousTheme))
   }
 
   const setAccentPack = (pack: AccentPack) => {
+    const previousAccentPack = accentPack
     setAccentPackState(pack)
-    // Persist to backend
-    fetch('/api/auth/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accentPack: pack }),
-    }).catch(() => {})
+    void persistPreference('accentPack', pack, () => setAccentPackState(previousAccentPack))
   }
 
   const setWidgetStyle = (style: WidgetSurfaceStyle) => {
+    const previousWidgetStyle = widgetStyle
     setWidgetStyleState(style)
-    fetch('/api/auth/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ widgetStyle: style }),
-    }).catch(() => {})
+    void persistPreference('widgetStyle', style, () => setWidgetStyleState(previousWidgetStyle))
   }
 
   const setChartStyle = (style: ChartStyle) => {
+    const previousChartStyle = chartStyle
     setChartStyleState(style)
-    fetch('/api/auth/profile', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chartStyle: style }),
-    }).catch(() => {})
+    void persistPreference('chartStyle', style, () => setChartStyleState(previousChartStyle))
   }
 
   const toggleTheme = () => {

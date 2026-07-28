@@ -1,8 +1,8 @@
 import { cn } from '@/lib/utils'
 
 export const reportTypography = {
-  eyebrow: 'text-xxs font-semibold uppercase tracking-widest text-muted-foreground',
-  microLabel: 'text-xxs font-semibold uppercase tracking-wide text-muted-foreground/70',
+  eyebrow: 'text-xs font-semibold uppercase tracking-widest text-muted-foreground',
+  microLabel: 'text-xs font-semibold uppercase tracking-wide text-muted-foreground/70',
   sectionTitle: 'text-xs font-semibold uppercase tracking-widest text-muted-foreground',
   metricValue: 'font-mono text-xl font-semibold tracking-tight text-foreground',
   heroMetric: 'font-mono text-5xl font-semibold tracking-tight leading-none sm:text-6xl',

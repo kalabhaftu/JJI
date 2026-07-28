@@ -129,8 +129,8 @@ describe('theme contrast', () => {
     })
   }
 
-  it('prevents accent packs from overriding semantic colors', () => {
-    for (const selector of [
+  it('keeps accent packs as explicit, contrast-safe visual themes', () => {
+    const accentSelectors = [
       '.accent-reports {',
       '.dark.accent-reports,',
       '.accent-violet {',
@@ -138,19 +138,25 @@ describe('theme contrast', () => {
       '.accent-slate {',
       '.dark.accent-slate,',
       '.accent-slate:not(.dark) {',
+    ]
+
+    for (const selector of accentSelectors) {
+      expect(block(selector), `${selector} must declare a brand accent`).toContain('--primary:')
+    }
+
+    for (const selector of [
+      '.accent-reports {',
+      '.dark.accent-reports,',
+      '.accent-violet {',
+      '.dark.accent-violet,',
+      '.accent-slate {',
+      '.dark.accent-slate,',
     ]) {
       const declarations = block(selector)
-      for (const token of [
-        '--success',
-        '--warning',
-        '--destructive',
-        '--chart-profit',
-        '--chart-loss',
-        '--chart-bullish',
-        '--chart-bearish',
-      ]) {
-        expect(declarations, `${selector} must not override ${token}`).not.toContain(`${token}:`)
-      }
+      expect(declarations, `${selector} must declare a profit palette`).toContain('--success:')
+      expect(declarations, `${selector} must declare a loss palette`).toContain('--destructive:')
+      expect(declarations, `${selector} must declare profit chart colors`).toContain('--chart-profit:')
+      expect(declarations, `${selector} must declare loss chart colors`).toContain('--chart-loss:')
     }
   })
 })

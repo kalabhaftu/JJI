@@ -30,11 +30,11 @@ export function CalendarSettings() {
                     <SettingsIcon className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground transition-colors" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[210px] p-3 bg-[#0d0e12] border border-border/40 rounded-xl space-y-2.5 shadow-xl animate-in fade-in-50 zoom-in-95 duration-100" align="end">
+            <PopoverContent className="w-[210px] rounded-xl border border-border/40 bg-popover p-3 shadow-xl animate-in fade-in-50 zoom-in-95 duration-100" align="end">
                 <div className="text-[11px] font-bold text-muted-foreground/60 uppercase tracking-wider px-1">
                     Display stats
                 </div>
-                <div className="space-y-1">
+                <div className="flex flex-col gap-1">
                     {stats.map((stat) => {
                         const isChecked = visibleStats[stat.key]
                         return (
@@ -50,8 +50,8 @@ export function CalendarSettings() {
                                 <div className={cn(
                                     "h-4 w-4 rounded flex items-center justify-center transition-all",
                                     isChecked
-                                        ? "bg-indigo-600 border border-indigo-500 text-white animate-in zoom-in-75 duration-75"
-                                        : "border border-muted-foreground/45 bg-[#0f1115]"
+                                        ? "border border-primary bg-primary text-primary-foreground animate-in zoom-in-75 duration-75"
+                                        : "border border-muted-foreground/45 bg-muted/20"
                                 )}>
                                     {isChecked && (
                                         <Check className="h-3 w-3 stroke-[3]" />

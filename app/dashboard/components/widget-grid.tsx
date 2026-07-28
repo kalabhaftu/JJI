@@ -2,65 +2,8 @@
 
 import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { Responsive, verticalCompactor } from 'react-grid-layout'
-
-function useGridContainerWidth(isMobile?: boolean) {
-  const [width, setWidth] = useState(0)
-  const [mounted, setMounted] = useState(false)
-  const lastWidthRef = useRef(0)
-  const observerRef = useRef<ResizeObserver | null>(null)
-  const timersRef = useRef<NodeJS.Timeout[]>([])
-
-  const containerRef = useCallback((node: HTMLDivElement | null) => {
-    // Cleanup previous observer and timers
-    if (observerRef.current) {
-      observerRef.current.disconnect()
-      observerRef.current = null
-    }
-    timersRef.current.forEach(clearTimeout)
-    timersRef.current = []
-
-    if (!node || isMobile) return
-
-    const measure = () => {
-      const w = node.offsetWidth
-      if (w > 0 && w !== lastWidthRef.current) {
-        lastWidthRef.current = w
-        setWidth(w)
-      }
-      if (w > 0 && !mounted) setMounted(true)
-    }
-
-    // Immediate measurement
-    requestAnimationFrame(measure)
-
-    // Setup new observer
-    observerRef.current = new ResizeObserver(() => {
-      requestAnimationFrame(measure)
-    })
-    observerRef.current.observe(node)
-
-    // Setup delayed passes for transitions
-    timersRef.current = [300, 600, 1200].map((delay) =>
-      setTimeout(() => {
-        requestAnimationFrame(() => {
-          measure()
-          window.dispatchEvent(new Event('resize'))
-        })
-      }, delay)
-    )
-  }, [mounted, isMobile])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (observerRef.current) observerRef.current.disconnect()
-      timersRef.current.forEach(clearTimeout)
-    }
-  }, [])
-
-  return { width, containerRef, mounted: isMobile ? true : mounted }
-}
-import { Card, CardContent } from '@/components/ui/card'
+import { useGridContainerWidth } from '@/hooks/use-grid-container-width'
+import { LazyMobileWidget } from './lazy-mobile-widget'
 import { Button } from '@/components/ui/button'
 import { X, Plus, GripVertical } from 'lucide-react'
 import { useIsMobile } from '@/hooks/use-is-mobile'
@@ -68,7 +11,6 @@ import { WIDGET_REGISTRY } from '../config/widget-registry-lazy'
 import { useTemplateEditStore } from '@/store/template-edit-store'
 import { useTemplates } from '@/context/template-provider'
 import { useData } from '@/context/data-provider'
-import { useAccounts } from '@/hooks/use-accounts'
 import { cn } from '@/lib/utils'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import type { WidgetLayout } from '@/server/dashboard-templates'
@@ -100,56 +42,6 @@ const generateWidgetId = () => {
 }
 
 const isKpiRowWidget = (widget: WidgetLayout) => widget.y === 0 && widget.h === 1
-
-function LazyMobileWidget({ children, minHeight, height, isEditMode }: { children: React.ReactNode; minHeight?: number; height?: number; isEditMode: boolean }) {
-  const [isIntersecting, setIsIntersecting] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (isEditMode) {
-      setIsIntersecting(true)
-      return
-    }
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) {
-          setIsIntersecting(true)
-          observer.disconnect()
-        }
-      },
-      {
-        rootMargin: '200px',
-      }
-    )
-
-    const el = ref.current
-    if (el) {
-      observer.observe(el)
-    }
-
-    return () => {
-      observer.disconnect()
-    }
-  }, [isEditMode])
-
-  return (
-    <div
-      ref={ref}
-      style={{ height, minHeight }}
-      className={cn('w-full flex flex-col', height ? 'h-full' : 'h-auto')}
-    >
-      {isIntersecting ? (
-        children
-      ) : (
-        <div 
-          className="w-full flex-1 bg-muted/10 animate-pulse rounded-xl border border-border/40" 
-          style={{ minHeight: height || minHeight }}
-        />
-      )}
-    </div>
-  )
-}
 
 interface WidgetGridProps {
   className?: string
@@ -333,25 +225,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   const handleSelectKpiWidget = useCallback((widgetType: string) => {
     handleInsertWidget(widgetType)
   }, [handleInsertWidget])
-
-  // Handle KPI drag reorder
-  const handleKpiDragEnd = useCallback((dragIndex: number, dropIndex: number) => {
-    if (!currentLayout || dragIndex === dropIndex) return
-
-    const reorderedKpi = [...kpiWidgets]
-    const [moved] = reorderedKpi.splice(dragIndex, 1)
-    if (moved) {
-      reorderedKpi.splice(dropIndex, 0, moved)
-    }
-
-    const updatedKpi = reorderedKpi.map((widget, index) => ({
-      ...widget,
-      x: index,
-    }))
-
-    const otherWidgets = currentLayout.filter(w => !isKpiRowWidget(w))
-    updateLayout([...updatedKpi, ...otherWidgets])
-  }, [currentLayout, kpiWidgets, updateLayout])
 
   // hasAccounts: true if the user has any accounts in context (already loaded) OR has trades
   // Use contextAccounts first, fall back to checking if trades exist (imported trades don't need a live broker)

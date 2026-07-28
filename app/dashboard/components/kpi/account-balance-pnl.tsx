@@ -125,7 +125,7 @@ const AccountBalancePnl = React.memo(function AccountBalancePnl({ size }: Accoun
             <div className="ml-auto flex items-center gap-1 rounded-full bg-muted/50 px-2 py-0.5">
               <NumberFlow
                 value={nbTrades}
-                className="text-xxs font-semibold text-muted-foreground"
+                className="text-xs font-semibold text-muted-foreground"
               />
             </div>
           )}

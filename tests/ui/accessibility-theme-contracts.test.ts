@@ -12,6 +12,7 @@ const aiPrompt = source('components/ui/ai-prompt-input.tsx')
 const aiSidebar = source('app/dashboard/ai/components/workspace-sidebar.tsx')
 const aiComposer = source('app/dashboard/ai/components/context-composer.tsx')
 const widgetGrid = source('app/dashboard/components/widget-grid.tsx')
+const lazyMobileWidget = source('app/dashboard/components/lazy-mobile-widget.tsx')
 const layout = source('app/layout.tsx')
 const dialog = source('components/ui/dialog.tsx')
 const notifications = source('components/notifications/notification-item.tsx')
@@ -68,8 +69,8 @@ describe('accessibility and theme source contracts', () => {
 
   it('labels destructive widget controls and keeps mobile widgets lazy and bounded', () => {
     expect(widgetGrid.match(/aria-label=\{`Remove \$\{widget\.type\} widget`\}/g)).toHaveLength(3)
-    expect(widgetGrid).toContain('new IntersectionObserver(')
-    expect(widgetGrid).toContain("rootMargin: '200px'")
+    expect(lazyMobileWidget).toContain('new IntersectionObserver(')
+    expect(lazyMobileWidget).toContain("rootMargin: '200px'")
     expect(widgetGrid).toContain('getMobileWidgetHeight(widget.type, isChart, config.previewHeight)')
   })
 

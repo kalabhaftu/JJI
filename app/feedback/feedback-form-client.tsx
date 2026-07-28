@@ -163,7 +163,7 @@ export function FeedbackFormClient() {
                   <div key={i} className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs">
                     <span className="truncate max-w-32">{f.name}</span>
                     <span className="text-muted-foreground">({(f.size / 1024).toFixed(0)}KB)</span>
-                    <button type="button" onClick={() => removeFile(i)} className="ml-1 hover:text-destructive">
+                    <button type="button" aria-label={`Remove ${f.name}`} onClick={() => removeFile(i)} className="ml-1 hover:text-destructive">
                       <X className="h-3 w-3" />
                     </button>
                   </div>

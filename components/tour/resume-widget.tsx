@@ -22,13 +22,13 @@ export const ResumeWidget: React.FC = () => {
           "backdrop-blur-md bg-background/80 dark:bg-card/75 border border-border/80 rounded-full shadow-lg p-1.5 pl-4"
         )}
       >
-        <span className="text-xxs font-semibold text-muted-foreground mr-1">
+        <span className="text-xs font-semibold text-muted-foreground mr-1">
           Tour paused
         </span>
         <button
           onClick={resumeTour}
           className={cn(
-            "flex items-center justify-center gap-1.5 h-8 px-3 rounded-full text-xxs font-bold",
+            "flex items-center justify-center gap-1.5 h-8 px-3 rounded-full text-xs font-bold",
             "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all duration-200"
           )}
         >

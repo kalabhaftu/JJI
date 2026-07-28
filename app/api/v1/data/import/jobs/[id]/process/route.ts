@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { processImportJobChunk } from '@/server/import-jobs'
+import { getImportJobForUser, serializeImportJob } from '@/server/import-jobs'
+import { enqueueImportJob } from '@/server/import-job-events'
 import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 
 interface RouteParams {
@@ -18,13 +19,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params
-    const result = await processImportJobChunk(id, identity.internalUserId)
-
-    if ('error' in result) {
-      return NextResponse.json({ success: false, error: result.error }, { status: result.status })
+    const job = await getImportJobForUser(id, identity.internalUserId)
+    if (!job) {
+      return NextResponse.json({ success: false, error: 'Import job not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, done: result.done, job: result.job }, { status: result.status })
+    if (job.status !== 'completed' && job.status !== 'failed' && job.status !== 'cancelled') {
+      await enqueueImportJob({ jobId: id, internalUserId: identity.internalUserId, kind: 'archive' })
+    }
+
+    return NextResponse.json({
+      success: true,
+      done: job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled',
+      job: serializeImportJob(job),
+    })
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to process import job' }, { status: 500 })
   }

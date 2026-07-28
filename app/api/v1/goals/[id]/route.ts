@@ -30,7 +30,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }),
       ...(body.title && { title: body.title }),
       ...(body.targetValue !== undefined && { targetValue: Number(body.targetValue) }),
-    }).where(eq(schema.UserGoal.id, id)).returning())[0]
+    }).where(and(
+      eq(schema.UserGoal.id, id),
+      eq(schema.UserGoal.userId, internalUserId),
+    )).returning())[0]
     return NextResponse.json({ goal: updated })
   } catch (err) {
     logger.error('Failed to update goal: ' + (err instanceof Error ? err.message : String(err)))
@@ -53,7 +56,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       where: (table, { eq, and }) => and(eq(table.id, id), eq(table.userId, internalUserId)),
     })
     if (!goal) return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    await db.delete(schema.UserGoal).where(eq(schema.UserGoal.id, id))
+    await db.delete(schema.UserGoal).where(and(
+      eq(schema.UserGoal.id, id),
+      eq(schema.UserGoal.userId, internalUserId),
+    ))
     return NextResponse.json({ success: true })
   } catch (err) {
     logger.error('Failed to delete goal: ' + (err instanceof Error ? err.message : String(err)))

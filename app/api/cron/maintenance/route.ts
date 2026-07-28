@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateCronRequest } from '@/lib/cron-auth'
 import { runSubscriptionChecks, reconcilePendingPayments } from '@/lib/services/subscription-service'
-import { evaluateAllActivePhases } from '@/lib/services/phase-service'
 import { createAllDailyAnchors } from '@/lib/services/anchor-service'
 import { runDailyMaintenance } from '@/lib/services/maintenance-service'
 import { logger } from '@/lib/logger'
+import { inngest } from '@/lib/inngest/client'
 
 /**
  * GET /api/cron/maintenance
@@ -34,7 +34,11 @@ export async function GET(request: NextRequest) {
 
     // 3. Phase Evaluation (Prop firm breaches/passes)
     logger.info('[Maintenance Cron] Task: Phase Evaluation')
-    results.tasks.phaseEvaluation = await evaluateAllActivePhases()
+    await inngest.send({
+      name: 'jji/phase.evaluate',
+      data: { source: 'maintenance-cron', requestedAt: timestamp },
+    })
+    results.tasks.phaseEvaluation = { queued: true }
 
     // 4. Daily Anchors (Equity snapshots)
     logger.info('[Maintenance Cron] Task: Daily Anchors')

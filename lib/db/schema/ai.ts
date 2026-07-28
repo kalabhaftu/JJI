@@ -5,7 +5,7 @@ import { User } from './users';
 
 export const WeeklyAIReview = pgTable('WeeklyAIReview', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   weekStart: timestamp('weekStart', { withTimezone: true, mode: 'date' }).notNull(),
   weekEnd: timestamp('weekEnd', { withTimezone: true, mode: 'date' }).notNull(),
   summary: text('summary').notNull(),
@@ -24,7 +24,7 @@ export type NewWeeklyAIReview = typeof WeeklyAIReview.$inferInsert;
 
 export const AIChat = pgTable('AIChat', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   title: text('title').default('New Conversation'),
   isPinned: boolean('isPinned').default(false),
   isArchived: boolean('isArchived').default(false),
@@ -43,7 +43,7 @@ export type NewAIChat = typeof AIChat.$inferInsert;
 
 export const AISavedInsight = pgTable('AISavedInsight', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   content: text('content').notNull(),
   category: text('category').default('insight'),
@@ -78,7 +78,7 @@ export const AISavedInsightRelations = relations(AISavedInsight, ({ one, many })
 
 export const AIChatMessage = pgTable('AIChatMessage', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  chatId: text('chatId').notNull(),
+  chatId: text('chatId').notNull().references(() => AIChat.id, { onDelete: 'cascade' }),
   role: text('role').notNull(),
   content: text('content').notNull(),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
@@ -107,7 +107,7 @@ export type NewAdminAISetting = typeof AdminAISetting.$inferInsert;
 
 export const AIChatUsageLog = pgTable('AIChatUsageLog', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   chatId: text('chatId'),
   promptTokens: integer('promptTokens').default(0),
   completionTokens: integer('completionTokens').default(0),
@@ -126,4 +126,3 @@ export const AIChatMessageRelations = relations(AIChatMessage, ({ one, many }) =
     references: [AIChat.id]
   }),
 }));
-

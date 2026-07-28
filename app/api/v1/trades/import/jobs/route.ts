@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { createTradeImportJob } from '@/server/trade-import-jobs'
+import { enqueueImportJob } from '@/server/import-job-events'
 import { createErrorResponse } from '@/lib/api-response'
 
 const MAX_TRADE_IMPORT_ROWS = 5000
@@ -39,6 +40,12 @@ export async function POST(request: NextRequest) {
       internalUserId: identity.internalUserId,
       accountId: parsed.data.accountId,
       trades: parsed.data.trades,
+    })
+
+    await enqueueImportJob({
+      jobId: job.id,
+      internalUserId: identity.internalUserId,
+      kind: 'trade',
     })
 
     return NextResponse.json({ success: true, job }, { status: 201 })

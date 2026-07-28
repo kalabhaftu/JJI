@@ -9,7 +9,7 @@ import { calculateReportStatistics } from '@/lib/statistics/report-statistics'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
 import { getWebsiteURL } from '@/server/auth'
-import { eq, desc } from 'drizzle-orm'
+import { and, eq, desc } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'
 
@@ -198,7 +198,10 @@ export async function DELETE(req: NextRequest) {
       return createErrorResponse('Unauthorized', 403)
     }
 
-    await db.delete(schema.SharedReport).where(eq(schema.SharedReport.id, id))
+    await db.delete(schema.SharedReport).where(and(
+      eq(schema.SharedReport.id, id),
+      eq(schema.SharedReport.userId, internalUserId),
+    ))
 
     return createSuccessResponse({ deleted: true })
   } catch (err) {

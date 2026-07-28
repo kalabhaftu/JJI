@@ -1,7 +1,7 @@
 'use server'
 import logger from '@/lib/logger';
 
-import { getUserId, getUserIdSafe } from '@/server/auth'
+import { getInternalUserId, getInternalUserIdSafe } from '@/server/user-identity'
 import type { TradeType } from '@/lib/db/schema/trades';
 
 import { Account } from '@/context/data-provider'
@@ -20,6 +20,7 @@ import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData, buildTrad
 import { getRuntimeAutoAdjustAccountDate, getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { deletePublicStorageUrls } from '@/server/storage-admin'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
+import { enqueuePhaseEvaluation } from '@/server/phase-evaluation-events'
 import { eq, and, or, inArray, desc, asc, sql } from 'drizzle-orm'
 
 function isFundedPhase(evaluationType: string, phaseNumber: number): boolean {
@@ -33,10 +34,33 @@ function getPhaseDisplayName(evaluationType: string, phaseNumber: number): strin
   return `Phase ${phaseNumber}`
 }
 
+async function insertTradesWithSyntheticExecutions(trades: any[]) {
+  if (trades.length === 0) return []
+
+  return db.transaction(async (tx) => {
+    const insertedTrades = await tx.insert(schema.Trade)
+      .values(trades)
+      .onConflictDoNothing()
+      .returning({ id: schema.Trade.id })
+
+    const insertedIds = new Set(insertedTrades.map(({ id }) => id))
+    const insertedRows = trades.filter((trade) => insertedIds.has(trade.id))
+    const executionRows = insertedRows.flatMap((trade) => buildSyntheticExecutionsFromTrade(trade))
+
+    if (executionRows.length > 0) {
+      await tx.insert(schema.TradeExecution)
+        .values(executionRows as any)
+        .onConflictDoNothing()
+    }
+
+    return insertedRows
+  })
+}
+
 
 
 export async function removeAccountsFromTradesAction(accountNumbers: string[]): Promise<void> {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   
   const tradesWithImages = await db.query.Trade.findMany({
     where: (table, { and, inArray, eq }) => and(inArray(table.accountNumber, accountNumbers), eq(table.userId, userId)),
@@ -74,7 +98,7 @@ export async function removeAccountsFromTradesAction(accountNumbers: string[]): 
 }
 
 async function removeAccountFromTradesAction(accountNumber: string): Promise<void> {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
 
   const tradesWithImages = await db.query.Trade.findMany({
     where: (table, { and, eq }) => and(eq(table.accountNumber, accountNumber), eq(table.userId, userId)),
@@ -146,18 +170,26 @@ async function deleteInstrumentGroupAction(accountNumber: string, instrumentGrou
 }
 
 async function updateCommissionForGroupAction(accountNumber: string, instrumentGroup: string, newCommission: number): Promise<void> {
+  const userId = await getInternalUserId()
   const trades = await db.query.Trade.findMany({
-    where: (table, { and, eq, like }) => and(eq(table.accountNumber, accountNumber), like(table.instrument, `${instrumentGroup}%`))
+    where: (table, { and, eq, like }) => and(
+      eq(table.accountNumber, accountNumber),
+      like(table.instrument, `${instrumentGroup}%`),
+      eq(table.userId, userId),
+    )
   })
   for (const trade of trades) {
     const updatedCommission = newCommission * Number(trade.quantity || 0)
-    await db.update(schema.Trade).set({ commission: updatedCommission }).where(eq(schema.Trade.id, trade.id))
+    await db.update(schema.Trade).set({ commission: updatedCommission }).where(and(
+      eq(schema.Trade.id, trade.id),
+      eq(schema.Trade.userId, userId),
+    ))
   }
 }
 
 export async function renameAccountAction(oldAccountNumber: string, newAccountNumber: string): Promise<void> {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     const existingAccount = await db.query.Account.findFirst({
       where: (table, { and, eq }) => and(eq(table.number, oldAccountNumber), eq(table.userId, userId))
     })
@@ -175,7 +207,10 @@ export async function renameAccountAction(oldAccountNumber: string, newAccountNu
     }
 
     await db.transaction(async (tx) => {
-      await tx.update(schema.Account).set({ number: newAccountNumber }).where(eq(schema.Account.id, existingAccount.id))
+      await tx.update(schema.Account).set({ number: newAccountNumber }).where(and(
+        eq(schema.Account.id, existingAccount.id),
+        eq(schema.Account.userId, userId),
+      ))
 
       await tx.update(schema.Trade).set({ accountNumber: newAccountNumber }).where(and(eq(schema.Trade.accountNumber, oldAccountNumber), eq(schema.Trade.userId, userId)))
     })
@@ -188,7 +223,7 @@ export async function renameAccountAction(oldAccountNumber: string, newAccountNu
 }
 
 export async function deleteTradesByIdsAction(tradeIds: string[]): Promise<void> {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   
   const tradesWithImages = await db.query.Trade.findMany({
     where: (table, { and, inArray, eq }) => and(inArray(table.id, tradeIds), eq(table.userId, userId)),
@@ -229,7 +264,7 @@ export async function deleteTradesByIdsAction(tradeIds: string[]): Promise<void>
 }
 
 export async function setupAccountAction(account: Account) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   const existingAccount = await db.query.Account.findFirst({
     where: (table, { and, eq }) => and(eq(table.number, account.number), eq(table.userId, userId))
   })
@@ -245,7 +280,10 @@ export async function setupAccountAction(account: Account) {
   }
 
   if (existingAccount) {
-    return (await db.update(schema.Account).set(insertData).where(eq(schema.Account.id, existingAccount.id)).returning())[0]
+    return (await db.update(schema.Account).set(insertData).where(and(
+      eq(schema.Account.id, existingAccount.id),
+      eq(schema.Account.userId, userId),
+    )).returning())[0]
   }
 
   return (await db.insert(schema.Account).values({
@@ -256,7 +294,7 @@ export async function setupAccountAction(account: Account) {
 }
 
 export async function deleteAccountAction(accountId: string) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
 
   const account = await db.query.Account.findFirst({
     where: (table, { and, eq }) => and(eq(table.id, accountId), eq(table.userId, userId)),
@@ -306,7 +344,7 @@ export async function deleteAccountAction(accountId: string) {
 }
 
 export async function deleteMasterAccountAction(masterAccountId: string) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
 
   const masterAccount = await db.query.MasterAccount.findFirst({
     where: (table, { and, eq }) => and(eq(table.id, masterAccountId), eq(table.userId, userId)),
@@ -364,7 +402,7 @@ export async function deleteMasterAccountAction(masterAccountId: string) {
 
 export async function getAccountsAction(options?: { includeArchived?: boolean }) {
   try {
-    const userId = await getUserIdSafe()
+    const userId = await getInternalUserIdSafe()
     const { includeArchived = false } = options || {}
 
     // If user is not authenticated, return empty array instead of throwing error
@@ -538,7 +576,7 @@ export async function savePayoutAction(payout: {
   notes?: string
 }) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     if (!payout.masterAccountId || !payout.phaseAccountId || payout.amount === undefined || payout.amount === null) {
       throw new Error('Missing required payout fields: masterAccountId, phaseAccountId, and amount are required')
@@ -642,7 +680,7 @@ export async function savePayoutAction(payout: {
  */
 export async function deletePayoutAction(payoutId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     if (!payoutId) {
       throw new Error('Payout ID is required')
@@ -671,7 +709,10 @@ export async function deletePayoutAction(payoutId: string) {
       throw new Error(`Cannot delete ${payout.status} payout. Only pending payouts can be deleted.`)
     }
 
-    await db.delete(schema.Payout).where(eq(schema.Payout.id, payoutId))
+    await db.delete(schema.Payout).where(and(
+      eq(schema.Payout.id, payoutId),
+      eq(schema.Payout.masterAccountId, payout.masterAccountId),
+    ))
 
     await invalidateUserCaches(userId)
 
@@ -686,7 +727,7 @@ export async function deletePayoutAction(payoutId: string) {
 
 async function renameInstrumentAction(accountNumber: string, oldInstrumentName: string, newInstrumentName: string): Promise<void> {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     await db.update(schema.Trade).set({ instrument: newInstrumentName }).where(and(eq(schema.Trade.accountNumber, accountNumber), eq(schema.Trade.instrument, oldInstrumentName), eq(schema.Trade.userId, userId)))
   } catch (error) {
     if (error instanceof Error) {
@@ -722,7 +763,7 @@ export async function invalidateUserCaches(userId: string) {
 
 async function createAccountAction(accountNumber: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     const account = (await db.insert(schema.Account).values({
       id: crypto.randomUUID(),
       number: accountNumber,
@@ -738,14 +779,17 @@ async function createAccountAction(accountNumber: string) {
 
 async function getCurrentActivePhase(accountId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     return await withCache(
       `${CacheKeys.propFirmPhase(accountId)}:active`,
       CacheTTL.propFirmPhase,
       async () => {
         const masterAccount = await db.query.MasterAccount.findFirst({
-          where: (table, { eq }) => eq(table.id, accountId),
+          where: (table, { and, eq }) => and(
+            eq(table.id, accountId),
+            eq(table.userId, userId),
+          ),
           with: {
             PhaseAccount: {
               where: (table, { eq }) => eq(table.status, 'active'),
@@ -778,15 +822,15 @@ async function getCurrentActivePhase(accountId: string) {
 
 async function getAccountPhases(accountId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     return await withCache(
       `${CacheKeys.propFirmPhase(accountId)}:all`,
       CacheTTL.propFirmPhase,
       async () => {
-        const account = await db.query.Account.findFirst({
+        const account = await db.query.MasterAccount.findFirst({
           where: (table, { and, eq }) => and(eq(table.id, accountId), eq(table.userId, userId)),
-          columns: { id: true, name: true }
+          columns: { id: true, accountName: true }
         })
 
         if (!account) {
@@ -808,10 +852,13 @@ async function getAccountPhases(accountId: string) {
 
 export async function linkTradesToCurrentPhase(accountId: string, trades: any[]) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     const masterAccount = await db.query.MasterAccount.findFirst({
-      where: (table, { eq }) => eq(table.id, accountId),
+      where: (table, { and, eq }) => and(
+        eq(table.id, accountId),
+        eq(table.userId, userId),
+      ),
       columns: { id: true, accountName: true }
     })
 
@@ -833,13 +880,10 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
         userId
       }))
 
-      // Use createMany for batch insert with skipDuplicates
-      const result = await db.insert(schema.Trade).values(tradesToCreate as any).onConflictDoNothing()
-
-      await db.insert(schema.TradeExecution).values(tradesToCreate.flatMap((trade: any) => buildSyntheticExecutionsFromTrade(trade)) as any).onConflictDoNothing()
+      const insertedRows = await insertTradesWithSyntheticExecutions(tradesToCreate)
 
       // If no trades were added, they're all duplicates
-      if (result.count === 0) {
+      if (insertedRows.length === 0) {
         return {
           success: true,
           linkedCount: 0,
@@ -856,9 +900,9 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
         userId,
         type: 'IMPORT_STATUS',
         title: 'Trades Imported',
-        message: `Successfully imported ${result.count} trades to ${masterAccount.accountName}.`,
+        message: `Successfully imported ${insertedRows.length} trades to ${masterAccount.accountName}.`,
         data: {
-          count: result.count,
+          count: insertedRows.length,
           accountName: masterAccount.accountName,
           phaseAccountId: currentPhase.id,
           invalidationKey: `import-${masterAccount.id}-${Date.now()}`
@@ -867,7 +911,7 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
 
       return {
         success: true,
-        linkedCount: result.count,
+          linkedCount: insertedRows.length,
         phaseAccountId: currentPhase.id,
         phaseNumber: currentPhase.phaseNumber,
         accountName: masterAccount.accountName
@@ -890,12 +934,10 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
         userId
       }))
 
-      const result = await db.insert(schema.Trade).values(tradesToCreate as any).onConflictDoNothing()
-
-      await db.insert(schema.TradeExecution).values(tradesToCreate.flatMap((trade: any) => buildSyntheticExecutionsFromTrade(trade)) as any).onConflictDoNothing()
+      const insertedRows = await insertTradesWithSyntheticExecutions(tradesToCreate)
 
       // If no trades were added, they're all duplicates
-      if (result.count === 0) {
+      if (insertedRows.length === 0) {
         return {
           success: true,
           linkedCount: 0,
@@ -907,7 +949,7 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
 
       return {
         success: true,
-        linkedCount: result.count,
+          linkedCount: insertedRows.length,
         accountId: regularAccount.id,
         accountName: regularAccount.name || regularAccount.number
       }
@@ -920,7 +962,7 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
 
 export async function saveAndLinkTrades(accountId: string, trades: any[]) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     const cleanedData = trades.map(trade => {
       const cleanTrade = Object.fromEntries(
@@ -938,7 +980,7 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
         quantity: cleanTrade.quantity ?? 0,
         pnl: cleanTrade.pnl || 0,
         timeInPosition: cleanTrade.timeInPosition || 0,
-        userId: cleanTrade.userId || userId,
+        userId,
         side: cleanTrade.side || '',
         commission: cleanTrade.commission || 0,
         entryId: cleanTrade.entryId || null,
@@ -962,6 +1004,10 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
         }
       }
     })
+
+    if (phaseAccount && phaseAccount.MasterAccount.userId !== userId) {
+      throw new Error(`Account not found (ID: ${accountId}). The account may have been deleted.`)
+    }
 
     let isPropFirm = false
     let phaseAccountId: string | null = null
@@ -1079,6 +1125,7 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
       return buildTradePersistenceData({
         id: cleanTrade.id || crypto.randomUUID(),
         ...cleanTrade,
+        userId,
       })
     })
 
@@ -1089,11 +1136,9 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
       const batch = allTradesToCreate.slice(start, end)
 
       // Direct createMany - faster than wrapping in transaction
-      const createResult = await db.insert(schema.Trade).values(batch as any).onConflictDoNothing()
+      const insertedRows = await insertTradesWithSyntheticExecutions(batch)
 
-      await db.insert(schema.TradeExecution).values(batch.flatMap((trade: any) => buildSyntheticExecutionsFromTrade(trade)) as any).onConflictDoNothing()
-
-      totalCreated += createResult.count
+      totalCreated += insertedRows.length
     }
 
     const result = {
@@ -1122,219 +1167,18 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
       },
     })
 
-    // AUTO-EVALUATION: Check for breaches synchronously (FAST - breach detection only)
+    // Phase evaluation is durable work owned by Inngest. The import response
+    // reports the queued state while the worker applies pass/fail transitions.
     if (result.isPropFirm && result.phaseAccountId && result.masterAccountId) {
-      try {
-        const { PhaseEvaluationEngine } = await import('@/lib/prop-firm/phase-evaluation-engine')
-
-        const evaluation = await PhaseEvaluationEngine.evaluatePhase(
-          result.masterAccountId,
-          result.phaseAccountId
-        )
-
-        // CRITICAL: Check for PASSING first (profit target achieved)
-        if (evaluation.isPassed && evaluation.canAdvance) {
-          if (!phaseAccount) {
-            throw new Error('Phase account not found')
-          }
-
-          const currentPhaseNumber = phaseAccount.phaseNumber
-          const nextPhaseNumber = currentPhaseNumber + 1
-
-          const masterAccountData = await db.query.MasterAccount.findFirst({
-            where: (table, { eq }) => eq(table.id, result.masterAccountId!),
-            with: { PhaseAccount: { orderBy: (table, { asc }) => [asc(table.phaseNumber)] } }
-          })
-
-          if (!masterAccountData) {
-            throw new Error('Master account not found')
-          }
-
-          const nextPhase = masterAccountData.PhaseAccount.find(p => p.phaseNumber === nextPhaseNumber)
-
-          if (nextPhase) {
-            // Check if next phase has a phaseId (account number)
-            // If not, this requires MANUAL transition (user must provide next phase account ID)
-            if (!nextPhase.phaseId || nextPhase.phaseId.trim() === '') {
-              const isTransitioningToFunded = isFundedPhase(masterAccountData.evaluationType, nextPhaseNumber)
-
-              const nextPhaseName = isTransitioningToFunded ? 'Funded' : `Phase ${nextPhaseNumber}`
-
-              // Set phase to pending_approval and create appropriate notification
-              await db.transaction(async (tx) => {
-                await tx.update(schema.PhaseAccount).set({ status: 'pending_approval', endDate: new Date() }).where(eq(schema.PhaseAccount.id, result.phaseAccountId!))
-                // Create different notification based on whether transitioning to funded or another eval phase
-                await tx.insert(schema.Notification).values(isTransitioningToFunded ? {
-                  // FUNDED transition: Needs approval first, then ID
-                  userId: userId,
-                  type: 'FUNDED_PENDING_APPROVAL',
-                  title: 'Congratulations! Evaluation Complete!',
-                  message: `Your ${masterAccountData.accountName} has passed all evaluation phases! Please confirm once your prop firm approves your funded account.`,
-                  data: {
-                    masterAccountId: result.masterAccountId,
-                    phaseAccountId: result.phaseAccountId,
-                    accountName: masterAccountData.accountName,
-                    propFirmName: masterAccountData.propFirmName,
-                    currentPhaseNumber: currentPhaseNumber,
-                    nextPhaseNumber: nextPhaseNumber,
-                    evaluationType: masterAccountData.evaluationType
-                  },
-                  actionRequired: true,
-                  updatedAt: new Date()
-                } : {
-                  // NON-FUNDED transition: Just needs ID
-                  userId: userId,
-                  type: 'PHASE_TRANSITION_PENDING',
-                  title: `Phase ${currentPhaseNumber} Complete!`,
-                  message: `Your ${masterAccountData.accountName} has met the profit target! Enter your ${nextPhaseName} account ID to continue.`,
-                  data: {
-                    masterAccountId: result.masterAccountId,
-                    phaseAccountId: result.phaseAccountId,
-                    accountName: masterAccountData.accountName,
-                    propFirmName: masterAccountData.propFirmName,
-                    currentPhaseNumber: currentPhaseNumber,
-                    nextPhaseNumber: nextPhaseNumber,
-                    evaluationType: masterAccountData.evaluationType
-                  },
-                  actionRequired: true,
-                  updatedAt: new Date()
-                })
-              })
-
-                // Return different status based on whether transitioning to funded or another eval phase
-                ; (result as any).evaluation = isTransitioningToFunded ? {
-                  // FUNDED: Use pending_approval - notification handles approval
-                  status: 'pending_approval',
-                  reason: 'awaiting_firm_approval',
-                  message: `Congratulations! Your evaluation is complete. Please confirm your firm's approval via notifications.`,
-                  requiresManualTransition: true,
-                  nextPhase: nextPhaseNumber,
-                  currentPnL: evaluation.progress?.currentPnL || 0,
-                  profitTargetPercent: evaluation.progress?.profitTargetPercent || 0,
-                  currentPhaseNumber: currentPhaseNumber,
-                  evaluationType: masterAccountData.evaluationType,
-                  propFirmName: masterAccountData.propFirmName
-                } : {
-                  // NON-FUNDED: Use ready_for_transition - direct ID dialog
-                  status: 'ready_for_transition',
-                  reason: 'profit_target_achieved',
-                  message: `Phase ${currentPhaseNumber} profit target achieved! Ready to advance to ${nextPhaseName}.`,
-                  requiresManualTransition: true,
-                  nextPhase: nextPhaseNumber,
-                  currentPnL: evaluation.progress?.currentPnL || 0,
-                  profitTargetPercent: evaluation.progress?.profitTargetPercent || 0,
-                  currentPhaseNumber: currentPhaseNumber,
-                  evaluationType: masterAccountData.evaluationType,
-                  propFirmName: masterAccountData.propFirmName
-                }
-            } else {
-              // Next phase has an account ID - safe to auto-advance
-              await db.transaction(async (tx) => {
-                // Mark current phase as passed
-                await tx.update(schema.PhaseAccount).set({ status: 'passed', endDate: new Date() }).where(eq(schema.PhaseAccount.id, result.phaseAccountId!))
-                // Activate next phase
-                await tx.update(schema.PhaseAccount).set({ status: 'active', startDate: new Date() }).where(eq(schema.PhaseAccount.id, nextPhase.id))
-                // Update master account current phase
-                await tx.update(schema.MasterAccount).set({ currentPhase: nextPhaseNumber }).where(eq(schema.MasterAccount.id, result.masterAccountId!))
-              })
-
-              // Determine the display name for the next phase
-              const autoNextPhaseName = isFundedPhase(masterAccountData.evaluationType, nextPhaseNumber)
-                ? 'Funded'
-                : `Phase ${nextPhaseNumber}`
-
-                ; (result as any).evaluation = {
-                  status: 'passed',
-                  reason: 'profit_target_achieved',
-                  message: `Phase ${currentPhaseNumber} passed! Advanced to ${autoNextPhaseName}`,
-                  nextPhase: nextPhaseNumber,
-                  currentPhaseNumber: currentPhaseNumber,
-                  evaluationType: masterAccountData.evaluationType,
-                  propFirmName: masterAccountData.propFirmName
-                }
-            }
-          } else {
-            // This was the final evaluation phase - waiting for firm approval
-            // Use pending_approval status until user confirms firm's decision
-            await db.transaction(async (tx) => {
-              await tx.update(schema.PhaseAccount).set({ status: 'pending_approval', endDate: new Date() }).where(eq(schema.PhaseAccount.id, result.phaseAccountId!))
-              // Create notification for user to take action
-              await tx.insert(schema.Notification).values({
-                userId: userId,
-                type: 'FUNDED_PENDING_APPROVAL',
-                title: 'Congratulations! Awaiting Firm Approval',
-                message: `Your ${masterAccountData.accountName} account has met the profit target! Please update when the firm confirms your funded status.`,
-                data: {
-                  masterAccountId: result.masterAccountId,
-                  phaseAccountId: result.phaseAccountId,
-                  accountName: masterAccountData.accountName,
-                  propFirmName: masterAccountData.propFirmName
-                },
-                actionRequired: true,
-                updatedAt: new Date()
-              })
-            })
-
-            result.evaluation = {
-              status: 'pending_approval',
-              reason: 'awaiting_firm_approval',
-              message: `Congratulations! Your account met the profit target. Waiting for firm approval...`,
-              currentPhaseNumber: currentPhaseNumber,
-              evaluationType: masterAccountData.evaluationType,
-              propFirmName: masterAccountData.propFirmName
-            }
-          }
-
-          await invalidateUserCaches(userId)
-        }
-        // Check for FAILURE (breach detected)
-        else if (evaluation.isFailed) {
-          // Fetch account size for breach record
-          const phaseAccountData = await db.query.PhaseAccount.findFirst({
-            where: (table, { eq }) => eq(table.id, result.phaseAccountId!),
-            with: { MasterAccount: { columns: { accountSize: true } } }
-          })
-
-          await db.transaction(async (tx) => {
-            await tx.update(schema.PhaseAccount).set({ status: 'failed', endDate: new Date() }).where(eq(schema.PhaseAccount.id, result.phaseAccountId!))
-            await tx.update(schema.MasterAccount).set({ status: 'failed' }).where(eq(schema.MasterAccount.id, result.masterAccountId!))
-            await tx.insert(schema.BreachRecord).values({
-              id: crypto.randomUUID(),
-              phaseAccountId: result.phaseAccountId!,
-              breachType: evaluation.drawdown.breachType || 'max_drawdown',
-              breachAmount: evaluation.drawdown.breachAmount || 0,
-              breachTime: evaluation.drawdown.breachTime || new Date(),
-              currentEquity: evaluation.drawdown.currentEquity,
-              accountSize: phaseAccountData?.MasterAccount.accountSize || 0,
-              dailyStartBalance: evaluation.drawdown.dailyStartBalance,
-              highWaterMark: evaluation.drawdown.highWaterMark,
-              notes: `Auto-detected breach during trade import. ${evaluation.drawdown.breachType?.replace('_', ' ')} exceeded by $${evaluation.drawdown.breachAmount?.toFixed(2)}`,
-              updatedAt: new Date()
-            })
-          })
-
-          await invalidateUserCaches(userId)
-
-          // Add evaluation result to response for user feedback
-          result.evaluation = {
-            status: 'failed',
-            reason: evaluation.drawdown.breachType,
-            message: `Account failed due to ${evaluation.drawdown.breachType?.replace('_', ' ')} breach`
-          }
-        }
-        // Account is still in progress
-        else {
-          const progressPercent = evaluation.progress?.profitTargetPercent?.toFixed(1) || '0.0'
-
-          result.evaluation = {
-            status: 'in_progress',
-            reason: 'profit_target_not_met',
-            message: `Phase in progress: ${progressPercent}% of profit target achieved`,
-            progressPercent: parseFloat(progressPercent)
-          }
-        }
-      } catch (evalError) {
-        // Don't fail the import if evaluation fails
+      await enqueuePhaseEvaluation({
+        source: 'server-trade-import-completed',
+        masterAccountId: result.masterAccountId,
+        phaseAccountId: result.phaseAccountId,
+      })
+      result.evaluation = {
+        status: 'queued',
+        reason: 'phase_evaluation_queued',
+        message: 'Phase evaluation queued',
       }
     }
 
@@ -1358,13 +1202,19 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
         let accountCreatedAt: Date | null = null
         if (isPropFirm && masterAccountId) {
           const ma = await db.query.MasterAccount.findFirst({
-            where: (table, { eq }) => eq(table.id, masterAccountId),
+            where: (table, { and, eq }) => and(
+              eq(table.id, masterAccountId),
+              eq(table.userId, userId),
+            ),
             columns: { createdAt: true }
           })
           accountCreatedAt = ma?.createdAt || null
         } else if (regularAccountId) {
           const ra = await db.query.Account.findFirst({
-            where: (table, { eq }) => eq(table.id, regularAccountId),
+            where: (table, { and, eq }) => and(
+              eq(table.id, regularAccountId),
+              eq(table.userId, userId),
+            ),
             columns: { createdAt: true }
           })
           accountCreatedAt = ra?.createdAt || null
@@ -1375,9 +1225,15 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
 
           if (autoAdjustAccountDate) {
             if (isPropFirm && masterAccountId) {
-              await db.update(schema.MasterAccount).set({ createdAt: earliestTradeDate }).where(eq(schema.MasterAccount.id, masterAccountId))
+              await db.update(schema.MasterAccount).set({ createdAt: earliestTradeDate }).where(and(
+                eq(schema.MasterAccount.id, masterAccountId),
+                eq(schema.MasterAccount.userId, userId),
+              ))
             } else if (regularAccountId) {
-              await db.update(schema.Account).set({ createdAt: earliestTradeDate }).where(eq(schema.Account.id, regularAccountId))
+              await db.update(schema.Account).set({ createdAt: earliestTradeDate }).where(and(
+                eq(schema.Account.id, regularAccountId),
+                eq(schema.Account.userId, userId),
+              ))
             }
 
             // Informational notification
@@ -1421,10 +1277,13 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
 
 export async function checkPhaseProgression(accountId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     const masterAccount = await db.query.MasterAccount.findFirst({
-      where: (table, { eq }) => eq(table.id, accountId),
+      where: (table, { and, eq }) => and(
+        eq(table.id, accountId),
+        eq(table.userId, userId),
+      ),
       columns: { id: true, accountName: true, accountSize: true }
     })
 
@@ -1440,7 +1299,7 @@ export async function checkPhaseProgression(accountId: string) {
       }
 
       const phaseTrades = await db.query.Trade.findMany({
-        where: (table, { eq }) => eq(table.phaseAccountId, currentPhase.id),
+        where: (table, { and, eq }) => and(eq(table.phaseAccountId, currentPhase.id), eq(table.userId, userId)),
         columns: { pnl: true, commission: true }
       })
 
@@ -1449,7 +1308,14 @@ export async function checkPhaseProgression(accountId: string) {
       const profitTargetAmount = (currentPhase.profitTargetPercent / 100) * masterAccount.accountSize
 
       if (profitTargetAmount && netProfit >= profitTargetAmount) {
-        return await progressAccountPhase(accountId, currentPhase)
+        return {
+          currentPhase,
+          netProfit,
+          profitTarget: profitTargetAmount,
+          progressPercentage: 100,
+          canProgress: true,
+          progressionQueued: true,
+        }
       }
 
       return {
@@ -1471,7 +1337,7 @@ export async function checkPhaseProgression(accountId: string) {
     }
 
     const accountTrades = await db.query.Trade.findMany({
-      where: (table, { eq }) => eq(table.accountId, accountId),
+      where: (table, { and, eq }) => and(eq(table.accountId, accountId), eq(table.userId, userId)),
       columns: { pnl: true, commission: true }
     })
 
@@ -1490,67 +1356,9 @@ export async function checkPhaseProgression(accountId: string) {
   }
 }
 
-async function progressAccountPhase(masterAccountId: string, currentPhase: any) {
-  try {
-    const userId = await getUserId()
-
-    await db.update(schema.PhaseAccount).set({ status: 'passed', endDate: new Date() }).where(eq(schema.PhaseAccount.id, currentPhase.id))
-
-    let nextPhaseNumber: number
-    let nextPhaseAccountNumber: string
-
-    switch (currentPhase.phaseNumber) {
-      case 1:
-        nextPhaseNumber = 2
-        const phase2Phase = await db.query.PhaseAccount.findFirst({
-          where: (table, { and, eq }) => and(eq(table.masterAccountId, masterAccountId), eq(table.phaseNumber, 2)),
-          columns: { phaseId: true }
-        })
-        nextPhaseAccountNumber = phase2Phase?.phaseId || 'Not Set'
-        break
-      case 2:
-        nextPhaseNumber = 3
-        const fundedPhase = await db.query.PhaseAccount.findFirst({
-          where: (table, { and, eq }) => and(eq(table.masterAccountId, masterAccountId), eq(table.phaseNumber, 3)),
-          columns: { phaseId: true }
-        })
-        nextPhaseAccountNumber = fundedPhase?.phaseId || 'Not Set'
-        break
-      default:
-        throw new Error('Cannot progress from funded phase')
-    }
-
-    if (nextPhaseAccountNumber === 'Not Set') {
-      throw new Error(`Please set the account number for phase ${nextPhaseNumber} before progressing`)
-    }
-
-    const nextPhase = await db.query.PhaseAccount.findFirst({
-      where: (table, { and, eq }) => and(eq(table.masterAccountId, masterAccountId), eq(table.phaseNumber, nextPhaseNumber), eq(table.status, 'pending'))
-    })
-
-    if (!nextPhase) {
-      throw new Error(`Next phase (${nextPhaseNumber}) not found or not in pending status`)
-    }
-
-    const updatedPhase = (await db.update(schema.PhaseAccount).set({ status: 'active', phaseId: nextPhaseAccountNumber, startDate: new Date() }).where(eq(schema.PhaseAccount.id, nextPhase.id)).returning())[0]
-
-    await db.update(schema.MasterAccount).set({ currentPhase: nextPhaseNumber }).where(eq(schema.MasterAccount.id, masterAccountId))
-
-    return {
-      success: true,
-      previousPhase: currentPhase.phaseNumber,
-      newPhase: nextPhaseNumber,
-      message: `Account progressed from phase ${currentPhase.phaseNumber} to phase ${nextPhaseNumber}`
-    }
-
-  } catch (error) {
-    throw error
-  }
-}
-
 async function getAccountHistory(accountId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     // Verify account ownership
     const account = await db.query.Account.findFirst({
@@ -1644,10 +1452,10 @@ async function getAccountHistory(accountId: string) {
 
 export async function checkAccountBreaches(accountId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     const masterAccount = await db.query.MasterAccount.findFirst({
-      where: (table, { eq }) => eq(table.id, accountId),
+      where: (table, { and, eq }) => and(eq(table.id, accountId), eq(table.userId, userId)),
       columns: { id: true, accountName: true, accountSize: true }
     })
 
@@ -1680,18 +1488,24 @@ export async function checkAccountBreaches(accountId: string) {
 
 async function failAccount(accountId: string, currentPhase: any, breachDetails: any) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     const masterAccount = await db.query.MasterAccount.findFirst({
-      where: (table, { eq }) => eq(table.id, accountId),
+      where: (table, { and, eq }) => and(eq(table.id, accountId), eq(table.userId, userId)),
       columns: { id: true, accountName: true }
     })
 
     if (masterAccount && currentPhase) {
       // Update the phase status to failed and master account status
       await db.transaction(async (tx) => {
-        await tx.update(schema.PhaseAccount).set({ status: 'failed', endDate: new Date() }).where(eq(schema.PhaseAccount.id, currentPhase.id))
-        await tx.update(schema.MasterAccount).set({ status: 'failed' }).where(eq(schema.MasterAccount.id, accountId))
+        await tx.update(schema.PhaseAccount).set({ status: 'failed', endDate: new Date() }).where(and(
+          eq(schema.PhaseAccount.id, currentPhase.id),
+          eq(schema.PhaseAccount.masterAccountId, accountId),
+        ))
+        await tx.update(schema.MasterAccount).set({ status: 'failed' }).where(and(
+          eq(schema.MasterAccount.id, accountId),
+          eq(schema.MasterAccount.userId, userId),
+        ))
       })
 
       return {
@@ -1713,7 +1527,7 @@ async function failAccount(accountId: string, currentPhase: any, breachDetails: 
 
 async function getFailedAccountsHistory() {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
 
     const failedAccounts = await db.query.Account.findMany({
       where: (table, { eq }) => eq(table.userId, userId)

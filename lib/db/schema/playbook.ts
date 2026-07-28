@@ -5,7 +5,7 @@ import { Trade, TradeExecution, TradeTag } from './trades';
 
 export const TradingModel = pgTable('TradingModel', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   rules: jsonb('rules').default('[]'),
   setups: jsonb('setups').default('[]'),
@@ -19,7 +19,7 @@ export type NewTradingModel = typeof TradingModel.$inferInsert;
 
 export const ActivityLog = pgTable('ActivityLog', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   action: text('action').notNull(),
   entity: text('entity').notNull(),
   entityId: text('entityId'),
@@ -33,7 +33,7 @@ export type NewActivityLog = typeof ActivityLog.$inferInsert;
 
 export const UserGoal = pgTable('UserGoal', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   description: text('description'),
   metric: text('metric').notNull(),
@@ -72,4 +72,3 @@ export const UserGoalRelations = relations(UserGoal, ({ one, many }) => ({
     references: [User.id]
   }),
 }));
-

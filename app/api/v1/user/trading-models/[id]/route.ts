@@ -22,7 +22,7 @@ const tradingModelSchema = z.object({
 })
 
 type TradingModelRouteContext = {
-  params: { id?: string } | Promise<{ id?: string }>
+  params: Promise<{ id?: string }>
 }
 
 async function getTradingModelId(context: TradingModelRouteContext) {
@@ -56,15 +56,11 @@ export async function PATCH(
 
     // Verify model belongs to user
     const existing = await db.query.TradingModel.findFirst({
-      where: (table, { eq }) => eq(table.id, id),
+      where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, userId)),
     })
 
     if (!existing) {
       return NextResponse.json({ error: 'Model not found' }, { status: 404 })
-    }
-
-    if (existing.userId !== userId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
     // If name is being changed, check for duplicates
@@ -86,7 +82,10 @@ export async function PATCH(
       ...(validated.rules !== undefined && { rules: validated.rules }),
       ...(validated.setups !== undefined && { setups: validated.setups }),
       ...(validated.notes !== undefined && { notes: validated.notes }),
-    }).where(eq(schema.TradingModel.id, id)).returning())[0]
+    }).where(and(
+      eq(schema.TradingModel.id, id),
+      eq(schema.TradingModel.userId, userId),
+    )).returning())[0]
 
     return NextResponse.json({ success: true, model })
   } catch (error) {
@@ -126,7 +125,7 @@ export async function DELETE(
 
     // Verify model belongs to user
     const existing = await db.query.TradingModel.findFirst({
-      where: (table, { eq }) => eq(table.id, id),
+      where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, userId)),
       with: {
         Trade: true,
       },
@@ -136,14 +135,13 @@ export async function DELETE(
       return NextResponse.json({ error: 'Model not found' }, { status: 404 })
     }
 
-    if (existing.userId !== userId) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const tradesCount = existing.Trade?.length ?? 0
 
     // Delete the model (trades will have modelId set to null due to onDelete: SetNull)
-    await db.delete(schema.TradingModel).where(eq(schema.TradingModel.id, id))
+    await db.delete(schema.TradingModel).where(and(
+      eq(schema.TradingModel.id, id),
+      eq(schema.TradingModel.userId, userId),
+    ))
 
     return NextResponse.json({
       success: true,

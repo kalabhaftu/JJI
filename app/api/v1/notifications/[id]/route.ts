@@ -29,7 +29,10 @@ export async function PATCH(
     const updated = (await db.update(schema.Notification).set({
       isRead: body.isRead ?? notification.isRead,
       actionRequired: body.actionRequired ?? notification.actionRequired,
-    }).where(eq(schema.Notification.id, id)).returning())[0]
+    }).where(and(
+      eq(schema.Notification.id, id),
+      eq(schema.Notification.userId, internalUserId),
+    )).returning())[0]
 
     return NextResponse.json({ success: true, data: updated })
   } catch (error: any) {
@@ -60,7 +63,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
     }
 
-    await db.delete(schema.Notification).where(eq(schema.Notification.id, id))
+    await db.delete(schema.Notification).where(and(
+      eq(schema.Notification.id, id),
+      eq(schema.Notification.userId, internalUserId),
+    ))
 
     return NextResponse.json({ success: true, message: 'Notification deleted' })
   } catch (error: any) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { validateCronRequest } from '@/lib/cron-auth'
 import { logger } from '@/lib/logger'
-import { evaluateAllActivePhases } from '@/lib/services/phase-service'
+import { inngest } from '@/lib/inngest/client'
 
 /**
  * GET /api/cron/evaluate-phases
@@ -13,10 +13,13 @@ export async function GET(request: NextRequest) {
   if (authError) return authError
 
   try {
-    const result = await evaluateAllActivePhases()
+    await inngest.send({
+      name: 'jji/phase.evaluate',
+      data: { source: 'manual-cron', requestedAt: new Date().toISOString() },
+    })
     return NextResponse.json({
       success: true,
-      ...result,
+      queued: true,
       timestamp: new Date().toISOString()
     })
   } catch (error) {

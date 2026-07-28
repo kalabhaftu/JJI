@@ -6,7 +6,7 @@ import { AdminFeatureFlag, AdminSharingPolicy, User, UserSettings, ImportJob, No
 
 export const DailyNote = pgTable('DailyNote', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   date: timestamp('date', { withTimezone: true, mode: 'date' }).notNull(),
   note: text('note').notNull(),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
@@ -20,7 +20,7 @@ export type NewDailyNote = typeof DailyNote.$inferInsert;
 
 export const JournalTemplate = pgTable('JournalTemplate', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   content: jsonb('content').notNull(),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
@@ -32,7 +32,7 @@ export type NewJournalTemplate = typeof JournalTemplate.$inferInsert;
 
 export const WeeklyReview = pgTable('WeeklyReview', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   startDate: timestamp('startDate', { withTimezone: true, mode: 'date' }).notNull(),
   endDate: timestamp('endDate', { withTimezone: true, mode: 'date' }).notNull(),
   calendarImage: text('calendarImage'),
@@ -71,4 +71,3 @@ export const WeeklyReviewRelations = relations(WeeklyReview, ({ one, many }) => 
     references: [User.id]
   }),
 }));
-

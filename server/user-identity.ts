@@ -26,17 +26,7 @@ const resolveInternalUserIdFromAuthCached = cache(
       columns: { id: true }
     })
 
-    if (byAuthId?.id) {
-      return byAuthId.id
-    }
-
-    // Backward-compatibility fallback for legacy datasets where id may equal auth id.
-    const byId = await db.query.User.findFirst({
-      where: (table, { eq }) => eq(table.id, authUserId),
-      columns: { id: true }
-    })
-
-    return byId?.id ?? null
+    return byAuthId?.id ?? null
   }
 )
 
@@ -79,4 +69,14 @@ export async function getResolvedUserIdentitySafe(): Promise<ResolvedUserIdentit
 
     throw error
   }
+}
+
+/** Canonical application owner for server-side data access. */
+export async function getInternalUserId(): Promise<string> {
+  return (await getResolvedUserIdentity()).internalUserId
+}
+
+/** Nullable canonical application owner for server actions that fail soft. */
+export async function getInternalUserIdSafe(): Promise<string | null> {
+  return (await getResolvedUserIdentitySafe())?.internalUserId ?? null
 }

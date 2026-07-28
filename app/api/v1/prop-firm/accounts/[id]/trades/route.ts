@@ -11,6 +11,7 @@ import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData } from '@/
 import { classifyOutcome } from '@/lib/metrics/outcome'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
+import { enqueuePhaseEvaluation } from '@/server/phase-evaluation-events'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -125,46 +126,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return createdTrade
     })
 
-    // CRITICAL: Evaluate phase after trade is added and WAIT for result
-    // This ensures client gets updated phase status immediately
-    let evaluationResult = null
-    try {
-      const { PhaseEvaluationEngine } = await import('@/lib/prop-firm/phase-evaluation-engine')
-      
-      // Await evaluation to get result before sending response
-      evaluationResult = await PhaseEvaluationEngine.evaluatePhase(masterAccountId, currentPhase.id)
-      
-      if (evaluationResult.isFailed) {
-        await db.transaction(async (tx) => {
-          await tx.update(schema.PhaseAccount).set({ status: 'failed', endDate: new Date() }).where(eq(schema.PhaseAccount.id, currentPhase.id))
-          await tx.update(schema.MasterAccount).set({ status: 'failed' }).where(eq(schema.MasterAccount.id, masterAccountId))
-        })
-        
-        // Invalidate cache
-        const { revalidateTag } = await import('next/cache')
-        revalidateTag(`accounts-${internalUserId}`)
-      }
-    } catch (evalError) {
-      // Don't fail the trade creation if evaluation fails
-    }
+    await enqueuePhaseEvaluation({
+      source: 'prop-firm-trade-created',
+      masterAccountId,
+      phaseAccountId: currentPhase.id,
+    })
 
     return NextResponse.json({
       success: true,
       data: trade,
-      evaluation: evaluationResult ? {
-        passed: !evaluationResult.isFailed,
-        status: evaluationResult.isFailed ? 'failed' : 'active',
-        drawdown: {
-          isBreached: evaluationResult.drawdown.isBreached,
-          breachType: evaluationResult.drawdown.breachType,
-          dailyDrawdownPercent: evaluationResult.drawdown.dailyDrawdownPercent,
-          maxDrawdownPercent: evaluationResult.drawdown.maxDrawdownPercent
-        },
-        progress: {
-          profitTargetPercent: evaluationResult.progress.profitTargetPercent,
-          canPassPhase: evaluationResult.progress.canPassPhase
-        }
-      } : null,
+      evaluation: null,
+      evaluationQueued: true,
       message: 'Trade added successfully'
     })
 

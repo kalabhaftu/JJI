@@ -1,11 +1,13 @@
 import JSZip from 'jszip'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { createClient } from '@/server/auth'
+import { getSupabaseAdminClient } from '@/server/supabase-admin'
+import { downloadImportObject, uploadImportObject } from '@/server/import-object-store'
 import { buildUserSettingsUpdateData, extractUserSettingsWriteData, pickSettingsPatch } from '@/lib/user-settings'
 import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData } from '@/lib/trade-core'
 import { eq, and, or, inArray, desc, asc } from 'drizzle-orm'
 import { validateImportArchive } from '@/lib/security/import-archive'
+import { claimImportJob, updateClaimedImportJob } from '@/server/import-job-runtime'
 
 const TRADE_CHUNK_SIZE = 25
 const BACKTEST_CHUNK_SIZE = 25
@@ -50,6 +52,10 @@ function toBuffer(data: unknown): Buffer {
   throw new Error('Invalid import file data')
 }
 
+async function loadImportPayload(fileData: unknown, fileObjectPath: string | null) {
+  return fileObjectPath ? downloadImportObject(fileObjectPath) : toBuffer(fileData)
+}
+
 function findImageFile(zipFiles: { [key: string]: JSZip.JSZipObject }, folder: string, id: string, suffix: string) {
   const extensions = ['png', 'jpg', 'jpeg', 'webp', 'gif']
   for (const ext of extensions) {
@@ -68,7 +74,7 @@ function computeProcessingProgress(totalItems: number, processedItems: number): 
 async function uploadImage(
   zip: JSZip,
   internalUserId: string,
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof getSupabaseAdminClient>,
   zipFolder: string,
   originalId: string,
   suffix: string,
@@ -90,19 +96,13 @@ async function uploadImage(
 
   if (error || !uploadData) return null
 
-  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-    .from('trade-images')
-    .createSignedUrl(path, 60 * 60 * 24 * 365 * 10) // 10 years
-
-  if (signedUrlError || !signedUrlData) return null
-
-  return signedUrlData.signedUrl
+  return `storage://trade-images/${path}`
 }
 
 async function uploadTradeImages(
   zip: JSZip,
   internalUserId: string,
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof getSupabaseAdminClient>,
   trade: any,
   newId: string,
 ) {
@@ -134,7 +134,7 @@ async function uploadTradeImages(
 async function uploadBacktestImages(
   zip: JSZip,
   internalUserId: string,
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof getSupabaseAdminClient>,
   backtestTrade: any,
   newId: string,
 ) {
@@ -578,6 +578,8 @@ async function runPreparation(data: any, internalUserId: string) {
           highWaterMark: breachRecord.highWaterMark,
           notes: breachRecord.notes,
           updatedAt: new Date(),
+        }).onConflictDoNothing({
+          target: [schema.BreachRecord.phaseAccountId, schema.BreachRecord.breachType],
         })
       }
     }
@@ -648,8 +650,8 @@ async function runPreparation(data: any, internalUserId: string) {
   }
 }
 
-async function updateJob(jobId: string, data: Record<string, any>) {
-  return (await db.update(schema.ImportJob).set(data).where(eq(schema.ImportJob.id, jobId)).returning())[0]
+async function updateJob(jobId: string, internalUserId: string, workerToken: string, data: Record<string, any>) {
+  return updateClaimedImportJob({ jobId, internalUserId, workerToken, data })
 }
 
 export function serializeImportJob(job: any) {
@@ -706,14 +708,24 @@ export async function createImportJob(params: {
   fileSize: number
   fileData: ArrayBuffer
 }) {
+  const jobId = crypto.randomUUID()
+  const fileObjectPath = await uploadImportObject({
+    internalUserId: params.internalUserId,
+    jobId,
+    data: Buffer.from(params.fileData),
+    contentType: 'application/zip',
+  })
+
   const job = (await db.insert(schema.ImportJob).values({
+    id: jobId,
     userId: params.internalUserId,
     status: 'queued',
     stage: 'queued',
     progress: 0,
     fileName: params.fileName,
     fileSize: params.fileSize,
-    fileData: Buffer.from(params.fileData),
+    fileData: null,
+    fileObjectPath,
     totalItems: 0,
     processedItems: 0,
     importedCount: 0,
@@ -751,12 +763,21 @@ export async function cancelImportJob(jobId: string, internalUserId: string) {
       }
     : {
         cancelRequested: true,
-      }).where(eq(schema.ImportJob.id, current.id)).returning())[0]
+      }).where(and(
+        eq(schema.ImportJob.id, current.id),
+        eq(schema.ImportJob.userId, internalUserId),
+      )).returning())[0]
 
   return { job: serializeImportJob(updated), status: 200 as const }
 }
 
-export async function processImportJobChunk(jobId: string, internalUserId: string) {
+export async function processImportJobChunk(jobId: string, internalUserId: string, workerToken = crypto.randomUUID(), eventId?: string, skipClaim = false) {
+  const claimed = skipClaim || await claimImportJob({
+    jobId,
+    internalUserId,
+    workerToken,
+    ...(eventId ? { eventId } : {}),
+  })
   const job = await db.query.ImportJob.findFirst({
     where: (table, { and, eq }) => and(eq(table.id, jobId), eq(table.userId, internalUserId)),
     columns: {
@@ -771,6 +792,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
       skippedCount: true,
       fileName: true,
       fileData: true,
+      fileObjectPath: true,
       state: true,
       cancelRequested: true,
       startedAt: true,
@@ -786,12 +808,16 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
     return { error: 'Import job not found', status: 404 as const }
   }
 
+  if (!claimed && job.status !== 'completed' && job.status !== 'failed' && job.status !== 'cancelled') {
+    return { job: serializeImportJob(job), done: false, status: 200 as const }
+  }
+
   if (job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled') {
     return { job: serializeImportJob(job), done: true, status: 200 as const }
   }
 
   if (job.cancelRequested) {
-    const cancelled = await updateJob(job.id, {
+    const cancelled = await updateJob(job.id, internalUserId, workerToken, {
       status: 'cancelled',
       stage: 'cancelled',
       completedAt: new Date(),
@@ -801,12 +827,12 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
   }
 
   try {
-    const zip = await JSZip.loadAsync(toBuffer(job.fileData))
+    const zip = await JSZip.loadAsync(await loadImportPayload(job.fileData, job.fileObjectPath))
     validateImportArchive(zip)
     const manifestFile = zip.file('data.json')
 
     if (!manifestFile) {
-      const failed = await updateJob(job.id, {
+      const failed = await updateJob(job.id, internalUserId, workerToken, {
         status: 'failed',
         stage: 'failed',
         error: 'Invalid export file (missing data.json)',
@@ -825,7 +851,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
     let state = parseJobState(job.state)
 
     if (job.status === 'queued') {
-      await updateJob(job.id, {
+      await updateJob(job.id, internalUserId, workerToken, {
         status: 'processing',
         stage: 'preparing',
         progress: 1,
@@ -839,7 +865,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
 
       state.phase = 'trades'
 
-      await updateJob(job.id, {
+      await updateJob(job.id, internalUserId, workerToken, {
         status: 'processing',
         stage: 'trades',
         progress: totalItems > 0 ? 10 : 95,
@@ -852,7 +878,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
     }
 
     const { accountMap, modelNameMap, phaseMap } = await resolveLookupMaps(data, internalUserId)
-    const supabase = await createClient()
+    const supabase = getSupabaseAdminClient()
 
     if (state.phase === 'trades') {
       const trades = data.trades || []
@@ -958,7 +984,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
     const processedItems = state.tradeIndex + state.backtestIndex
 
     if (state.phase === 'completed') {
-      const completed = await updateJob(job.id, {
+      const completed = await updateJob(job.id, internalUserId, workerToken, {
         status: 'completed',
         stage: 'completed',
         progress: 100,
@@ -972,7 +998,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
       return { job: serializeImportJob(completed), done: true, status: 200 as const }
     }
 
-    const processing = await updateJob(job.id, {
+    const processing = await updateJob(job.id, internalUserId, workerToken, {
       status: 'processing',
       stage: state.phase,
       progress: computeProcessingProgress(totalItems, processedItems),
@@ -990,7 +1016,7 @@ export async function processImportJobChunk(jobId: string, internalUserId: strin
     }
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Import processing failed'
-    const failed = await updateJob(job.id, {
+    const failed = await updateJob(job.id, internalUserId, workerToken, {
       status: 'failed',
       stage: 'failed',
       error: message.slice(0, 2000),

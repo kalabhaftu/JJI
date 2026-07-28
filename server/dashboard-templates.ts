@@ -4,7 +4,7 @@ import logger from '@/lib/logger';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { revalidatePath } from 'next/cache'
-import { getUserId } from './auth-utils'
+import { getInternalUserId } from './user-identity'
 import { safeDbOperation } from './auth'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import { eq, and } from 'drizzle-orm'
@@ -38,7 +38,7 @@ async function getDefaultLayout(): Promise<WidgetLayout[]> {
 }
 
 export async function getUserTemplates(): Promise<DashboardTemplate[]> {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
 
   const templates = await safeDbOperation(
     () => db.query.DashboardTemplate.findMany({
@@ -60,7 +60,7 @@ export async function getUserTemplates(): Promise<DashboardTemplate[]> {
 
 export async function getActiveTemplate(): Promise<DashboardTemplate | null> {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) return null
 
     const template = await safeDbOperation(
@@ -138,7 +138,7 @@ async function initializeDefaultTemplate(userId: string): Promise<DashboardTempl
 
 export async function createTemplate(name: string): Promise<DashboardTemplate> {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) throw new Error('Authentication required')
 
     const existing = await safeDbOperation(
@@ -191,7 +191,7 @@ export async function createTemplate(name: string): Promise<DashboardTemplate> {
 
 export async function deleteTemplate(id: string): Promise<void> {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) throw new Error('Authentication required')
 
     const template = await safeDbOperation(() =>
@@ -216,7 +216,10 @@ export async function deleteTemplate(id: string): Promise<void> {
     }
 
     await safeDbOperation(() =>
-      db.delete(schema.DashboardTemplate).where(eq(schema.DashboardTemplate.id, id))
+      db.delete(schema.DashboardTemplate).where(and(
+        eq(schema.DashboardTemplate.id, id),
+        eq(schema.DashboardTemplate.userId, userId),
+      ))
     )
 
     revalidatePath('/dashboard')
@@ -228,17 +231,39 @@ export async function deleteTemplate(id: string): Promise<void> {
 
 export async function switchTemplate(id: string): Promise<DashboardTemplate> {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) throw new Error('Authentication required')
 
-    await safeDbOperation(() =>
-      db.update(schema.DashboardTemplate).set({ isActive: false }).where(and(eq(schema.DashboardTemplate.userId, userId), eq(schema.DashboardTemplate.isActive, true)))
-    )
+    const template = await safeDbOperation(() => db.transaction(async (tx) => {
+      // Validate ownership before changing the active template. The previous
+      // order could deactivate a user's current template before rejecting an
+      // ID owned by another user.
+      const target = await tx.query.DashboardTemplate.findFirst({
+        where: (table, { and, eq }) => and(
+          eq(table.id, id),
+          eq(table.userId, userId),
+        ),
+      })
 
-    const template = await safeDbOperation(async () => {
-      const res = await db.update(schema.DashboardTemplate).set({ isActive: true }).where(eq(schema.DashboardTemplate.id, id)).returning()
-      return res[0]
-    })
+      if (!target) return null
+
+      await tx.update(schema.DashboardTemplate)
+        .set({ isActive: false })
+        .where(and(
+          eq(schema.DashboardTemplate.userId, userId),
+          eq(schema.DashboardTemplate.isActive, true),
+        ))
+
+      const res = await tx.update(schema.DashboardTemplate)
+        .set({ isActive: true })
+        .where(and(
+          eq(schema.DashboardTemplate.id, id),
+          eq(schema.DashboardTemplate.userId, userId),
+        ))
+        .returning()
+
+      return res[0] ?? null
+    }))
 
     if (!template) {
       throw new Error('Template not found')
@@ -258,7 +283,7 @@ export async function switchTemplate(id: string): Promise<DashboardTemplate> {
 
 export async function updateTemplateLayout(id: string, layout: WidgetLayout[]): Promise<DashboardTemplate> {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) throw new Error('Authentication required')
 
     const template = await safeDbOperation(() =>
@@ -279,7 +304,10 @@ export async function updateTemplateLayout(id: string, layout: WidgetLayout[]): 
       const res = await db.update(schema.DashboardTemplate).set({
         layout: layout as any,
         updatedAt: new Date()
-      }).where(eq(schema.DashboardTemplate.id, id)).returning()
+      }).where(and(
+        eq(schema.DashboardTemplate.id, id),
+        eq(schema.DashboardTemplate.userId, userId),
+      )).returning()
       return res[0]
     })
 

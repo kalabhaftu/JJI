@@ -103,13 +103,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       // Mark the current phase as passed (not archived)
       await tx.update(schema.PhaseAccount)
         .set({ status: 'passed', endDate: new Date() })
-        .where(eq(schema.PhaseAccount.id, currentPhase.id))
+        .where(and(
+          eq(schema.PhaseAccount.id, currentPhase.id),
+          eq(schema.PhaseAccount.masterAccountId, masterAccountId),
+        ))
         .returning()
 
       // Activate the next phase and set its phaseId
       const updatedNextPhase = (await tx.update(schema.PhaseAccount)
         .set({ status: 'active', phaseId: nextPhaseId, startDate: new Date() })
-        .where(eq(schema.PhaseAccount.id, nextPhase.id))
+        .where(and(
+          eq(schema.PhaseAccount.id, nextPhase.id),
+          eq(schema.PhaseAccount.masterAccountId, masterAccountId),
+        ))
         .returning())[0]
 
       // Determine if the next phase is the funded phase based on evaluation type
@@ -122,7 +128,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           status: isTransitioningToFunded ? 'funded' : 'active',
           updatedAt: new Date()
         })
-        .where(eq(schema.MasterAccount.id, masterAccountId))
+        .where(and(
+          eq(schema.MasterAccount.id, masterAccountId),
+          eq(schema.MasterAccount.userId, internalUserId),
+        ))
         .returning())[0]
 
       return {

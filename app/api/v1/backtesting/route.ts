@@ -174,7 +174,10 @@ export async function PUT(request: NextRequest) {
       updateData.imageSix = images[5] || null
     }
 
-    const backtest = (await db.update(schema.BacktestTrade).set(updateData).where(eq(schema.BacktestTrade.id, id)).returning())[0]
+    const backtest = (await db.update(schema.BacktestTrade).set(updateData).where(and(
+      eq(schema.BacktestTrade.id, id),
+      eq(schema.BacktestTrade.userId, internalUserId),
+    )).returning())[0]
 
     return NextResponse.json({ backtest }, { status: 200 })
   } catch (error) {
@@ -246,7 +249,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 4. Delete from database
-    await db.delete(schema.BacktestTrade).where(eq(schema.BacktestTrade.id, id))
+    await db.delete(schema.BacktestTrade).where(and(
+      eq(schema.BacktestTrade.id, id),
+      eq(schema.BacktestTrade.userId, internalUserId),
+    ))
 
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {

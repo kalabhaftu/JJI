@@ -15,15 +15,11 @@ import {
 
 interface UseDataProviderTradeMutationsParams {
   userId: string | undefined
-  trades: PrismaTrade[]
-  setTrades: (trades: PrismaTrade[]) => void
   queryClient: QueryClient
 }
 
 export function useDataProviderTradeMutations({
   userId,
-  trades,
-  setTrades,
   queryClient,
 }: UseDataProviderTradeMutationsParams) {
   const updateTrades = useCallback(async (tradeIds: string[], update: Partial<PrismaTrade>) => {
@@ -48,9 +44,6 @@ export function useDataProviderTradeMutations({
 
       return nextCalendarData
     }
-
-    const updatedTrades = trades.map((trade) => applyTradePatch(trade))
-    setTrades(updatedTrades)
 
     queryClient.setQueriesData({ queryKey: ['v1', 'trades'] }, (oldData: any) => {
       if (!oldData || !Array.isArray(oldData.trades)) return oldData
@@ -78,31 +71,21 @@ export function useDataProviderTradeMutations({
       await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
       throw error
     }
-  }, [userId, trades, setTrades, queryClient])
+  }, [userId, queryClient])
 
   const groupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId) return
 
-    setTrades(trades.map((trade) =>
-      tradeIds.includes(trade.id)
-        ? { ...trade, groupId: tradeIds[0] ?? null }
-        : trade
-    ))
-
     await groupTradesAction(tradeIds)
-  }, [userId, trades, setTrades])
+    await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
+  }, [userId, queryClient])
 
   const ungroupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId) return
 
-    setTrades(trades.map((trade) =>
-      tradeIds.includes(trade.id)
-        ? { ...trade, groupId: null }
-        : trade
-    ))
-
     await ungroupTradesAction(tradeIds)
-  }, [userId, trades, setTrades])
+    await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
+  }, [userId, queryClient])
 
   const appendTagsToTrades = useCallback(async (tradeIds: string[], tagIds: string[]) => {
     if (!userId) return
@@ -131,10 +114,6 @@ export function useDataProviderTradeMutations({
       return nextCalendarData
     }
 
-    // Optimistic update
-    const updatedTrades = trades.map((trade) => applyTagAppend(trade))
-    setTrades(updatedTrades)
-
     queryClient.setQueriesData({ queryKey: ['v1', 'trades'] }, (oldData: any) => {
       if (!oldData || !Array.isArray(oldData.trades)) return oldData
 
@@ -158,7 +137,7 @@ export function useDataProviderTradeMutations({
       await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
       throw error
     }
-  }, [userId, trades, setTrades, queryClient])
+  }, [userId, queryClient])
 
   return {
     updateTrades,

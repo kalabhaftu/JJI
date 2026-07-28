@@ -12,20 +12,22 @@ export const Account = pgTable('Account', {
   name: text('name'),
   broker: text('broker'),
   startingBalance: doublePrecision('startingBalance').default(0),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
   isArchived: boolean('isArchived').default(false),
   isConfigured: boolean('isConfigured').default(false),
-});
+}, (table) => ({
+  userNumberIdx: index('account_user_number_idx').on(table.userId, table.number),
+}));
 
 export type AccountType = typeof Account.$inferSelect;
 export type NewAccount = typeof Account.$inferInsert;
 
 export const LiveAccountTransaction = pgTable('LiveAccountTransaction', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  accountId: text('accountId').notNull(),
-  userId: text('userId').notNull(),
+  accountId: text('accountId').notNull().references(() => Account.id, { onDelete: 'cascade' }),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   type: TransactionTypeEnum('type').notNull(),
   amount: doublePrecision('amount').notNull(),
   description: text('description'),
@@ -37,7 +39,7 @@ export type NewLiveAccountTransaction = typeof LiveAccountTransaction.$inferInse
 
 export const MasterAccount = pgTable('MasterAccount', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   accountName: text('accountName').notNull(),
   propFirmName: text('propFirmName').notNull(),
   accountSize: doublePrecision('accountSize').notNull(),
@@ -47,15 +49,17 @@ export const MasterAccount = pgTable('MasterAccount', {
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow(),
   status: MasterAccountStatusEnum('status').default('active'),
   isArchived: boolean('isArchived').default(false),
-});
+}, (table) => ({
+  userStatusIdx: index('master_account_user_status_idx').on(table.userId, table.status),
+}));
 
 export type MasterAccountType = typeof MasterAccount.$inferSelect;
 export type NewMasterAccount = typeof MasterAccount.$inferInsert;
 
 export const Payout = pgTable('Payout', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  masterAccountId: text('masterAccountId').notNull(),
-  phaseAccountId: text('phaseAccountId').notNull(),
+  masterAccountId: text('masterAccountId').notNull().references(() => MasterAccount.id, { onDelete: 'cascade' }),
+  phaseAccountId: text('phaseAccountId').notNull().references(() => PhaseAccount.id, { onDelete: 'cascade' }),
   amount: doublePrecision('amount').notNull(),
   status: PayoutStatusEnum('status').default('pending'),
   requestDate: timestamp('requestDate', { withTimezone: true, mode: 'date' }).defaultNow(),
@@ -72,7 +76,7 @@ export type NewPayout = typeof Payout.$inferInsert;
 
 export const PhaseAccount = pgTable('PhaseAccount', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  masterAccountId: text('masterAccountId').notNull(),
+  masterAccountId: text('masterAccountId').notNull().references(() => MasterAccount.id, { onDelete: 'cascade' }),
   phaseNumber: integer('phaseNumber').notNull(),
   phaseId: text('phaseId'),
   accountSize: doublePrecision('accountSize'),
@@ -151,4 +155,3 @@ export const PhaseAccountRelations = relations(PhaseAccount, ({ one, many }) => 
   }),
   Trade: many(Trade),
 }));
-

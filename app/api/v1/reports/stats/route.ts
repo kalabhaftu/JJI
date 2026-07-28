@@ -13,6 +13,19 @@ import { calculateReportStatistics, type ReportStatsFilters } from '@/lib/statis
 import { CacheHeaders } from '@/lib/api-cache-headers'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
+import { z } from 'zod'
+
+const reportStatsRequestSchema = z.object({
+  accountId: z.string().trim().max(128).optional(),
+  accountNumbers: z.array(z.string().trim().min(1).max(128)).max(100).optional(),
+  dateFrom: z.string().trim().max(64).optional(),
+  dateTo: z.string().trim().max(64).optional(),
+  symbol: z.string().trim().max(64).optional(),
+  session: z.string().trim().max(32).optional(),
+  outcome: z.string().trim().max(32).optional(),
+  strategy: z.string().trim().max(128).optional(),
+  ruleBroken: z.enum(['all', 'broken', 'not_broken']).optional(),
+})
 
 export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
@@ -22,18 +35,24 @@ export async function POST(request: NextRequest) {
   try {
     const { internalUserId } = await getResolvedUserIdentity()
 
-    const body = await request.json()
+    const body = await request.json().catch(() => null)
+    const parsed = reportStatsRequestSchema.safeParse(body)
+    if (!parsed.success) {
+      return NextResponse.json({ error: 'Invalid report filters', details: parsed.error.flatten() }, { status: 400 })
+    }
+
+    const validated = parsed.data
     const filters: ReportStatsFilters = {
       userId: internalUserId,
-      accountId: body.accountId || undefined,
-      accountNumbers: body.accountNumbers || undefined,
-      dateFrom: body.dateFrom || undefined,
-      dateTo: body.dateTo || undefined,
-      symbol: body.symbol || undefined,
-      session: body.session || undefined,
-      outcome: body.outcome || undefined,
-      strategy: body.strategy || undefined,
-      ruleBroken: body.ruleBroken || undefined,
+      ...(validated.accountId ? { accountId: validated.accountId } : {}),
+      ...(validated.accountNumbers ? { accountNumbers: validated.accountNumbers } : {}),
+      ...(validated.dateFrom ? { dateFrom: validated.dateFrom } : {}),
+      ...(validated.dateTo ? { dateTo: validated.dateTo } : {}),
+      ...(validated.symbol ? { symbol: validated.symbol } : {}),
+      ...(validated.session ? { session: validated.session } : {}),
+      ...(validated.outcome ? { outcome: validated.outcome } : {}),
+      ...(validated.strategy ? { strategy: validated.strategy } : {}),
+      ...(validated.ruleBroken ? { ruleBroken: validated.ruleBroken } : {}),
     }
 
     const result = await calculateReportStatistics(filters)

@@ -26,6 +26,8 @@ export interface TradeFilters {
   pageOffset?: number
   includeStats?: boolean
   includeCalendar?: boolean
+  includeWidgets?: boolean
+  metricsOnly?: boolean
   timezone?: string
   liveOnly?: boolean
 }
@@ -37,6 +39,9 @@ export interface FilteredTradesResponse {
   statistics: any | null
   calendarData: any | null
   widgets: Record<string, any> | null
+  meta?:
+    | { directPagination: true; truncated: false }
+    | { directPagination: false; truncated: boolean }
 }
 
 function buildQueryString(filters: TradeFilters): string {
@@ -56,6 +61,8 @@ function buildQueryString(filters: TradeFilters): string {
   if (filters.pageOffset !== undefined && filters.pageOffset !== null) params.set('pageOffset', String(filters.pageOffset))
   if (filters.includeStats === false) params.set('includeStats', 'false')
   if (filters.includeCalendar === false) params.set('includeCalendar', 'false')
+  if (filters.includeWidgets === false) params.set('includeWidgets', 'false')
+  if (filters.metricsOnly) params.set('metricsOnly', 'true')
   if (filters.timezone) params.set('timezone', filters.timezone)
   if (filters.liveOnly) params.set('liveOnly', 'true')
   

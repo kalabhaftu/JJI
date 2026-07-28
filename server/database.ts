@@ -3,7 +3,8 @@ import type { TradeType } from '@/lib/db/schema/trades';
 
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { Widget, Layouts } from '@/app/dashboard/types/dashboard'
-import { createClient, getUserId, getUserIdSafe } from './auth'
+import { createClient } from './auth'
+import { getInternalUserIdSafe } from './user-identity'
 import { startOfDay } from 'date-fns'
 
 import { db } from '@/lib/db/client'
@@ -65,6 +66,15 @@ export async function saveTradesAction(data: Trade[]): Promise<TradeResponse> {
   }
 
   try {
+    const internalUserId = await getInternalUserIdSafe()
+    if (!internalUserId) {
+      return {
+        error: 'DATABASE_ERROR',
+        numberOfTradesAdded: 0,
+        details: 'User is not authenticated',
+      }
+    }
+
     const cleanedData = data.map(trade => {
       const cleanTrade = Object.fromEntries(
         Object.entries(trade).filter(([_, value]) => value !== undefined)
@@ -82,7 +92,7 @@ export async function saveTradesAction(data: Trade[]): Promise<TradeResponse> {
         quantity: cleanTrade.quantity ?? 0,
         pnl: cleanTrade.pnl || 0,
         timeInPosition: cleanTrade.timeInPosition || 0,
-        userId: cleanTrade.userId || '',
+        userId: internalUserId,
         side: cleanTrade.side || '',
         commission: cleanTrade.commission || 0,
         entryId: cleanTrade.entryId || null,
@@ -103,8 +113,11 @@ export async function saveTradesAction(data: Trade[]): Promise<TradeResponse> {
 
     logger.debug({ userId }, `Inserting ${cleanedData.length} trades with database-level deduplication`, 'SaveTrades')
 
-    const insertResult = await db.insert(schema.Trade).values(cleanedData as any).onConflictDoNothing()
-    const result = { count: cleanedData.length }
+    const insertedTrades = await db.insert(schema.Trade)
+      .values(cleanedData as any)
+      .onConflictDoNothing()
+      .returning({ id: schema.Trade.id })
+    const result = { count: insertedTrades.length }
 
     logger.debug({
       total: cleanedData.length,
@@ -269,22 +282,11 @@ async function getTradesAction(userId: string | null = null, options?: {
 
 export async function updateTradesAction(tradesIds: string[], update: Partial<Trade>): Promise<number> {
   try {
-    // CRITICAL: Convert auth_user_id to internal user.id
-    const authUserId = await getUserIdSafe()
-    if (!authUserId) {
+    // Never trust a client-supplied owner; resolve the canonical internal ID.
+    const internalUserId = await getInternalUserIdSafe()
+    if (!internalUserId) {
       return 0
     }
-
-    const userLookup = await db.query.User.findFirst({
-      where: (table, { eq }) => eq(table.auth_user_id, authUserId),
-      columns: { id: true }
-    })
-
-    if (!userLookup) {
-      return 0
-    }
-
-    const internalUserId = userLookup.id
 
     const normalizedUpdate: Record<string, any> = parseTradeUpdate(update)
     if ('chartLinks' in update || 'chartLinksList' in update) {
@@ -323,15 +325,8 @@ export async function updateTradesAction(tradesIds: string[], update: Partial<Tr
 
 export async function appendTagsToTradesAction(tradeIds: string[], tagIds: string[]): Promise<number> {
   try {
-    const authUserId = await getUserIdSafe()
-    if (!authUserId) return 0
-
-    const userLookup = await db.query.User.findFirst({
-      where: (table, { eq }) => eq(table.auth_user_id, authUserId),
-      columns: { id: true }
-    })
-    if (!userLookup) return 0
-    const internalUserId = userLookup.id
+    const internalUserId = await getInternalUserIdSafe()
+    if (!internalUserId) return 0
 
     // Optimized: Use raw SQL to append and deduplicate tags in a single atomic operation
     // This is much faster than fetching all trades and updating them one by one
@@ -357,7 +352,12 @@ export async function appendTagsToTradesAction(tradeIds: string[], tagIds: strin
 
 async function updateTradeCommentAction(tradeId: string, comment: string | null) {
   try {
-    await db.update(schema.Trade).set({ comment }).where(eq(schema.Trade.id, tradeId)).returning()
+    const userId = await getInternalUserIdSafe()
+    if (!userId) return false
+    await db.update(schema.Trade).set({ comment }).where(and(
+      eq(schema.Trade.id, tradeId),
+      eq(schema.Trade.userId, userId),
+    )).returning()
     revalidatePath('/')
   } catch (error) {
     throw error
@@ -374,7 +374,7 @@ export async function saveDashboardLayoutAction(layouts: any): Promise<void> {
 
 export async function groupTradesAction(tradeIds: string[]): Promise<boolean> {
   try {
-    const userId = await getUserIdSafe()
+    const userId = await getInternalUserIdSafe()
 
     if (!userId) {
       return false
@@ -393,7 +393,7 @@ export async function groupTradesAction(tradeIds: string[]): Promise<boolean> {
 
 export async function ungroupTradesAction(tradeIds: string[]): Promise<boolean> {
   try {
-    const userId = await getUserIdSafe()
+    const userId = await getInternalUserIdSafe()
 
     if (!userId) {
       return false

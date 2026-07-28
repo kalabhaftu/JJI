@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
         const supabase = getSupabaseAdminClient()
 
         const fileName = `${crypto.randomUUID()}${ext}`
-        const ownerId = identity?.authUserId || identity?.internalUserId || 'anonymous'
+        const ownerId = identity?.internalUserId || identity?.authUserId || 'anonymous'
         const filePath = buildFeedbackAttachmentPath({ ownerId, submissionId, fileName })
         const buffer = Buffer.from(await file.arrayBuffer())
 

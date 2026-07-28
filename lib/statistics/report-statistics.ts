@@ -12,6 +12,7 @@
  */
 
 import { db } from '@/lib/db/client'
+import * as Sentry from '@sentry/nextjs'
 import { Trade, TradingModel } from '@/lib/db/schema'
 import { eq, and, or, inArray, gte, lte, isNull, asc } from 'drizzle-orm'
 import { classifyTrade } from '@/lib/utils'
@@ -130,6 +131,15 @@ export interface ReportStatsFilters {
 export async function calculateReportStatistics(
   filters: ReportStatsFilters
 ): Promise<ReportStatsResponse> {
+  const span = Sentry.startInactiveSpan({
+    name: 'reports.statistics',
+    op: 'db.query',
+    attributes: {
+      'jji.has_account_filter': Boolean(filters.accountId || filters.accountNumbers?.length),
+      'jji.has_date_filter': Boolean(filters.dateFrom || filters.dateTo),
+      'jji.has_symbol_filter': Boolean(filters.symbol),
+    },
+  })
   const { userId, accountNumbers, dateFrom, dateTo, accountId } = filters
   const requestedOutcome = filters.outcome && filters.outcome !== 'all' ? filters.outcome : null
 
@@ -204,7 +214,7 @@ export async function calculateReportStatistics(
       .from(TradingModel)
       .where(eq(TradingModel.userId, userId))
       .orderBy(asc(TradingModel.name)),
-    db.select({ symbol: Trade.symbol, instrument: Trade.instrument })
+    db.selectDistinct({ symbol: Trade.symbol, instrument: Trade.instrument })
       .from(Trade)
       .where(
         and(
@@ -242,6 +252,7 @@ export async function calculateReportStatistics(
         : sessionFilteredTrades
 
   if (filteredTrades.length === 0) {
+    span.end()
     return {
       tradingActivity: null,
       psychMetrics: null,
@@ -256,11 +267,14 @@ export async function calculateReportStatistics(
 
   const result = computeAllMetrics(filteredTrades, dateFrom, dateTo, breakEvenThreshold)
 
-  return {
+  const response = {
     ...result,
     filteredTrades: filteredTrades.slice(0, 100),
     filterOptions: buildFilterOptions(symbols, strategies),
   }
+
+  span.end()
+  return response
 }
 
 function buildFilterOptions(symbols: string[], strategies: Array<{ id: string; name: string }>) {

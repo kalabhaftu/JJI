@@ -7,11 +7,11 @@ const source = (file: string) => fs.readFileSync(path.join(root, file), 'utf8')
 
 describe('performance summary widget contract', () => {
   it('uses server-computed summary metrics for drawdown and R coverage', () => {
-    const tradesRoute = source('app/api/v1/trades/route.ts')
+    const tradeAnalytics = source('server/trades/analytics.ts')
     const calculations = source('lib/dashboard/analytics-calculations.ts')
     const widget = source('app/dashboard/components/charts/performance-summary.tsx')
 
-    expect(tradesRoute).toContain('performanceSummary: safeWidget(() => calculatePerformanceSummaryMetrics(trades)')
+    expect(tradeAnalytics).toContain('performanceSummary: safeWidget(() => calculatePerformanceSummaryMetrics(trades)')
     expect(calculations).toContain('export function calculatePerformanceSummaryMetrics')
     expect(calculations).toContain('hasValidTradeRMultipleData')
 

@@ -11,6 +11,7 @@ import { createHash } from 'crypto'
 import { getOrSetCached } from '@/lib/cache/unified-cache'
 import { CachePrefix, CacheTTL } from '@/lib/cache/redis-cache'
 import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
+import { applyRateLimit, aiLimiter, consumeRateLimitKey } from '@/lib/rate-limiter'
 
 export const maxDuration = 60
 
@@ -352,6 +353,9 @@ export async function POST(
   }
   const userId = identity.internalUserId
 
+  const rateLimitResponse = await applyRateLimit(request, aiLimiter)
+  if (rateLimitResponse) return rateLimitResponse
+
   const { chatId } = await params
 
   try {
@@ -371,6 +375,24 @@ export async function POST(
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
       return NextResponse.json({ error: aiGuard.reason, code: 'PAYWALL' }, { status: 403 })
+    }
+
+    const dailyLimit = Number(aiGuard.settings?.maxMessagesPerDay ?? 0)
+    if (dailyLimit <= 0) {
+      return NextResponse.json(
+        { error: 'AI messaging is currently unavailable for this account.', code: 'AI_DAILY_LIMIT' },
+        { status: 429 },
+      )
+    }
+    const dailyQuota = await consumeRateLimitKey(
+      `ai-daily:${userId}:${new Date().toISOString().slice(0, 10)}`,
+      { points: dailyLimit, duration: 86400, failClosed: true },
+    )
+    if (!dailyQuota.allowed) {
+      return NextResponse.json(
+        { error: `You have reached your daily limit of ${dailyLimit || 'default'} AI messages. Try again tomorrow.`, code: 'AI_DAILY_LIMIT' },
+        { status: 429 },
+      )
     }
 
     if (!(await hasCurrentAiDataConsent(userId))) {

@@ -4,7 +4,7 @@ import { AdminFeatureFlag, AdminSharingPolicy, User, UserSettings, ImportJob, No
 
 export const DashboardTemplate = pgTable('DashboardTemplate', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   isDefault: boolean('isDefault').default(false),
   isActive: boolean('isActive').default(false),
@@ -56,4 +56,3 @@ export const DashboardTemplateRelations = relations(DashboardTemplate, ({ one, m
     references: [User.id]
   }),
 }));
-

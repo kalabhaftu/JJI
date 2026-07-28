@@ -4,11 +4,12 @@ import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 import { invalidateTradesCache } from '@/lib/cache/invalidate-trade'
 import { parseTradeUpdate } from '@/lib/trades/update-schema'
 import { getClientIp } from '@/lib/security/client-ip'
 import { z } from 'zod'
+import { createSignedStorageUrl } from '@/server/storage-admin'
 
 export async function GET(
   request: NextRequest,
@@ -39,29 +40,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
-    // Convert storage paths or public URLs to signed URLs
-    const { createClient } = await import('@/lib/supabase/server')
-    const supabase = await createClient()
-
     const imageFields = ['imageOne', 'imageTwo', 'imageThree', 'imageFour', 'imageFive', 'imageSix', 'cardPreviewImage'] as const
     for (const field of imageFields) {
       if (trade[field]) {
-        let path = trade[field]!
-        // If it's a full URL, try to extract the path.
-        if (path.includes('/trade-images/')) {
-          const parts = path.split('/trade-images/')
-          path = parts[parts.length - 1]!
-        }
-        
-        // Remove query params if it's an old signed URL
-        if (path.includes('?')) {
-          path = path.split('?')[0]!
-        }
-
-        const { data } = await supabase.storage.from('trade-images').createSignedUrl(path, 3600) // 1 hour
-        if (data?.signedUrl) {
-          (trade as any)[field] = data.signedUrl
-        }
+        const signedUrl = await createSignedStorageUrl(trade[field]!, 3600)
+        if (signedUrl) (trade as any)[field] = signedUrl
       }
     }
 
@@ -91,7 +74,10 @@ export async function PATCH(
     if (!existing) return NextResponse.json({ error: 'Trade not found' }, { status: 404 })
     if (existing.userId !== identity.internalUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
-    const updated = (await db.update(schema.Trade).set(body).where(eq(schema.Trade.id, id)).returning())[0]
+    const updated = (await db.update(schema.Trade).set(body).where(and(
+      eq(schema.Trade.id, id),
+      eq(schema.Trade.userId, identity.internalUserId),
+    )).returning())[0]
     await db.insert(schema.AuditLog).values({
       userId: identity.internalUserId,
       action: 'UPDATE_TRADE',
@@ -132,7 +118,10 @@ export async function DELETE(
     if (!existing) return NextResponse.json({ error: 'Trade not found' }, { status: 404 })
     if (existing.userId !== identity.internalUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
-    await db.delete(schema.Trade).where(eq(schema.Trade.id, id))
+    await db.delete(schema.Trade).where(and(
+      eq(schema.Trade.id, id),
+      eq(schema.Trade.userId, identity.internalUserId),
+    ))
     await db.insert(schema.AuditLog).values({
       userId: identity.internalUserId,
       action: 'DELETE_TRADE',

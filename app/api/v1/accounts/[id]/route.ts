@@ -170,7 +170,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       // Optionally log or notify that these fields are locked.
     }
 
-    const updatedAccount = (await db.update(schema.Account).set(updateData).where(eq(schema.Account.id, accountId)).returning())[0]
+    const updatedAccount = (await db.update(schema.Account).set(updateData).where(and(
+      eq(schema.Account.id, accountId),
+      eq(schema.Account.userId, internalUserId),
+    )).returning())[0]
     if (!updatedAccount) {
       return NextResponse.json({ success: false, error: 'Account not found during update' }, { status: 404 })
     }
@@ -273,7 +276,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    await db.delete(schema.Account).where(eq(schema.Account.id, accountId))
+    await db.delete(schema.Account).where(and(
+      eq(schema.Account.id, accountId),
+      eq(schema.Account.userId, internalUserId),
+    ))
 
     const { invalidateUserCaches } = await import('@/server/accounts')
     await invalidateUserCaches(internalUserId)

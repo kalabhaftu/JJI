@@ -57,7 +57,7 @@ export type UserType = typeof User.$inferSelect;
 export type NewUser = typeof User.$inferInsert;
 
 export const UserSettings = pgTable('UserSettings', {
-  userId: text('userId').primaryKey(),
+  userId: text('userId').primaryKey().references(() => User.id, { onDelete: 'cascade' }),
   timezone: text('timezone').default('America/New_York'),
   theme: text('theme').default('system'),
   accountFilterSettings: text('accountFilterSettings'),
@@ -79,7 +79,7 @@ export type NewUserSettings = typeof UserSettings.$inferInsert;
 
 export const ImportJob = pgTable('ImportJob', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   status: ImportJobStatusEnum('status').default('queued'),
   stage: text('stage').default('queued'),
   progress: integer('progress').default(0),
@@ -89,7 +89,12 @@ export const ImportJob = pgTable('ImportJob', {
   skippedCount: integer('skippedCount').default(0),
   fileName: text('fileName').notNull(),
   fileSize: integer('fileSize').notNull(),
-  fileData: customType<{ data: Buffer; driverData: Buffer }>({ dataType() { return 'bytea'; } })('fileData').notNull(),
+  fileData: customType<{ data: Buffer; driverData: Buffer }>({ dataType() { return 'bytea'; } })('fileData'),
+  fileObjectPath: text('fileObjectPath'),
+  workerToken: text('workerToken'),
+  leaseExpiresAt: timestamp('leaseExpiresAt', { withTimezone: true, mode: 'date' }),
+  attempt: integer('attempt').notNull().default(0),
+  eventId: text('eventId'),
   state: jsonb('state'),
   error: text('error'),
   cancelRequested: boolean('cancelRequested').default(false),
@@ -97,14 +102,16 @@ export const ImportJob = pgTable('ImportJob', {
   completedAt: timestamp('completedAt', { withTimezone: true, mode: 'date' }),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
-});
+}, (table) => ({
+  userCreatedAtIdx: index('import_job_user_created_at_idx').on(table.userId, table.createdAt),
+}));
 
 export type ImportJobType = typeof ImportJob.$inferSelect;
 export type NewImportJob = typeof ImportJob.$inferInsert;
 
 export const Notification = pgTable('Notification', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   type: NotificationTypeEnum('type').notNull(),
   title: text('title').notNull(),
   message: text('message').notNull(),
@@ -124,7 +131,7 @@ export type NewNotification = typeof Notification.$inferInsert;
 
 export const Feedback = pgTable('Feedback', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId'),
+  userId: text('userId').references(() => User.id, { onDelete: 'set null' }),
   name: text('name'),
   email: text('email'),
   category: FeedbackCategoryEnum('category').notNull(),
@@ -146,7 +153,7 @@ export type NewFeedback = typeof Feedback.$inferInsert;
 
 export const UserGeoLog = pgTable('UserGeoLog', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   country: text('country'),
   countryCode: text('countryCode'),
   city: text('city'),
@@ -162,7 +169,7 @@ export type NewUserGeoLog = typeof UserGeoLog.$inferInsert;
 
 export const SharedReport = pgTable('SharedReport', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   slug: text('slug').notNull().unique(),
   title: text('title').default('Trading Report'),
   dateFrom: text('dateFrom'),
@@ -181,7 +188,7 @@ export type NewSharedReport = typeof SharedReport.$inferInsert;
 
 export const Subscription = pgTable('Subscription', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull().unique(),
+  userId: text('userId').notNull().unique().references(() => User.id, { onDelete: 'cascade' }),
   status: SubscriptionStatusEnum('status').default('unpaid'),
   planId: text('planId').default('pro'),
   currentPeriodStart: timestamp('currentPeriodStart', { withTimezone: true, mode: 'date' }),
@@ -202,7 +209,7 @@ export type NewSubscription = typeof Subscription.$inferInsert;
 
 export const Synchronization = pgTable('Synchronization', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   service: text('service').notNull(),
   accountId: text('accountId').notNull(),
   lastSyncedAt: timestamp('lastSyncedAt', { withTimezone: true, mode: 'date' }).notNull(),

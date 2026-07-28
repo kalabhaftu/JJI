@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { createImportJob } from '@/server/import-jobs'
+import { enqueueImportJob } from '@/server/import-job-events'
 import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 import { createErrorResponse } from '@/lib/api-response'
 
@@ -72,6 +73,15 @@ export async function POST(request: NextRequest) {
       fileName: sanitizedFileName,
       fileSize: file.size,
       fileData,
+    })
+    if (!job) {
+      return createErrorResponse('Failed to create import job', 500)
+    }
+
+    await enqueueImportJob({
+      jobId: job.id,
+      internalUserId: identity.internalUserId,
+      kind: 'archive',
     })
 
     return NextResponse.json({ success: true, job }, { status: 201 })

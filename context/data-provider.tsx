@@ -9,12 +9,7 @@ import React, {
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 
-import {
-  TradeType,
-  AccountType,
-  PayoutType,
-  DashboardTemplateType as DashboardLayoutType
-} from '@/lib/db/schema';
+import type { DashboardTemplateType as DashboardLayoutType } from '@/lib/db/schema';
 
 import {
   updateIsFirstConnectionAction
@@ -23,171 +18,23 @@ import {
   revalidateCache,
   saveDashboardLayoutAction,
 } from '@/server/database';
-import {
-  deletePayoutAction,
-  deleteAccountAction,
-  deleteMasterAccountAction,
-  setupAccountAction,
-  savePayoutAction,
-} from '@/server/accounts';
 import { createClient } from '@/lib/supabase';
 import { signOut } from '@/server/auth';
 import { useUserStore } from '@/store/user-store';
-import { useTradesStore } from '@/store/trades-store';
 import { useAccountFilterSettings } from '@/hooks/use-account-filter-settings';
-import { AccountFilterSettings } from '@/types/account-filter-settings';
 import { useFilteredTrades } from '@/hooks/use-filtered-trades';
-import { handleServerActionError } from '@/lib/utils/server-action-error-handler';
 import { useDataProviderRealtime } from '@/hooks/use-data-provider-realtime';
 import {
   useDataProviderFilterState,
-  type DataProviderDateRange as DateRange,
-  type DataProviderPnlRange as PnlRange,
-  type DataProviderTimeRange as TimeRange,
-  type DataProviderWeekdayFilter as WeekdayFilter,
-  type DataProviderHourFilter as HourFilter,
 } from '@/hooks/use-data-provider-filter-state';
 import { defaultLayouts } from '@/lib/dashboard/default-layouts';
 import { useDataProviderTradeMutations } from '@/hooks/use-data-provider-trade-mutations';
 import { usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data';
+import { EMPTY_CALENDAR_DATA, EMPTY_STATISTICS } from './data-provider/types';
+import type { DataContextType } from './data-provider/types';
 
-
-// Types from trades-data.tsx
-type StatisticsProps = {
-  breakEvenThreshold: number
-  cumulativeFees: number
-  cumulativePnl: number
-  winningStreak: number
-  winRate: number
-  nbTrades: number
-  nbBe: number
-  nbWin: number
-  nbLoss: number
-  totalPositionTime: number
-  averagePositionTime: string
-  profitFactor: number
-  grossLosses: number
-  grossWin: number
-  biggestWin: number
-  biggestLoss: number
-  averageWin: number
-  averageLoss: number
-  totalPayouts: number
-  nbPayouts: number
-  totalPnL: number
-}
-
-type CalendarData = {
-  [date: string]: {
-    pnl: number
-    tradeNumber: number
-    longNumber: number
-    shortNumber: number
-    trades: TradeType[]
-  }
-}
-
-const EMPTY_STATISTICS: StatisticsProps = {
-  breakEvenThreshold: 0,
-  cumulativeFees: 0,
-  cumulativePnl: 0,
-  winningStreak: 0,
-  winRate: 0,
-  nbTrades: 0,
-  nbBe: 0,
-  nbWin: 0,
-  nbLoss: 0,
-  totalPositionTime: 0,
-  averagePositionTime: '0s',
-  profitFactor: 0,
-  grossLosses: 0,
-  grossWin: 0,
-  biggestWin: 0,
-  biggestLoss: 0,
-  averageWin: 0,
-  averageLoss: 0,
-  totalPayouts: 0,
-  nbPayouts: 0,
-  totalPnL: 0,
-}
-
-const EMPTY_CALENDAR_DATA: CalendarData = {}
-
-
-
-
-// Update Account type to include payouts and balanceToDate
-export interface Account extends Omit<AccountType, 'payouts'> {
-  payouts?: PayoutType[]
-  balanceToDate?: number
-  status?: string
-  accountType?: 'live' | 'prop-firm'
-  displayName?: string
-  propfirm?: string
-}
-
-
-
-interface DataContextType {
-  isDemoMode?: boolean
-  refreshTrades: () => Promise<void>
-  refreshAllData: () => Promise<void>
-  isPlusUser: () => boolean
-  isLoading: boolean
-  isLoadingAccountFilterSettings: boolean
-  accountFilterSettings: AccountFilterSettings | null
-  updateAccountFilterSettings: (newSettings: Partial<AccountFilterSettings>) => Promise<void>
-  isMobile: boolean
-  changeIsFirstConnection: (isFirstConnection: boolean) => void
-  isFirstConnection: boolean
-  setIsFirstConnection: (isFirstConnection: boolean) => void
-  error: string | null
-  setError: React.Dispatch<React.SetStateAction<string | null>>
-
-  // Formatted trades and filters
-  formattedTrades: TradeType[]
-  instruments: string[]
-  setInstruments: React.Dispatch<React.SetStateAction<string[]>>
-  accountNumbers: string[]
-  setAccountNumbers: React.Dispatch<React.SetStateAction<string[]>>
-  dateRange: DateRange | undefined
-  setDateRange: React.Dispatch<React.SetStateAction<DateRange | undefined>>
-  pnlRange: PnlRange
-  setPnlRange: React.Dispatch<React.SetStateAction<PnlRange>>
-  timeRange: TimeRange
-  setTimeRange: React.Dispatch<React.SetStateAction<TimeRange>>
-  weekdayFilter: WeekdayFilter
-  setWeekdayFilter: React.Dispatch<React.SetStateAction<WeekdayFilter>>
-  hourFilter: HourFilter
-  setHourFilter: React.Dispatch<React.SetStateAction<HourFilter>>
-
-  // Statistics, calendar, and widget data
-  statistics: StatisticsProps
-  calendarData: CalendarData
-  widgetData: Record<string, any> | null
-
-  // Accounts
-  accounts: Account[]
-
-
-  // Mutations
-  // Trades
-  updateTrades: (tradeIds: string[], update: Partial<TradeType>) => Promise<void>
-  appendTagsToTrades: (tradeIds: string[], tagIds: string[]) => Promise<void>
-  groupTrades: (tradeIds: string[]) => Promise<void>
-  ungroupTrades: (tradeIds: string[]) => Promise<void>
-
-  // Accounts
-  deleteAccount: (account: Account) => Promise<void>
-  saveAccount: (account: Account) => Promise<void>
-
-  // Payouts
-  savePayout: (payout: PayoutType) => Promise<void>
-  deletePayout: (payoutId: string) => Promise<void>
-
-  // Dashboard layout
-  saveDashboardLayout: (layout: DashboardLayoutType) => Promise<void>
-}
+export type { Account } from './data-provider/types';
+import { useDataProviderAccountActions } from '@/hooks/use-data-provider-account-actions';
 
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -251,8 +98,6 @@ export const DataProvider: React.FC<{
   const accounts = useUserStore(state => state.accounts);
   const setSupabaseUser = useUserStore(state => state.setSupabaseUser);
 
-  const trades = useTradesStore(state => state.trades);
-  const setTrades = useTradesStore(state => state.setTrades);
   const dashboardLayout = useUserStore(state => state.dashboardLayout);
   const locale = 'en' // Fixed to English since we removed i18n
   const isLoading = useUserStore(state => state.isLoading)
@@ -372,7 +217,6 @@ export const DataProvider: React.FC<{
 
     setUser(userData as any)
     setIsFirstConnection(!!userData?.isFirstConnection)
-    setTrades([])
 
     const accountsWithBalance = (rawAccounts || []).map((account: any) => ({
       ...account,
@@ -397,7 +241,7 @@ export const DataProvider: React.FC<{
     }
 
     setIsLoading(false)
-  }, [initialBootstrapData, setAccounts, setIsLoading, setTrades, setUser, isDemoMode])
+  }, [initialBootstrapData, setAccounts, setIsLoading, setUser, isDemoMode])
 
   const loadData = useCallback(async () => {
     if (activeLoadPromiseRef.current) return activeLoadPromiseRef.current
@@ -490,11 +334,6 @@ export const DataProvider: React.FC<{
           }
         }
 
-        // NOTE: Trades are NO LONGER fetched here.
-        // They come via useFilteredTrades() React Query hook below.
-        // Set empty trades in store - legacy consumers will get data from context.formattedTrades
-        setTrades([])
-
         // Calculate balanceToDate for accounts (without trades, uses trade count from API)
         const accountsWithBalance = (rawAccounts || []).map((account: any) => ({
           ...account,
@@ -530,7 +369,7 @@ export const DataProvider: React.FC<{
     })();
 
     return activeLoadPromiseRef.current
-  }, [dashboardLayout, initialBootstrapData, setAccounts, setDashboardLayout, setIsLoading, setSupabaseUser, setTrades, setUser, isDemoMode]);
+  }, [dashboardLayout, initialBootstrapData, setAccounts, setDashboardLayout, setIsLoading, setSupabaseUser, setUser, isDemoMode]);
 
   useEffect(() => {
     if (isDemoMode) {
@@ -598,9 +437,26 @@ export const DataProvider: React.FC<{
 
   const queryClient = useQueryClient()
   
-  // PERF FIX: Enable trades fetch as soon as supabaseUser is available (not after init completes)
-  // This breaks the sequential waterfall: init and trades now fetch IN PARALLEL
-  const { data: serverTradeData } = useFilteredTrades(tradeFilters, isDemoMode ? true : !!supabaseUser?.id, isDemoMode)
+  // Keep the table feed paginated. Analytics use a separate metrics-only response
+  // so the dashboard does not ship the full calculation payload with every table read.
+  const tableTradeFilters = useMemo(() => ({
+    ...tradeFilters,
+    limit: 5_000,
+    includeStats: false,
+    includeCalendar: false,
+    includeWidgets: false,
+  }), [tradeFilters])
+  const metricsTradeFilters = useMemo(() => {
+    const { pageLimit: _pageLimit, pageOffset: _pageOffset, ...metricBase } = tradeFilters
+    return {
+      ...metricBase,
+      metricsOnly: true,
+      limit: 100_000,
+    }
+  }, [tradeFilters])
+  const queryEnabled = isDemoMode ? true : !!supabaseUser?.id
+  const { data: serverTradeData } = useFilteredTrades(tableTradeFilters, queryEnabled, isDemoMode)
+  const { data: serverMetricsData } = useFilteredTrades(metricsTradeFilters, queryEnabled, isDemoMode)
 
   useDataProviderRealtime({
     userId: user?.id,
@@ -686,139 +542,31 @@ export const DataProvider: React.FC<{
   // Expose refreshAllData as an alias for refreshTrades (it refreshes everything including accounts)
   const refreshAllData = refreshTrades
 
-  // Memoize hidden account numbers to prevent unnecessary re-renders
-  const hiddenAccountNumbers = useMemo(() => {
-    return accounts
-      .filter(a => a.isArchived === true)
-      .map(a => a.number);
-  }, [accounts]);
-
-  // SERVER-COMPUTED: formattedTrades, statistics, calendarData
-  // Previously 110+ lines of client-side useMemo filtering - now all server-side via /api/v1/trades
-  const formattedTrades = useMemo(() => {
-    if (serverTradeData?.trades && serverTradeData.trades.length > 0) {
-      return serverTradeData.trades;
-    }
-    // Fallback to Zustand trades for backward compatibility during migration
-    if (!trades || !Array.isArray(trades) || trades.length === 0) return [];
-    // Filter out hidden accounts only
-    return trades.filter(trade => !hiddenAccountNumbers.includes(trade.accountNumber));
-  }, [serverTradeData?.trades, trades, hiddenAccountNumbers]);
+  // Server-owned trade feed. No client-side trade-store fallback or analytics.
+  const formattedTrades = useMemo(() => serverTradeData?.trades ?? [], [serverTradeData?.trades]);
 
   const statistics = useMemo(() => {
     // Use server-computed statistics when available
-    if (serverTradeData?.statistics) return serverTradeData.statistics;
+    if (serverMetricsData?.statistics) return serverMetricsData.statistics;
     return EMPTY_STATISTICS;
-  }, [serverTradeData?.statistics]);
+  }, [serverMetricsData?.statistics]);
 
   const calendarData = useMemo(() => {
     // Use server-computed calendar data when available
-    if (serverTradeData?.calendarData) return serverTradeData.calendarData;
+    if (serverMetricsData?.calendarData) return serverMetricsData.calendarData;
     return EMPTY_CALENDAR_DATA;
-  }, [serverTradeData?.calendarData]);
+  }, [serverMetricsData?.calendarData]);
 
   const isPlusUser = () => {
     return true; // All users now have full access
   };
 
 
-  const saveAccount = useCallback(async (newAccount: Account) => {
-    if (!user?.id) return
-
-    try {
-      const { accounts } = useUserStore.getState()
-      const currentAccount = accounts.find(acc => acc.number === newAccount.number) as Account
-      if (!currentAccount) {
-        const createdAccount = await setupAccountAction(newAccount)
-        if (createdAccount) {
-          setAccounts([...accounts, createdAccount as Account])
-          revalidateCache([`user-data-${user.id}`])
-        }
-        return
-      }
-
-      const updatedAccount = await setupAccountAction(newAccount)
-      if (updatedAccount) {
-        const updatedAccounts = accounts.map((account: Account) => {
-          if (account.number === updatedAccount.number) {
-            return { ...account, ...updatedAccount } as Account;
-          }
-          return account;
-        })
-        setAccounts(updatedAccounts)
-      }
-      revalidateCache([`user-data-${user.id}`])
-    } catch (error) {
-      throw error
-    }
-  }, [user?.id, setAccounts])
-
-
-  const savePayout = useCallback(async (payout: PayoutType) => {
-    if (!user?.id) return;
-
-    try {
-      const payload: any = { ...payout };
-      if (payload.requestDate === undefined) delete payload.requestDate;
-      if (payload.notes === undefined) delete payload.notes;
-
-      const newPayout = await savePayoutAction(payload);
-
-      setAccounts(accounts.map((account: Account) => {
-        if (account.id === payout.masterAccountId || (account as any).number === (payout as any).accountNumber) {
-          return {
-            ...account,
-            payouts: [...(account.payouts || []), newPayout]
-          } as Account;
-        }
-        return account;
-      })
-      );
-
-    } catch (error) {
-      throw error;
-    }
-  }, [user?.id, accounts, setAccounts]);
-
-  const deleteAccount = useCallback(async (account: Account) => {
-    if (!user?.id) return;
-
-    try {
-      setAccounts(accounts.filter(acc => acc.id !== account.id));
-      
-      if (account.accountType === 'prop-firm') {
-        await deleteMasterAccountAction(account.id);
-      } else {
-        await deleteAccountAction(account.id);
-      }
-    } catch (error) {
-      if (handleServerActionError(error, { context: 'Delete Account' })) {
-        return // Return early on deployment error (will refresh)
-      }
-      throw error;
-    }
-  }, [user?.id, accounts, setAccounts]);
-
-  const deletePayout = useCallback(async (payoutId: string) => {
-    if (!user?.id) return;
-
-    try {
-
-      setAccounts(accounts.map((account: Account) => ({
-        ...account,
-        payouts: account.payouts?.filter(p => p.id !== payoutId) || []
-      })
-      ));
-
-      await deletePayoutAction(payoutId);
-
-    } catch (error) {
-      if (handleServerActionError(error, { context: 'Delete Payout' })) {
-        return // Return early on deployment error (will refresh)
-      }
-      throw error;
-    }
-  }, [user?.id, accounts, setAccounts]);
+  const { saveAccount, savePayout, deleteAccount, deletePayout } = useDataProviderAccountActions({
+    userId: user?.id,
+    accounts,
+    setAccounts,
+  })
 
   const changeIsFirstConnection = useCallback(async (isFirstConnection: boolean) => {
     if (!user?.id) return
@@ -828,8 +576,6 @@ export const DataProvider: React.FC<{
 
   const { updateTrades, groupTrades, ungroupTrades, appendTagsToTrades } = useDataProviderTradeMutations({
     userId: user?.id,
-    trades,
-    setTrades,
     queryClient,
   })
 
@@ -888,7 +634,7 @@ export const DataProvider: React.FC<{
     // Statistics, calendar, and widget data
     statistics,
     calendarData,
-    widgetData: serverTradeData?.widgets ?? null,
+    widgetData: serverMetricsData?.widgets ?? null,
 
     // Accounts
     accounts,

@@ -579,7 +579,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     // Update the account
-    const updatedAccount = (await db.update(schema.MasterAccount).set(updateData).where(eq(schema.MasterAccount.id, masterAccountId)).returning())[0]
+    const updatedAccount = (await db.update(schema.MasterAccount).set(updateData).where(and(
+      eq(schema.MasterAccount.id, masterAccountId),
+      eq(schema.MasterAccount.userId, internalUserId),
+    )).returning())[0]
 
     // Invalidate caches after archiving/unarchiving to refresh dashboard
     if (typeof updateData.isArchived === 'boolean') {
@@ -657,14 +660,23 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       const phaseIds = existingAccount.PhaseAccount.map(
         (phase: (typeof existingAccount.PhaseAccount)[number]) => phase.id
       )
-      const phaseAccountNumbers = existingAccount.PhaseAccount.map(
-        (phase: (typeof existingAccount.PhaseAccount)[number]) => phase.phaseId
-      ).filter(Boolean) as string[]
-
       // Delete all trades associated with this master account strictly by phaseAccountId UUIDs
       // to prevent deleting trades of other accounts that share the same phaseId or accountName
       if (phaseIds.length > 0) {
-        await tx.delete(schema.Trade).where(inArray(schema.Trade.phaseAccountId, phaseIds))
+        const tradeRows = await tx
+          .select({ id: schema.Trade.id })
+          .from(schema.Trade)
+          .where(inArray(schema.Trade.phaseAccountId, phaseIds))
+        const tradeIds = tradeRows.map((trade) => trade.id)
+
+        if (tradeIds.length > 0) {
+          await tx.delete(schema.TradeExecution).where(inArray(schema.TradeExecution.tradeId, tradeIds))
+          await tx.delete(schema.Trade).where(inArray(schema.Trade.id, tradeIds))
+        }
+
+        await tx.delete(schema.DailyAnchor).where(inArray(schema.DailyAnchor.phaseAccountId, phaseIds))
+        await tx.delete(schema.BreachRecord).where(inArray(schema.BreachRecord.phaseAccountId, phaseIds))
+        await tx.delete(schema.Payout).where(inArray(schema.Payout.phaseAccountId, phaseIds))
       }
 
       // Delete all phase accounts
@@ -672,22 +684,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         await tx.delete(schema.PhaseAccount).where(eq(schema.PhaseAccount.masterAccountId, masterAccountId))
       }
 
-      // Delete daily anchors
-      await tx.delete(schema.DailyAnchor).where(
-        exists(
-          db.select({ id: schema.PhaseAccount.id })
-            .from(schema.PhaseAccount)
-            .where(
-              and(
-                eq(schema.PhaseAccount.id, schema.DailyAnchor.phaseAccountId),
-                eq(schema.PhaseAccount.masterAccountId, masterAccountId)
-              )
-            )
-        )
-      )
-
       // Finally delete the master account
-      await tx.delete(schema.MasterAccount).where(eq(schema.MasterAccount.id, masterAccountId))
+      await tx.delete(schema.MasterAccount).where(and(
+        eq(schema.MasterAccount.id, masterAccountId),
+        eq(schema.MasterAccount.userId, internalUserId),
+      ))
     })
 
     // Invalidate all cache tags to ensure fresh data

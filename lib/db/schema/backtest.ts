@@ -5,7 +5,7 @@ import { AdminFeatureFlag, AdminSharingPolicy, User, UserSettings, ImportJob, No
 
 export const BacktestTrade = pgTable('BacktestTrade', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   pair: text('pair').notNull(),
   direction: BacktestDirectionEnum('direction').notNull(),
   outcome: BacktestOutcomeEnum('outcome').notNull(),
@@ -44,4 +44,3 @@ export const BacktestTradeRelations = relations(BacktestTrade, ({ one, many }) =
     references: [User.id]
   }),
 }));
-

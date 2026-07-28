@@ -3,6 +3,7 @@ import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { db } from '@/lib/db/client'
 import { createTradeImportJob } from '@/server/trade-import-jobs'
+import { enqueueImportJob } from '@/server/import-job-events'
 import { createErrorResponse } from '@/lib/api-response'
 import { z } from 'zod'
 
@@ -79,6 +80,12 @@ export async function POST(request: NextRequest) {
       internalUserId: identity.internalUserId,
       accountId: parsed.data.accountId,
       trades: parsed.data.trades,
+    })
+
+    await enqueueImportJob({
+      jobId: job.id,
+      internalUserId: identity.internalUserId,
+      kind: 'trade',
     })
 
     return NextResponse.json({ success: true, job }, { status: 201 })

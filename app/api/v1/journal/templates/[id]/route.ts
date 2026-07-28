@@ -48,7 +48,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     await db
       .delete(schema.JournalTemplate)
-      .where(eq(schema.JournalTemplate.id, id))
+      .where(and(
+        eq(schema.JournalTemplate.id, id),
+        eq(schema.JournalTemplate.userId, identity.internalUserId),
+      ))
 
     return NextResponse.json({ success: true })
   } catch (error) {

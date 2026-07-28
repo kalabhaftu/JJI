@@ -104,6 +104,38 @@ export function getNewYorkWeekdayIndex(date: Date | string | number): number | n
   return toZonedTime(parsedDate, DEFAULT_TIMEZONE).getDay();
 }
 
+export function getWeekdayIndexInTimezone(
+  date: Date | string | number,
+  timezone: string = DEFAULT_TIMEZONE,
+): number | null {
+  if (!date) return null;
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) return null;
+
+  try {
+    return toZonedTime(parsedDate, timezone).getDay();
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'getWeekdayIndexInTimezone', timezone } });
+    return null;
+  }
+}
+
+export function getHourInTimezone(
+  date: Date | string | number,
+  timezone: string = DEFAULT_TIMEZONE,
+): number | null {
+  if (!date) return null;
+  const parsedDate = new Date(date);
+  if (isNaN(parsedDate.getTime())) return null;
+
+  try {
+    return toZonedTime(parsedDate, timezone).getHours();
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'getHourInTimezone', timezone } });
+    return null;
+  }
+}
+
 function formatUserTime(date: Date | string | number, timezone: string = DEFAULT_TIMEZONE, use24HourFormat: boolean = true): string {
   if (!date) return 'N/A';
   const parsedDate = new Date(date);

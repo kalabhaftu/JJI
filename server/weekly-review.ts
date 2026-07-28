@@ -2,12 +2,12 @@
 
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { getUserId } from '@/server/auth'
+import { getInternalUserId } from '@/server/user-identity'
 import { randomUUID } from 'crypto'
 import { and, eq } from 'drizzle-orm'
 
 export async function getWeeklyReview(startDate: Date) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   if (!userId) return null
 
   try {
@@ -39,7 +39,7 @@ export async function saveWeeklyReview(data: {
   isCorrect?: boolean
   notes?: string
 }) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   if (!userId) throw new Error('Unauthorized')
 
   try {

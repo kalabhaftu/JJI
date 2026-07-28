@@ -192,7 +192,7 @@ export function buildSyntheticExecutionsFromTrade(trade: TradeLike) {
     executedAt: exitTime,
     pnl,
     commission,
-    brokerExecutionId: normalizeString(trade.entryId) || null,
+    brokerExecutionId: normalizeString(trade.closeId) || null,
     legacySourceTradeId: String(trade.id || ''),
     rawSymbol: normalizeString(trade.symbol) || null,
     closeReason: normalizeString(trade.closeReason) || null,

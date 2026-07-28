@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { PhaseEvaluationEngine } from '@/lib/prop-firm/phase-evaluation-engine'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
-import { revalidateTag } from 'next/cache'
 import { db } from '@/lib/db/client'
-import * as schema from '@/lib/db/schema'
-import { eq, and, ne, asc } from 'drizzle-orm'
+import { and } from 'drizzle-orm'
+import { enqueuePhaseEvaluation } from '@/server/phase-evaluation-events'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -60,29 +58,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Evaluate the current phase using the new engine
-    const evaluation = await PhaseEvaluationEngine.evaluatePhase(
+    await enqueuePhaseEvaluation({
+      source: 'manual-api',
       masterAccountId,
-      activePhase.id
-    )
-
-    // If the phase failed, update the account status
-    if (evaluation.isFailed) {
-      await db.transaction(async (tx) => {
-        // Mark phase as failed
-        await tx.update(schema.PhaseAccount)
-          .set({ status: 'failed', endDate: new Date() })
-          .where(eq(schema.PhaseAccount.id, activePhase.id))
-
-        // Mark master account as failed
-        await tx.update(schema.MasterAccount)
-          .set({ status: 'failed' })
-          .where(eq(schema.MasterAccount.id, masterAccountId))
-      })
-      
-      // Invalidate cache when account status changes
-      revalidateTag(`accounts-${internalUserId}`)
-    }
+      phaseAccountId: activePhase.id,
+    })
 
     return NextResponse.json({
       success: true,
@@ -90,7 +70,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         masterAccountId,
         phaseAccountId: activePhase.id,
         phaseNumber: activePhase.phaseNumber,
-        evaluation
+        evaluation: null,
+        queued: true,
       }
     })
 
@@ -153,11 +134,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Evaluate the current phase using the new engine
-    const evaluation = await PhaseEvaluationEngine.evaluatePhase(
+    await enqueuePhaseEvaluation({
+      source: 'manual-status-api',
       masterAccountId,
-      activePhase.id
-    )
+      phaseAccountId: activePhase.id,
+    })
 
     return NextResponse.json({
       success: true,
@@ -165,7 +146,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         masterAccountId,
         phaseAccountId: activePhase.id,
         phaseNumber: activePhase.phaseNumber,
-        evaluation
+        evaluation: null,
+        queued: true,
       }
     })
 

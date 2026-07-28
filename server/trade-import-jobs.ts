@@ -1,10 +1,10 @@
 import { db } from '@/lib/db/client'
-import * as Sentry from '@sentry/nextjs'
 import * as schema from '@/lib/db/schema'
 import { generateTradeHash } from '@/lib/utils'
-import { PhaseEvaluationEngine } from '@/lib/prop-firm/phase-evaluation-engine'
 import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData } from '@/lib/trade-core'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
+import { claimImportJob, updateClaimedImportJob } from '@/server/import-job-runtime'
+import { downloadImportObject, uploadImportObject } from '@/server/import-object-store'
 
 const TRADE_IMPORT_CHUNK_SIZE = 250
 
@@ -205,19 +205,54 @@ function computeProgress(totalItems: number, processedItems: number): number {
   return Math.max(1, Math.min(100, pct))
 }
 
+async function assertTradeImportTarget(accountId: string, internalUserId: string) {
+  const phaseAccount = await db.query.PhaseAccount.findFirst({
+    where: (table, { eq }) => eq(table.id, accountId),
+    with: {
+      MasterAccount: {
+        columns: { userId: true },
+      },
+    },
+  })
+
+  if (phaseAccount?.MasterAccount?.userId === internalUserId) return
+
+  const regularAccount = await db.query.Account.findFirst({
+    where: (table, { and, eq }) => and(
+      eq(table.id, accountId),
+      eq(table.userId, internalUserId),
+    ),
+    columns: { id: true },
+  })
+
+  if (!regularAccount) {
+    throw new Error('Target account not found')
+  }
+}
+
 export async function createTradeImportJob(params: {
   internalUserId: string
   accountId: string
   trades: any[]
 }) {
+  await assertTradeImportTarget(params.accountId, params.internalUserId)
+
   const payload: TradeImportPayload = {
     accountId: params.accountId,
     trades: params.trades || [],
   }
 
   const payloadBytes = Buffer.from(JSON.stringify(payload), 'utf-8')
+  const jobId = crypto.randomUUID()
+  const fileObjectPath = await uploadImportObject({
+    internalUserId: params.internalUserId,
+    jobId,
+    data: payloadBytes,
+    contentType: 'application/json',
+  })
 
   const job = (await db.insert(schema.ImportJob).values({
+    id: jobId,
     userId: params.internalUserId,
     status: 'queued',
     stage: 'queued',
@@ -228,7 +263,8 @@ export async function createTradeImportJob(params: {
     skippedCount: 0,
     fileName: 'trade-import.json',
     fileSize: payloadBytes.byteLength,
-    fileData: payloadBytes,
+    fileData: null,
+    fileObjectPath,
     state: DEFAULT_TRADE_IMPORT_STATE,
     cancelRequested: false,
     updatedAt: new Date()
@@ -290,12 +326,21 @@ export async function cancelTradeImportJob(jobId: string, internalUserId: string
       }
     : {
         cancelRequested: true,
-      }).where(eq(schema.ImportJob.id, current.id)).returning())[0]
+      }).where(and(
+        eq(schema.ImportJob.id, current.id),
+        eq(schema.ImportJob.userId, internalUserId),
+      )).returning())[0]
 
   return { job: serializeTradeImportJob(updated), status: 200 as const }
 }
 
-export async function processTradeImportJobChunk(jobId: string, internalUserId: string) {
+export async function processTradeImportJobChunk(jobId: string, internalUserId: string, workerToken = crypto.randomUUID(), eventId?: string, skipClaim = false) {
+  const claimed = skipClaim || await claimImportJob({
+    jobId,
+    internalUserId,
+    workerToken,
+    ...(eventId ? { eventId } : {}),
+  })
   const job = await db.query.ImportJob.findFirst({
     where: (table, { and, eq }) => and(
       eq(table.id, jobId),
@@ -319,6 +364,7 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
       completedAt: true,
       state: true,
       fileData: true,
+      fileObjectPath: true,
     }
   })
 
@@ -326,26 +372,42 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
     return { error: 'Import job not found', status: 404 as const }
   }
 
+  if (!claimed && job.status !== 'completed' && job.status !== 'failed' && job.status !== 'cancelled') {
+    return { job: serializeTradeImportJob(job), done: false, status: 200 as const }
+  }
+
   if (job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled') {
     return { job: serializeTradeImportJob(job), done: true, status: 200 as const }
   }
 
   if (job.cancelRequested) {
-    const cancelled = (await db.update(schema.ImportJob).set({ status: 'cancelled', stage: 'cancelled', completedAt: new Date() }).where(eq(schema.ImportJob.id, job.id)).returning())[0]
+    const cancelled = await updateClaimedImportJob({
+      jobId: job.id,
+      internalUserId,
+      workerToken,
+      data: { status: 'cancelled', stage: 'cancelled', completedAt: new Date() },
+    })
     return { job: serializeTradeImportJob(cancelled), done: true, status: 200 as const }
   }
 
   try {
-    const payload = parsePayload(job.fileData)
+    const payload = parsePayload(job.fileObjectPath
+      ? await downloadImportObject(job.fileObjectPath)
+      : job.fileData)
     let state = parseTradeImportState(job.state)
 
     if (job.status === 'queued') {
-      await db.update(schema.ImportJob).set({
+      await updateClaimedImportJob({
+        jobId: job.id,
+        internalUserId,
+        workerToken,
+        data: {
         status: 'processing',
         stage: 'preparing',
         startedAt: new Date(),
         progress: 1,
-      }).where(eq(schema.ImportJob.id, job.id))
+        },
+      })
     }
 
     if (!state.accountType) {
@@ -355,6 +417,7 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
           MasterAccount: {
             columns: {
               id: true,
+              userId: true,
               accountName: true,
               propFirmName: true,
               evaluationType: true,
@@ -364,7 +427,7 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
         }
       })
 
-      if (phaseAccount) {
+      if (phaseAccount && phaseAccount.MasterAccount.userId === internalUserId) {
         if (!phaseAccount.phaseId) {
           throw new Error('Current phase has no phase ID. Set phase ID before importing trades.')
         }
@@ -449,10 +512,15 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
     let inserted = 0
     if (preparedRows.length > 0) {
       await db.transaction(async (tx) => {
-        const createManyResult = await tx.insert(schema.Trade).values(preparedRows).onConflictDoNothing()
-        inserted = (createManyResult as any).rowCount || (createManyResult as any).count || preparedRows.length
+        const insertedTrades = await tx.insert(schema.Trade)
+          .values(preparedRows)
+          .onConflictDoNothing()
+          .returning({ id: schema.Trade.id })
+        const insertedIds = new Set(insertedTrades.map(({ id }) => id))
+        const insertedRows = preparedRows.filter((trade: any) => insertedIds.has(trade.id))
+        inserted = insertedRows.length
 
-        const executionRows = preparedRows.flatMap((trade: any) => buildSyntheticExecutionsFromTrade(trade))
+        const executionRows = insertedRows.flatMap((trade: any) => buildSyntheticExecutionsFromTrade(trade))
         if (executionRows.length > 0) {
           await tx.insert(schema.TradeExecution).values(executionRows as any).onConflictDoNothing()
         }
@@ -464,39 +532,11 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
     state.index = endIndex
 
     if (state.index >= totalItems) {
-      if (state.accountType === 'prop-firm' && state.masterAccountId && state.phaseAccountId) {
-        try {
-          const evaluation = await PhaseEvaluationEngine.evaluatePhase(state.masterAccountId, state.phaseAccountId)
-          const status = evaluation.isFailed
-            ? 'failed'
-            : evaluation.isPassed && evaluation.canAdvance
-              ? 'ready_for_transition'
-              : 'active'
-
-          state.evaluation = {
-            isFailed: evaluation.isFailed,
-            isPassed: evaluation.isPassed,
-            canAdvance: evaluation.canAdvance,
-            status,
-            message:
-              evaluation.isFailed
-                ? (evaluation.drawdown.breachType ? `Failed: ${evaluation.drawdown.breachType}` : 'Phase rules breached')
-                : evaluation.isPassed && evaluation.canAdvance
-                  ? 'Profit target reached. Ready to transition to the next phase.'
-                  : 'Evaluation completed',
-            currentPhaseNumber: state.phaseNumber,
-            profitTargetProgress: evaluation.progress.profitTargetPercent,
-            currentPnL: evaluation.progress.currentPnL,
-            evaluationType: state.evaluationType,
-            propFirmName: state.propFirmName,
-          }
-        } catch (error) {
-          Sentry.captureException(error, { extra: { route: 'server/trade-import-jobs', phase: 'evaluation' } })
-          // Keep import completion successful even if evaluation fails
-        }
-      }
-
-      const completed = (await db.update(schema.ImportJob).set({
+      const completed = await updateClaimedImportJob({
+        jobId: job.id,
+        internalUserId,
+        workerToken,
+        data: {
         status: 'completed',
         stage: 'completed',
         progress: 100,
@@ -505,13 +545,18 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
         skippedCount: state.skipped,
         state,
         completedAt: new Date(),
-      }).where(eq(schema.ImportJob.id, job.id)).returning())[0]
+        },
+      })
 
       return { job: serializeTradeImportJob(completed), done: true, status: 200 as const }
     }
 
     const processedItems = state.index
-    const processing = (await db.update(schema.ImportJob).set({
+    const processing = await updateClaimedImportJob({
+      jobId: job.id,
+      internalUserId,
+      workerToken,
+      data: {
       status: 'processing',
       stage: 'trades-import',
       progress: computeProgress(totalItems, processedItems),
@@ -519,16 +564,22 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
       importedCount: state.imported,
       skippedCount: state.skipped,
       state,
-    }).where(eq(schema.ImportJob.id, job.id)).returning())[0]
+      },
+    })
 
     return { job: serializeTradeImportJob(processing), done: false, status: 200 as const }
   } catch (error) {
-    const failed = (await db.update(schema.ImportJob).set({
+    const failed = await updateClaimedImportJob({
+      jobId: job.id,
+      internalUserId,
+      workerToken,
+      data: {
       status: 'failed',
       stage: 'failed',
       error: error instanceof Error ? error.message.slice(0, 2000) : 'Trade import failed',
       completedAt: new Date(),
-    }).where(eq(schema.ImportJob.id, job.id)).returning())[0]
+      },
+    })
 
     return { job: serializeTradeImportJob(failed), done: true, status: 200 as const }
   }

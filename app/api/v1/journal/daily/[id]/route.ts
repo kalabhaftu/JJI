@@ -5,7 +5,7 @@ import { getResolvedUserIdentity } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 import { isJournalEmotion } from '@/lib/journal-emotions'
-import { eq } from 'drizzle-orm'
+import { and, eq } from 'drizzle-orm'
 
 export async function PUT(
   request: NextRequest,
@@ -24,14 +24,18 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid emotion value' }, { status: 400 })
     }
 
-    const existing = await db.query.DailyNote.findFirst({ where: (table, { eq }) => eq(table.id, id) })
+    const existing = await db.query.DailyNote.findFirst({
+      where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, internalUserId)),
+    })
     if (!existing) return NextResponse.json({ error: 'Journal not found' }, { status: 404 })
-    if (existing.userId !== internalUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
     const journal = (await db.update(schema.DailyNote).set({
       note: note !== undefined ? note : existing.note,
       emotion: emotion !== undefined ? emotion : existing.emotion,
-    }).where(eq(schema.DailyNote.id, id)).returning())[0]
+    }).where(and(
+      eq(schema.DailyNote.id, id),
+      eq(schema.DailyNote.userId, internalUserId),
+    )).returning())[0]
 
     return NextResponse.json({ journal })
   } catch (error: any) {
@@ -54,11 +58,15 @@ export async function DELETE(
     const { internalUserId } = await getResolvedUserIdentity()
     const { id } = await params
 
-    const existing = await db.query.DailyNote.findFirst({ where: (table, { eq }) => eq(table.id, id) })
+    const existing = await db.query.DailyNote.findFirst({
+      where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, internalUserId)),
+    })
     if (!existing) return NextResponse.json({ error: 'Journal not found' }, { status: 404 })
-    if (existing.userId !== internalUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
 
-    await db.delete(schema.DailyNote).where(eq(schema.DailyNote.id, id))
+    await db.delete(schema.DailyNote).where(and(
+      eq(schema.DailyNote.id, id),
+      eq(schema.DailyNote.userId, internalUserId),
+    ))
     return NextResponse.json({ success: true })
   } catch (error: any) {
     logger.error({ error: error?.message, context: 'api' }, 'DELETE /api/v1/journal/daily/[id]')

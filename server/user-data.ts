@@ -7,7 +7,7 @@ import * as schema from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
 // Groups removed - no longer used
 
-import { createClient, getUserId, getUserIdSafe } from './auth'
+import { getInternalUserIdSafe, getResolvedUserIdentitySafe } from './user-identity'
 import { Account } from '@/context/data-provider'
 import { revalidateTag, unstable_cache } from 'next/cache'
 import { USER_SETTINGS_SELECT, mergeUserSettings } from '@/lib/user-settings'
@@ -24,7 +24,7 @@ async function getUserData(): Promise<{
   groups: never[]; // Groups removed - no longer used
 }> {
   try {
-    const userId = await getUserIdSafe()
+    const userId = await getInternalUserIdSafe()
 
     if (!userId) {
       return {
@@ -44,7 +44,7 @@ async function getUserData(): Promise<{
         (async () => {
           try {
             return await db.query.User.findFirst({
-              where: (table, { eq }) => eq(table.auth_user_id, userId),
+              where: (table, { eq }) => eq(table.id, userId),
               columns: {
                 id: true,
                 email: true,
@@ -94,16 +94,15 @@ async function getUserData(): Promise<{
 
 export async function updateIsFirstConnectionAction(isFirstConnection: boolean) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    const userId = user?.id
+    const identity = await getResolvedUserIdentitySafe()
+    const userId = identity?.internalUserId
 
     if (!userId) {
       throw new Error('User not authenticated')
     }
 
     try {
-      await db.update(schema.User).set({ isFirstConnection }).where(eq(schema.User.auth_user_id, userId));
+      await db.update(schema.User).set({ isFirstConnection }).where(eq(schema.User.id, userId));
     } catch (e) {
       logger.error({ event: 'system_error', error: e }, 'updateIsFirstConnectionAction failed:');
     }

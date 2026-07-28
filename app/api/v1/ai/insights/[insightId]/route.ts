@@ -29,7 +29,10 @@ export async function DELETE(
       return NextResponse.json({ error: 'Insight not found' }, { status: 404 })
     }
 
-    await db.delete(schema.AISavedInsight).where(eq(schema.AISavedInsight.id, insightId))
+    await db.delete(schema.AISavedInsight).where(and(
+      eq(schema.AISavedInsight.id, insightId),
+      eq(schema.AISavedInsight.userId, userId),
+    ))
 
     return NextResponse.json({ success: true, message: 'Insight deleted successfully' })
   } catch (error) {

@@ -64,8 +64,8 @@ function getUpstashLimiter(config: LimiterConfig): Ratelimit {
 export const apiLimiter: LimiterConfig = { points: 100, duration: 60 }
 const authLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
 export const aiLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
-export const aiReviewLimiter: LimiterConfig = { points: 1, duration: 86400 }
-export const importLimiter: LimiterConfig = { points: 10, duration: 60 }
+export const aiReviewLimiter: LimiterConfig = { points: 1, duration: 86400, failClosed: true }
+export const importLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
 const uploadLimiter: LimiterConfig = { points: 30, duration: 60 }
 export const webhookLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 export const thorLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
@@ -80,7 +80,19 @@ export const emailOtpLimiter: LimiterConfig = { points: 3, duration: 3600, failC
  * Get identifier for rate limiting.
  * Uses user ID if available, falls back to IP.
  */
-function getRateLimitIdentifier(req: NextRequest): string {
+async function getRateLimitIdentifier(req: NextRequest): Promise<string> {
+  try {
+    // Resolve the canonical internal identity only for authenticated requests.
+    // Dynamic import avoids a module cycle: server/auth imports this limiter.
+    const { getResolvedUserIdentitySafe } = await import('@/server/user-identity')
+    const identity = await getResolvedUserIdentitySafe()
+    if (identity?.internalUserId) {
+      return `rate-limit:user:${identity.internalUserId}`
+    }
+  } catch (error) {
+    logger.warn({ error }, 'Unable to resolve authenticated rate-limit identity; using IP fallback')
+  }
+
   return `rate-limit:ip:${getClientIp(req.headers)}`
 }
 
@@ -124,7 +136,7 @@ export async function applyRateLimit(
   req: NextRequest,
   limiter: LimiterConfig = apiLimiter
 ): Promise<NextResponse | null> {
-  const identifier = getRateLimitIdentifier(req)
+  const identifier = await getRateLimitIdentifier(req)
 
   if (!isRedisConfigured()) {
     if (shouldFailClosed(limiter)) {

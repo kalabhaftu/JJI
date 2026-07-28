@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { processTradeImportJobChunk } from '@/server/trade-import-jobs'
+import { getTradeImportJobForUser } from '@/server/trade-import-jobs'
+import { enqueueImportJob } from '@/server/import-job-events'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -18,13 +19,20 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params
-    const result = await processTradeImportJobChunk(id, identity.internalUserId)
-
-    if ('error' in result) {
-      return NextResponse.json({ success: false, error: result.error }, { status: result.status })
+    const job = await getTradeImportJobForUser(id, identity.internalUserId)
+    if (!job) {
+      return NextResponse.json({ success: false, error: 'Import job not found' }, { status: 404 })
     }
 
-    return NextResponse.json({ success: true, done: result.done, job: result.job }, { status: result.status })
+    if (job.status !== 'completed' && job.status !== 'failed' && job.status !== 'cancelled') {
+      await enqueueImportJob({ jobId: id, internalUserId: identity.internalUserId, kind: 'trade' })
+    }
+
+    return NextResponse.json({
+      success: true,
+      done: job.status === 'completed' || job.status === 'failed' || job.status === 'cancelled',
+      job,
+    })
   } catch (error) {
     return NextResponse.json({ success: false, error: 'Failed to process import job' }, { status: 500 })
   }

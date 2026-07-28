@@ -94,11 +94,17 @@ export async function DELETE(
 
     for (const trade of trades) {
       const updatedTags = (trade.tags || []).filter((tagId: string) => tagId !== id)
-      await db.update(schema.Trade).set({ tags: updatedTags }).where(eq(schema.Trade.id, trade.id)).returning()
+      await db.update(schema.Trade).set({ tags: updatedTags }).where(and(
+        eq(schema.Trade.id, trade.id),
+        eq(schema.Trade.userId, userId),
+      )).returning()
     }
 
     // Delete the tag
-    await db.delete(schema.TradeTag).where(eq(schema.TradeTag.id, id)).returning()
+    await db.delete(schema.TradeTag).where(and(
+      eq(schema.TradeTag.id, id),
+      eq(schema.TradeTag.userId, userId),
+    )).returning()
 
     return NextResponse.json({ success: true })
   } catch (error) {

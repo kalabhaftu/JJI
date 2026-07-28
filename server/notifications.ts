@@ -3,7 +3,7 @@
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { NotificationType } from '@/lib/db/schema'
-import { getUserId } from '@/server/auth-utils'
+import { getInternalUserId } from '@/server/user-identity'
 import { revalidateTag } from 'next/cache'
 
 import { eq, and, desc, count } from 'drizzle-orm'
@@ -16,7 +16,7 @@ async function createNotificationAction(data: {
   actionRequired?: boolean
 }) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) return { success: false, error: 'Unauthorized' }
 
     const notification = (await db.insert(schema.Notification).values({
@@ -40,7 +40,7 @@ async function getNotificationsAction(options?: {
   unreadOnly?: boolean
   limit?: number
 }) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   if (!userId) throw new Error('Unauthorized')
 
   const notifications = await db.query.Notification.findMany({
@@ -57,7 +57,7 @@ async function getNotificationsAction(options?: {
 }
 
 async function getUnreadCountAction() {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   if (!userId) return 0
 
   const result = await db.select({ count: count() })
@@ -69,7 +69,7 @@ async function getUnreadCountAction() {
 
 async function markNotificationReadAction(notificationId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) return { success: false, error: 'Unauthorized' }
 
     const notification = (await db.update(schema.Notification).set({ isRead: true, updatedAt: new Date() }).where(and(eq(schema.Notification.id, notificationId), eq(schema.Notification.userId, userId))).returning())[0]
@@ -82,7 +82,7 @@ async function markNotificationReadAction(notificationId: string) {
 }
 
 async function markAllNotificationsReadAction() {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   if (!userId) return { success: false, error: 'Unauthorized' }
 
   await db.update(schema.Notification).set({ isRead: true, updatedAt: new Date() }).where(and(eq(schema.Notification.userId, userId), eq(schema.Notification.isRead, false)))
@@ -92,7 +92,7 @@ async function markAllNotificationsReadAction() {
 
 async function deleteNotificationAction(notificationId: string) {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     if (!userId) return { success: false, error: 'Unauthorized' }
 
     await db.delete(schema.Notification).where(and(eq(schema.Notification.id, notificationId), eq(schema.Notification.userId, userId)))
@@ -113,7 +113,7 @@ export async function handleFundedApprovalAction(data: {
   masterAccountId: string
   fundedAccountId: string
 }) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   if (!userId) throw new Error('Unauthorized')
 
   const masterAccount = await db.query.MasterAccount.findFirst({
@@ -206,7 +206,7 @@ export async function handleFundedDeclineAction(data: {
   masterAccountId: string
   reason: string
 }) {
-  const userId = await getUserId()
+  const userId = await getInternalUserId()
   if (!userId) throw new Error('Unauthorized')
 
   const masterAccount = await db.query.MasterAccount.findFirst({

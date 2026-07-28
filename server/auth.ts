@@ -157,7 +157,11 @@ export async function signOut() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (user) {
-    logActivity({ userId: user.id, action: 'USER_LOGOUT', entity: 'Auth' })
+    const internalUser = await db.query.User.findFirst({
+      where: (table, { eq }) => eq(table.auth_user_id, user.id),
+      columns: { id: true },
+    })
+    if (internalUser) logActivity({ userId: internalUser.id, action: 'USER_LOGOUT', entity: 'Auth' })
   }
   await supabase.auth.signOut()
   redirect('/?logout=true')
@@ -429,8 +433,7 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       if (existingUserByEmail && existingUserByEmail.auth_user_id !== user.id) {
         const relinkedUser = await safeDbOperation(
           () => db.transaction(async (tx) => {
-            const updated = await tx.update(schema.User).set({
-                id: user.id,
+              const updated = await tx.update(schema.User).set({
                 auth_user_id: user.id,
                 email: user.email || existingUserByEmail.email,
                 firstName: hasStoredName(existingUserByEmail.firstName)
@@ -477,7 +480,7 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
         }
 
         logActivity({
-          userId: user.id,
+          userId: relinkedUser.id,
           action: 'USER_AUTH_RELINKED',
           entity: 'Auth',
           entityId: relinkedUser.id,
@@ -498,7 +501,7 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
           const created = await tx.insert(schema.User).values({
               auth_user_id: user.id,
               email: user.email || '',
-              id: user.id,
+              id: crypto.randomUUID(),
               role: 'user',
               firstName: generatedNames.firstName,
               lastName: generatedNames.lastName
@@ -638,6 +641,7 @@ export async function verifyOtp(email: string, token: string, type: 'email' | 's
     }
 
     if (data?.user) {
+      const verifiedUser = data.user
       // After successful OTP verification, ensure user exists in database (if DB is available)
       try {
         // Check if user already exists in our database with this email
@@ -648,23 +652,27 @@ export async function verifyOtp(email: string, token: string, type: 'email' | 's
           null
         )
 
-        if (existingUser && existingUser.auth_user_id !== data.user.id) {
+        if (existingUser && existingUser.auth_user_id !== verifiedUser.id) {
           // User exists with different auth ID - update the auth_user_id instead of creating conflict
-          const newAuthId = data.user.id
+          const newAuthId = verifiedUser.id
           await safeDbOperation(
             () => db.update(schema.User).set({ auth_user_id: newAuthId }).where(eq(schema.User.email, email)),
             null
           )
         } else if (!existingUser) {
         const locale = 'en'
-          await ensureUserInDatabase(data.user, locale)
+          await ensureUserInDatabase(verifiedUser, locale)
         }
 
       } catch (dbError) {
         logger.error({ event: 'auth_user_sync_failed', error: dbError }, 'Supabase auth succeeded but user database sync failed')
       }
 
-      logActivity({ userId: data.user.id, action: 'USER_LOGIN', entity: 'Auth' })
+      const internalUser = await db.query.User.findFirst({
+        where: (table, { eq }) => eq(table.auth_user_id, verifiedUser.id),
+        columns: { id: true },
+      })
+      if (internalUser) logActivity({ userId: internalUser.id, action: 'USER_LOGIN', entity: 'Auth' })
 
       return data
     } else {

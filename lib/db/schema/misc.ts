@@ -6,7 +6,7 @@ import { AdminFeatureFlag, AdminSharingPolicy, User, UserSettings, ImportJob, No
 
 export const FeedbackReply = pgTable('FeedbackReply', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  feedbackId: text('feedbackId').notNull(),
+  feedbackId: text('feedbackId').notNull().references(() => Feedback.id, { onDelete: 'cascade' }),
   message: text('message').notNull(),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
 });
@@ -41,8 +41,8 @@ export type NewSiteUiSettings = typeof SiteUiSettings.$inferInsert;
 
 export const PaymentRecord = pgTable('PaymentRecord', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  userId: text('userId').notNull(),
-  subscriptionId: text('subscriptionId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
+  subscriptionId: text('subscriptionId').notNull().references(() => Subscription.id, { onDelete: 'cascade' }),
   planId: text('planId').default('pro'),
   amountUsd: doublePrecision('amountUsd').notNull(),
   provider: text('provider').default('nowpayments'),
@@ -93,7 +93,7 @@ export type NewPromoCode = typeof PromoCode.$inferInsert;
 export const PromoRedemption = pgTable('PromoRedemption', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   promoCodeId: text('promoCodeId').notNull(),
-  userId: text('userId').notNull(),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
   redeemedAt: timestamp('redeemedAt', { withTimezone: true, mode: 'date' }).defaultNow(),
 });
 

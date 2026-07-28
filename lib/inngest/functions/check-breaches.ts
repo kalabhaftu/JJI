@@ -8,11 +8,17 @@ export const checkBreaches = inngest.createFunction(
     retries: 3,
     concurrency: { limit: 1 },
   },
-  { cron: '*/15 * * * *' }, // Run every 15 minutes
-  async ({ step }) => {
+  [
+    { cron: '*/15 * * * *' },
+    { event: 'jji/phase.evaluate' },
+  ],
+  async ({ event, step }) => {
     return await step.run('evaluate-breaches', async () => {
-      logger.info('Evaluating prop firm breaches')
-      const result = await evaluateAllActivePhases()
+      logger.info({ source: event?.data?.source ?? 'scheduled' }, 'Evaluating prop firm breaches')
+      const result = await evaluateAllActivePhases({
+        ...(event?.data?.masterAccountId ? { masterAccountId: event.data.masterAccountId } : {}),
+        ...(event?.data?.phaseAccountId ? { phaseAccountId: event.data.phaseAccountId } : {}),
+      })
       return {
         checked: result.totalPhases,
         evaluated: result.evaluated,

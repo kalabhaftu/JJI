@@ -1,87 +1,62 @@
-'use server'
-
-import * as Sentry from '@sentry/nextjs'
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserId } from '@/server/auth'
-import { db } from '@/lib/db/client'
-import * as schema from '@/lib/db/schema'
-import { eq } from 'drizzle-orm'
+import { getUserIdSafe } from '@/server/auth'
+import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { deleteUserData } from '@/server/user-data-deletion'
 import { getSupabaseAdminClient } from '@/server/supabase-admin'
-import { logger } from '@/lib/logger';
+import { enqueueUserStorageCleanup } from '@/server/storage-cleanup-events'
+import { logger } from '@/lib/logger'
+import * as Sentry from '@sentry/nextjs'
 
 export async function DELETE(request: NextRequest) {
   try {
-    // Get the authenticated user ID
-    const userId = await getUserId()
+    const authUserId = await getUserIdSafe()
     
-    if (!userId) {
+    if (!authUserId) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       )
     }
 
+    const identity = await getResolvedUserIdentitySafe()
+    let storageOwnerIds = [authUserId]
+
+    // Application data must be removed before the Supabase Auth principal.
+    if (identity) {
+      const deletion = await deleteUserData({
+        internalUserId: identity.internalUserId,
+        mode: 'delete-account',
+        authUserId: identity.authUserId,
+      })
+      storageOwnerIds = deletion.storageOwnerIds
+    }
+
     const supabaseAdmin = getSupabaseAdminClient()
-    const dbUser = await db.query.User.findFirst({
-      where: (table, { eq }) => eq(table.auth_user_id, userId),
-      columns: { id: true },
-    })
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(authUserId)
 
-    if (dbUser?.id) {
-      // 0. Collect all trade and backtest images for storage cleanup
-      const [trades, backtestTrades] = await Promise.all([
-        db.query.Trade.findMany({
-          where: (table, { eq }) => eq(table.userId, dbUser.id),
-          columns: {
-            imageOne: true, imageTwo: true, imageThree: true,
-            imageFour: true, imageFive: true, imageSix: true,
-            cardPreviewImage: true
-          }
-        }),
-        db.query.BacktestTrade.findMany({
-          where: (table, { eq }) => eq(table.userId, dbUser.id),
-          columns: {
-            imageOne: true, imageTwo: true, imageThree: true,
-            imageFour: true, imageFive: true, imageSix: true,
-            cardPreviewImage: true
-          }
-        })
-      ])
+    if (authError) {
+      Sentry.captureException(authError, { extra: { route: '/api/auth/delete-account', phase: 'auth-delete' } })
+      return NextResponse.json(
+        { error: 'Application data was deleted, but the auth account could not be removed. Please contact support.' },
+        { status: 502 }
+      )
+    }
 
-      const imageUrls = [
-        ...trades.flatMap(t => [t.imageOne, t.imageTwo, t.imageThree, t.imageFour, t.imageFive, t.imageSix, t.cardPreviewImage]),
-        ...backtestTrades.flatMap(t => [t.imageOne, t.imageTwo, t.imageThree, t.imageFour, t.imageFive, t.imageSix, t.cardPreviewImage])
-      ].filter((url): url is string => !!url)
-
-      if (imageUrls.length > 0) {
-        try {
-          const { deletePublicStorageUrls } = await import('@/server/storage-admin')
-          await deletePublicStorageUrls(imageUrls)
-        } catch (err) {
-          logger.error('Failed to cleanup storage during user account deletion: ' + (err instanceof Error ? err.message : String(err)))
-        }
-      }
-
-      const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(userId)
-
-      if (authError) {
-        return NextResponse.json(
-          { error: 'Failed to delete auth account. Please try again.' },
-          { status: 502 }
-        )
-      }
-
-       try {
-         await db.delete(schema.User).where(eq(schema.User.id, dbUser.id))
-       } catch (error) {
-         Sentry.captureException(error, { extra: { route: '/api/auth/delete-account' } })
-         // If the auth->public FK cascade already removed the row, there's nothing left to do.
-       }
+    let storageCleanup: 'queued' | 'pending' = 'pending'
+    try {
+      if (await enqueueUserStorageCleanup({
+        internalUserId: identity?.internalUserId ?? authUserId,
+        storageOwnerIds,
+      })) storageCleanup = 'queued'
+    } catch (error) {
+      Sentry.captureException(error, { extra: { route: '/api/auth/delete-account', phase: 'storage-enqueue' } })
+      logger.error({ error }, 'Account storage cleanup could not be queued')
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Account and all associated data have been permanently deleted'
+      message: 'Account and all associated data have been permanently deleted',
+      storageCleanup,
     })
 
   } catch (error) {

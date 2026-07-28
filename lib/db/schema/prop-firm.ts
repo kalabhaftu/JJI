@@ -5,7 +5,7 @@ import { Account, LiveAccountTransaction, MasterAccount, Payout, PhaseAccount } 
 
 export const BreachRecord = pgTable('BreachRecord', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  phaseAccountId: text('phaseAccountId').notNull(),
+  phaseAccountId: text('phaseAccountId').notNull().references(() => PhaseAccount.id, { onDelete: 'cascade' }),
   breachType: BreachTypeEnum('breachType').notNull(),
   breachAmount: doublePrecision('breachAmount').notNull(),
   breachTime: timestamp('breachTime', { withTimezone: true, mode: 'date' }).defaultNow(),
@@ -16,14 +16,16 @@ export const BreachRecord = pgTable('BreachRecord', {
   tradeId: text('tradeId'),
   notes: text('notes'),
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
-});
+}, (table) => [
+  uniqueIndex('BreachRecord_phaseAccountId_breachType_key').on(table.phaseAccountId, table.breachType),
+]);
 
 export type BreachRecordType = typeof BreachRecord.$inferSelect;
 export type NewBreachRecord = typeof BreachRecord.$inferInsert;
 
 export const DailyAnchor = pgTable('DailyAnchor', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  phaseAccountId: text('phaseAccountId').notNull(),
+  phaseAccountId: text('phaseAccountId').notNull().references(() => PhaseAccount.id, { onDelete: 'cascade' }),
   date: timestamp('date', { withTimezone: true, mode: 'date' }).notNull(),
   anchorEquity: doublePrecision('anchorEquity').notNull(),
   computedAt: timestamp('computedAt', { withTimezone: true, mode: 'date' }).defaultNow(),

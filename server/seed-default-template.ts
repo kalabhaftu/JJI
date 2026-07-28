@@ -2,7 +2,7 @@
 
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { getUserId } from './auth-utils'
+import { getInternalUserId } from './user-identity'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import { eq } from 'drizzle-orm'
 import logger from '@/lib/logger'
@@ -76,7 +76,7 @@ export async function ensureActiveTemplateForUser(userId: string, client: any = 
 
 export async function ensureDefaultTemplate() {
   try {
-    const userId = await getUserId()
+    const userId = await getInternalUserId()
     const userExists = await db.query.User.findFirst({
       where: (table: any, { eq }: any) => eq(table.id, userId),
       columns: { id: true },

@@ -4,7 +4,7 @@ import logger from '@/lib/logger';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { eq, inArray, and } from 'drizzle-orm';
-import { getUserIdSafe } from '@/server/auth';
+import { getInternalUserIdSafe } from '@/server/user-identity';
 import { ImageCompressor } from '@/lib/image-compression';
 import { deletePublicStorageUrls } from '@/server/storage-admin';
 import { parseTradeUpdate } from '@/lib/trades/update-schema';
@@ -13,7 +13,7 @@ import { invalidateTradesCache } from '@/lib/cache/invalidate-trade';
 
 async function deleteTrade(tradeId: string) {
   try {
-    const userId = await getUserIdSafe()
+    const userId = await getInternalUserIdSafe()
     
     if (!userId) {
       return {
@@ -78,7 +78,7 @@ async function updateTradeImage(
   fieldName: 'cardPreviewImage' | 'imageOne' | 'imageTwo' | 'imageThree' | 'imageFour' | 'imageFive' | 'imageSix'
 ) {
   try {
-    const userId = await getUserIdSafe()
+    const userId = await getInternalUserIdSafe()
     
     if (!userId) {
       throw new Error('User not authenticated')
@@ -100,7 +100,7 @@ async function updateTradeImage(
 
 export async function updateTradeAction(tradeId: string, data: any) {
   try {
-    const userId = await getUserIdSafe()
+    const userId = await getInternalUserIdSafe()
     if (!userId) {
       throw new Error('User not authenticated')
     }

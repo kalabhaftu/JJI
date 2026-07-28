@@ -96,7 +96,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingByName) {
-      const updated = (await db.update(schema.JournalTemplate).set({ content }).where(eq(schema.JournalTemplate.id, existingByName.id)).returning())[0]
+      const updated = (await db.update(schema.JournalTemplate).set({ content }).where(and(
+        eq(schema.JournalTemplate.id, existingByName.id),
+        eq(schema.JournalTemplate.userId, userId),
+      )).returning())[0]
       return NextResponse.json({ template: updated, updated: true })
     }
 

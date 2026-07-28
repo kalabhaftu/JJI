@@ -93,7 +93,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           status: 'passed',
           endDate: new Date(),
         })
-        .where(eq(schema.PhaseAccount.id, currentPhase.id))
+        .where(and(
+          eq(schema.PhaseAccount.id, currentPhase.id),
+          eq(schema.PhaseAccount.masterAccountId, masterAccountId),
+        ))
 
       const updatedNextPhase = (
         await tx
@@ -103,7 +106,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             phaseId: nextPhaseId,
             startDate: new Date(),
           })
-          .where(eq(schema.PhaseAccount.id, nextPhase.id))
+          .where(and(
+            eq(schema.PhaseAccount.id, nextPhase.id),
+            eq(schema.PhaseAccount.masterAccountId, masterAccountId),
+          ))
           .returning()
       )[0]
 
@@ -119,7 +125,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
             currentPhase: nextPhaseNumber,
             ...(isTransitioningToFunded && { status: 'funded' }),
           })
-          .where(eq(schema.MasterAccount.id, masterAccountId))
+          .where(and(
+            eq(schema.MasterAccount.id, masterAccountId),
+            eq(schema.MasterAccount.userId, internalUserId),
+          ))
           .returning()
       )[0]
 

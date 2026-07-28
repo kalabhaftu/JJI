@@ -1,3 +1,4 @@
+export const CacheKeys = {
   // User Cache Version key for instant atomic invalidation
   userVersion:     (userId: string)                    => `v1:user-ver:${userId}`,
 

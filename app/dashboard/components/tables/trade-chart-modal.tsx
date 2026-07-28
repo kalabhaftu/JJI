@@ -20,7 +20,7 @@ interface TradeChartModalProps {
   trade: ExtendedTrade | null
 }
 
-export function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
+function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
   const timezone = useUserStore(state => state.timezone)
   
   // Add a key to force remount when trade changes

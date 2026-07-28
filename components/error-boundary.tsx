@@ -255,4 +255,4 @@ export function DashboardErrorBoundary({
   )
 }
 
-export default ErrorBoundary
+

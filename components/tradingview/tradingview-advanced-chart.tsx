@@ -172,4 +172,4 @@ export function TradingViewAdvancedChart({
   )
 }
 
-export default TradingViewAdvancedChart
+

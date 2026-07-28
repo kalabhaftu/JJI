@@ -73,4 +73,4 @@ export class TradingViewErrorBoundary extends React.Component<
   }
 }
 
-export default TradingViewErrorBoundary
+

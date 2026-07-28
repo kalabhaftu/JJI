@@ -79,12 +79,19 @@ import { toast } from "sonner"
 import { CacheManagement } from "./components/cache-management"
 import { SettingRow } from './components/setting-row'
 import { buildTradingViewWebhookExample, defaultAiSettings, timezones } from './components/settings-config'
+import { useSettingsPreferences } from './hooks/use-settings-preferences'
 import { PageHeader } from "@/components/ui/page-header"
 import { getUserAvatarUrl } from "@/lib/user-avatar"
 import { useTour } from '@/context/tour-context'
 
 export default function SettingsPage() {
-  const { theme, setTheme, accentPack, setAccentPack, widgetStyle, setWidgetStyle, chartStyle, setChartStyle } = useTheme()
+  const { theme, accentPack, widgetStyle, chartStyle } = useTheme()
+  const {
+    handleThemeChange,
+    handleWidgetStyleChange,
+    handleAccentChange,
+    handleChartStyleChange,
+  } = useSettingsPreferences()
   const storeUser = useUserStore(state => state.supabaseUser)
   const dbUser = useUserStore(state => state.user)
   const setDbUser = useUserStore(state => state.setUser)
@@ -149,38 +156,6 @@ export default function SettingsPage() {
   const [isLoadingWebhook, setIsLoadingWebhook] = useState(false)
   const [isRegeneratingWebhook, setIsRegeneratingWebhook] = useState(false)
   const [webhookCopied, setWebhookCopied] = useState(false)
-
-  const handleThemeChange = (value: string) => {
-    setTheme(value as "light" | "dark" | "system")
-    toast.success("Theme updated", {
-      description: `Theme changed to ${value === 'system' ? 'system default' : value} mode.`,
-      duration: 2000
-    })
-  }
-
-  const handleWidgetStyleChange = (value: 'default' | 'glass') => {
-    setWidgetStyle(value)
-    toast.success("Widget style updated", {
-      description: `Widget style changed to ${value === 'glass' ? 'Glassmorphism' : 'Standard'}.`,
-      duration: 2000
-    })
-  }
-
-  const handleAccentChange = (value: 'classic' | 'reports' | 'violet' | 'slate') => {
-    setAccentPack(value)
-    toast.success("Color accent updated", {
-      description: `Accent changed to ${value === 'reports' ? 'Forest' : value === 'violet' ? 'Orchid' : value === 'slate' ? 'Graphite' : 'Classic'}.`,
-      duration: 2000
-    })
-  }
-
-  const handleChartStyleChange = (value: 'smooth' | 'sharp') => {
-    setChartStyle(value)
-    toast.success("Chart style updated", {
-      description: value === 'sharp' ? 'Charts now use sharp angular lines.' : 'Charts now use smooth curved lines.',
-      duration: 2000
-    })
-  }
 
   useEffect(() => {
     const fetchWebhookToken = async () => {

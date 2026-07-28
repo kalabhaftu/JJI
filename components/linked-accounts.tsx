@@ -79,8 +79,8 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
   const handleLinkDiscord = async () => {
     try {
       setLinking(true)
-      await linkDiscordAccount()
-      // Note: The redirect will happen automatically, so we don't need to handle success here
+      const result = await linkDiscordAccount()
+      if (result.url) window.location.assign(result.url)
     } catch (error) {
       toast.error("Failed to link account")
       setLinking(false)
@@ -90,8 +90,8 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
   const handleLinkGoogle = async () => {
     try {
       setLinking(true)
-      await linkGoogleAccount()
-      // Note: The redirect will happen automatically, so we don't need to handle success here
+      const result = await linkGoogleAccount()
+      if (result.url) window.location.assign(result.url)
     } catch (error) {
       toast.error("Failed to link account")
       setLinking(false)

@@ -33,15 +33,11 @@ import {
 import { SharedLinksManager } from './components/shared-links-manager'
 import {
     format,
-    startOfYear,
-    subDays,
-    subMonths,
     endOfDay
 } from 'date-fns'
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { getPnlDisplayLabel, getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
-import { DateRange } from '@/components/ui/custom-date-range-picker'
 import { toast } from 'sonner'
 import { ReportFilters } from './components/report-filters'
 import { useReportStats } from '@/hooks/use-report-stats'
@@ -71,6 +67,7 @@ import {
 } from '@/components/ui/tooltip'
 import { PropFirmReportsSkeleton, ReportsContentSkeleton } from './components/reports-page-skeleton'
 import { PageHeader } from '@/components/ui/page-header'
+import { useReportPageController } from './use-report-page-controller'
 
 const DiverseCharts = dynamic(() => import('./components/diverse-charts').then((mod) => mod.DiverseCharts))
 const MonthlyReturnsMatrix = dynamic(() => import('./components/monthly-returns-matrix').then((mod) => mod.MonthlyReturnsMatrix))
@@ -169,34 +166,22 @@ export default function ReportsPageClient({
     const user = useUserStore(state => state.user)
     const pnlDisplayMode = normalizePnlDisplayMode(user?.pnlDisplayMode)
 
-    // Filter State
-    const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
-    const [dateRange, setDateRange] = useState<DateRange | undefined>({
-        from: subDays(new Date(), 90),
-        to: new Date()
-    })
-    const [selectedTab, setSelectedTab] = useState('overview')
-    const [isExporting, setIsExporting] = useState(false)
-    const [activePreset, setActivePreset] = useState<string>('90D')
-
-    // Advanced Filters State
-    const [advancedFilters, setAdvancedFilters] = useState({
-        symbol: 'all',
-        session: 'all',
-        outcome: 'all',
-        strategy: 'all',
-        ruleBroken: 'all'
-    })
-
-    const filterArgs: any = {}
-    if (selectedAccountId) filterArgs.accountId = selectedAccountId
-    if (dateRange?.from) filterArgs.dateFrom = dateRange.from.toISOString()
-    if (dateRange?.to) filterArgs.dateTo = dateRange.to.toISOString()
-    if (advancedFilters.symbol !== 'all') filterArgs.symbol = advancedFilters.symbol
-    if (advancedFilters.session !== 'all') filterArgs.session = advancedFilters.session
-    if (advancedFilters.outcome !== 'all') filterArgs.outcome = advancedFilters.outcome
-    if (advancedFilters.strategy !== 'all') filterArgs.strategy = advancedFilters.strategy
-    if (advancedFilters.ruleBroken !== 'all') filterArgs.ruleBroken = advancedFilters.ruleBroken
+    const {
+        selectedAccountId,
+        setSelectedAccountId,
+        dateRange,
+        setDateRange,
+        selectedTab,
+        setSelectedTab,
+        isExporting,
+        setIsExporting,
+        activePreset,
+        advancedFilters,
+        filterArgs,
+        periodLabel,
+        handlePresetSelect,
+        handleFilterChange,
+    } = useReportPageController()
 
     // SERVER-SIDE: Use React Query hook instead of client-side fetching + useMemo
     const { data: reportData, isLoading } = useReportStats(filterArgs, true, {
@@ -217,29 +202,6 @@ export default function ReportsPageClient({
         sessions: [],
         outcomes: [],
         strategies: []
-    }
-
-    const handlePresetSelect = (preset: string) => {
-        const today = new Date()
-        setActivePreset(preset)
-        switch (preset) {
-            case '7D':
-                setDateRange({ from: subDays(today, 7), to: today })
-                break
-            case '30D':
-                setDateRange({ from: subDays(today, 30), to: today })
-                break
-            case '90D':
-                setDateRange({ from: subMonths(today, 3), to: today })
-                break
-            case 'YTD':
-                setDateRange({ from: startOfYear(today), to: today })
-                break
-            case 'ALL':
-                setDateRange({ from: new Date(2000, 0, 1), to: today })
-                setActivePreset('ALL')
-                break
-        }
     }
 
     // Export metrics as CSV spreadsheet
@@ -307,7 +269,7 @@ export default function ReportsPageClient({
         } finally {
             setIsExporting(false)
         }
-    }, [tradingActivity, psychMetrics])
+    }, [setIsExporting, tradingActivity, psychMetrics])
 
     // Screenshot page snapshot
     const handlePageSnapshot = useCallback(async () => {
@@ -357,7 +319,7 @@ export default function ReportsPageClient({
         } finally {
             setIsExporting(false)
         }
-    }, [])
+    }, [setIsExporting])
 
     const handleGenerateLink = useCallback(async () => {
         if (!tradingActivity || !psychMetrics) {
@@ -399,15 +361,7 @@ export default function ReportsPageClient({
         } finally {
             setIsExporting(false)
         }
-    }, [tradingActivity, psychMetrics, dateRange, selectedAccountId, advancedFilters])
-
-    const handleFilterChange = (key: string, value: string) => {
-        setAdvancedFilters(prev => ({ ...prev, [key]: value }))
-    }
-
-    const periodLabel = dateRange?.from && dateRange?.to
-        ? `${format(dateRange.from, 'MMM d')} - ${format(dateRange.to, 'MMM d, yyyy')}`
-        : 'Select Period'
+    }, [setIsExporting, tradingActivity, psychMetrics, dateRange, selectedAccountId, advancedFilters])
 
     return (
         <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 pb-20 md:pb-8 overflow-hidden" id="report-content">

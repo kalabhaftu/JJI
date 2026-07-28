@@ -8,6 +8,8 @@ function source(path: string): string {
 }
 
 const workspace = source('app/dashboard/ai/page.tsx')
+const workspaceLoader = source('app/dashboard/ai/hooks/use-ai-workspace-loader.ts')
+const workspaceImplementation = `${workspace}\n${workspaceLoader}`
 
 describe('AI workspace feature contracts', () => {
   it('retains every user-visible conversation and insight action', () => {
@@ -24,7 +26,7 @@ describe('AI workspace feature contracts', () => {
       'setWeeklyAIReviews',
       'handleAcceptAiConsent',
     ]) {
-      expect(workspace, handler).toContain(handler)
+      expect(workspaceImplementation, handler).toContain(handler)
     }
   })
 
@@ -32,10 +34,10 @@ describe('AI workspace feature contracts', () => {
     expect(workspace).toContain('selectedSources')
     expect(workspace).toContain('aiConsentGranted')
     expect(workspace).toContain('streamingText')
-    expect(workspace).toContain('setPaywallError')
-    expect(workspace).toContain('toast.error')
-    expect(workspace).not.toContain('mock AI')
-    expect(workspace).not.toContain('fake response')
+    expect(workspaceImplementation).toContain('paywallError')
+    expect(workspaceImplementation).toContain('toast.error')
+    expect(workspaceImplementation).not.toContain('mock AI')
+    expect(workspaceImplementation).not.toContain('fake response')
   })
 
   it('keeps the complete owned API surface used by the workspace', () => {

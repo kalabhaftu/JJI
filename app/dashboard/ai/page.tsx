@@ -23,7 +23,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { format } from 'date-fns'
 import { followUpSuggestions } from './ai-config'
 import { ContextComposer } from './components/context-composer'
 import { ConversationView } from './components/conversation-view'
@@ -31,17 +30,28 @@ import { ReviewDialog } from './components/review-dialog'
 import { WorkspaceSidebar } from './components/workspace-sidebar'
 import type { ChatMessage, ChatSession, SavedInsight, WeeklyReview, WorkspaceAccount, WorkspaceTab } from './types'
 import { AI_DATA_CONSENT_VERSION } from '@/lib/user-settings'
+import { useAiWorkspaceLoader } from './hooks/use-ai-workspace-loader'
 
 export default function AIChatWorkspace() {
   const { accounts, isDemoMode } = useData()
+  const {
+    chats,
+    setChats,
+    savedInsights,
+    setSavedInsights,
+    weeklyAIReviews,
+    isLoadingChats,
+    paywallError,
+    aiSettings,
+    setAiSettings,
+    aiConsentGranted,
+    setAiConsentGranted,
+  } = useAiWorkspaceLoader(isDemoMode)
   
   // State variables
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('chats')
-  const [chats, setChats] = useState<ChatSession[]>([])
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  const [savedInsights, setSavedInsights] = useState<SavedInsight[]>([])
-  const [weeklyAIReviews, setWeeklyAIReviews] = useState<WeeklyReview[]>([])
   
   // Context Selection States
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
@@ -57,11 +67,7 @@ export default function AIChatWorkspace() {
   const [streamingText, setStreamingText] = useState('')
   const [isRenameMode, setIsRenameMode] = useState(false)
   const [renameValue, setRenameValue] = useState('')
-  const [isLoadingChats, setIsLoadingChats] = useState(true)
   const [isLoadingMessages, setIsLoadingMessages] = useState(false)
-  const [paywallError, setPaywallError] = useState<string | null>(null)
-  const [aiSettings, setAiSettings] = useState<Record<string, unknown>>({})
-  const [aiConsentGranted, setAiConsentGranted] = useState(false)
   const [isConsentDialogOpen, setIsConsentDialogOpen] = useState(false)
   const [isSavingConsent, setIsSavingConsent] = useState(false)
   const [pendingPrompt, setPendingPrompt] = useState<{ prompt: string; sources?: string[] } | null>(null)
@@ -88,122 +94,6 @@ export default function AIChatWorkspace() {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
     }
   }, [messages, streamingText])
-
-  useEffect(() => {
-    if (isDemoMode) {
-      const demoChats: ChatSession[] = [
-        {
-          id: 'demo-1',
-          title: 'Review Risk on NQ & ES',
-          isPinned: true,
-          isArchived: false,
-          accounts: ['demo-funded'],
-          dateRange: 'last-30-days',
-          customFrom: null,
-          customTo: null,
-          dataSources: ['trades', 'statistics'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        {
-          id: 'demo-2',
-          title: 'Psychology review: anxious days',
-          isPinned: false,
-          isArchived: false,
-          accounts: ['demo-personal'],
-          dateRange: 'last-90-days',
-          customFrom: null,
-          customTo: null,
-          dataSources: ['journals'],
-          createdAt: new Date(Date.now() - 86400000).toISOString(),
-          updatedAt: new Date(Date.now() - 86400000).toISOString()
-        }
-      ]
-      setChats(demoChats)
-      
-      const demoInsights: SavedInsight[] = [
-        {
-          id: 'insight-1',
-          title: 'Revenge Trading Pattern Identified',
-          content: 'Data shows a 73% loss rate on trades taken within 45 minutes of a losing trade. Sizing is 1.5x larger on average due to revenge impulse.',
-          category: 'mistake',
-          createdAt: new Date().toISOString()
-        }
-      ]
-      setSavedInsights(demoInsights)
-      setIsLoadingChats(false)
-    } else {
-      // Fetch user chats, insights, and reviews
-      loadWorkspaceData()
-    }
-  }, [isDemoMode])
-
-  const loadWorkspaceData = async () => {
-    setIsLoadingChats(true)
-    setPaywallError(null)
-    try {
-      const [chatsRes, insightsRes, profileRes] = await Promise.all([
-        fetch('/api/v1/ai/chats'),
-        fetch('/api/v1/ai/insights'),
-        fetch('/api/auth/profile') // to check if paywalled
-      ])
-
-      if (chatsRes.status === 403 || insightsRes.status === 403) {
-        const payload = await chatsRes.json()
-        setPaywallError(payload.error || 'Upgrade to a Pro plan to use the AI assistant.')
-        setIsLoadingChats(false)
-        return
-      }
-
-      if (chatsRes.ok) {
-        const payload = await chatsRes.json()
-        setChats(payload.data || [])
-      }
-
-      if (insightsRes.ok) {
-        const payload = await insightsRes.json()
-        setSavedInsights(payload.data || [])
-      }
-
-      if (profileRes.ok) {
-        const payload = await profileRes.json()
-        const settings = payload.data?.aiSettings && typeof payload.data.aiSettings === 'object'
-          ? payload.data.aiSettings as Record<string, unknown>
-          : {}
-        setAiSettings(settings)
-        setAiConsentGranted(Boolean(
-          settings.dataProcessingConsentAt &&
-          settings.dataProcessingConsentVersion === AI_DATA_CONSENT_VERSION
-        ))
-      }
-      
-      // Also fetch weekly reviews
-      const reviewsRes = await fetch('/api/v1/weekly-review')
-      let loadedReviews: any[] = []
-      if (reviewsRes.ok) {
-        const payload = await reviewsRes.json()
-        if (payload.success && Array.isArray(payload.data)) {
-          loadedReviews = payload.data
-        }
-      }
-
-      // If no historical reviews exist, generate the live one for last 30 days
-      if (loadedReviews.length === 0) {
-        const liveRes = await fetch('/api/v1/journal/ai-analysis?startDate=' + format(subDays(new Date(), 30), 'yyyy-MM-dd') + '&endDate=' + format(new Date(), 'yyyy-MM-dd'))
-        if (liveRes.ok) {
-          const liveData = await liveRes.json()
-          if (liveData.analysis) {
-            loadedReviews = [liveData.analysis]
-          }
-        }
-      }
-      setWeeklyAIReviews(loadedReviews)
-    } catch (err) {
-      toast.error('Failed to load AI Assistant data.')
-    } finally {
-      setIsLoadingChats(false)
-    }
-  }
 
   // Pre-populate account selector when accounts are loaded
   useEffect(() => {

@@ -128,28 +128,26 @@ export async function createClient() {
 
 export async function signInWithDiscord(next: string | null = null) {
   const supabase = await createClient()
-  const { data } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'discord',
     options: {
       redirectTo: await getAuthCallbackUrl(next),
     },
   })
-  if (data.url) {
-      redirect(data.url as Route)
-  }
+  if (error) throw new Error(error.message)
+  return data.url ? { url: data.url } : { url: null }
 }
 
 export async function signInWithGoogle(next: string | null = null) {
   const supabase = await createClient()
-  const { data } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
       redirectTo: await getAuthCallbackUrl(next),
     },
   })
-  if (data.url) {
-    redirect(data.url as Route)
-  }
+  if (error) throw new Error(error.message)
+  return data.url ? { url: data.url } : { url: null }
 }
 
 
@@ -801,12 +799,10 @@ export async function linkDiscordAccount() {
       redirectTo: `${websiteURL}api/auth/callback?action=link`,
     },
   })
-  if (data.url) {
-    redirect(data.url as Route)
-  }
   if (error) {
     throw new Error(error.message)
   }
+  return data.url ? { url: data.url } : { url: null }
 }
 
 export async function linkGoogleAccount() {
@@ -818,12 +814,10 @@ export async function linkGoogleAccount() {
       redirectTo: `${websiteURL}api/auth/callback?action=link`,
     },
   })
-  if (data.url) {
-    redirect(data.url as Route)
-  }
   if (error) {
     throw new Error(error.message)
   }
+  return data.url ? { url: data.url } : { url: null }
 }
 
 export async function unlinkIdentity(identity: any) {

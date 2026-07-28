@@ -1,6 +1,7 @@
 import * as Sentry from '@sentry/nextjs'
 
-const DEFAULT_PRODUCTION_ORIGIN = 'https://justjournalit.vercel.app'
+const PRODUCTION_ORIGIN = 'https://www.justjournalit.site'
+const PREVIEW_ORIGIN = 'https://justjournalit.vercel.app'
 
 const LOCALHOST_HOSTS = new Set(['localhost', '127.0.0.1', '0.0.0.0', '::1'])
 
@@ -31,21 +32,21 @@ function getCanonicalOrigin() {
     normalizeOrigin(process.env.NEXT_PUBLIC_SITE_URL) ||
     normalizeOrigin(process.env.NEXT_PUBLIC_APP_URL) ||
     normalizeOrigin(process.env.APP_BASE_URL) ||
-    DEFAULT_PRODUCTION_ORIGIN
+    PRODUCTION_ORIGIN
   )
 }
 
 export function getAllowedOrigins() {
-  if (process.env.VERCEL_ENV === 'production') {
-    return [DEFAULT_PRODUCTION_ORIGIN]
-  }
-
   const origins = new Set<string>([
-    DEFAULT_PRODUCTION_ORIGIN,
-    getCanonicalOrigin(),
+    PRODUCTION_ORIGIN,
+    PREVIEW_ORIGIN,
     ...splitOrigins(process.env.NEXT_PUBLIC_ALLOWED_ORIGINS),
     ...splitOrigins(process.env.ALLOWED_ORIGINS),
   ])
+
+  if (process.env.VERCEL_ENV !== 'production') {
+    origins.add(getCanonicalOrigin())
+  }
 
   if (process.env.NODE_ENV !== 'production') {
     origins.add('http://localhost:3000')

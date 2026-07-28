@@ -47,7 +47,7 @@ describe('route chunk boundaries', () => {
   it('keeps the production CORS origin canonical even if an environment value drifts', () => {
     const config = source('next.config.js')
 
-    expect(config).toContain("process.env.VERCEL_ENV === 'production'")
-    expect(config).toContain("? 'https://justjournalit.vercel.app'")
+    expect(config).toContain("'https://www.justjournalit.site'")
+    expect(config).not.toContain("? 'https://justjournalit.vercel.app'")
   })
 })

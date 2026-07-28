@@ -5,8 +5,8 @@
 | Environment | Branch | URL | Data |
 |---|---|---|---|
 | Local | developer branch | `http://localhost:3000` | development services |
-| Preview | `preview` | Vercel preview alias | staging services |
-| Production | `main` | `https://justjournalit.vercel.app` | production services |
+| Preview | `preview` | `https://justjournalit.vercel.app` | staging services |
+| Production | `main` | `https://www.justjournalit.site` | production services |
 
 Preview must not mutate production database, Storage, Redis, payments, email, OAuth, Inngest, or AI state.
 
@@ -72,7 +72,9 @@ Confirm zero public browser source maps and review route bundle sizes from the b
 
 - Build uses Node.js 24 and `npm ci`
 - Preview deployment is ready
-- Production domain is `justjournalit.vercel.app`
+- Production domain is `www.justjournalit.site`
+- Preview/pre-release domain is `justjournalit.vercel.app`
+- Docs host is `docs.justjournalit.site` and rewrites to `/docs/*` on the main app
 - Health endpoint reports database and Redis up
 - Cron requests authenticate
 

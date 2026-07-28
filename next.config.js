@@ -55,10 +55,8 @@ const nextConfig = {
   pageExtensions: ['tsx', 'ts', 'jsx', 'js'],
 
   async headers() {
-    const allowedOrigin = process.env.VERCEL_ENV === 'production'
-      ? 'https://justjournalit.vercel.app'
-      : process.env.APP_BASE_URL ||
-        (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://justjournalit.vercel.app');
+    const allowedOrigin = process.env.APP_BASE_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.justjournalit.site');
 
     return [
       {

@@ -16,4 +16,11 @@ describe('middleware security boundary', () => {
   it('does not perform a duplicate Supabase auth request for API traffic', () => {
     expect(middlewareSource).toContain('(?!api/|_next/static')
   })
+
+  it('rewrites the docs subdomain into the docs route without a browser redirect', () => {
+    expect(middlewareSource).toContain("const DOCS_HOST = 'docs.justjournalit.site'")
+    expect(middlewareSource).toContain("url.pathname === '/' ? '/docs' : `/docs${url.pathname}`")
+    expect(middlewareSource).toContain('NextResponse.rewrite')
+    expect(middlewareSource).not.toContain('docs.justjournalit.site/redirect')
+  })
 })

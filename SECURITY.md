@@ -8,7 +8,7 @@ Do not disclose active vulnerabilities publicly before remediation is available.
 
 ## Supported release
 
-The current production deployment at `https://justjournalit.vercel.app` is the supported release.
+The current production deployment at `https://www.justjournalit.site` is the supported release.
 
 ## Security invariants
 

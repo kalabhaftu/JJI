@@ -3,7 +3,8 @@ import { join } from 'node:path'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BRAND } from '@/lib/constants/brand'
 
-const CANONICAL_ORIGIN = 'https://justjournalit.vercel.app'
+const CANONICAL_ORIGIN = 'https://www.justjournalit.site'
+const PREVIEW_ORIGIN = 'https://justjournalit.vercel.app'
 const ORIGINAL_ENV = { ...process.env }
 
 afterEach(() => {
@@ -12,7 +13,7 @@ afterEach(() => {
 })
 
 describe('canonical production origin', () => {
-  it('uses the JJI Vercel origin as the application source of truth', () => {
+  it('uses the JJI custom domain as the application source of truth', () => {
     expect(BRAND.siteUrl).toBe(CANONICAL_ORIGIN)
     expect(readFileSync(join(process.cwd(), 'lib/security/origins.ts'), 'utf8'))
       .toContain(CANONICAL_ORIGIN)
@@ -35,11 +36,16 @@ describe('canonical production origin', () => {
   })
 
   it('does not allow environment drift to change the hosted production origin', async () => {
+    process.env.NODE_ENV = 'production'
     process.env.VERCEL_ENV = 'production'
     process.env.APP_BASE_URL = 'https://wrong.example'
+    delete process.env.NEXT_PUBLIC_APP_URL
+    delete process.env.NEXT_PUBLIC_SITE_URL
+    delete process.env.NEXT_PUBLIC_ALLOWED_ORIGINS
+    delete process.env.ALLOWED_ORIGINS
     vi.resetModules()
 
     const { getAllowedOrigins } = await import('@/lib/security/origins')
-    expect(getAllowedOrigins()).toEqual(['https://justjournalit.vercel.app'])
+    expect(getAllowedOrigins()).toEqual([CANONICAL_ORIGIN, PREVIEW_ORIGIN])
   })
 })

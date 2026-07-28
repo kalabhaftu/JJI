@@ -3,7 +3,7 @@ export const BRAND = {
   fullName: 'Just Journal It',
   tagline: 'Where traders find consistency through the charts',
   scheme: 'jji',
-  siteUrl: 'https://justjournalit.vercel.app',
+  siteUrl: 'https://www.justjournalit.site',
   appPackage: 'com.jji.app',
 } as const
 

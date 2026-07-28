@@ -2,7 +2,9 @@
 
 Production trading journal, performance analytics, prop-firm tracking, and consent-gated AI review workspace.
 
-- Production: [justjournalit.vercel.app](https://justjournalit.vercel.app)
+- Production: [www.justjournalit.site](https://www.justjournalit.site)
+- Preview/pre-release: [justjournalit.vercel.app](https://justjournalit.vercel.app)
+- Docs: [docs.justjournalit.site](https://docs.justjournalit.site)
 - Staging branch: `preview`
 - Production branch: `main`
 - Runtime: Node.js 24

@@ -85,7 +85,7 @@ export default function PrivacyPage() {
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
           <p>
-            We use essential cookies and local storage to keep you logged in and remember app preferences. JJI does not use advertising or non-essential analytics cookies.
+            We use essential cookies and local storage to keep you logged in and remember app preferences. Optional operational telemetry can be enabled from the storage notice; it is limited to crash reports and sampled performance diagnostics. JJI does not use advertising analytics, session replay, or behavioral tracking.
           </p>
           <div className="mt-4">
             <Button variant="outline" size="sm" onClick={openCookiePreferences} className="gap-2">

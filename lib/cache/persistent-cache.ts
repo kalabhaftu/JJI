@@ -93,7 +93,7 @@ function getAllCacheKeys(excludeKeys: string[] = []): string[] {
 /**
  * Clear specific localStorage cache keys
  */
-function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner-dismissed']): number {
+function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner-dismissed', 'jji-cookie-notice-dismissed', 'jji-telemetry-consent']): number {
   if (typeof window === 'undefined') return 0
   
   let clearedCount = 0
@@ -223,7 +223,9 @@ export async function clearAllCaches(options: {
   
   const keysToKeep: string[] = []
   if (keepTheme) keysToKeep.push('theme')
-  if (keepConsent) keysToKeep.push('consent-banner-dismissed')
+  if (keepConsent) {
+    keysToKeep.push('consent-banner-dismissed', 'jji-cookie-notice-dismissed', 'jji-telemetry-consent')
+  }
   
   const localStorageCleared = clearLocalStorageCache(keysToKeep)
   const sessionStorageCleared = clearSessionStorage()

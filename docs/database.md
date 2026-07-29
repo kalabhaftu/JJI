@@ -22,10 +22,10 @@ Application code uses `DATABASE_URL` through `lib/db/client.ts`. Migration and a
 2. Generate the migration with the repository tool.
 3. Review generated SQL and data effects.
 4. Add explicit data-preservation SQL when required.
-5. Run `npx drizzle-kit check`.
+5. Run `bunx drizzle-kit check`.
 6. Run focused migration tests and the full test suite.
 
-`npm run db:push` is limited to disposable development databases.
+`bun run db:push` is limited to disposable development databases.
 
 The `0000`–`0002` files are historical Drizzle baselines. Production records
 them as superseded; `20260726004500_align_drizzle_runtime_schema.sql` performs

@@ -1,10 +1,8 @@
 'use client'
 
-import { LinkedAccounts } from "@/components/linked-accounts"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Dialog,
   DialogContent,
@@ -13,6 +11,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -40,18 +48,14 @@ import {
   ChevronDown,
   Check,
   Clock,
-  Copy,
   CreditCard,
-  Database,
   Pencil,
   Laptop,
   Moon,
   Palette,
-  RefreshCw,
   Settings as SettingsIcon,
   Bot,
   Shield,
-  LogOut as SignOut,
   Sparkles,
   BellRing,
   Sun,
@@ -76,13 +80,15 @@ import * as Sentry from '@sentry/nextjs'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from "sonner"
-import { CacheManagement } from "./components/cache-management"
 import { SettingRow } from './components/setting-row'
-import { buildTradingViewWebhookExample, defaultAiSettings, timezones } from './components/settings-config'
+import { defaultAiSettings, timezones } from './components/settings-config'
 import { useSettingsPreferences } from './hooks/use-settings-preferences'
 import { PageHeader } from "@/components/ui/page-header"
 import { getUserAvatarUrl } from "@/lib/user-avatar"
 import { useTour } from '@/context/tour-context'
+import { SettingsNavigation, type SettingsSectionId } from './components/settings-navigation'
+import { SettingsHeader, SettingsShell } from './components/settings-shell'
+import { SettingsConnections, SettingsIntegrations, SettingsSecurity } from './components/settings-panels'
 
 export default function SettingsPage() {
   const { theme, accentPack, widgetStyle, chartStyle } = useTheme()
@@ -105,6 +111,7 @@ export default function SettingsPage() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isSignOutDialogOpen, setIsSignOutDialogOpen] = useState(false)
 
   const [profileData, setProfileData] = useState({
     firstName: '',
@@ -155,6 +162,7 @@ export default function SettingsPage() {
   const [webhookToken, setWebhookToken] = useState<string | null>(null)
   const [isLoadingWebhook, setIsLoadingWebhook] = useState(false)
   const [isRegeneratingWebhook, setIsRegeneratingWebhook] = useState(false)
+  const [isRegenerateWebhookDialogOpen, setIsRegenerateWebhookDialogOpen] = useState(false)
   const [webhookCopied, setWebhookCopied] = useState(false)
 
   useEffect(() => {
@@ -556,11 +564,12 @@ export default function SettingsPage() {
 
   const themeInfo = getThemeDisplay()
 
-  const [activeTab, setActiveTab] = useState<'profile' | 'preferences' | 'integrations' | 'connections' | 'security' | 'help'>('profile')
+  const [activeTab, setActiveTab] = useState<SettingsSectionId>('profile')
 
   const categories = [
     { id: 'profile' as const, label: 'Profile & Plan', icon: User },
     { id: 'preferences' as const, label: 'Preferences', icon: SettingsIcon },
+    { id: 'integrations' as const, label: 'Integrations', icon: Webhook },
     { id: 'connections' as const, label: 'Connections', icon: LinkIcon },
     { id: 'security' as const, label: 'Security & Data', icon: Shield },
     { id: 'help' as const, label: 'Help', icon: BookMarked },
@@ -1203,230 +1212,15 @@ export default function SettingsPage() {
     )
   }
 
-  const renderIntegrationsTab = () => {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-heading-text">Integrations</h2>
-          <p className="text-xs text-muted-foreground/85">Automate trade importing using third-party alerts and webhooks</p>
-        </div>
-
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6" data-tour="settings-card-integrations">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-muted">
-              <Webhook className="h-5 w-5 text-muted-foreground" />
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-heading-text">TradingView Webhook</h3>
-              <p className="text-xs text-muted-foreground">Auto-import trades via TradingView alerts</p>
-            </div>
-          </div>
-
-          <p className="text-xs text-muted-foreground/85">
-            Paste this URL into the TradingView alert webhook field. The secret token does not go in the URL; it goes inside the JSON message body shown below.
-          </p>
-
-          <div className="flex items-center gap-2">
-            <div className="flex-1 min-w-0 rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 font-mono text-[11px] text-muted-foreground truncate">
-              {isLoadingWebhook ? (
-                <Skeleton className="h-3.5 w-full" />
-              ) : webhookToken ? (
-                `${typeof window !== 'undefined' ? window.location.origin : ''}/api/v1/import/webhook/tradingview?token=${webhookToken}`
-              ) : (
-                'Loading...'
-              )}
-            </div>
-            <Button
-              variant="outline"
-              size="icon"
-              aria-label={webhookCopied ? "Webhook URL copied" : "Copy webhook URL"}
-              title={webhookCopied ? "Copied" : "Copy webhook URL"}
-              className="shrink-0 h-9 w-9"
-              disabled={!webhookToken || isLoadingWebhook}
-              onClick={copyWebhookUrl}
-            >
-              {webhookCopied ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          </div>
-
-          <div className="flex items-center justify-between pt-1">
-            <p className="text-[10px] text-muted-foreground/60">
-              Regenerating creates a new URL and invalidates the old one.
-            </p>
-            <Button
-              variant="outline"
-              size="sm"
-              className="gap-2 text-xs shrink-0 h-8"
-              disabled={isRegeneratingWebhook}
-              onClick={regenerateWebhookToken}
-            >
-              <RefreshCw className={cn('h-3 w-3', isRegeneratingWebhook && 'animate-spin')} />
-              Regenerate Token
-            </Button>
-          </div>
-
-          <div className="space-y-2 rounded-xl border border-border/40 bg-muted/10 p-4">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-[11px] font-semibold text-heading-text">TradingView alert message body</p>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 gap-1 px-2 text-xs hover:bg-muted/50 font-medium"
-                disabled={!webhookToken || isLoadingWebhook}
-                onClick={async () => {
-                  try {
-                    await navigator.clipboard.writeText(buildTradingViewWebhookExample(webhookToken))
-                    toast.success('Webhook example copied')
-                  } catch (error) {
-                    Sentry.captureException(error, { tags: { surface: 'settings', operation: 'copy-webhook-example' } })
-                    toast.error('Could not copy webhook example')
-                  }
-                }}
-              >
-                <Copy className="h-3.5 w-3.5" />
-                Copy JSON
-              </Button>
-            </div>
-            <pre className="overflow-x-auto rounded-lg border border-border/30 bg-background/45 p-3 text-[11px] leading-5 text-muted-foreground/90 font-mono">
-              {buildTradingViewWebhookExample(webhookToken)}
-            </pre>
-            <p className="text-[10px] text-muted-foreground/70 leading-4">
-              Required fields: <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">token</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">symbol</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">side</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">entry_price</code>, <code className="text-xs bg-muted px-1 py-0.5 rounded text-foreground font-mono">close_price</code>. If quantity, pnl, or timestamps are missing, the import still succeeds but with reduced detail.
-            </p>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const renderConnectionsTab = () => {
-    return (
-      <div className="space-y-8">
-        <div>
-          <h2 className="text-lg font-semibold text-heading-text">Connections</h2>
-          <p className="text-xs text-muted-foreground/85">Manage imports, webhooks, and sign-in providers</p>
-        </div>
-
-        {renderIntegrationsTab()}
-
-        <div className="space-y-3">
-          <div>
-            <h3 className="text-sm font-semibold text-heading-text">Linked accounts</h3>
-            <p className="text-xs text-muted-foreground/85">Manage the providers that can sign you in.</p>
-          </div>
-          <div className="rounded-xl border border-border/40 bg-card/45 p-6" data-tour="settings-card-connections">
-            <LinkedAccounts plain={true} />
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  const renderSecurityTab = () => {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-heading-text">Security & Data Management</h2>
-          <p className="text-xs text-muted-foreground/85">Manage your local storage cache, export data, sign out, or delete your account</p>
-        </div>
-
-        {/* Cache Management */}
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6" data-tour="settings-card-security">
-          <CacheManagement plain={true} />
-        </div>
-
-        {/* Account and Data controls */}
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
-          <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-            <Shield className="h-4 w-4" />
-            Account Actions
-          </h3>
-
-          <div className="flex flex-wrap gap-3">
-            <Link href="/dashboard/data">
-              <Button variant="outline" className="gap-2 h-9 text-xs">
-                <Database className="h-4 w-4" />
-                Data Management
-              </Button>
-            </Link>
-
-            <Button
-              variant="outline"
-              className="gap-2 h-9 text-xs"
-              onClick={() => {
-                localStorage.removeItem('jji_user_data')
-                signOut()
-              }}
-            >
-              <SignOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-          </div>
-
-          <Separator className="border-border/30" />
-
-          {/* Danger Zone */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-semibold text-destructive uppercase tracking-wider">Danger Zone</h4>
-            <p className="text-xs text-muted-foreground/85 text-balance">
-              Permanently delete your account and all associated trading data, files, and settings. This action is irreversible.
-            </p>
-            <Button
-              variant="outline"
-              className="gap-2 h-9 text-xs mt-1 border-destructive/30 hover:border-destructive hover:bg-destructive/10"
-              onClick={() => setIsDeleteModalOpen(true)}
-            >
-              <Trash className="h-4 w-4" />
-              Delete Account
-            </Button>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 pb-20 md:pb-8">
+    <SettingsShell>
       {/* Header */}
-      <div className="mb-8">
+      <SettingsHeader>
         <PageHeader title="Settings" className="gap-2" />
-      </div>
+      </SettingsHeader>
 
       <div className="flex flex-col md:flex-row gap-8 items-start">
-        {/* Sidebar Navigation */}
-        <div className="w-full md:w-64 shrink-0 flex md:flex-col overflow-x-auto md:overflow-x-visible pb-3 md:pb-0 gap-1 border-b md:border-b-0 md:border-r border-border/40 pr-0 md:pr-4 scrollbar-none">
-          {categories.map((cat) => {
-            const Icon = cat.icon
-            const isActive = activeTab === cat.id
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveTab(cat.id)}
-                data-tour={`settings-tab-${cat.id}`}
-                className={cn(
-                  "relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors whitespace-nowrap md:w-full text-left shrink-0",
-                  isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/40"
-                )}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="activeTabIndicator"
-                    className="absolute inset-0 bg-muted/65 rounded-lg -z-10"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
-                <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
-                <span className="truncate">{cat.label}</span>
-              </button>
-            )
-          })}
-        </div>
+        <SettingsNavigation categories={categories} value={activeTab} onValueChange={setActiveTab} />
 
         {/* Tab Content Panel */}
         <div className="flex-1 min-w-0 w-full">
@@ -1437,10 +1231,11 @@ export default function SettingsPage() {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="space-y-8"
           >
-             {activeTab === 'profile' && renderProfileTab()}
+            {activeTab === 'profile' && renderProfileTab()}
             {activeTab === 'preferences' && renderPreferencesTab()}
-            {activeTab === 'connections' && renderConnectionsTab()}
-            {activeTab === 'security' && renderSecurityTab()}
+            {activeTab === 'integrations' && <SettingsIntegrations token={webhookToken} loading={isLoadingWebhook} copied={webhookCopied} regenerating={isRegeneratingWebhook} onCopyUrl={copyWebhookUrl} onRegenerate={() => setIsRegenerateWebhookDialogOpen(true)} />}
+            {activeTab === 'connections' && <SettingsConnections webhook={{ token: webhookToken, loading: isLoadingWebhook, copied: webhookCopied, regenerating: isRegeneratingWebhook, onCopyUrl: copyWebhookUrl, onRegenerate: () => setIsRegenerateWebhookDialogOpen(true) }} />}
+            {activeTab === 'security' && <SettingsSecurity editingProfile={isEditingProfile} onSignOutPrompt={() => { if (isEditingProfile) setIsSignOutDialogOpen(true); else { localStorage.removeItem('jji_user_data'); void signOut() } }} onDelete={() => setIsDeleteModalOpen(true)} />}
             {activeTab === 'help' && renderHelpTab()}
           </motion.div>
         </div>
@@ -1514,6 +1309,51 @@ export default function SettingsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div >
+
+      <AlertDialog open={isRegenerateWebhookDialogOpen} onOpenChange={setIsRegenerateWebhookDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Regenerate webhook token?</AlertDialogTitle>
+            <AlertDialogDescription>
+              The current TradingView webhook token will be invalid immediately. Existing alerts using it will stop importing trades until you update them with the new token.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRegeneratingWebhook}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              disabled={isRegeneratingWebhook}
+              onClick={(event) => {
+                event.preventDefault()
+                void regenerateWebhookToken().finally(() => setIsRegenerateWebhookDialogOpen(false))
+              }}
+            >
+              {isRegeneratingWebhook ? 'Regenerating…' : 'Regenerate token'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isSignOutDialogOpen} onOpenChange={setIsSignOutDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard profile changes and sign out?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your unsaved profile edits will be lost. Save them first or continue signing out.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep editing</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                localStorage.removeItem('jji_user_data')
+                void signOut()
+              }}
+            >
+              Discard and sign out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </SettingsShell>
   )
 }

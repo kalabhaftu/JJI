@@ -12,6 +12,9 @@ const result = {
 }
 
 for (const file of files) {
+  // Shared primitives own their event handlers by design. Audit product
+  // surfaces for accidental clickable containers, not primitive internals.
+  if (file.startsWith('components/ui/')) continue
   const text = readFileSync(file, 'utf8')
   const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
 

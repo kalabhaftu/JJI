@@ -13,14 +13,14 @@ Preview must not mutate production database, Storage, Redis, payments, email, OA
 ## Pre-deployment gate
 
 ```bash
-npm ci
-npm run type-check
-npm run lint
-npm test -- --run
-npm audit --audit-level=low
-npm run security:scan-console
-npx drizzle-kit check
-npm run build
+bun install --frozen-lockfile
+bun run type-check
+bun run lint
+bun run test -- --run
+bun audit
+bun run security:scan-console
+bunx drizzle-kit check
+bun run build
 ```
 
 Confirm zero public browser source maps and review route bundle sizes from the build output.
@@ -70,7 +70,7 @@ Confirm zero public browser source maps and review route bundle sizes from the b
 
 ### Vercel
 
-- Build uses Node.js 24 and `npm ci`
+- Build uses Node.js 24 and `bun install --frozen-lockfile`
 - Preview deployment is ready
 - Production domain is `www.justjournalit.site`
 - Preview/pre-release domain is `justjournalit.vercel.app`

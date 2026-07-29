@@ -9,7 +9,6 @@ import {
     TableHeader,
     TableRow
 } from '@/components/ui/table'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useData } from '@/context/data-provider'
 import { formatTimeInZone } from '@/lib/time-utils'
 import { classifyTrade, cn } from '@/lib/utils'
@@ -68,6 +67,8 @@ import {
 import { PropFirmReportsSkeleton, ReportsContentSkeleton } from './components/reports-page-skeleton'
 import { PageHeader } from '@/components/ui/page-header'
 import { useReportPageController } from './use-report-page-controller'
+import { ReportsNavigation } from './components/reports-navigation'
+import { ReportsSessionSummary } from './components/reports-session-summary'
 
 const DiverseCharts = dynamic(() => import('./components/diverse-charts').then((mod) => mod.DiverseCharts))
 const MonthlyReturnsMatrix = dynamic(() => import('./components/monthly-returns-matrix').then((mod) => mod.MonthlyReturnsMatrix))
@@ -87,74 +88,6 @@ interface ReportsPageClientProps {
     initialReportData?: ReportStatsResponse | null
     initialReportKey?: string
     initialPropFirmData?: PropFirmSummaryDTO | null
-}
-
-// Session Block for session metrics tab
-function SessionBlock({
-    name,
-    range,
-    trades,
-    wins,
-    pnl,
-    totalHoldMs,
-    peak,
-    maxDD
-}: {
-    name: string
-    range: string
-    trades: number
-    wins: number
-    pnl: number
-    totalHoldMs: number
-    peak: number
-    maxDD: number
-}) {
-    const winRate = trades > 0 ? ((wins / trades) * 100).toFixed(1) : '0.0'
-    const avgHoldMs = trades > 0 ? totalHoldMs / trades : 0
-    const h = Math.floor(avgHoldMs / (1000 * 60 * 60))
-    const m = Math.floor((avgHoldMs % (1000 * 60 * 60)) / (1000 * 60))
-
-    return (
-        <div className={cn(
-            "p-5 rounded-2xl border bg-card/50 space-y-3",
-            trades === 0 ? "opacity-40" : "border-border/40"
-        )}>
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-xs font-black uppercase tracking-widest">{name}</h3>
-                    <p className="text-[8px] font-bold text-muted-foreground/50 tracking-wider mt-0.5">{range}</p>
-                </div>
-                <div className={cn("text-lg font-black font-mono", pnl >= 0 ? "text-long" : "text-short")}>
-                    ${pnl.toLocaleString('en-US', { minimumFractionDigits: 2 })}
-                </div>
-            </div>
-            <div className="flex items-center gap-4">
-                <div>
-                    <p className="text-[8px] uppercase font-black text-muted-foreground/40 mb-1">Trades</p>
-                    <p className="text-lg font-black font-mono">{trades}</p>
-                </div>
-                <div>
-                    <p className="text-[8px] uppercase font-black text-muted-foreground/40 mb-1">Win Rate</p>
-                    <p className="text-lg font-black font-mono">{winRate}%</p>
-                </div>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 pt-4 border-t border-border/20">
-                <div className="text-center">
-                    <p className="text-[7px] uppercase font-bold text-muted-foreground/50 mb-0.5">Trades</p>
-                    <p className="text-[10px] font-black">{trades}</p>
-                </div>
-                <div className="text-center border-x border-border/10">
-                    <p className="text-[7px] uppercase font-bold text-muted-foreground/50 mb-0.5">Avg Hold</p>
-                    <p className="text-[10px] font-black">{h}h {m}m</p>
-                </div>
-                <div className="text-center">
-                    <p className="text-[7px] uppercase font-bold text-muted-foreground/50 mb-0.5">Max DD</p>
-                    <p className="text-[10px] font-black">${maxDD.toFixed(0)}</p>
-                </div>
-            </div>
-        </div>
-    )
 }
 
 export default function ReportsPageClient({
@@ -364,13 +297,13 @@ export default function ReportsPageClient({
     }, [setIsExporting, tradingActivity, psychMetrics, dateRange, selectedAccountId, advancedFilters])
 
     return (
-        <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 pb-20 md:pb-8 overflow-hidden" id="report-content">
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 pb-20 sm:px-6 md:pb-8" id="report-content">
             <div>
                 {/* Header */}
                 <PageHeader
                     title="Reports"
                     meta={<span className="text-xs font-medium text-muted-foreground">{periodLabel}</span>}
-                    className="mb-4"
+                    className=""
                     actions={
                       <div className="no-export flex items-center gap-2">
                         {/* Export CSV Button */}
@@ -485,41 +418,17 @@ export default function ReportsPageClient({
                         </Button>
                     </div>
                 ) : (
-                    <Tabs defaultValue="overview" value={selectedTab} className="w-full" onValueChange={setSelectedTab}>
-                        <section className="mb-6 flex flex-col justify-between gap-3 border-y border-border/30 py-4 sm:flex-row sm:items-center">
+                    <div className="w-full">
+                        <section className="flex flex-col justify-between gap-3 border-y border-border/30 py-4 sm:flex-row sm:items-center">
                             <div>
                                 <h2 className="text-sm font-semibold">Next review focus</h2>
                                 <p className="mt-1 text-sm text-muted-foreground">Review the sessions and setups that changed the result before adjusting your plan.</p>
                             </div>
-                            <Button type="button" variant="outline" size="sm" onClick={() => setSelectedTab('sessions')}>
-                                Review sessions
-                            </Button>
                         </section>
-                        <TabsList className="flex flex-nowrap mb-8 h-auto w-full justify-start overflow-x-auto rounded-xl border border-border/20 bg-background/40 p-0 no-export sm:justify-center [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                            <TabsTrigger value="overview" data-tour="reports-tab-overview" className="rounded-none border-r border-border/15 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all first:rounded-l-xl flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
-                                <TrendingUp className="h-3.5 w-3.5 shrink-0" />
-                                Overview
-                            </TabsTrigger>
-                            <TabsTrigger value="sessions" data-tour="reports-tab-sessions" className="rounded-none border-r border-border/15 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
-                                <Clock className="h-3.5 w-3.5 shrink-0" />
-                                Sessions
-                            </TabsTrigger>
-                            <TabsTrigger value="spreadsheet" data-tour="reports-tab-spreadsheet" className="rounded-none border-r border-border/15 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
-                                <List className="h-3.5 w-3.5 shrink-0" />
-                                Trades
-                            </TabsTrigger>
-                            <TabsTrigger value="statement" data-tour="reports-tab-statement" className="rounded-none border-r border-border/15 px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
-                                <FileText className="h-3.5 w-3.5 shrink-0" />
-                                Statement
-                            </TabsTrigger>
-                            <TabsTrigger value="propfirm" data-tour="reports-tab-propfirm" className="rounded-none px-3 py-3 text-[10px] font-black uppercase tracking-widest transition-all last:rounded-r-xl flex items-center gap-1.5 whitespace-nowrap data-[state=active]:bg-muted/45 shrink-0">
-                                <Building2 className="h-3.5 w-3.5 shrink-0" />
-                                Funded
-                            </TabsTrigger>
-                        </TabsList>
-                        <TabsContent value="overview" className="space-y-12 focus-visible:outline-none">
-                            <div className="space-y-10">
-                                <section className="overflow-hidden rounded-2xl border border-border/25 bg-card/35">
+                        <div><ReportsNavigation value={selectedTab as any} onValueChange={setSelectedTab as any} /></div>
+                        {selectedTab === 'overview' && <div className="flex flex-col gap-12 focus-visible:outline-none">
+                            <div className="flex flex-col gap-10">
+                                <section className="border-y border-border/25">
                                     <div className="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                                         <div className="border-b border-border/15 p-5 lg:border-b-0 lg:border-r">
                                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
@@ -582,7 +491,7 @@ export default function ReportsPageClient({
                                             <TrendingUp className="h-4 w-4 text-primary" />
                                             <h2 className="text-sm font-semibold text-muted-foreground">Performance detail</h2>
                                         </div>
-                                        <div className="h-full overflow-hidden rounded-2xl border border-border/22 bg-muted/5">
+                                        <div className="h-full border-y border-border/20">
                                             <Table>
                                                 <TableBody>
                                                     <TableRow className="border-border/10 hover:bg-transparent">
@@ -662,7 +571,7 @@ export default function ReportsPageClient({
                                         </TooltipProvider>
                                     )}
                                                 </div>
-                                                <div className="flex h-[280px] flex-col rounded-2xl border border-border/20 bg-muted/5 p-6">
+                                                <div className="flex h-[280px] flex-col border-y border-border/20 py-6">
                                                     <div className="flex-1 w-full">
                                                         <RMultipleDistributionChart distribution={rMultipleDistribution ?? {}} />
                                                     </div>
@@ -670,7 +579,7 @@ export default function ReportsPageClient({
                                             </div>
 
                                             {/* Risk and recovery context */}
-                                            <div className="rounded-2xl border border-border/22 bg-muted/5 p-6 flex-1 flex flex-col justify-center">
+                                            <div className="flex flex-1 flex-col justify-center border-y border-border/20 py-6">
                                                 <div className="flex items-center justify-between mb-6">
                                                     <h3 className="text-sm font-semibold text-muted-foreground">Risk analysis</h3>
                                                     <div className="h-1 w-1 rounded-full bg-muted-foreground/20" />
@@ -786,18 +695,12 @@ export default function ReportsPageClient({
                                 {filteredTrades && filteredTrades.length > 0 && (
                                     <CommissionAnalysis trades={filteredTrades} />
                                 )}
-                            </div>
-                        </TabsContent>
 
-                        <TabsContent value="sessions" className="space-y-8 focus-visible:outline-none">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                {sessionPerformance && Object.values(sessionPerformance).map((session, i) => (
-                                    <SessionBlock key={i} {...session} />
-                                ))}
+                                {sessionPerformance && <ReportsSessionSummary sessions={sessionPerformance} />}
                             </div>
-                        </TabsContent>
+                        </div>}
 
-                        <TabsContent value="spreadsheet" className="focus-visible:outline-none">
+                        {selectedTab === 'spreadsheet' && <div className="focus-visible:outline-none">
                             <div className="flex items-center justify-between mb-2 px-1">
                                 <h3 className="text-[10px] uppercase font-black text-muted-foreground/60 tracking-widest">Recent Activity</h3>
                                 <span className="text-[9px] font-bold text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-full">Displaying up to 100 most recent trades</span>
@@ -855,18 +758,18 @@ export default function ReportsPageClient({
                                 </Table>
                               </div>
                             </div>
-                        </TabsContent>
+                        </div>}
 
-                        <TabsContent value="statement" className="focus-visible:outline-none">
+                        {selectedTab === 'statement' && <div className="focus-visible:outline-none">
                             {filteredTrades && filteredTrades.length > 0 && (
                                 <StatementView trades={filteredTrades} {...(dateRange !== undefined && { dateRange: dateRange as any })} />
                             )}
-                        </TabsContent>
+                        </div>}
 
-                        <TabsContent value="propfirm" className="focus-visible:outline-none">
+                        {selectedTab === 'propfirm' && <div className="focus-visible:outline-none">
                             <PropFirmTab {...(initialPropFirmData !== undefined && initialPropFirmData !== null && { initialData: initialPropFirmData })} />
-                        </TabsContent>
-                    </Tabs>
+                        </div>}
+                    </div>
                 )}
             </div>
         </div>

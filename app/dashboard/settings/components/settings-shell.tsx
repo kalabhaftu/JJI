@@ -1,0 +1,8 @@
+import type { ReactNode } from "react"
+import { cn } from "@/lib/utils"
+
+export function SettingsShell({ children }: { children: ReactNode }) { return <main className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 pb-20 sm:px-6 md:pb-8">{children}</main> }
+export function SettingsHeader({ children }: { children: ReactNode }) { return <header className="flex flex-col gap-2">{children}</header> }
+export function SettingsSection({ title, description, children, className }: { title?: string; description?: string; children: ReactNode; className?: string }) { return <section className={cn("flex flex-col gap-5", className)}>{(title || description) && <header className="flex flex-col gap-1"><h2 className="text-lg font-semibold">{title}</h2>{description && <p className="text-sm text-muted-foreground">{description}</p>}</header>}{children}</section> }
+export function SettingsFormRow({ label, description, children }: { label: string; description?: string; children: ReactNode }) { return <div className="flex flex-col gap-3 border-b border-border/20 py-4 last:border-b-0 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 flex-col gap-1"><span className="text-sm font-medium">{label}</span>{description && <span className="text-xs text-muted-foreground">{description}</span>}</div><div className="shrink-0">{children}</div></div> }
+export function SettingsDangerZone({ children }: { children: ReactNode }) { return <section className="flex flex-col gap-4 border-t border-destructive/25 pt-6" aria-labelledby="settings-danger-zone"><h2 id="settings-danger-zone" className="text-sm font-semibold text-destructive">Danger zone</h2>{children}</section> }

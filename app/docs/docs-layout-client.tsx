@@ -327,9 +327,8 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
   return (
     <div className="mx-auto max-w-[1600px] px-4 sm:px-6">
       <div className="grid min-h-[calc(100dvh-3.5rem)] grid-cols-1 items-start gap-6 md:grid-cols-[19rem_minmax(0,1fr)] xl:grid-cols-[20rem_minmax(0,1fr)]">
-        <aside className="hidden md:block">
-          <div className="sticky top-[3.5rem] h-[calc(100dvh-3.5rem)]">
-            <div className="flex h-full flex-col rounded-[1.75rem] border border-border/70 bg-card/60 shadow-[0_18px_60px_-34px_rgba(0,0,0,0.42)] backdrop-blur-sm">
+        <aside className="sticky top-[3.5rem] hidden h-[calc(100dvh-3.5rem)] min-h-0 self-start md:block">
+          <div className="flex h-full min-h-0 flex-col rounded-[1.75rem] border border-border/70 bg-card/60 shadow-[0_18px_60px_-34px_rgba(0,0,0,0.42)] backdrop-blur-sm">
               <div className="border-b border-border/70 px-4 py-4">
                 <div className="mb-3 flex items-center justify-between gap-3">
                   <div>
@@ -358,7 +357,6 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
               <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
                 <DocsNav pathname={pathname} docsHref={docsHref} />
               </div>
-            </div>
           </div>
         </aside>
 

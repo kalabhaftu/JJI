@@ -1,0 +1,44 @@
+"use client"
+
+import Link from "next/link"
+import { Check, Copy, Database, RefreshCw, Shield, Trash2 as Trash, Webhook, LogOut as SignOut } from "lucide-react"
+import * as Sentry from "@sentry/nextjs"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
+import { LinkedAccounts } from "@/components/linked-accounts"
+import { CacheManagement } from "./cache-management"
+import { SettingsDangerZone } from "./settings-shell"
+import { buildTradingViewWebhookExample } from "./settings-config"
+
+type WebhookProps = {
+  token: string | null
+  loading: boolean
+  copied: boolean
+  regenerating: boolean
+  onCopyUrl: () => void
+  onRegenerate: () => void
+}
+
+export function SettingsIntegrations({ token, loading, copied, regenerating, onCopyUrl, onRegenerate }: WebhookProps) {
+  return <section className="flex flex-col gap-6" aria-labelledby="settings-integrations-heading">
+    <header><h2 id="settings-integrations-heading" className="text-lg font-semibold text-heading-text">Integrations</h2><p className="text-xs text-muted-foreground/85">Automate trade importing using third-party alerts and webhooks</p></header>
+    <div className="flex flex-col gap-6" data-tour="settings-card-integrations">
+      <div className="flex items-center gap-3"><div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted"><Webhook className="size-5 text-muted-foreground" /></div><div><h3 className="text-sm font-semibold text-heading-text">TradingView Webhook</h3><p className="text-xs text-muted-foreground">Auto-import trades via TradingView alerts</p></div></div>
+      <p className="text-xs text-muted-foreground/85">Paste this URL into the TradingView alert webhook field. The secret token does not go in the URL; it goes inside the JSON message body shown below.</p>
+      <div className="flex items-center gap-2"><div className="min-w-0 flex-1 truncate border-b border-border/30 py-2.5 font-mono text-[11px] text-muted-foreground">{loading ? <Skeleton className="h-3.5 w-full" /> : token ? `${typeof window !== 'undefined' ? window.location.origin : ''}/api/v1/import/webhook/tradingview?token=${token}` : 'Loading...'}</div><Button variant="outline" size="icon" aria-label={copied ? 'Webhook URL copied' : 'Copy webhook URL'} title={copied ? 'Copied' : 'Copy webhook URL'} className="size-9 shrink-0" disabled={!token || loading} onClick={onCopyUrl}>{copied ? <Check className="size-4 text-success" /> : <Copy className="size-4" />}</Button></div>
+      <div className="flex flex-wrap items-center justify-between gap-3"><p className="text-[10px] text-muted-foreground/60">Regenerating creates a new URL and invalidates the old one.</p><Button variant="outline" size="sm" className="shrink-0 gap-2 text-xs" disabled={regenerating} onClick={onRegenerate}><RefreshCw className={regenerating ? 'size-3 animate-spin' : 'size-3'} />Regenerate Token</Button></div>
+      <div className="flex flex-col gap-2 border-t border-border/20 pt-4"><div className="flex items-center justify-between gap-3"><p className="text-[11px] font-semibold text-heading-text">TradingView alert message body</p><Button variant="ghost" size="sm" className="gap-1 px-2 text-xs" disabled={!token || loading} onClick={async () => { try { await navigator.clipboard.writeText(buildTradingViewWebhookExample(token)); toast.success('Webhook example copied') } catch (error) { Sentry.captureException(error, { tags: { surface: 'settings', operation: 'copy-webhook-example' } }); toast.error('Could not copy webhook example') } }}><Copy className="size-3.5" />Copy JSON</Button></div><pre className="overflow-x-auto border-b border-border/20 bg-muted/10 p-3 text-[11px] leading-5 text-muted-foreground/90 font-mono">{buildTradingViewWebhookExample(token)}</pre><p className="text-[10px] leading-4 text-muted-foreground/70">Required fields: <code className="font-mono text-foreground">token</code>, <code className="font-mono text-foreground">symbol</code>, <code className="font-mono text-foreground">side</code>, <code className="font-mono text-foreground">entry_price</code>, <code className="font-mono text-foreground">close_price</code>.</p></div>
+    </div>
+  </section>
+}
+
+export function SettingsConnections({ webhook }: { webhook: WebhookProps }) {
+  return <section className="flex flex-col gap-8" aria-labelledby="settings-connections-heading"><header><h2 id="settings-connections-heading" className="text-lg font-semibold text-heading-text">Connections</h2><p className="text-xs text-muted-foreground/85">Manage imports, webhooks, and sign-in providers</p></header><SettingsIntegrations {...webhook} /><section className="flex flex-col gap-3"><header><h3 className="text-sm font-semibold text-heading-text">Linked accounts</h3><p className="text-xs text-muted-foreground/85">Manage the providers that can sign you in.</p></header><div data-tour="settings-card-connections"><LinkedAccounts plain /></div></section></section>
+}
+
+type SecurityProps = { editingProfile: boolean; onSignOutPrompt: () => void; onDelete: () => void }
+export function SettingsSecurity({ editingProfile, onSignOutPrompt, onDelete }: SecurityProps) {
+  return <section className="flex flex-col gap-6" aria-labelledby="settings-security-heading"><header><h2 id="settings-security-heading" className="text-lg font-semibold text-heading-text">Security &amp; Data Management</h2><p className="text-xs text-muted-foreground/85">Manage your local storage cache, export data, sign out, or delete your account</p></header><div data-tour="settings-card-security"><CacheManagement plain /></div><section className="flex flex-col gap-6"><h3 className="flex items-center gap-2 text-sm font-semibold text-heading-text"><Shield className="size-4" />Account Actions</h3><div className="flex flex-wrap gap-3"><Button asChild variant="outline" size="sm"><Link href="/dashboard/data"><Database className="size-4" />Data Management</Link></Button><Button variant="outline" size="sm" className="gap-2" onClick={onSignOutPrompt}><SignOut className="size-4" />Sign Out</Button></div><Separator /><SettingsDangerZone><p className="text-xs text-muted-foreground/85 text-balance">Permanently delete your account and all associated trading data, files, and settings. This action is irreversible.</p><Button variant="outline" size="sm" className="w-fit gap-2 border-destructive/30 hover:border-destructive hover:bg-destructive/10" onClick={onDelete}><Trash className="size-4" />Delete Account</Button></SettingsDangerZone></section></section>
+}

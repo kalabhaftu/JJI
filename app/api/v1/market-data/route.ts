@@ -46,19 +46,19 @@ export async function GET(request: Request) {
       yfSymbol = yfSymbol.replace('/', '-')
     }
 
-    const queryOptions = {
+    const queryOptions: any = {
       period1: new Date(period1),
       period2: new Date(period2),
-      interval: interval as any,
+      interval: interval,
     }
 
-    const result = await yahooFinance.chart(yfSymbol, queryOptions)
+    const result: any = await yahooFinance.chart(yfSymbol, queryOptions)
 
     if (!result || !result.quotes || result.quotes.length === 0) {
       return NextResponse.json({ error: 'No data found' }, { status: 404 })
     }
 
-    const ohlcData = result.quotes.map(quote => ({
+    const ohlcData = result.quotes.map((quote: any) => ({
       time: Math.floor(new Date(quote.date).getTime() / 1000),
       open: quote.open,
       high: quote.high,

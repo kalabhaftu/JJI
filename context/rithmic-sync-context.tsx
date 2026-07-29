@@ -17,23 +17,10 @@ import { getUserId } from "@/server/auth";
 import { useUserStore } from "@/store/user-store";
 import logger from "@/lib/logger";
 import { reportError } from '@/lib/observability/report-error'
-
-interface RithmicCredentials {
-  username: string;
-  password: string;
-  server_type: string;
-  location: string;
-  userId: string;
-}
-
-function parseRateLimitMessage(detail: string) {
-  const match = detail.match(
-    /Maximum (\d+) attempts allowed per (\d+\.?\d*) minutes\. Please wait (\d+\.?\d*) minutes/
-  );
-  return match
-    ? { max: match[1], period: match[2], wait: match[3] }
-    : { max: "2", period: "15", wait: "12" };
-}
+import {
+  parseRithmicRateLimitMessage,
+  type RithmicCredentials,
+} from '@/lib/rithmic/sync-contract'
 
 interface RithmicSyncContextType {
   // Core connection management
@@ -573,7 +560,7 @@ export function RithmicSyncContextProvider({
         // Handle rate limit error specifically
         if (response.status === 429) {
           const data = await response.json();
-          const params = parseRateLimitMessage(data.detail);
+          const params = parseRithmicRateLimitMessage(data.detail);
 
           toast.error("Rithmic Rate Limit Exceeded", {
             description: `Maximum ${params.max} attempts allowed per ${params.period} minutes. Please wait ${params.wait} minutes.`,
@@ -715,7 +702,7 @@ export function RithmicSyncContextProvider({
       // Handle rate limit error specifically
       if (response.status === 429) {
         const data = await response.json();
-        const params = parseRateLimitMessage(data.detail);
+        const params = parseRithmicRateLimitMessage(data.detail);
 
         toast.error("Rithmic Rate Limit Exceeded", {
           description: `Maximum ${params.max} attempts allowed per ${params.period} minutes. Please wait ${params.wait} minutes.`,

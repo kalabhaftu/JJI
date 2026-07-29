@@ -288,8 +288,12 @@ until its old implementation is gone.
 - [x] Extract the deterministic journal-analysis fallback from provider orchestration.
 - [ ] Split the remaining journal AI server module into preparation, prompt, and provider modules.
 - [ ] Split settings profile/plan, preferences, integrations, and destructive-account UI into focused components.
+- [x] Extract the settings help/tour section into a focused component.
 - [ ] Split the weekly modal data access, document serialization, metrics, charts, and journal UI.
+- [x] Extract weekly-review API access and Lexical document serialization from the modal.
 - [ ] Move tour definitions, persistence, event handling, and CSV download out of the tour context.
+- [x] Move all static tour definitions and public tour types out of the context.
 - [ ] Move Rithmic protocol handling and synchronization orchestration out of the context provider.
+- [x] Extract the Rithmic credential contract and rate-limit response parser.
 - [ ] Finish the archive-import facade and trade-import job split without duplicate lifecycle paths.
 - [ ] Add a source guard preventing these compatibility entrypoints from regrowing.

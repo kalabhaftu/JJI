@@ -70,7 +70,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     if (!chartContainerRef.current || marketData.length === 0) return
 
     const handleResize = () => {
-      chartRef.current?.applyOptions({ width: chartContainerRef.current?.clientWidth })
+      chartRef.current?.applyOptions({ width: chartContainerRef.current?.clientWidth ?? 0 })
     }
 
     const chart = createChart(chartContainerRef.current, {
@@ -103,7 +103,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     seriesRef.current = candlestickSeries
     
     // Add markers for entry/exit
-    const markers = []
+    const markers: Parameters<typeof candlestickSeries.setMarkers>[0] = []
     
     // Find closest candle to entry time
     const entryCandle = marketData.find(d => d.time >= entryTime)

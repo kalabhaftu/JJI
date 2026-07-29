@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { createChart, IChartApi, ISeriesApi, Time } from 'lightweight-charts'
+import { createChart, IChartApi, ISeriesApi, CandlestickSeries, Time } from 'lightweight-charts'
 import { useTheme } from 'next-themes'
 import { ExtendedTrade } from '../tables/trade-table-review'
 import { Spinner } from '@/components/ui/spinner'
@@ -17,8 +17,8 @@ interface TradeReplayerProps {
 export function TradeReplayer({ trade, className }: TradeReplayerProps) {
   const chartContainerRef = useRef<HTMLDivElement>(null)
   const chartRef = useRef<IChartApi | null>(null)
-  const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null)
-  const markersSeriesRef = useRef<ISeriesApi<"Line"> | null>(null)
+  const seriesRef = useRef<ISeriesApi<"Candlestick", Time> | null>(null)
+  const markersSeriesRef = useRef<ISeriesApi<"Line", Time> | null>(null)
   
   const { resolvedTheme } = useTheme()
   const [marketData, setMarketData] = useState<any[]>([])
@@ -93,7 +93,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     
     chartRef.current = chart
 
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#26a69a',
       downColor: '#ef5350',
       borderVisible: false,
@@ -103,7 +103,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     seriesRef.current = candlestickSeries
     
     // Add markers for entry/exit
-    const markers: Parameters<typeof candlestickSeries.setMarkers>[0] = []
+    const markers: Parameters<typeof candlestickSeries.setMarkers>[0] = [] as any
     
     // Find closest candle to entry time
     const entryCandle = marketData.find(d => d.time >= entryTime)

@@ -18,13 +18,7 @@ describe('SEO configuration', () => {
       expect(config.rules.allow).toBe('/');
       
       // Verify disallowed private routes
-      expect(config.rules.disallow).toContain('/api/');
-      expect(config.rules.disallow).toContain('/dashboard/');
-      expect(config.rules.disallow).toContain('/app-launch/');
-      expect(config.rules.disallow).toContain('/donate/');
-      
-      // Allow login since it's meant to be a sitelink
-      expect(config.rules.disallow).not.toContain('/login/');
+      expect(config.rules.disallow).toEqual(['/api/']);
 
       // Verify absolute sitemap URL
       expect(config.sitemap).toBe('https://www.justjournalit.site/sitemap.xml');
@@ -41,7 +35,6 @@ describe('SEO configuration', () => {
       // Check for expected public routes
       expect(urls).toContain('https://www.justjournalit.site');
       expect(urls).toContain('https://www.justjournalit.site/docs');
-      expect(urls).toContain('https://www.justjournalit.site/login');
       expect(urls).toContain('https://www.justjournalit.site/privacy');
       expect(urls).toContain('https://www.justjournalit.site/terms');
       
@@ -49,6 +42,8 @@ describe('SEO configuration', () => {
       expect(urls).not.toContain('https://www.justjournalit.site/dashboard');
       expect(urls).not.toContain('https://www.justjournalit.site/api');
       expect(urls).not.toContain('https://www.justjournalit.site/donate');
+      expect(urls).not.toContain('https://www.justjournalit.site/login');
+      expect(urls).not.toContain('https://www.justjournalit.site/feedback');
     });
 
     it('normalizes URLs without trailing slashes', () => {

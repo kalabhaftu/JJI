@@ -11,9 +11,6 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: [
         "/api/",
-        "/dashboard/",
-        "/app-launch/",
-        "/donate/",
       ],
     },
     sitemap: `${normalizedSiteUrl}/sitemap.xml`,

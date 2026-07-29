@@ -32,55 +32,54 @@ function ChartLoadingFallback() {
   )
 }
 
-const chartLoading = { loading: ChartLoadingFallback }
-const NetDailyPnL = dynamic(() => import('../components/charts/net-daily-pnl'), chartLoading)
-const WeekdayPnL = dynamic(() => import('../components/charts/weekday-pnl'), chartLoading)
+const NetDailyPnL = dynamic(() => import('../components/charts/net-daily-pnl'), { loading: ChartLoadingFallback })
+const WeekdayPnL = dynamic(() => import('../components/charts/weekday-pnl'), { loading: ChartLoadingFallback })
 const TradeDurationPerformance = dynamic(
   () => import('../components/charts/trade-duration-performance'),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
-const PerformanceScore = dynamic(() => import('../components/charts/performance-score'), chartLoading)
-const PnLByInstrument = dynamic(() => import('../components/charts/pnl-by-instrument'), chartLoading)
-const EquityCurveWidget = dynamic(() => import('../components/charts/equity-curve-widget'), chartLoading)
+const PerformanceScore = dynamic(() => import('../components/charts/performance-score'), { loading: ChartLoadingFallback })
+const PnLByInstrument = dynamic(() => import('../components/charts/pnl-by-instrument'), { loading: ChartLoadingFallback })
+const EquityCurveWidget = dynamic(() => import('../components/charts/equity-curve-widget'), { loading: ChartLoadingFallback })
 const OutcomeDistributionWidget = dynamic(
   () => import('../components/charts/outcome-distribution-widget'),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
 const DayOfWeekPerformanceWidget = dynamic(
   () => import('../components/charts/day-of-week-performance-widget'),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
-const DrawdownChart = dynamic(() => import('../components/charts/drawdown-chart'), chartLoading)
+const DrawdownChart = dynamic(() => import('../components/charts/drawdown-chart'), { loading: ChartLoadingFallback })
 const PerformanceSummaryWidget = dynamic(
   () => import('../components/charts/performance-summary'),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
 const CalendarHeatmapWidget = dynamic(
   () => import('../components/charts/calendar-heatmap'),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
-const TimeProfitScatter = dynamic(() => import('../components/charts/time-profit-scatter'), chartLoading)
-const ExcursionScatter = dynamic(() => import('../components/charts/excursion-scatter'), chartLoading)
+const TimeProfitScatter = dynamic(() => import('../components/charts/time-profit-scatter'), { loading: ChartLoadingFallback })
+const ExcursionScatter = dynamic(() => import('../components/charts/excursion-scatter'), { loading: ChartLoadingFallback })
 const AccountCurveWidget = dynamic(
   () => import('../components/charts/analytics-widgets').then(module => module.AccountCurveWidget),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
 const DisciplineAnalyticsWidget = dynamic(
   () => import('../components/charts/analytics-widgets').then(module => module.DisciplineAnalyticsWidget),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
 const TagPerformanceWidget = dynamic(
   () => import('../components/charts/analytics-widgets').then(module => module.TagPerformanceWidget),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
 const TimeOfDayPerformanceWidget = dynamic(
   () => import('../components/charts/analytics-widgets').then(module => module.TimeOfDayPerformanceWidget),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
 const PropFirmGrowthCurveWidget = dynamic(
   () => import('../components/prop-firm-widgets/prop-firm-growth-curve-widget')
     .then(module => module.PropFirmGrowthCurveWidget),
-  chartLoading,
+  { loading: ChartLoadingFallback },
 )
 
 export interface WidgetConfig {

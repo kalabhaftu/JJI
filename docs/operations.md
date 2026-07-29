@@ -109,3 +109,28 @@ Do not resolve Sentry issues or delete operational evidence until the fix is dep
 - Storage: restore previous bucket visibility and policies only with explicit object-access verification.
 - Redis: delete the affected namespace or let bounded TTLs expire; never flush the full production database during routine rollback.
 - Inngest: pause the affected function or remove its trigger, then inspect incomplete runs before replay.
+
+## Google Search Console setup
+
+1. Deploy the production changes.
+2. Confirm the website opens over HTTPS.
+3. Confirm `/robots.txt` works.
+4. Confirm `/sitemap.xml` works.
+5. Open Google Search Console.
+6. Select "Domain" property.
+7. Enter the root domain without `https://` or paths (e.g. `justjournalit.site`).
+8. Copy Google's DNS TXT verification record.
+9. Add the TXT record through the domain's DNS provider.
+10. Wait for DNS propagation.
+11. Click "Verify" in Google Search Console.
+12. Open the Sitemaps section.
+13. Submit `sitemap.xml`.
+14. Inspect the homepage and important public pages using URL Inspection.
+15. Request indexing where appropriate.
+16. Keep the DNS TXT record after verification.
+
+Note:
+* Adding the site to Search Console does not guarantee immediate indexing.
+* DNS verification may be immediate or may require additional propagation time.
+* Search Console reporting data may take several days to appear.
+* Google decides whether and when each page is indexed.

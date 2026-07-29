@@ -33,9 +33,31 @@ export const viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(normalizedSiteUrl),
-  title: SITE_NAME,
+  title: {
+    default: SITE_NAME,
+    template: `%s | ${SITE_NAME}`,
+  },
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+      "max-video-preview": -1,
+    },
+  },
+  ...(process.env.GOOGLE_SITE_VERIFICATION ? {
+    verification: {
+      google: process.env.GOOGLE_SITE_VERIFICATION,
+    },
+  } : {}),
   appleWebApp: {
     title: SITE_NAME,
     capable: true,
@@ -46,7 +68,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    url: normalizedSiteUrl,
+    url: '/',
     images: [
       {
         url: socialImage,

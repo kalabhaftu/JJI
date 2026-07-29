@@ -1,4 +1,12 @@
 import { ReactNode } from 'react'
+import type { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+}
 
 import { PublicShell } from '@/components/layouts/public-shell'
 import { filterSupportNavItems, getSiteUiSettings } from '@/server/site-ui-settings'

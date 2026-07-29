@@ -18,7 +18,7 @@ describe('middleware security boundary', () => {
   })
 
   it('rewrites the docs subdomain into the docs route without a browser redirect', () => {
-    expect(middlewareSource).toContain("const DOCS_HOST = 'docs.justjournalit.site'")
+    expect(middlewareSource).toContain("import { DEMO_HOST, DOCS_HOST, normalizeHostname } from '@/lib/public-surface-routing'")
     expect(middlewareSource).toContain("url.pathname === '/' ? '/docs' : `/docs${url.pathname}`")
     expect(middlewareSource).toContain('NextResponse.rewrite')
     expect(middlewareSource).not.toContain('docs.justjournalit.site/redirect')

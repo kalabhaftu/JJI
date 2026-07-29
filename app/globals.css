@@ -337,23 +337,7 @@
   .bg-gradient-conic {
     background-image: conic-gradient(at 50% 50%, var(--tw-gradient-stops));
   }
-  .h-widget-kpi {
-    height: 140px;
-  }
-  .h-widget-tiny {
-    height: 180px;
-  }
-  .h-widget-small,
-  .h-widget-medium,
-  .h-widget-large {
-    height: 580px;
-  }
-  .h-widget-small-long {
-    height: 360px;
-  }
-  .h-widget-extra-large {
-    height: 800px;
-  }
+
   .animation-delay-half {
     animation-delay: -1.25s;
   }

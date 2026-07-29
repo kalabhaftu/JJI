@@ -13,7 +13,7 @@ export default function DocsHome() {
     <DocsPage
       badge="Documentation"
       title="JJI Knowledge Base"
-      description="Complete guides for the JJI trading analytics platform - covering the web dashboard and the companion mobile app for Android and iOS."
+      description="Complete guides for the JJI trading analytics platform - covering the web dashboard and mobile companion."
     >
       <DocsSection
         title="Start here"
@@ -53,9 +53,9 @@ export default function DocsHome() {
           />
           <DocsInfoCard
             icon={Smartphone}
-            title="Mobile App (Android & iOS)"
-            description="Native Flutter app for on-the-go trade review. Syncs with your web account automatically."
-            items={['Dashboard, trades, journal, and prop-firm views', 'Push notifications for alerts and reminders', 'Speech-to-text journaling', 'Available on Android and iOS via app stores']}
+            title="Mobile Companion"
+            description="Companion app for on-the-go trade review. Syncs with your web account automatically."
+            items={['Dashboard, trades, journal, and prop-firm views', 'Push notifications for alerts and reminders']}
           />
         </DocsCardGrid>
       </DocsSection>
@@ -75,13 +75,13 @@ export default function DocsHome() {
             icon={LayoutDashboard}
             title="Dashboard & Widgets"
             description="Customizable dashboard with KPI cards, charts, calendar views, and filter-aware widgets."
-            items={['Widget grid with drag-and-drop', 'Dashboard templates', 'Filter scoping']}
+            items={['Widget grid layout', 'Dashboard templates', 'Filter scoping', 'Time vs Profit, Calendar, and Excursion (MAE/MFE) charts']}
           />
           <DocsInfoCard
             icon={BookOpenText}
             title="Journal & Trade Review"
-            description="Daily journal entries, trade notes, screenshots, and calendar-connected review flows."
-            items={['Day-level journaling', 'Image previews and cropping', 'Calendar-to-day review modal']}
+            description="Daily journal entries, trade notes, screenshots, and chart replay flows."
+            items={['Day-level journaling', 'Ghost Setups (Missed Trades)', 'Trade Replay with lightweight charts']}
           />
         </DocsCardGrid>
       </DocsSection>
@@ -129,12 +129,7 @@ export default function DocsHome() {
           <DocsInfoCard
             icon={LayoutDashboard}
             title="Tech Stack & Architecture"
-            description="Next.js, TypeScript, Flutter, Supabase, PostgreSQL, and more. Learn how the platform is built."
-          />
-          <DocsInfoCard
-            icon={Smartphone}
-            title="Mobile App Architecture"
-            description="Flutter/Dart codebase, Riverpod state management, go_router navigation, and Supabase integration."
+            description="Next.js, TypeScript, Supabase, PostgreSQL, and more. Learn how the platform is built."
           />
         </DocsCardGrid>
       </DocsSection>

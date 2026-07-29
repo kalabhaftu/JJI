@@ -38,8 +38,7 @@ export default function AiChatDocsPage() {
       <DocsSection title="AI engine & providers">
         <p>JJI uses the Vercel AI SDK to interface with high-performance model providers:</p>
         <ul>
-          <li><strong>xAI (Grok):</strong> Default reasoning model (<code>grok-4-1-fast-reasoning</code>) configured for analytical and risk-focused trading review.</li>
-          <li><strong>OpenAI:</strong> GPT-4 and GPT-4o models for strategy analysis and trade text formatting.</li>
+          <li><strong>OpenAI:</strong> Default reasoning model (GPT-4o) configured for analytical and risk-focused trading review.</li>
         </ul>
         <p>Requests undergo prompt injection pre-filtering, rate limiting via Upstash Redis, and server-side token budget enforcement before execution.</p>
       </DocsSection>

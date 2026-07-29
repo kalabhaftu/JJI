@@ -48,9 +48,13 @@ async function insertTradesWithSyntheticExecutions(trades: any[]) {
     const executionRows = insertedRows.flatMap((trade) => buildSyntheticExecutionsFromTrade(trade))
 
     if (executionRows.length > 0) {
-      await tx.insert(schema.TradeExecution)
-        .values(executionRows as any)
-        .onConflictDoNothing()
+      const EXEC_BATCH_SIZE = 100
+      for (let i = 0; i < executionRows.length; i += EXEC_BATCH_SIZE) {
+        const batch = executionRows.slice(i, i + EXEC_BATCH_SIZE)
+        await tx.insert(schema.TradeExecution)
+          .values(batch as any)
+          .onConflictDoNothing()
+      }
     }
 
     return insertedRows

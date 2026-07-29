@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { inter } from "@/lib/fonts";
 import "./globals.css";
 import { SafeToaster } from "@/components/safe-toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -88,7 +87,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get('x-nonce') || undefined
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   return (
-    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <head>
         <meta name="application-name" content={BRAND.name} />
 
@@ -117,7 +116,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} font-sans min-h-screen flex flex-col w-full`}>
+      <body className="font-sans min-h-screen flex flex-col w-full">
         <a
           href="#main-content"
           className="fixed left-3 top-3 z-[100] -translate-y-20 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg transition-transform focus:translate-y-0"

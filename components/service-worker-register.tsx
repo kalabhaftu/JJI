@@ -19,7 +19,7 @@ export function ServiceWorkerRegister() {
 
         if (!active) return
 
-        if (registration.waiting) {
+        if (registration?.waiting) {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' })
         }
       } catch (error) {

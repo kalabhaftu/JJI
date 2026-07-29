@@ -33,6 +33,7 @@ type DocsNavItem = {
   title: string
   href: string
   description?: string
+  keywords?: string[]
   subsections?: Array<{
     title: string
     href: string
@@ -59,25 +60,25 @@ const docsNavigation: DocsNavSection[] = [
     title: 'Features',
     icon: BookOpenText,
     items: [
-      { title: 'Trade Import', href: '/docs/features/importing', description: 'Import trades from brokers and files' },
-      { title: 'Dashboard', href: '/docs/features/dashboard', description: 'KPI cards, widgets, filters, templates' },
-      { title: 'Prop Firm Tracking', href: '/docs/features/prop-firm', description: 'Challenge lifecycle and phase management' },
-      { title: 'Journal & Notes', href: '/docs/features/journal', description: 'Daily journal, trade notes, screenshots' },
-      { title: 'Trade Table', href: '/docs/features/trade-table', description: 'Detailed trade record view and editing' },
-      { title: 'Accounts', href: '/docs/features/accounts', description: 'Live and prop-firm account management' },
-      { title: 'Playbook & Models', href: '/docs/features/playbook', description: 'Setup library and strategy rules' },
-      { title: 'Backtesting', href: '/docs/features/backtesting', description: 'Strategy simulation and review' },
-      { title: 'AI Chat', href: '/docs/features/ai-chat', description: 'AI-powered performance analysis' },
-      { title: 'Reports & Sharing', href: '/docs/features/reports', description: 'Advanced analytics and public reports' },
-      { title: 'Widget Customization', href: '/docs/features/widgets', description: 'Dashboard layout and templates' },
-      { title: 'Notifications', href: '/docs/features/notifications', description: 'Real-time alerts and push notifications' },
-      { title: 'Weekly Review', href: '/docs/features/weekly-review', description: 'Weekly performance summary' },
-      { title: 'Goals', href: '/docs/features/goals', description: 'Set and track trading goals' },
-      { title: 'Demo Mode', href: '/docs/features/demo', description: 'Explore the app with sample data' },
-      { title: 'Data Management', href: '/docs/features/data-management', description: 'Account and trade maintenance' },
-      { title: 'Data Export', href: '/docs/features/data-export', description: 'Export trades, reports, and analytics' },
-      { title: 'Settings', href: '/docs/features/settings', description: 'Profile, preferences, linked accounts' },
-      { title: 'Keyboard Shortcuts', href: '/docs/features/shortcuts', description: 'Command palette and hotkeys' },
+      { title: 'Trade Import', href: '/docs/features/importing', description: 'Import trades from brokers and files', keywords: ['csv', 'webhook', 'broker', 'sync', 'file upload', 'custom mapper', 'ninja trader', 'tradovate', 'rithmic', 'interactive brokers', 'webull', 'thor', 'match-trader', 'exness'] },
+      { title: 'Dashboard', href: '/docs/features/dashboard', description: 'KPI cards, widgets, filters, templates', keywords: ['kpi', 'metrics', 'widgets', 'grid', 'templates'] },
+      { title: 'Prop Firm Tracking', href: '/docs/features/prop-firm', description: 'Challenge lifecycle and phase management', keywords: ['evaluations', 'challenges', 'payouts', 'drawdown'] },
+      { title: 'Journal & Notes', href: '/docs/features/journal', description: 'Daily journal, trade notes, screenshots', keywords: ['diary', 'images', 'upload', 'comments', 'ghost setups', 'missed trades'] },
+      { title: 'Trade Table', href: '/docs/features/trade-table', description: 'Detailed trade record view and editing', keywords: ['edit', 'columns', 'filter', 'mae', 'mfe', 'replay'] },
+      { title: 'Accounts', href: '/docs/features/accounts', description: 'Live and prop-firm account management', keywords: ['balance', 'equity', 'create account'] },
+      { title: 'Playbook & Models', href: '/docs/features/playbook', description: 'Setup library and strategy rules', keywords: ['setups', 'strategies', 'ghost setups', 'grading'] },
+      { title: 'Backtesting', href: '/docs/features/backtesting', description: 'Strategy simulation and review', keywords: ['simulation', 'paper trading'] },
+      { title: 'AI Chat', href: '/docs/features/ai-chat', description: 'AI-powered performance analysis', keywords: ['grok', 'gpt-4o', 'risk audit', 'psychology', 'expectancy'] },
+      { title: 'Reports & Sharing', href: '/docs/features/reports', description: 'Advanced analytics and public reports', keywords: ['share', 'public link', 'charts'] },
+      { title: 'Widget Customization', href: '/docs/features/widgets', description: 'Dashboard layout and templates', keywords: ['drag', 'drop', 'resize'] },
+      { title: 'Notifications', href: '/docs/features/notifications', description: 'Real-time alerts and push notifications', keywords: ['alerts', 'push'] },
+      { title: 'Weekly Review', href: '/docs/features/weekly-review', description: 'Weekly performance summary', keywords: ['summary', 'end of week'] },
+      { title: 'Goals', href: '/docs/features/goals', description: 'Set and track trading goals', keywords: ['objectives', 'targets'] },
+      { title: 'Demo Mode', href: '/docs/features/demo', description: 'Explore the app with sample data', keywords: ['sample', 'trial'] },
+      { title: 'Data Management', href: '/docs/features/data-management', description: 'Account and trade maintenance', keywords: ['delete', 'bulk', 'purge'] },
+      { title: 'Data Export', href: '/docs/features/data-export', description: 'Export trades, reports, and analytics', keywords: ['download', 'csv export'] },
+      { title: 'Settings', href: '/docs/features/settings', description: 'Profile, preferences, linked accounts', keywords: ['password', 'email', 'profile'] },
+      { title: 'Keyboard Shortcuts', href: '/docs/features/shortcuts', description: 'Command palette and hotkeys', keywords: ['cmd', 'ctrl', 'hotkeys', 'palette'] },
     ],
   },
   {
@@ -126,6 +127,7 @@ const searchablePages = docsNavigation.flatMap((section) =>
         section: section.title,
         parentTitle: null as string | null,
         description: item.description ?? '',
+        keywords: item.keywords?.join(' ') ?? '',
       },
     ]
 
@@ -140,6 +142,7 @@ const searchablePages = docsNavigation.flatMap((section) =>
         section: section.title,
         parentTitle: item.title,
         description: item.description ?? '',
+        keywords: item.keywords?.join(' ') ?? '',
       }))
     )
   })
@@ -147,8 +150,9 @@ const searchablePages = docsNavigation.flatMap((section) =>
 
 const docsSearch = new Fuse(searchablePages, {
   keys: [
-    { name: 'title', weight: 2 },
-    { name: 'description', weight: 1 },
+    { name: 'title', weight: 2.5 },
+    { name: 'keywords', weight: 2 },
+    { name: 'description', weight: 1.5 },
     { name: 'section', weight: 1 },
     { name: 'parentTitle', weight: 1 },
   ],
@@ -382,7 +386,9 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
         const element = document.getElementById(hash) || document.getElementById(`heading-${hash}`)
         if (element) {
           setTimeout(() => {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+            const yOffset = -100 // Offset for sticky navbar + some padding
+            const y = element.getBoundingClientRect().top + window.scrollY + yOffset
+            window.scrollTo({ top: y, behavior: 'smooth' })
           }, 100)
         }
       }

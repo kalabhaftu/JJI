@@ -27,13 +27,19 @@ export function TradeRow({ trade, evaluationType }: TradeRowProps) {
         <tr className="border-b hover:bg-muted/50 transition-colors">
             <td className="p-3 font-medium">{trade.instrument || trade.symbol || 'N/A'}</td>
             <td className="p-3">
-                <Badge variant={trade.side?.toUpperCase() === 'BUY' ? 'default' : 'secondary'}>
-                    {trade.side?.toUpperCase() || 'N/A'}
-                </Badge>
+                {trade.isMissedTrade ? (
+                    <Badge variant="secondary" className="bg-purple-500/10 text-purple-500 border-purple-500/20">
+                        GHOST
+                    </Badge>
+                ) : (
+                    <Badge variant={trade.side?.toUpperCase() === 'BUY' ? 'default' : 'secondary'}>
+                        {trade.side?.toUpperCase() || 'N/A'}
+                    </Badge>
+                )}
             </td>
             <td className="p-3 text-sm">{trade.quantity || 'N/A'}</td>
-            <td className={cn("p-3 font-medium", pnl >= 0 ? "text-long" : "text-short")}>
-                {formatCurrency(pnl)}
+            <td className={cn("p-3 font-medium", trade.isMissedTrade ? "text-purple-500" : pnl >= 0 ? "text-long" : "text-short")}>
+                {trade.isMissedTrade ? '-' : formatCurrency(pnl)}
             </td>
             <td className="p-3">
                 <Badge variant="outline" className="text-xs">

@@ -1,6 +1,9 @@
 export type WidgetType =
   | 'calendarAdvanced'
   | 'calendarMini'
+  | 'calendarHeatmap'
+  | 'timeProfitScatter'
+  | 'excursionScatter'
   | 'recentTrades'
   | 'accountBalancePnl'
   | 'tradeWinRate'

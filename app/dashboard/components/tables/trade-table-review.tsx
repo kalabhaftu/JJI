@@ -51,6 +51,7 @@ import { useRouter } from 'next/navigation'
 import React from 'react'
 import { DataTableColumnHeader } from './column-header'
 import TradeChartModal from './trade-chart-modal'
+import TradeReplayModal from './trade-replay-modal'
 import { TradeTableMobileCard } from './trade-table-mobile-card'
 import { logger } from '@/lib/logger';
 
@@ -66,6 +67,8 @@ const VALID_COLUMN_IDS = [
   'entryPrice',
   'closePrice',
   'timeInPosition',
+  'mae',
+  'mfe',
   'pnl',
   'commission',
   'quantity',
@@ -165,6 +168,7 @@ type ColumnFactoryParams = {
   onRowSelectionChange: (ids: string[], value: boolean) => void
   onViewDetails: (trade: ExtendedTrade) => void
   onEditTrade: (trade: Trade | ExtendedTrade) => void
+  onViewReplay: (trade: ExtendedTrade) => void
   formatValue: ReturnType<typeof useDashboardDisplay>['formatValue']
   isPrivacyMode: boolean
   maskSensitiveValue: ReturnType<typeof useDashboardDisplay>['maskSensitiveValue']
@@ -176,6 +180,7 @@ const useTradeTableColumns = ({
   onRowSelectionChange,
   onViewDetails,
   onEditTrade,
+  onViewReplay,
   formatValue,
   isPrivacyMode,
   maskSensitiveValue,
@@ -369,6 +374,18 @@ const useTradeTableColumns = ({
       size: 90,
     },
     {
+      accessorKey: 'mae',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="MAE" tableId="trade-table" className="justify-end px-0" />,
+      cell: ({ row }) => <div className="text-right font-mono text-muted-foreground tabular-nums">{row.original.mae != null ? formatValue(row.original.mae, { kind: 'money' }) : '--'}</div>,
+      size: 90,
+    },
+    {
+      accessorKey: 'mfe',
+      header: ({ column }) => <DataTableColumnHeader column={column} title="MFE" tableId="trade-table" className="justify-end px-0" />,
+      cell: ({ row }) => <div className="text-right font-mono text-muted-foreground tabular-nums">{row.original.mfe != null ? formatValue(row.original.mfe, { kind: 'money' }) : '--'}</div>,
+      size: 90,
+    },
+    {
       accessorKey: 'quantity',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Qty" tableId="trade-table" className="justify-end px-0" />,
       cell: ({ row }) => <div className="text-right font-mono font-medium tabular-nums">{formatQuantity(row.original.quantity)}</div>,
@@ -389,6 +406,9 @@ const useTradeTableColumns = ({
             </Button>
             <Button variant='ghost' size='sm' className="h-7 px-2 text-[11px]" data-tour="edit-trade-btn" onClick={() => onEditTrade(tradeToEdit as ExtendedTrade)}>
               Edit
+            </Button>
+            <Button variant='ghost' size='sm' className="h-7 px-2 text-[11px]" onClick={() => onViewReplay(tradeToEdit as ExtendedTrade)}>
+              Replay
             </Button>
           </div>
         )
@@ -455,6 +475,7 @@ export function TradeTableReview() {
   const [pageIndex, setPageIndex] = React.useState(tableConfig?.pageIndex ?? 0)
   const [selectedTrades, setSelectedTrades] = React.useState<string[]>([])
   const [isChartModalOpen, setIsChartModalOpen] = React.useState(false)
+  const [isReplayModalOpen, setIsReplayModalOpen] = React.useState(false)
   const [selectedTradeForChart, setSelectedTradeForChart] = React.useState<ExtendedTrade | null>(null)
 
   React.useEffect(() => {
@@ -573,6 +594,11 @@ export function TradeTableReview() {
     setIsChartModalOpen(true)
   }, [])
 
+  const handleViewReplay = React.useCallback((trade: ExtendedTrade) => {
+    setSelectedTradeForChart(trade)
+    setIsReplayModalOpen(true)
+  }, [])
+
   const handleSelectTrade = React.useCallback((tradeIds: string[], value: boolean) => {
     setSelectedTrades((prev) => {
       if (value) {
@@ -590,6 +616,7 @@ export function TradeTableReview() {
     onRowSelectionChange: handleSelectTrade,
     onViewDetails: handleViewDetails,
     onEditTrade: handleEditTrade,
+    onViewReplay: handleViewReplay,
     formatValue,
     isPrivacyMode,
     maskSensitiveValue,
@@ -966,7 +993,15 @@ export function TradeTableReview() {
         isOpen={isChartModalOpen}
         onClose={() => {
           setIsChartModalOpen(false)
-          setSelectedTradeForChart(null)
+          setTimeout(() => setSelectedTradeForChart(null), 200)
+        }}
+        trade={selectedTradeForChart}
+      />
+      <TradeReplayModal
+        isOpen={isReplayModalOpen}
+        onClose={() => {
+          setIsReplayModalOpen(false)
+          setTimeout(() => setSelectedTradeForChart(null), 200)
         }}
         trade={selectedTradeForChart}
       />

@@ -356,7 +356,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
 
               const isChart = (config.category === 'charts' && widget.type !== 'performanceSummary') || widget.type.startsWith('calendar')
               const mobileHeight = getMobileWidgetHeight(widget.type, isChart, config.previewHeight)
-              const isContentSized = isContentSizedMobileWidget(widget.type)
+              const isContentSized = isContentSizedMobileWidget(widget.type) || !isChart
               const minHeight = mobileHeight
 
               return (

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Switch } from '@/components/ui/switch'
 import { LexicalEditor } from '@/components/ui/editor/lexical-editor'
 import {
   Select,
@@ -132,6 +133,9 @@ const tradeFormSchema = z.object({
   tradeType: z.string().optional(),
   emotionalState: z.string().optional(),
   comment: z.string().optional(),
+  isMissedTrade: z.boolean().default(false),
+  mae: z.string().optional(),
+  mfe: z.string().optional(),
 })
 
 type TradeFormData = z.infer<typeof tradeFormSchema>
@@ -188,6 +192,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       quantity: 1,
       commission: 0,
       pnl: 0,
+      isMissedTrade: false,
     }
   })
 
@@ -201,6 +206,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
   const closeDate = watch('closeDate')
   const closeTime = watch('closeTime')
   const instrument = watch('instrument')
+  const isMissedTrade = watch('isMissedTrade')
   const watchedValues = watch()
 
   useEffect(() => {
@@ -335,6 +341,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
         userId: currentUser.id,
         entryId: null,
         groupId: null,
+        isMissedTrade: data.isMissedTrade,
+        mae: data.mae ? parseFloat(data.mae) : null,
+        mfe: data.mfe ? parseFloat(data.mfe) : null,
       }
 
       const tradeId = generateTradeHash({ ...tradeData, userId: currentUser.id })
@@ -543,6 +552,24 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
               />
             </div>
 
+            <div className="space-y-2 col-span-2 sm:col-span-1">
+              <div className="flex items-center space-x-2 pt-6">
+                <Controller
+                  name="isMissedTrade"
+                  control={control}
+                  render={({ field }) => (
+                    <Switch
+                      id="isMissedTrade"
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  )}
+                />
+                <Label htmlFor="isMissedTrade" className="font-semibold text-primary">Missed Trade (Ghost Setup)</Label>
+              </div>
+              <p className="text-xs text-muted-foreground ml-11">Logs setup for journaling, but ignores P&L.</p>
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="quantity">Quantity *</Label>
               <Input
@@ -673,6 +700,28 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
                   className="h-11"
                   placeholder="Optional"
                   {...register('takeProfit')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>MAE (Max Adverse Excursion)</Label>
+                <Input
+                  type="number"
+                  step="any"
+                  className="h-11"
+                  placeholder="Optional"
+                  {...register('mae')}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>MFE (Max Favorable Excursion)</Label>
+                <Input
+                  type="number"
+                  step="any"
+                  className="h-11"
+                  placeholder="Optional"
+                  {...register('mfe')}
                 />
               </div>
 

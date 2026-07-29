@@ -1,10 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and, asc } from 'drizzle-orm'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { z } from 'zod'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 const updateChatSchema = z.object({
   title: z.string().trim().min(1).max(160).optional(),
@@ -16,12 +19,13 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ chatId: string }> }
 ) {
-  const rl = await applyRateLimit(request, apiLimiter)
-  if (rl) return rl
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'ai')
+  if (limited) return limited
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
   }
   const userId = identity.internalUserId
 
@@ -39,12 +43,13 @@ export async function GET(
     })
 
     if (!chat) {
-      return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
+      return createErrorResponse('Chat not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
-    return NextResponse.json({ success: true, data: chat })
+    return createSuccessResponse(chat, undefined, undefined, requestId)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to fetch chat' }, { status: 500 })
+    reportError(error, { surface: 'api', operation: 'get-ai-chat', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse('Failed to fetch chat', 500, undefined, 'AI_CHAT_READ_FAILED', requestId)
   }
 }
 
@@ -52,12 +57,13 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ chatId: string }> }
 ) {
-  const rl = await applyRateLimit(request, apiLimiter)
-  if (rl) return rl
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'ai')
+  if (limited) return limited
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
   }
   const userId = identity.internalUserId
 
@@ -70,7 +76,7 @@ export async function PATCH(
     })
 
     if (!chat) {
-      return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
+      return createErrorResponse('Chat not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     const { title, isPinned, isArchived } = updateChatSchema.parse(await request.json())
@@ -92,10 +98,13 @@ export async function PATCH(
         updatedAt: schema.AIChat.updatedAt,
       }))[0]
 
-    return NextResponse.json({ success: true, data: updatedChat })
+    return createSuccessResponse(updatedChat, undefined, undefined, requestId)
   } catch (error) {
-    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid chat update' }, { status: 400 })
-    return NextResponse.json({ error: 'Failed to update chat' }, { status: 500 })
+    if (error instanceof z.ZodError) {
+      return createErrorResponse('Invalid chat update', 400, error.flatten(), 'VALIDATION_ERROR', requestId)
+    }
+    reportError(error, { surface: 'api', operation: 'update-ai-chat', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse('Failed to update chat', 500, undefined, 'AI_CHAT_UPDATE_FAILED', requestId)
   }
 }
 
@@ -103,12 +112,13 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ chatId: string }> }
 ) {
-  const rl = await applyRateLimit(request, apiLimiter)
-  if (rl) return rl
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'ai')
+  if (limited) return limited
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
   }
   const userId = identity.internalUserId
 
@@ -121,7 +131,7 @@ export async function DELETE(
     })
 
     if (!chat) {
-      return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
+      return createErrorResponse('Chat not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     await db
@@ -129,8 +139,14 @@ export async function DELETE(
       .set({ isDeleted: true })
       .where(and(eq(schema.AIChat.id, chatId), eq(schema.AIChat.userId, userId)))
 
-    return NextResponse.json({ success: true, message: 'Chat deleted successfully' })
+    return createSuccessResponse(
+      { deleted: true },
+      'Chat deleted successfully',
+      undefined,
+      requestId,
+    )
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to delete chat' }, { status: 500 })
+    reportError(error, { surface: 'api', operation: 'delete-ai-chat', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse('Failed to delete chat', 500, undefined, 'AI_CHAT_DELETE_FAILED', requestId)
   }
 }

@@ -308,8 +308,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
           const phaseResult = await phaseCheckResponse.json()
 
           if (!phaseCheckResponse.ok && phaseCheckResponse.status === 403) {
-            setPhaseValidationError(phaseResult.error || 'Please set the ID for the current phase before adding trades.')
-            toast.error("Phase ID Required", { description: phaseResult.error })
+            const message = phaseResult.error?.message || 'Please set the ID for the current phase before adding trades.'
+            setPhaseValidationError(message)
+            toast.error("Phase ID Required", { description: message })
             return
           }
         } catch (error) {

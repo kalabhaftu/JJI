@@ -277,7 +277,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
         if (!response.ok) {
           const payload = await response.json()
-          toast.error(payload.error || 'Failed to start conversation.')
+          toast.error(payload.error?.message || 'Failed to start conversation.')
           setIsSending(false)
           return
         }
@@ -307,7 +307,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
       if (!response.ok) {
         const payload = await response.json()
-        if (response.status === 412 && payload.code === 'AI_DATA_CONSENT_REQUIRED') {
+        if (response.status === 412 && payload.error?.code === 'AI_DATA_CONSENT_REQUIRED') {
           setAiConsentGranted(false)
           setPendingPrompt({
             prompt: promptToSend,
@@ -315,7 +315,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
           })
           setIsConsentDialogOpen(true)
         }
-        toast.error(payload.error || 'Failed to send message.')
+        toast.error(payload.error?.message || 'Failed to send message.')
         setIsSending(false)
         return
       }

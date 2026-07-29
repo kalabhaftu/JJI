@@ -100,12 +100,12 @@ Legend:
 - [x] Make HTTP status authoritative.
 - [x] Prevent raw internal Error serialization.
 - [x] Preserve status, cache headers, rate-limit headers, and cookies in migrated route families.
-- [x] Migrate account, trade, import, tag, goal, notification, settings, donation, provider-sync, dashboard, journal-core, report, subscription, and payment-core families.
+- [x] Migrate account, trade, import, tag, goal, notification, settings, donation, provider-sync, dashboard, journal, report, subscription, payment-core, and AI chat/insight families.
 - [x] Update in-repository clients alongside each migrated family.
 - [x] Preserve protocol bodies for webhooks, redirects, files, exports, streams, health, auth callbacks, cron, and Inngest.
 - [x] Document the breaking v1 envelope.
-- [ ] Migrate remaining AI routes to the envelope.
-- [ ] Migrate the large journal AI-analysis route to the envelope.
+- [x] Migrate AI chat, message-error, insight, and journal-analysis routes while preserving the text-stream success protocol.
+- [ ] Migrate remaining AI format and mapping routes to the envelope.
 - [ ] Migrate remaining prop-firm account lifecycle routes to the envelope.
 - [ ] Migrate remaining backtesting and trading-model routes to the envelope.
 - [ ] Add contract coverage for every migrated route family after dependencies are repaired.
@@ -259,6 +259,6 @@ Legend:
 - [ ] Run authenticated representative browser verification once.
 - [ ] Run controlled Sentry client/server/phase/import failures once.
 - [ ] Verify end-to-end request correlation and privacy once.
-- [ ] Create focused local Conventional Commits.
+- [x] Create local Conventional Commit checkpoints.
 - [ ] Confirm the final tree contains intended commits plus the preserved user work.
 - [ ] Push, migrate, deploy, activate alerts, or release only with explicit approval.

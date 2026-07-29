@@ -1,23 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { cleanContent } from '@/lib/content/cleaning'
 import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { listDailyJournalEntries } from '@/server/daily-journal'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 // GET - Generate AI analysis of journals and trades
 export async function GET(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
-  if (rateLimitRes) return rateLimitRes
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'ai')
+  if (limited) return limited
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
     const internalUserId = identity.internalUserId
 
@@ -27,9 +30,12 @@ export async function GET(request: NextRequest) {
     const accountId = searchParams.get('accountId')
 
     if (!startDate || !endDate) {
-      return NextResponse.json(
-        { error: 'Start date and end date are required' },
-        { status: 400 }
+      return createErrorResponse(
+        'Start date and end date are required',
+        400,
+        undefined,
+        'VALIDATION_ERROR',
+        requestId,
       )
     }
 
@@ -149,12 +155,10 @@ export async function GET(request: NextRequest) {
       breakEvenThreshold
     )
 
-    return NextResponse.json({ analysis })
+    return createSuccessResponse({ analysis }, undefined, undefined, requestId)
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to generate analysis' },
-      { status: 500 }
-    )
+    reportError(error, { surface: 'api', operation: 'generate-journal-analysis', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse('Failed to generate analysis', 500, undefined, 'JOURNAL_ANALYSIS_FAILED', requestId)
   }
 }
 

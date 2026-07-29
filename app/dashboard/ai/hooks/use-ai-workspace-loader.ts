@@ -44,7 +44,7 @@ export function useAiWorkspaceLoader(isDemoMode: boolean | undefined) {
 
       if (chatsRes.status === 403 || insightsRes.status === 403) {
         const payload = await chatsRes.json()
-        setPaywallError(payload.error || 'Upgrade to a Pro plan to use the AI assistant.')
+        setPaywallError(payload.error?.message || 'Upgrade to a Pro plan to use the AI assistant.')
         return
       }
 
@@ -68,7 +68,7 @@ export function useAiWorkspaceLoader(isDemoMode: boolean | undefined) {
         const liveRes = await fetch(`/api/v1/journal/ai-analysis?startDate=${format(subDays(new Date(), 30), 'yyyy-MM-dd')}&endDate=${format(new Date(), 'yyyy-MM-dd')}`)
         if (liveRes.ok) {
           const payload = await liveRes.json()
-          if (payload.analysis) loadedReviews = [payload.analysis]
+          if (payload.data?.analysis) loadedReviews = [payload.data.analysis]
         }
       }
       setWeeklyAIReviews(loadedReviews)

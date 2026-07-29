@@ -1,8 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger';
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 function getPhaseLabel(evaluationType: string, phaseNumber: number) {
   switch (evaluationType) {
@@ -18,13 +20,14 @@ function getPhaseLabel(evaluationType: string, phaseNumber: number) {
 }
 
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
-  if (rateLimitResponse) return rateLimitResponse
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
+  if (limited) return limited
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const internalUserId = identity.internalUserId
@@ -99,18 +102,17 @@ export async function GET(request: NextRequest) {
       .filter((instrument): instrument is string => !!instrument && instrument.trim().length > 0)
       .sort((a, b) => a.localeCompare(b))
 
-    return NextResponse.json({
-      success: true,
-      data: {
+    return createSuccessResponse(
+      {
         accounts,
         instruments,
       },
-    })
-  } catch (error) {
-    logger.error('[API] /api/v1/data/export/options error: ' + (error instanceof Error ? error.message : String(error)))
-    return NextResponse.json(
-      { success: false, error: 'Failed to load export options' },
-      { status: 500 }
+      undefined,
+      undefined,
+      requestId,
     )
+  } catch (error) {
+    reportError(error, { surface: 'api', operation: 'load-export-options', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse('Failed to load export options', 500, undefined, 'EXPORT_OPTIONS_FAILED', requestId)
   }
 }

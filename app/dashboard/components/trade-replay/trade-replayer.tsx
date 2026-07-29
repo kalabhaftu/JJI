@@ -141,6 +141,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
       window.removeEventListener('resize', handleResize)
       chart.remove()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketData, resolvedTheme, trade, entryTime, exitTime])
   
   // Replay Logic

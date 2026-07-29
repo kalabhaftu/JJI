@@ -39,8 +39,9 @@ export async function GET(request: Request) {
       'NDX': '^NDX',
     }
     
-    if (symbolMap[yfSymbol]) {
-      yfSymbol = symbolMap[yfSymbol]
+    const mappedSymbol = symbolMap[yfSymbol]
+    if (mappedSymbol) {
+      yfSymbol = mappedSymbol
     } else if (yfSymbol.includes('/')) { // e.g. BTC/USD -> BTC-USD
       yfSymbol = yfSymbol.replace('/', '-')
     }

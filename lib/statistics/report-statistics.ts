@@ -620,7 +620,7 @@ function computeAllMetrics(
           Win: Number((dayWinPnL[day] || 0).toFixed(2)),
           Loss: Number((dayLossPnL[day] || 0).toFixed(2))
         }
-      }).filter(d => d.Win > 0 || d.Loss > 0)
+      })
     }
   }
 }

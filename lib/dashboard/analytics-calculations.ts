@@ -89,7 +89,6 @@ export function calculateDayOfWeekPerformance(
         total: d.total,
       }
     })
-    .filter((d) => d.total > 0)
 }
 
 export function calculateOutcomeDistribution(

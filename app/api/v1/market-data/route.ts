@@ -1,12 +1,11 @@
 import { NextResponse } from 'next/server';
 import yahooFinance from 'yahoo-finance2';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { getUserIdSafe } from '@/server/auth';
 
 export async function GET(request: Request) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const userId = await getUserIdSafe();
+    if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

@@ -9,6 +9,7 @@ interface LogActivityParams {
   entityId?: string | null
   metadata?: Record<string, any> | null
   ipAddress?: string | null
+  requestId?: string | null
 }
 
 /**
@@ -25,6 +26,7 @@ export function logActivity(params: LogActivityParams): void {
       entityId: params.entityId ?? null,
       metadata: params.metadata ?? undefined,
       ipAddress: params.ipAddress ?? null,
+      requestId: params.requestId ?? null,
     })
     .execute()
     .catch(() => {

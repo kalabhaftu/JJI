@@ -60,7 +60,7 @@ export function TagsProvider({ children }: { children: React.ReactNode }) {
         
         if (response.ok) {
           const data = await response.json()
-          const fetchedTags = data.tags || []
+          const fetchedTags = data.data || []
           
           tagsCache = fetchedTags
           lastFetchTime = Date.now()
@@ -120,4 +120,3 @@ export function useTags() {
   }
   return context
 }
-

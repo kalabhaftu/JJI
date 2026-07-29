@@ -5,7 +5,13 @@ import { motion } from 'framer-motion'
 import type { TradeType as Trade } from '@/lib/db/schema';
 
 import { ArrowUpRight, ArrowDownRight, CalendarDays, Clock, Target, DollarSign, MoreVertical, Eye, Pencil, Trash2 as Trash, AlertCircle } from 'lucide-react'
-import { cn, formatCurrency, formatQuantity, formatTradeData, classifyTrade } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import {
+  classifyTrade,
+  formatCurrency,
+  formatQuantity,
+  formatTradeData,
+} from '@/lib/trading/trade-formatting'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

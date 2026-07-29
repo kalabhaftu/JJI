@@ -27,7 +27,8 @@ import {
   Zap,
   Clock
 } from "lucide-react"
-import { cn, formatTradeData } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { formatTradeData } from '@/lib/trading/trade-formatting'
 import { AccountStatus } from "@/types/prop-firm"
 import { AccountTradesPageSkeleton } from "../components/account-loading-skeletons"
 

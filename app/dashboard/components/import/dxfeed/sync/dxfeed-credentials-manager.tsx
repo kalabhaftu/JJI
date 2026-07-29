@@ -27,9 +27,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
-import { authenticateDxFeed, updateDxFeedDailySyncTimeAction } from './actions'
 import { useDxFeedSyncContext } from '@/context/dxfeed-sync-context'
 import { logger } from '@/lib/logger';
+import { apiRequest } from '@/lib/api/client'
 
 export function DxFeedCredentialsManager() {
   const {
@@ -74,7 +74,14 @@ export function DxFeedCredentialsManager() {
 
     try {
       setIsLoading(true)
-      const result = await authenticateDxFeed(loginEmail, loginPassword)
+      const response = await apiRequest<{ success?: boolean; error?: string }>(
+        '/api/v1/dxfeed/credentials',
+        {
+          method: 'POST',
+          body: JSON.stringify({ login: loginEmail, password: loginPassword }),
+        },
+      )
+      const result = response.data ?? {}
 
       if (result.error) {
         toast.error(result.error)
@@ -142,7 +149,17 @@ export function DxFeedCredentialsManager() {
         utcTimeString = localDate.toISOString()
       }
 
-      const result = await updateDxFeedDailySyncTimeAction(selectedAccountId, utcTimeString)
+      const response = await apiRequest<{ success: boolean; error?: string }>(
+        '/api/v1/dxfeed/synchronizations/schedule',
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            accountId: selectedAccountId,
+            utcTimeString,
+          }),
+        },
+      )
+      const result = response.data ?? { success: false }
 
       if (result.success) {
         toast.success("Daily sync time updated")

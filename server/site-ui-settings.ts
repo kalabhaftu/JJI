@@ -1,5 +1,5 @@
 import { revalidatePath, revalidateTag, unstable_cache } from 'next/cache'
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 import { db } from '@/lib/db/client'
 import { SiteUiSettings } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
@@ -21,7 +21,11 @@ async function loadSiteUiSettings(): Promise<SiteUiSettingsPayload> {
       showFeedbackButton: settings?.showFeedbackButton ?? true,
     }
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'server/site-ui-settings' } })
+    reportError(error, {
+      surface: 'server',
+      operation: 'load-site-ui-settings',
+      extra: { fallbackUsed: true },
+    })
     // During build-time prerendering there's no DB connection - return defaults
     return { showDonateButton: true, showFeedbackButton: true }
   }

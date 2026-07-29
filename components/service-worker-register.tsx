@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
@@ -23,7 +23,11 @@ export function ServiceWorkerRegister() {
           registration.waiting.postMessage({ type: 'SKIP_WAITING' })
         }
       } catch (error) {
-        Sentry.captureException(error, { extra: { route: 'components/service-worker-register' } })
+        reportError(error, {
+          surface: 'client',
+          operation: 'register-service-worker',
+          route: '/sw.js',
+        })
         // The app should still work even if service worker registration fails.
       }
     }

@@ -40,7 +40,7 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     const updated = (await db.update(schema.SharedReport).set({ viewCount: (report.viewCount || 0) + 1 }).where(eq(schema.SharedReport.slug, slug)).returning({ viewCount: schema.SharedReport.viewCount }))[0]
 
-    const response = createSuccessResponse({ viewCount: updated!.viewCount, counted: true })
+    const response = await createSuccessResponse({ viewCount: updated!.viewCount, counted: true })
     response.cookies.set(cookieName, '1', {
       httpOnly: true,
       sameSite: 'lax',

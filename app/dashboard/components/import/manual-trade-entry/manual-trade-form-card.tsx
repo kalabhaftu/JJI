@@ -21,7 +21,8 @@ import { toast } from 'sonner'
 import { Calculator, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
 import type { TradeType } from '@/lib/db/schema/trades';
 
-import { generateTradeHash } from '@/lib/utils'
+import { generateTradeHash } from '@/lib/trading/trade-grouping'
+import { importTradesThroughApi } from '@/lib/api/trade-import-client'
 import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
@@ -278,20 +279,24 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
         createdAt: new Date(),
       }
 
-      // Atomic save and link operation
-      const { saveAndLinkTrades } = await import("@/server/accounts")
-      const result = await saveAndLinkTrades(accountId, [completeTrade])
+      const job = await importTradesThroughApi({
+        accountId,
+        trades: [completeTrade],
+      })
+      const accountName = typeof job.meta?.accountName === 'string'
+        ? job.meta.accountName
+        : 'the account'
 
-      if (result.isDuplicate) {
+      if (job.importedCount === 0) {
         toast.info("Trade Already Exists", {
-          description: 'message' in result ? result.message : "This trade already exists in the account",
+          description: "This trade already exists in the account",
           duration: 5000,
         })
         return
       }
 
       toast.success('Trade Added', {
-        description: `Trade successfully saved and linked to ${'accountName' in result ? result.accountName : 'the account'}`,
+        description: `Trade successfully saved and linked to ${accountName}`,
       })
 
       // Invalidate accounts cache to trigger refresh

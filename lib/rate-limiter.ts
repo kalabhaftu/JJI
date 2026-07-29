@@ -4,6 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { Ratelimit } from '@upstash/ratelimit'
 import { isRedisConfigured, redis } from '@/lib/cache/client'
 import { getClientIp } from '@/lib/security/client-ip'
+import { ErrorResponses } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 // ─── Limiter config type ───
 export interface LimiterConfig {
@@ -12,33 +15,90 @@ export interface LimiterConfig {
   failClosed?: boolean
 }
 
-function allowInMemoryProductionLimits() {
-  return process.env.ALLOW_IN_MEMORY_RATE_LIMITS_IN_PRODUCTION === 'true' || process.env.ALLOW_IN_MEMORY_RATE_LIMITS_IN_PRODUCTION === '1'
-}
-
 function shouldFailClosed(limiter: LimiterConfig) {
-  return process.env.NODE_ENV === 'production' && limiter.failClosed && !allowInMemoryProductionLimits()
+  return process.env.NODE_ENV === 'production' && limiter.failClosed === true
 }
 
-function rateLimitUnavailableResponse() {
-  logger.error({ event: 'system_error', error: {
+let backendUnavailableCount = 0
+let lastBackendUnavailableReportAt = 0
+
+function reportRateLimitBackendUnavailable(
+  error: unknown,
+  failClosed: boolean,
+  requestId?: string,
+) {
+  logger.error({ event: 'rate_limit_backend_unavailable', error: {
     has_KV_URL: !!process.env.KV_REST_API_URL,
     has_UPSTASH_URL: !!process.env.UPSTASH_REDIS_REST_URL,
-    ALLOW_IN_MEMORY: process.env.ALLOW_IN_MEMORY_RATE_LIMITS_IN_PRODUCTION,
-    NODE_ENV: process.env.NODE_ENV
-  } }, '[Rate Limiter] Fail-closed triggered. Environment variables status:')
-  return NextResponse.json(
-    {
-      success: false,
-      error: 'Service temporarily unavailable',
-      code: 'RATE_LIMIT_BACKEND_UNAVAILABLE',
-      retryable: true,
-    },
-    { status: 503 }
-  )
+    failClosed,
+    NODE_ENV: process.env.NODE_ENV,
+  } }, '[Rate Limiter] Backend unavailable')
+
+  backendUnavailableCount += 1
+  const now = Date.now()
+  const shouldCapture = backendUnavailableCount === 1
+    || (
+      backendUnavailableCount % 10 === 0
+      && now - lastBackendUnavailableReportAt >= 60_000
+    )
+  if (shouldCapture) {
+    lastBackendUnavailableReportAt = now
+    reportError(error, {
+      surface: 'api',
+      operation: 'rate-limit-backend',
+      ...(requestId ? { requestId } : {}),
+      extra: {
+        failClosed,
+        redisConfigured: isRedisConfigured(),
+        unavailableCount: backendUnavailableCount,
+      },
+    })
+  }
 }
 
-// ─── Ephemeral Cache (Memory Fallback for @upstash/ratelimit) ───
+async function rateLimitUnavailableResponse(requestId: string) {
+  return ErrorResponses.rateLimitUnavailable(requestId)
+}
+
+function backendUnavailableError(cause?: unknown) {
+  return new Error('Rate-limit backend unavailable', {
+    ...(cause !== undefined ? { cause } : {}),
+  })
+}
+
+function handleUnavailableLimiter(
+  limiter: LimiterConfig,
+  requestId?: string,
+  cause?: unknown,
+) {
+  const failClosed = shouldFailClosed(limiter)
+  reportRateLimitBackendUnavailable(
+    backendUnavailableError(cause),
+    failClosed,
+    requestId,
+  )
+  return {
+    failClosed,
+    remaining: failClosed ? 0 : limiter.points,
+  }
+}
+
+function rateLimitHeaders(
+  limit: number,
+  remaining: number,
+  reset: number,
+  retryAfter: number,
+) {
+  return {
+    'Retry-After': String(retryAfter),
+    'X-RateLimit-Limit': String(limit),
+    'X-RateLimit-Remaining': String(remaining),
+    'X-RateLimit-Reset': String(reset),
+  }
+}
+
+// @upstash/ratelimit uses this only to suppress duplicate requests within one
+// process. It is not a production fallback limiter.
 const ephemeralCache = new Map()
 
 // ─── Upstash Limiter Instances ───
@@ -61,17 +121,19 @@ function getUpstashLimiter(config: LimiterConfig): Ratelimit {
 }
 
 // ─── Exported limiter configs (drop-in compatible with existing imports) ───
-export const apiLimiter: LimiterConfig = { points: 100, duration: 60 }
-const authLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
+export const apiLimiter: LimiterConfig = { points: 100, duration: 60, failClosed: true }
+export const authenticatedReadLimiter: LimiterConfig = { points: 100, duration: 60 }
+export const sensitiveMutationLimiter: LimiterConfig = { points: 60, duration: 60, failClosed: true }
+export const authLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
 export const aiLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 export const aiReviewLimiter: LimiterConfig = { points: 1, duration: 86400, failClosed: true }
 export const importLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
-const uploadLimiter: LimiterConfig = { points: 30, duration: 60 }
+export const uploadLimiter: LimiterConfig = { points: 30, duration: 60, failClosed: true }
 export const webhookLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 export const thorLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
-const paymentLimiter: LimiterConfig = { points: 30, duration: 60, failClosed: true }
-export const feedbackLimiter: LimiterConfig = { points: 5, duration: 60 }
-const adminLimiter: LimiterConfig = { points: 200, duration: 60, failClosed: true }
+export const paymentLimiter: LimiterConfig = { points: 30, duration: 60, failClosed: true }
+export const feedbackLimiter: LimiterConfig = { points: 5, duration: 60, failClosed: true }
+export const adminLimiter: LimiterConfig = { points: 200, duration: 60, failClosed: true }
 export const publicLimiter: LimiterConfig = { points: 30, duration: 60 }
 export const errorReportLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
 export const emailOtpLimiter: LimiterConfig = { points: 3, duration: 3600, failClosed: true }
@@ -107,10 +169,11 @@ export async function consumeRateLimitKey(
   limiter: LimiterConfig
 ): Promise<{ allowed: boolean; remaining: number }> {
   if (!isRedisConfigured()) {
-    if (shouldFailClosed(limiter)) {
-      return { allowed: false, remaining: 0 }
+    const unavailable = handleUnavailableLimiter(limiter)
+    return {
+      allowed: !unavailable.failClosed,
+      remaining: unavailable.remaining,
     }
-    return { allowed: true, remaining: limiter.points }
   }
 
   try {
@@ -118,17 +181,17 @@ export async function consumeRateLimitKey(
     const { success, remaining } = await upstashLimiter.limit(key)
     return { allowed: success, remaining }
   } catch (error) {
-    // Fail-open if Redis error and not failClosed
-    if (shouldFailClosed(limiter)) {
-      return { allowed: false, remaining: 0 }
+    const unavailable = handleUnavailableLimiter(limiter, undefined, error)
+    return {
+      allowed: !unavailable.failClosed,
+      remaining: unavailable.remaining,
     }
-    return { allowed: true, remaining: limiter.points }
   }
 }
 
 /**
  * Apply rate limiting to a request.
- * Returns null if allowed, or a 429 response if rate limited.
+ * Returns null if allowed, or a 429/503 response when enforcement blocks.
  *
  * Uses @upstash/ratelimit for distributed rate limiting.
  */
@@ -136,11 +199,13 @@ export async function applyRateLimit(
   req: NextRequest,
   limiter: LimiterConfig = apiLimiter
 ): Promise<NextResponse | null> {
+  const requestId = resolveRequestId(req.headers)
   const identifier = await getRateLimitIdentifier(req)
 
   if (!isRedisConfigured()) {
-    if (shouldFailClosed(limiter)) {
-      return rateLimitUnavailableResponse()
+    const unavailable = handleUnavailableLimiter(limiter, requestId)
+    if (unavailable.failClosed) {
+      return rateLimitUnavailableResponse(requestId)
     }
     return null
   }
@@ -150,32 +215,18 @@ export async function applyRateLimit(
     const { success, limit, remaining, reset } = await upstashLimiter.limit(identifier)
 
     if (!success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Too many requests',
-          details: 'Please wait a moment before trying again',
-          code: 'RATE_LIMIT_EXCEEDED',
-          retryable: true,
-        },
-        {
-          status: 429,
-          headers: {
-            'Retry-After': String(limiter.duration),
-            'X-RateLimit-Limit': String(limit),
-            'X-RateLimit-Remaining': String(remaining),
-            'X-RateLimit-Reset': String(reset),
-          },
-        }
+      return ErrorResponses.rateLimited(
+        requestId,
+        limiter.duration,
+        rateLimitHeaders(limit, remaining, reset, limiter.duration),
       )
     }
 
     return null
   } catch (error) {
-    // Log error but fail-open unless explicitly fail-closed
-    logger.warn({ error }, 'Rate limiter error, falling back to open limit')
-    if (shouldFailClosed(limiter)) {
-      return rateLimitUnavailableResponse()
+    const unavailable = handleUnavailableLimiter(limiter, requestId, error)
+    if (unavailable.failClosed) {
+      return rateLimitUnavailableResponse(requestId)
     }
     return null
   }

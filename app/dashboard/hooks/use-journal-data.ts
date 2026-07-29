@@ -42,7 +42,7 @@ export function useJournalData(startDate?: Date, endDate?: Date, accountId?: str
       
       const data = await response.json()
       const journalMap: Record<string, JournalEntry> = {}
-      data.journals?.forEach((journal: JournalEntry) => {
+      data.data?.journals?.forEach((journal: JournalEntry) => {
         const dateKey = format(new Date(journal.date), 'yyyy-MM-dd')
         journalMap[dateKey] = journal
       })

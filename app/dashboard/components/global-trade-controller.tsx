@@ -5,7 +5,7 @@ import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import { useData } from '@/context/data-provider'
 import { TradeEditPanel } from './tables/trade-edit-panel'
 import { TradeDetailPanel } from './tables/trade-detail-panel'
-import { ensureExtendedTrade } from '@/lib/utils'
+import { ensureExtendedTrade } from '@/lib/trading/trade-formatting'
 
 export function GlobalTradeController() {
   const searchParams = useSearchParams()

@@ -8,7 +8,12 @@ import { useTags } from '@/context/tags-provider'
 import { useData } from '@/context/data-provider'
 import { useNewsEvents } from '@/hooks/use-news-events'
 import { formatTimeInZone, getKillzoneBadge, getTradingSession } from '@/lib/time-utils'
-import { classifyTrade, cn, formatCurrency, formatNoteContent } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { formatNoteContent } from '@/lib/content/cleaning'
+import {
+  classifyTrade,
+  formatCurrency,
+} from '@/lib/trading/trade-formatting'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { useUserStore } from '@/store/user-store'
 import {

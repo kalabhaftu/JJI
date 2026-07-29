@@ -39,7 +39,8 @@ import {
 } from 'lucide-react'
 import type { TradeType } from '@/lib/db/schema/trades';
 
-import { generateTradeHash } from '@/lib/utils'
+import { generateTradeHash } from '@/lib/trading/trade-grouping'
+import { importTradesThroughApi } from '@/lib/api/trade-import-client'
 import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useAccounts } from '@/hooks/use-accounts'
@@ -356,18 +357,23 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
         return
       }
 
-      const { saveAndLinkTrades } = await import("@/server/accounts")
-      const result = await saveAndLinkTrades(targetAccount.id, [completeTrade])
+      const job = await importTradesThroughApi({
+        accountId: targetAccount.id,
+        trades: [completeTrade],
+      })
+      const accountName = typeof job.meta?.accountName === 'string'
+        ? job.meta.accountName
+        : 'account'
 
-      if (result.isDuplicate) {
+      if (job.importedCount === 0) {
         toast.info("Trade Already Exists", {
-          description: 'message' in result ? result.message : "This trade already exists",
+          description: "This trade already exists",
         })
         return
       }
 
       toast.success('Trade Added', {
-        description: `Trade saved to ${'accountName' in result ? result.accountName : 'account'}`,
+        description: `Trade saved to ${accountName}`,
       })
 
       const { invalidateAccountsCache } = await import("@/hooks/use-accounts")

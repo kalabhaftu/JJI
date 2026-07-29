@@ -1,7 +1,8 @@
 'use client'
 
 import { useMemo } from 'react'
-import { cn, formatCurrency } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { formatCurrency } from '@/lib/trading/trade-formatting'
 import { calculateTradeDurationPerformance } from '@/lib/dashboard/analytics-calculations'
 import {
   Bar,

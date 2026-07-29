@@ -1,15 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentity } from '@/server/user-identity'
 import { nanoid } from 'nanoid'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  const rl = await applyRateLimit(req, apiLimiter)
+  const requestId = resolveRequestId(req.headers)
+  const rl = await applyApiRoutePolicy(req, 'authenticated-read')
   if (rl) return rl
 
   try {
@@ -18,18 +21,24 @@ export async function GET(req: NextRequest) {
       where: (table, { eq }) => eq(table.userId, internalUserId),
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     })
-    return NextResponse.json({ goals })
+    return createSuccessResponse(goals, undefined, undefined, requestId)
   } catch (err: any) {
     if (err.message?.includes('not authenticated') || err.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
-    logger.error('Failed to fetch goals', err, 'Goals GET')
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    reportError(err, {
+      surface: 'api',
+      operation: 'list-goals',
+      route: req.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse('Internal server error', 500, undefined, 'SERVER_ERROR', requestId)
   }
 }
 
 export async function POST(req: NextRequest) {
-  const rl = await applyRateLimit(req, apiLimiter)
+  const requestId = resolveRequestId(req.headers)
+  const rl = await applyApiRoutePolicy(req, 'sensitive')
   if (rl) return rl
 
   try {
@@ -38,12 +47,12 @@ export async function POST(req: NextRequest) {
     const { title, description, metric, targetValue, period, startDate, endDate } = body
 
     if (!title || !metric || targetValue === undefined || targetValue === null || !period || !startDate) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return createErrorResponse('Missing required fields', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
     const numericTargetValue = Number(targetValue)
     if (!Number.isFinite(numericTargetValue)) {
-      return NextResponse.json({ error: 'Target value must be a valid number' }, { status: 400 })
+      return createErrorResponse('Target value must be a valid number', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
     const goal = (await db.insert(schema.UserGoal).values({
@@ -59,12 +68,17 @@ export async function POST(req: NextRequest) {
       endDate: endDate ? new Date(endDate) : null,
     }).returning())[0]
 
-    return NextResponse.json({ goal })
+    return createSuccessResponse(goal, undefined, undefined, requestId, { status: 201 })
   } catch (err: any) {
     if (err.message?.includes('not authenticated') || err.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
-    logger.error('Failed to create goal', err, 'Goals POST')
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    reportError(err, {
+      surface: 'api',
+      operation: 'create-goal',
+      route: req.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse('Internal server error', 500, undefined, 'SERVER_ERROR', requestId)
   }
 }

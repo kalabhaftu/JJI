@@ -43,7 +43,7 @@ export function useLiveAccountTransactions() {
         const result = await response.json()
 
         if (!result.success) {
-          throw new Error(result.error || 'Failed to fetch transactions')
+          throw new Error(result.error?.message || 'Failed to fetch transactions')
         }
 
         setTransactions(result.data || [])

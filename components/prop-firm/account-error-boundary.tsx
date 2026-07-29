@@ -1,11 +1,11 @@
 'use client'
 
 import React, { Component, ReactNode } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { AlertCircle, RefreshCcw, ArrowLeft } from "lucide-react"
+import { reportError } from '@/lib/observability/report-error'
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -29,7 +29,11 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    Sentry.captureException(error, { extra: { errorInfo } })
+    reportError(error, {
+      surface: 'client',
+      operation: 'render-prop-firm-account',
+      extra: { componentStack: errorInfo.componentStack },
+    })
   }
 
   handleReset = () => {
@@ -56,7 +60,7 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  {this.state.error?.message || 'An unexpected error occurred while loading the account data.'}
+                  An unexpected error occurred while loading the account data.
                 </AlertDescription>
               </Alert>
 

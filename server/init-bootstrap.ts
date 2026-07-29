@@ -1,5 +1,5 @@
 import { db } from '@/lib/db/client'
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
@@ -169,7 +169,11 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
       activeTemplateShell,
     }
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'server/init-bootstrap' } })
+    reportError(error, {
+      surface: 'server',
+      operation: 'initialize-application-bootstrap',
+      extra: { fallbackUsed: true },
+    })
     return {
       isAuthenticated: false,
       user: null,

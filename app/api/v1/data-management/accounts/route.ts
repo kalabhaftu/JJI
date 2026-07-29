@@ -4,6 +4,15 @@ import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-c
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
+import * as schema from '@/lib/db/schema'
+import { and, eq } from 'drizzle-orm'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { reportError } from '@/lib/observability/report-error'
+import { recordAuditEvent } from '@/lib/audit-logger'
+import { getClientIp } from '@/lib/security/client-ip'
+import { invalidateUserAccountCaches } from '@/server/accounts/cache'
 
 export async function GET(request: NextRequest) {
   const rateLimitResponse = await applyRateLimit(request, apiLimiter)
@@ -108,5 +117,111 @@ export async function GET(request: NextRequest) {
   } catch (error: any) {
     logger.error('Data management accounts API failed', error, 'Data Management Accounts')
     return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'sensitive')
+  if (limited) return limited
+
+  try {
+    const identity = await getResolvedUserIdentitySafe()
+    if (!identity) {
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    }
+
+    const body = await request.json().catch(() => null)
+    const oldAccountNumber = typeof body?.oldAccountNumber === 'string'
+      ? body.oldAccountNumber.trim()
+      : ''
+    const newAccountNumber = typeof body?.newAccountNumber === 'string'
+      ? body.newAccountNumber.trim()
+      : ''
+
+    if (!oldAccountNumber || !newAccountNumber || newAccountNumber.length > 128) {
+      return createErrorResponse(
+        'Valid old and new account numbers are required',
+        400,
+        undefined,
+        'VALIDATION_ERROR',
+        requestId,
+      )
+    }
+
+    const existing = await db.query.Account.findFirst({
+      where: (table, operators) => operators.and(
+        operators.eq(table.number, oldAccountNumber),
+        operators.eq(table.userId, identity.internalUserId),
+      ),
+    })
+    if (!existing) {
+      return createErrorResponse('Account not found', 404, undefined, 'NOT_FOUND', requestId)
+    }
+
+    const duplicate = await db.query.Account.findFirst({
+      where: (table, operators) => operators.and(
+        operators.eq(table.number, newAccountNumber),
+        operators.eq(table.userId, identity.internalUserId),
+      ),
+      columns: { id: true },
+    })
+    if (duplicate) {
+      return createErrorResponse(
+        'You already have an account with this number',
+        409,
+        undefined,
+        'ACCOUNT_NUMBER_CONFLICT',
+        requestId,
+      )
+    }
+
+    await db.transaction(async (tx) => {
+      await tx.update(schema.Account)
+        .set({ number: newAccountNumber })
+        .where(and(
+          eq(schema.Account.id, existing.id),
+          eq(schema.Account.userId, identity.internalUserId),
+        ))
+      await tx.update(schema.Trade)
+        .set({ accountNumber: newAccountNumber })
+        .where(and(
+          eq(schema.Trade.accountNumber, oldAccountNumber),
+          eq(schema.Trade.userId, identity.internalUserId),
+        ))
+      await recordAuditEvent({
+        userId: identity.internalUserId,
+        action: 'ACCOUNT_NUMBER_CHANGED',
+        entityType: 'Account',
+        entityId: existing.id,
+        source: 'api',
+        requestId,
+        ipAddress: getClientIp(request.headers),
+        beforeData: { accountNumber: oldAccountNumber },
+        afterData: { accountNumber: newAccountNumber },
+      }, tx as never)
+    })
+
+    await invalidateUserAccountCaches(identity.internalUserId, requestId)
+    return createSuccessResponse(
+      { id: existing.id, number: newAccountNumber },
+      'Account renamed',
+      undefined,
+      requestId,
+    )
+  } catch (error) {
+    reportError(error, {
+      surface: 'api',
+      operation: 'rename-account',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to rename account',
+      500,
+      undefined,
+      'ACCOUNT_RENAME_FAILED',
+      requestId,
+    )
   }
 }

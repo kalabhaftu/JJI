@@ -7,13 +7,16 @@
  * Accepts filter parameters and returns pre-computed report DTOs.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { getResolvedUserIdentity } from '@/server/user-identity'
+import { NextRequest } from 'next/server'
+import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { calculateReportStatistics, type ReportStatsFilters } from '@/lib/statistics/report-statistics'
 import { CacheHeaders } from '@/lib/api-cache-headers'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { logger } from '@/lib/logger'
 import { z } from 'zod'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 const reportStatsRequestSchema = z.object({
   accountId: z.string().trim().max(128).optional(),
@@ -28,22 +31,26 @@ const reportStatsRequestSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
-  if (rateLimitRes) return rateLimitRes
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'sensitive')
+  if (limited) return limited
 
   const start = Date.now()
   try {
-    const { internalUserId } = await getResolvedUserIdentity()
+    const identity = await getResolvedUserIdentitySafe()
+    if (!identity) {
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    }
 
     const body = await request.json().catch(() => null)
     const parsed = reportStatsRequestSchema.safeParse(body)
     if (!parsed.success) {
-      return NextResponse.json({ error: 'Invalid report filters', details: parsed.error.flatten() }, { status: 400 })
+      return createErrorResponse('Invalid report filters', 400, parsed.error.flatten(), 'VALIDATION_ERROR', requestId)
     }
 
     const validated = parsed.data
     const filters: ReportStatsFilters = {
-      userId: internalUserId,
+      userId: identity.internalUserId,
       ...(validated.accountId ? { accountId: validated.accountId } : {}),
       ...(validated.accountNumbers ? { accountNumbers: validated.accountNumbers } : {}),
       ...(validated.dateFrom ? { dateFrom: validated.dateFrom } : {}),
@@ -57,18 +64,18 @@ export async function POST(request: NextRequest) {
 
     const result = await calculateReportStatistics(filters)
 
-    const response = NextResponse.json(result)
-    Object.entries(CacheHeaders.privateShort).forEach(([k, v]) => response.headers.set(k, v))
     logger.info({ latencyMs: Date.now() - start, context: 'api' }, 'POST /api/v1/reports/stats')
-    return response
-  } catch (error: any) {
-    logger.error('POST /api/v1/reports/stats failed' + ' : ' + error)
-    if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    return NextResponse.json(
-      { error: 'Internal Server Error' },
-      { status: 500 }
+    return createSuccessResponse(result, undefined, undefined, requestId, {
+      headers: CacheHeaders.privateShort,
+    })
+  } catch (error) {
+    reportError(error, { surface: 'api', operation: 'calculate-report-statistics', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse(
+      'Internal server error',
+      500,
+      undefined,
+      'REPORT_STATISTICS_FAILED',
+      requestId,
     )
   }
 }

@@ -1,23 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 import { AccountFilterSettings, DEFAULT_FILTER_SETTINGS } from '@/types/account-filter-settings'
 
 // GET /api/settings/account-filters - Get user's account filter settings
 export async function GET(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const userSettings = await db.query.UserSettings.findFirst({
@@ -34,27 +34,36 @@ export async function GET(request: NextRequest) {
           ...savedSettings
         }
       } catch (error) {
-        // Parse error, use defaults
+        reportError(error, {
+          surface: 'api',
+          operation: 'parse-account-filter-settings',
+          route: request.nextUrl.pathname,
+          requestId,
+          userId: identity.internalUserId,
+          extra: { fallbackUsed: true },
+        })
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      data: settings
-    }, {
+    return createSuccessResponse(settings, undefined, undefined, requestId, {
       headers: {
         'Cache-Control': 'private, max-age=10, stale-while-revalidate=30'
       }
     })
 
   } catch (error) {
-    return NextResponse.json({
-      success: true,
-      data: DEFAULT_FILTER_SETTINGS
-    }, {
-      status: 200, // Return 200 with defaults rather than erroring
+    reportError(error, {
+      surface: 'api',
+      operation: 'load-account-filter-settings',
+      route: request.nextUrl.pathname,
+      requestId,
+      extra: { fallbackUsed: true },
+    })
+    return createSuccessResponse(DEFAULT_FILTER_SETTINGS, undefined, {
+      fallback: true,
+    }, requestId, {
       headers: {
-        'Cache-Control': 'no-store' // Don't cache errors
+        'Cache-Control': 'no-store'
       }
     })
   }
@@ -62,16 +71,14 @@ export async function GET(request: NextRequest) {
 
 // POST /api/settings/account-filters - Update user's account filter settings
 export async function POST(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const settings: AccountFilterSettings = await request.json()
@@ -92,19 +99,25 @@ export async function POST(request: NextRequest) {
         }
       })
 
-    return NextResponse.json({
-      success: true,
-      data: settings
-    }, {
+    return createSuccessResponse(settings, undefined, undefined, requestId, {
       headers: {
-        'Cache-Control': 'no-store' // Don't cache POST responses
+        'Cache-Control': 'no-store'
       }
     })
 
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to save settings' },
-      { status: 500 }
+    reportError(error, {
+      surface: 'api',
+      operation: 'save-account-filter-settings',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to save settings',
+      500,
+      undefined,
+      'SERVER_ERROR',
+      requestId,
     )
   }
 }

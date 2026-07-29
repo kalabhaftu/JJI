@@ -8,6 +8,7 @@ import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { useUserStore } from '@/store/user-store'
+import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 
 const ROW_HEIGHT = 36 // Approximate height of each trade row in pixels
 
@@ -23,7 +24,6 @@ export default function RecentTradesWidget() {
 
   // CRITICAL FIX: Group trades first to handle partial closes correctly
   // This ensures partial closes are shown as single trades, not multiple entries
-  const { groupTradesByExecution } = require('@/lib/utils')
   const groupedTrades = React.useMemo(() => {
     return groupTradesByExecution(formattedTrades)
   }, [formattedTrades, groupTradesByExecution])

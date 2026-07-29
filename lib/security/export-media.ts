@@ -1,4 +1,4 @@
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 
 const MAX_EXPORT_IMAGE_BYTES = 8 * 1024 * 1024
 const EXPORT_IMAGE_TIMEOUT_MS = 8_000
@@ -21,8 +21,7 @@ export function isTrustedExportMediaUrl(value: string, supabaseUrl: string): boo
       && !mediaUrl.username
       && !mediaUrl.password
       && mediaUrl.pathname.startsWith('/storage/v1/object/')
-  } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'lib/security/export-media', phase: 'isTrustedUrl' } })
+  } catch {
     return false
   }
 }
@@ -65,7 +64,11 @@ export async function fetchTrustedExportImage(
 
     return { buffer: Buffer.concat(chunks), extension }
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'lib/security/export-media', phase: 'fetchMedia' } })
+    reportError(error, {
+      surface: 'server',
+      operation: 'fetch-export-media',
+      extra: { fallbackUsed: true },
+    })
     return null
   }
 }

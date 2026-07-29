@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/lib/db/client'
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 import * as schema from '@/lib/db/schema'
 import { eq, and, count } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
@@ -189,7 +189,12 @@ export async function createRiskAlert(
                 })
             }
          } catch (error) {
-           Sentry.captureException(error, { extra: { route: 'lib/services/notification-service', phase: 'send-email' } })
+           reportError(error, {
+             surface: 'background-job',
+             operation: 'send-risk-breach-email',
+             userId,
+             entityId: phaseAccountId,
+           })
            /* Notification still persists when email delivery is unavailable. */
          }
     }

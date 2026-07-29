@@ -37,7 +37,7 @@ export default function SubscribeStatusPage() {
     try {
       const response = await fetch(`/api/v1/payments/status?paymentRecordId=${id}&refresh=true`)
       const payload = await response.json()
-      if (!payload.success) throw new Error(payload.error || 'Unable to load payment status')
+      if (!payload.success) throw new Error(payload.error?.message || 'Unable to load payment status')
       setStatus(payload.data)
       if (payload.data?.providerStatus === 'finished') {
         sessionStorage.removeItem('pendingPaymentId')

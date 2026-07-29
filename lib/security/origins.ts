@@ -1,5 +1,3 @@
-import * as Sentry from '@sentry/nextjs'
-
 import { DEMO_ORIGIN, DOCS_ORIGIN } from '@/lib/public-surface-routing'
 
 const PRODUCTION_ORIGIN = 'https://www.justjournalit.site'
@@ -15,7 +13,6 @@ function normalizeOrigin(value: string | undefined | null): string | null {
     const url = new URL(input)
     return url.origin
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'normalizeOrigin' } })
     return null
   }
 }
@@ -67,7 +64,6 @@ function isLocalOrigin(origin: string) {
     const url = new URL(origin)
     return LOCALHOST_HOSTS.has(url.hostname)
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'isLocalhostOrigin' } })
     return false
   }
 }
@@ -107,7 +103,6 @@ export function assertProductionUrl(name: string, value: string | undefined | nu
   try {
     url = new URL(value.startsWith('http') ? value : `https://${value}`)
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'validateOrigin' } })
     return `${name} must be a valid URL`
   }
 

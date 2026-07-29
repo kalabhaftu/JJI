@@ -30,7 +30,8 @@ import {
   Loader2,
   Sparkles
 } from "lucide-react"
-import { cn, formatPercent } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { formatPercent } from '@/lib/trading/trade-formatting'
 
 interface PhaseTransitionDialogProps {
   isOpen: boolean

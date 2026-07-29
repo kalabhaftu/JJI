@@ -1,6 +1,9 @@
 import type { TradeType } from '@/lib/db/schema/trades';
 
-import { groupTradesByExecution, type GroupedTrade } from '@/lib/utils'
+import {
+  groupTradesByExecution,
+  type GroupedTrade,
+} from '@/lib/trading/trade-grouping'
 
 type Trade = TradeType;
 

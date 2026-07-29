@@ -1,5 +1,8 @@
-import * as Sentry from '@sentry/nextjs'
-import { calculateStatistics, classifyTrade, formatCalendarData, groupTradesByExecution } from '@/lib/utils'
+import { reportError } from '@/lib/observability/report-error'
+import { formatCalendarData } from '@/lib/calendar/trade-calendar'
+import { calculateStatistics } from '@/lib/statistics/trade-statistics'
+import { classifyTrade } from '@/lib/trading/trade-formatting'
+import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 import {
   calculateDayOfWeekPerformance,
   calculateOutcomeDistribution,
@@ -90,7 +93,11 @@ function safeWidget<T>(fn: () => T, fallback: T): T {
   try {
     return fn()
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: '/api/v1/trades', widget: 'safeWidget' } })
+    reportError(error, {
+      surface: 'server',
+      operation: 'calculate-trade-widget',
+      extra: { fallbackUsed: true },
+    })
     return fallback
   }
 }

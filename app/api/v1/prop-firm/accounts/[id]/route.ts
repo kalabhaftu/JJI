@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import * as Sentry from '@sentry/nextjs'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { z } from 'zod'
 import { db } from '@/lib/db/client'
@@ -47,8 +46,7 @@ function normalizeTimeZone(value: string | null) {
   try {
     Intl.DateTimeFormat('en-US', { timeZone: value }).format(new Date())
     return value
-  } catch (error) {
-    Sentry.captureException(error, { extra: { route: '/api/v1/prop-firm/accounts/[id]', phase: 'timezone-validation' } })
+  } catch {
     return 'UTC'
   }
 }
@@ -586,8 +584,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     // Invalidate caches after archiving/unarchiving to refresh dashboard
     if (typeof updateData.isArchived === 'boolean') {
-      const { invalidateUserCaches } = await import('@/server/accounts')
-      await invalidateUserCaches(internalUserId)
+      const { invalidateUserAccountCaches } = await import('@/server/accounts/cache')
+      await invalidateUserAccountCaches(internalUserId)
     }
 
     return NextResponse.json({
@@ -692,8 +690,8 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     })
 
     // Invalidate all cache tags to ensure fresh data
-    const { invalidateUserCaches } = await import('@/server/accounts')
-    await invalidateUserCaches(internalUserId)
+    const { invalidateUserAccountCaches } = await import('@/server/accounts/cache')
+    await invalidateUserAccountCaches(internalUserId)
 
     return NextResponse.json({
       success: true,

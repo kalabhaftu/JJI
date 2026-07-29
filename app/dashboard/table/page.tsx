@@ -7,7 +7,11 @@ import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { Suspense } from 'react'
-import { cn, classifyTrade, ensureExtendedTrade } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import {
+  classifyTrade,
+  ensureExtendedTrade,
+} from '@/lib/trading/trade-formatting'
 import { Badge } from '@/components/ui/badge'
 import { TablePageSkeleton } from './components/table-page-skeleton'
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'

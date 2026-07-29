@@ -1,4 +1,8 @@
-import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils'
+import {
+  formatCurrency,
+  formatNumber,
+  formatPercent,
+} from '@/lib/trading/trade-formatting'
 import {
   calculateTradeRMultiple,
   hasValidTradeRMultipleData,

@@ -1,10 +1,20 @@
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { generateTradeHash } from '@/lib/utils'
+import { generateTradeHash } from '@/lib/trading/trade-grouping'
 import { buildSyntheticExecutionsFromTrade, buildTradePersistenceData } from '@/lib/trade-core'
 import { and, eq } from 'drizzle-orm'
-import { claimImportJob, updateClaimedImportJob } from '@/server/import-job-runtime'
+import {
+  claimImportJob,
+  completeClaimedImportJob,
+  updateClaimedImportJob,
+} from '@/server/import-job-runtime'
 import { downloadImportObject, uploadImportObject } from '@/server/import-object-store'
+import { buildBulkAuditSummary } from '@/lib/audit-logger'
+import {
+  getSafeErrorMessage,
+  reportError,
+} from '@/lib/observability/report-error'
+import logger from '@/lib/logger'
 
 const TRADE_IMPORT_CHUNK_SIZE = 250
 
@@ -334,7 +344,14 @@ export async function cancelTradeImportJob(jobId: string, internalUserId: string
   return { job: serializeTradeImportJob(updated), status: 200 as const }
 }
 
-export async function processTradeImportJobChunk(jobId: string, internalUserId: string, workerToken = crypto.randomUUID(), eventId?: string, skipClaim = false) {
+export async function processTradeImportJobChunk(
+  jobId: string,
+  internalUserId: string,
+  workerToken = crypto.randomUUID(),
+  eventId?: string,
+  skipClaim = false,
+  requestId?: string,
+) {
   const claimed = skipClaim || await claimImportJob({
     jobId,
     internalUserId,
@@ -532,21 +549,38 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
     state.index = endIndex
 
     if (state.index >= totalItems) {
-      const completed = await updateClaimedImportJob({
+      const completed = await completeClaimedImportJob({
         jobId: job.id,
         internalUserId,
         workerToken,
         data: {
-        status: 'completed',
-        stage: 'completed',
-        progress: 100,
-        processedItems: totalItems,
-        importedCount: state.imported,
-        skippedCount: state.skipped,
-        state,
-        completedAt: new Date(),
+          status: 'completed',
+          stage: 'completed',
+          progress: 100,
+          processedItems: totalItems,
+          importedCount: state.imported,
+          skippedCount: state.skipped,
+          state,
+          completedAt: new Date(),
+        },
+        audit: {
+          action: 'TRADE_IMPORT_COMPLETED',
+          requestId: requestId ?? null,
+          afterData: buildBulkAuditSummary({
+            created: state.imported,
+            skipped: state.skipped,
+            entityTypes: ['Trade', 'TradeExecution'],
+          }),
         },
       })
+      logger.info({
+        event: 'trade_import_job_completed',
+        jobId: job.id,
+        userId: internalUserId,
+        importedCount: state.imported,
+        skippedCount: state.skipped,
+        requestId,
+      }, 'Trade import job completed')
 
       return { job: serializeTradeImportJob(completed), done: true, status: 200 as const }
     }
@@ -557,29 +591,44 @@ export async function processTradeImportJobChunk(jobId: string, internalUserId: 
       internalUserId,
       workerToken,
       data: {
-      status: 'processing',
-      stage: 'trades-import',
-      progress: computeProgress(totalItems, processedItems),
-      processedItems,
-      importedCount: state.imported,
-      skippedCount: state.skipped,
-      state,
+        status: 'processing',
+        stage: 'trades-import',
+        progress: computeProgress(totalItems, processedItems),
+        processedItems,
+        importedCount: state.imported,
+        skippedCount: state.skipped,
+        state,
       },
     })
 
     return { job: serializeTradeImportJob(processing), done: false, status: 200 as const }
   } catch (error) {
+    reportError(error, {
+      surface: 'import',
+      operation: 'process-trade-import-job',
+      jobId: job.id,
+      userId: internalUserId,
+      ...(requestId ? { requestId } : {}),
+      extra: { stage: job.stage, processedItems: job.processedItems },
+    })
     const failed = await updateClaimedImportJob({
       jobId: job.id,
       internalUserId,
       workerToken,
       data: {
-      status: 'failed',
-      stage: 'failed',
-      error: error instanceof Error ? error.message.slice(0, 2000) : 'Trade import failed',
-      completedAt: new Date(),
+        status: 'failed',
+        stage: 'failed',
+        error: getSafeErrorMessage(error, 'Trade import failed').slice(0, 2000),
+        completedAt: new Date(),
       },
     })
+    logger.info({
+      event: 'trade_import_job_terminal_failure',
+      jobId: job.id,
+      userId: internalUserId,
+      stage: job.stage,
+      requestId,
+    }, 'Trade import job reached a terminal failure')
 
     return { job: serializeTradeImportJob(failed), done: true, status: 200 as const }
   }

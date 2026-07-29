@@ -96,7 +96,7 @@ export function useAccounts(options: UseAccountsOptions = {}) {
   const accounts: UnifiedAccount[] = useMemo(() => {
     return data?.data || []
   }, [data])
-  const pagination = data?.pagination || { total: 0, page: 1, limit: 50, totalPages: 1 }
+  const pagination = data?.meta?.pagination || { total: 0, page: 1, limit: 50, totalPages: 1 }
 
   const refetch = useCallback(async () => {
     await mutate()

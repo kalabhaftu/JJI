@@ -14,7 +14,7 @@ import { Search, X } from "lucide-react"
 import { WIDGET_REGISTRY } from '../config/widget-registry-lazy'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import type { WidgetLayout } from '@/server/dashboard-templates'
+import type { WidgetLayout } from '@/lib/dashboard/template-types'
 import { WIDGET_DIMENSIONS } from '../config/widget-dimensions'
 
 interface WidgetLibraryDialogProps {

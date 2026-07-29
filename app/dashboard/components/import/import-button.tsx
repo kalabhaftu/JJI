@@ -20,7 +20,7 @@ import { toast } from "sonner"
 // UploadIcon removed
 import type { TradeType } from '@/lib/db/schema/trades';
 
-import { saveAndLinkTrades } from '@/server/accounts'
+import { importTradesThroughApi } from '@/lib/api/trade-import-client'
 import ImportTypeSelection, { ImportType } from './import-type-selection'
 import FileUpload from './file-upload'
 import HeaderSelection from './header-selection'
@@ -58,8 +58,6 @@ export type Step =
   | 'process-file'
   | 'process-trades'
 
-const ASYNC_IMPORT_THRESHOLD = 500
-
 interface TradeImportJobMeta {
   accountType?: 'prop-firm' | 'live'
   accountName?: string
@@ -75,18 +73,6 @@ interface TradeImportJobMeta {
     evaluationType?: string
     propFirmName?: string
   }
-}
-
-interface TradeImportJobResponse {
-  id: string
-  status: 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled'
-  stage: string
-  progress: number
-  totalItems: number
-  importedCount: number
-  skippedCount: number
-  error?: string | null
-  meta?: TradeImportJobMeta
 }
 
 // Step icons mapping
@@ -208,74 +194,33 @@ export default function ImportButton() {
 
     try {
       setSaveProgress(30)
-      const useAsyncJob = processedTrades.length >= ASYNC_IMPORT_THRESHOLD
-      let result: any
-
-      if (useAsyncJob) {
-        const createJobResponse = await fetch('/api/v1/trades/import/jobs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            accountId: selectedAccountId,
-            trades: processedTrades,
-          }),
+      const latestJob = await importTradesThroughApi({
+        accountId: selectedAccountId,
+        trades: processedTrades,
+        onProgress: (job) => {
+          setSaveProgress(Math.max(30, Math.min(95, job.progress || 30)))
+        },
+      })
+      if (latestJob.status === 'cancelled') {
+        toast.info('Import cancelled', {
+          description: 'The import job was cancelled before completion.',
+          duration: 5000,
         })
-
-        const createJobData = await createJobResponse.json().catch(() => null)
-        if (!createJobResponse.ok || !createJobData?.job) {
-          throw new Error(createJobData?.error || 'Failed to create import job')
-        }
-
-        let latestJob = createJobData.job as TradeImportJobResponse
-        const isTerminal = (status: TradeImportJobResponse['status']) =>
-          status === 'completed' || status === 'failed' || status === 'cancelled'
-
-        while (!isTerminal(latestJob.status)) {
-          const processResponse = await fetch(`/api/v1/trades/import/jobs/${latestJob.id}/process`, {
-            method: 'POST',
-          })
-          const processData = await processResponse.json().catch(() => null)
-
-          if (!processResponse.ok || !processData?.job) {
-            throw new Error(processData?.error || 'Import processing failed')
-          }
-
-          latestJob = processData.job as TradeImportJobResponse
-          setSaveProgress(Math.max(30, Math.min(95, latestJob.progress || 30)))
-
-          if (!isTerminal(latestJob.status)) {
-            await new Promise((resolve) => setTimeout(resolve, 350))
-          }
-        }
-
-        if (latestJob.status === 'cancelled') {
-          toast.info('Import cancelled', {
-            description: 'The import job was cancelled before completion.',
-            duration: 5000,
-          })
-          return
-        }
-
-        if (latestJob.status === 'failed') {
-          throw new Error(latestJob.error || 'Import failed')
-        }
-
-        result = {
-          linkedCount: latestJob.importedCount || 0,
-          totalTrades: latestJob.totalItems || processedTrades.length,
-          isDuplicate: (latestJob.importedCount || 0) === 0,
-          message: (latestJob.importedCount || 0) === 0
-            ? `All ${latestJob.totalItems || processedTrades.length} trades already exist in this account - no new trades to import`
-            : undefined,
-          isPropFirm: latestJob.meta?.accountType === 'prop-firm',
-          masterAccountId: latestJob.meta?.masterAccountId || null,
-          phaseAccountId: latestJob.meta?.phaseAccountId || null,
-          accountName: latestJob.meta?.accountName || 'Account',
-          evaluation: latestJob.meta?.evaluation,
-        }
-      } else {
-        // Fast path for smaller imports keeps current behavior unchanged.
-        result = await saveAndLinkTrades(selectedAccountId, processedTrades)
+        return
+      }
+      const jobMeta = (latestJob.meta ?? {}) as TradeImportJobMeta
+      const result = {
+        linkedCount: latestJob.importedCount || 0,
+        totalTrades: latestJob.totalItems || processedTrades.length,
+        isDuplicate: (latestJob.importedCount || 0) === 0,
+        message: (latestJob.importedCount || 0) === 0
+          ? `All ${latestJob.totalItems || processedTrades.length} trades already exist in this account - no new trades to import`
+          : undefined,
+        isPropFirm: jobMeta.accountType === 'prop-firm',
+        masterAccountId: jobMeta.masterAccountId || null,
+        phaseAccountId: jobMeta.phaseAccountId || null,
+        accountName: jobMeta.accountName || 'Account',
+        evaluation: jobMeta.evaluation,
       }
 
       setSaveProgress(70)

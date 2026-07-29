@@ -3,11 +3,13 @@
  * Creates a NOWPayments invoice for the authenticated user's subscription.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { createSubscriptionInvoice, validatePromoCode } from '@/lib/services/subscription-service'
-import { logger } from '@/lib/logger'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 function paymentRedirectUrl(request: NextRequest, paymentRecordId?: string | null) {
   if (!paymentRecordId) return null
@@ -15,13 +17,14 @@ function paymentRedirectUrl(request: NextRequest, paymentRecordId?: string | nul
 }
 
 export async function POST(request: NextRequest) {
-  const rl = await applyRateLimit(request, apiLimiter)
-  if (rl) return rl
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'payment')
+  if (limited) return limited
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const body = await request.json().catch(() => ({}))
@@ -31,10 +34,7 @@ export async function POST(request: NextRequest) {
     if (promoCode) {
       const promo = await validatePromoCode(promoCode, identity.internalUserId)
       if (!promo) {
-        return NextResponse.json(
-          { success: false, error: 'Invalid or expired promo code' },
-          { status: 400 }
-        )
+        return createErrorResponse('Invalid or expired promo code', 400, undefined, 'INVALID_PROMO_CODE', requestId)
       }
     }
 
@@ -44,36 +44,36 @@ export async function POST(request: NextRequest) {
     })
 
     if (result.alreadyActive) {
-      return NextResponse.json({
-        success: false,
-        error: 'Subscription already active',
-      }, { status: 409 })
+      return createErrorResponse('Subscription already active', 409, undefined, 'SUBSCRIPTION_ACTIVE', requestId)
     }
 
     if (result.freeAccess) {
-      return NextResponse.json({
-        success: true,
-        freeAccess: true,
-        message: 'Access granted! Redirecting to dashboard...',
-      })
+      return createSuccessResponse(
+        { freeAccess: true },
+        'Access granted! Redirecting to dashboard...',
+        undefined,
+        requestId,
+      )
     }
 
     const paymentUrl = paymentRedirectUrl(request, result.paymentRecordId)
 
-    return NextResponse.json({
-      success: true,
+    return createSuccessResponse({
       invoiceUrl: paymentUrl,
       paymentUrl,
       invoiceId: result.invoiceId,
       paymentRecordId: result.paymentRecordId,
       expiresAt: result.expiresAt,
       reusedExisting: Boolean(result.reusedExisting),
-    })
+    }, undefined, undefined, requestId)
   } catch (error) {
-    logger.error({ error, context: 'Payment Create Invoice' }, 'Create invoice failed')
-    return NextResponse.json(
-      { success: false, error: 'Failed to create payment invoice' },
-      { status: 500 }
+    reportError(error, { surface: 'api', operation: 'create-payment-invoice', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse(
+      'Failed to create payment invoice',
+      500,
+      undefined,
+      'PAYMENT_INVOICE_FAILED',
+      requestId,
     )
   }
 }

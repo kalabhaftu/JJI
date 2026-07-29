@@ -1,0 +1,14 @@
+{
+  "capturedAt": "2026-07-29",
+  "report": ".next-analyze/analyze/client.html",
+  "note": "Pre-remediation analyzer artifact. Compare only against a fresh analyzer artifact built from the final source state.",
+  "routes": [
+    { "route": "app/dashboard/page", "assetCount": 5, "parsedBytes": 97336, "gzipBytes": 32258 },
+    { "route": "app/dashboard/journal/page", "assetCount": 23, "parsedBytes": 723104, "gzipBytes": 223262 },
+    { "route": "app/dashboard/reports/page", "assetCount": 25, "parsedBytes": 1031696, "gzipBytes": 299312 },
+    { "route": "app/dashboard/prop-firm/accounts/page", "assetCount": 3, "parsedBytes": 72703, "gzipBytes": 22931 },
+    { "route": "app/dashboard/prop-firm/accounts/[id]/page", "assetCount": 20, "parsedBytes": 655410, "gzipBytes": 194296 },
+    { "route": "app/dashboard/accounts/page", "assetCount": 26, "parsedBytes": 862298, "gzipBytes": 259189 },
+    { "route": "app/dashboard/backtesting/page", "assetCount": 24, "parsedBytes": 1090929, "gzipBytes": 324243 }
+  ]
+}

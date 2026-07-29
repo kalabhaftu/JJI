@@ -3,6 +3,8 @@ import * as Sentry from '@sentry/nextjs'
 import { acquireImportLock, claimImportJob, releaseImportJob, releaseImportLock } from '@/server/import-job-runtime'
 import { processImportJobChunk } from '@/server/import-jobs'
 import { processTradeImportJobChunk } from '@/server/trade-import-jobs'
+import { reportError } from '@/lib/observability/report-error'
+import { normalizeRequestId } from '@/lib/observability/request-id'
 
 type ImportKind = 'archive' | 'trade'
 
@@ -28,6 +30,7 @@ export const processImportJob = inngest.createFunction(
       const kind: ImportKind = event.data?.kind === 'trade' ? 'trade' : 'archive'
       const workerToken = crypto.randomUUID()
       const eventId = typeof event.id === 'string' ? event.id : undefined
+      const requestId = normalizeRequestId(event.data?.requestId) ?? eventId
 
       if (!jobId || !internalUserId) {
         throw new Error('Import event is missing job ownership')
@@ -49,8 +52,8 @@ export const processImportJob = inngest.createFunction(
       }
 
       const result = await step.run('process-import-chunk', () => kind === 'trade'
-        ? processTradeImportJobChunk(jobId, internalUserId, workerToken, eventId, true)
-        : processImportJobChunk(jobId, internalUserId, workerToken, eventId, true))
+        ? processTradeImportJobChunk(jobId, internalUserId, workerToken, eventId, true, requestId)
+        : processImportJobChunk(jobId, internalUserId, workerToken, eventId, true, requestId))
 
       if (!('done' in result)) {
         throw new Error(result.error)
@@ -66,7 +69,7 @@ export const processImportJob = inngest.createFunction(
       if (!result.done && result.status === 200) {
         await step.sendEvent('schedule-next-import-chunk', {
           name: 'jji/import.process',
-          data: { jobId, internalUserId, kind },
+          data: { jobId, internalUserId, kind, requestId },
         })
       }
 
@@ -83,6 +86,7 @@ export const processImportJob = inngest.createFunction(
               source: 'trade-import-completed',
               masterAccountId: meta.masterAccountId,
               phaseAccountId: meta.phaseAccountId,
+              ...(requestId ? { requestId } : {}),
             },
           })
         }
@@ -90,7 +94,18 @@ export const processImportJob = inngest.createFunction(
 
       return { jobId, done: result.done }
     } catch (error) {
-      Sentry.captureException(error, { extra: { function: 'process-import-job' } })
+      reportError(error, {
+        surface: 'background-job',
+        operation: 'process-import-job',
+        jobId: String(event.data?.jobId ?? ''),
+        userId: String(event.data?.internalUserId ?? ''),
+        ...(normalizeRequestId(event.data?.requestId)
+          ? { requestId: normalizeRequestId(event.data?.requestId)! }
+          : {}),
+        tags: {
+          importKind: event.data?.kind === 'trade' ? 'trade' : 'archive',
+        },
+      })
       throw error
     } finally {
       span.end()

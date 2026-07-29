@@ -5,7 +5,11 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { getKillzoneBadge, getTradingSession } from '@/lib/time-utils'
-import { cn, formatNumber, parsePositionTime } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import {
+  formatNumber,
+  parsePositionTime,
+} from '@/lib/trading/trade-formatting'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { ChevronDown, ChevronRight, BarChart3, Eye, Pencil } from 'lucide-react'
 import { formatInTimeZone } from 'date-fns-tz'

@@ -1,9 +1,10 @@
-import { NextResponse, NextRequest } from 'next/server'
-import * as Sentry from '@sentry/nextjs'
+import { NextRequest } from 'next/server'
 import { applyRateLimit, errorReportLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { extractIP } from '@/server/geolocation'
-import { shouldIgnoreError } from '@/lib/logger'
+import { shouldIgnoreError } from '@/lib/observability/error-policy'
+import { createSuccessResponse, ErrorResponses } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
 
 function sanitizeMetadata(value: unknown, depth = 0): unknown {
   if (depth > 3) return '[truncated: max depth]'
@@ -47,11 +48,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
 
     if (!body.message || typeof body.message !== 'string') {
-      return NextResponse.json({ success: false, error: 'message is required' }, { status: 400 })
+      return ErrorResponses.validation({ fields: ['message'] })
     }
 
     if (shouldIgnoreError(body.message, body.metadata)) {
-      return NextResponse.json({ success: true })
+      return createSuccessResponse(null)
     }
 
     const ip = extractIP(req.headers)
@@ -60,24 +61,34 @@ export async function POST(req: NextRequest) {
 
     const message = String(body.message).slice(0, 2000)
     const error = new Error(message)
-    if (body.stack) error.stack = String(body.stack).slice(0, 5000)
-
-    const context = {
+    const requestId = req.headers.get('x-request-id')
+    reportError(error, {
+      surface: source === 'CLIENT'
+        ? 'client'
+        : source === 'API'
+          ? 'api'
+          : 'server',
+      operation: 'reported-client-failure',
       level: body.level === 'WARNING' ? 'warning' : 'error',
+      ...(body.url ? { route: String(body.url).slice(0, 500) } : {}),
+      ...(identity?.internalUserId ? { userId: identity.internalUserId } : {}),
+      ...(requestId ? { requestId } : {}),
       tags: { source },
       extra: {
-        url: body.url ? String(body.url).slice(0, 500) : null,
         ipAddress: ip,
         metadata: sanitizeMetadata(body.metadata),
       },
-      ...(identity?.internalUserId ? { user: { id: identity.internalUserId } } : {}),
-    } satisfies NonNullable<Parameters<typeof Sentry.captureException>[1]>
+    })
 
-    Sentry.captureException(error, context)
-
-    return NextResponse.json({ success: true })
+    return createSuccessResponse(null)
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: '/api/v1/errors' } })
-    return NextResponse.json({ success: false }, { status: 500 })
+    const requestId = req.headers.get('x-request-id')
+    reportError(error, {
+      surface: 'api',
+      operation: 'receive-error-report',
+      route: '/api/v1/errors',
+      ...(requestId ? { requestId } : {}),
+    })
+    return ErrorResponses.serverError()
   }
 }

@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { WidgetLayout } from '@/server/dashboard-templates'
+import type { WidgetLayout } from '@/lib/dashboard/template-types'
 
 interface TemplateEditState {
   isEditMode: boolean

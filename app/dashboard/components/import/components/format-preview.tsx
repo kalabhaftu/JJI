@@ -13,11 +13,13 @@ import {
 } from "@/components/ui/table";
 import { format, isValid } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCurrency } from "@/lib/utils";
+import {
+  formatCurrency,
+  parsePositionTime,
+} from '@/lib/trading/trade-formatting';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Play, RotateCcw, CheckCircle2, AlertCircle } from "lucide-react";
-import { parsePositionTime } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import {

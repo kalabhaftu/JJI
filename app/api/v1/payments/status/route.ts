@@ -1,21 +1,30 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { db } from '@/lib/db/client'
 import { refreshPaymentRecordStatus } from '@/lib/services/subscription-service'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 const PENDING_PROVIDER_STATUSES = new Set(['pending', 'waiting', 'confirming', 'confirmed', 'sending', 'partially_paid'])
 
 export async function GET(request: NextRequest) {
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(
+    request,
+    request.nextUrl.searchParams.get('refresh') === 'true' ? 'payment' : 'authenticated-read',
+  )
+  if (limited) return limited
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const paymentRecordId = request.nextUrl.searchParams.get('paymentRecordId')
     if (!paymentRecordId) {
-      return NextResponse.json({ success: false, error: 'Missing paymentRecordId' }, { status: 400 })
+      return createErrorResponse('Missing paymentRecordId', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
     const shouldRefresh = request.nextUrl.searchParams.get('refresh') === 'true'
@@ -31,7 +40,7 @@ export async function GET(request: NextRequest) {
     })
 
     if (!record) {
-      return NextResponse.json({ success: false, error: 'Payment not found' }, { status: 404 })
+      return createErrorResponse('Payment not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     const deadline = record.dueDate || (record.createdAt ? new Date(record.createdAt.getTime() + 30 * 60 * 1000) : null)
@@ -59,9 +68,9 @@ export async function GET(request: NextRequest) {
       hasAccess: record.Subscription?.status === 'active',
     }
 
-    return NextResponse.json({ success: true, data: payload })
+    return createSuccessResponse(payload, undefined, undefined, requestId)
   } catch (error) {
-    logger.error({ error, context: 'Payment Status' }, 'Payment status check failed')
-    return NextResponse.json({ success: false, error: 'Failed to check status' }, { status: 500 })
+    reportError(error, { surface: 'api', operation: 'get-payment-status', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse('Failed to check status', 500, undefined, 'PAYMENT_STATUS_FAILED', requestId)
   }
 }

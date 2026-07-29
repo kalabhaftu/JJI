@@ -102,7 +102,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       })
       const data = await res.json()
       if (!res.ok || !data.success) {
-        return { success: false, error: data.message || 'Failed to update' }
+        return { success: false, error: data.error?.message || data.message || 'Failed to update' }
       }
       await loadAccounts()
       return { success: true }
@@ -154,12 +154,13 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
         const payload = await response.json()
 
         // Handle duplicate trades (already imported)
-        if (payload?.message === "DUPLICATE_TRADES") {
+        const responseMessage = payload?.error?.message ?? payload?.message
+        if (responseMessage === "DUPLICATE_TRADES") {
           return "All trades from this account have already been imported"
         }
         
         if (!response.ok || !payload?.success) {
-          const errorMsg = payload?.message || `Sync error for account ${accountId}`
+          const errorMsg = responseMessage || `Sync error for account ${accountId}`
           throw new Error(errorMsg)
         }
 

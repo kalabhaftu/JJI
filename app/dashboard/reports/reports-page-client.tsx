@@ -11,7 +11,8 @@ import {
 } from '@/components/ui/table'
 import { useData } from '@/context/data-provider'
 import { formatTimeInZone } from '@/lib/time-utils'
-import { classifyTrade, cn } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { classifyTrade } from '@/lib/trading/trade-formatting'
 import {
     Zap,
     Share2,

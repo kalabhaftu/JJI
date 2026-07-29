@@ -4,7 +4,7 @@
  */
 
 import logger from '@/lib/logger'
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 import { db } from '@/lib/db/client'
 import { Subscription, User, FreeAccessInvite, PaymentRecord, PromoCode, PromoRedemption } from '@/lib/db/schema'
 import { eq, inArray, and, or, desc, isNotNull, asc } from 'drizzle-orm'
@@ -184,7 +184,12 @@ async function ensureSubscription(userId: string) {
       const [newSub] = await db.insert(Subscription).values({ userId, status: 'unpaid', updatedAt: new Date() }).returning()
       sub = newSub
      } catch (error) {
-       Sentry.captureException(error, { extra: { route: 'lib/services/subscription-service', phase: 'create-subscription' } })
+       reportError(error, {
+         surface: 'server',
+         operation: 'create-subscription',
+         userId,
+         extra: { concurrentInsertFallback: true },
+       })
        sub = await db.query.Subscription.findFirst({ where: eq(Subscription.userId, userId) })
      }
   }

@@ -15,6 +15,7 @@ import {
   pickSettingsPatch,
 } from '@/lib/user-settings'
 import { eq } from 'drizzle-orm'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 
 // GET /api/auth/profile - Get user profile information
 export async function GET() {
@@ -60,6 +61,8 @@ export async function GET() {
 
 // PATCH /api/auth/profile - Update user profile information
 export async function PATCH(request: NextRequest) {
+  const limited = await applyApiRoutePolicy(request, 'auth')
+  if (limited) return limited
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {

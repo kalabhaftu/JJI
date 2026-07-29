@@ -1,23 +1,26 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
-import { eq, and } from 'drizzle-orm'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { eq, and, sql } from 'drizzle-orm'
 
 // PUT - Update a tag
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
     const userId = identity.internalUserId
 
@@ -31,7 +34,7 @@ export async function PUT(
     })
 
     if (!existingTag) {
-      return NextResponse.json({ error: 'Tag not found' }, { status: 404 })
+      return createErrorResponse('Tag not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     if (name && name !== existingTag.name) {
@@ -40,23 +43,32 @@ export async function PUT(
       })
 
       if (nameConflict) {
-        return NextResponse.json(
-          { error: 'Tag with this name already exists' },
-          { status: 400 }
-        )
+        return createErrorResponse('Tag with this name already exists', 409, undefined, 'CONFLICT', requestId)
       }
     }
 
     const updatedTag = (await db.update(schema.TradeTag).set({
       ...(name && { name }),
       ...(color && { color })
-    }).where(eq(schema.TradeTag.id, id)).returning())[0]
+    }).where(and(
+      eq(schema.TradeTag.id, id),
+      eq(schema.TradeTag.userId, userId),
+    )).returning())[0]
 
-    return NextResponse.json({ tag: updatedTag })
+    return createSuccessResponse(updatedTag, undefined, undefined, requestId)
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update tag' },
-      { status: 500 }
+    reportError(error, {
+      surface: 'api',
+      operation: 'update-tag',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to update tag',
+      500,
+      undefined,
+      'SERVER_ERROR',
+      requestId,
     )
   }
 }
@@ -66,13 +78,14 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
     const userId = identity.internalUserId
 
@@ -84,33 +97,36 @@ export async function DELETE(
     })
 
     if (!existingTag) {
-      return NextResponse.json({ error: 'Tag not found' }, { status: 404 })
+      return createErrorResponse('Tag not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
-    // Remove tag from all trades that have this tag
-    const trades = await db.query.Trade.findMany({
-      where: (table, { eq }) => eq(table.userId, userId)
+    await db.transaction(async (tx) => {
+      await tx.update(schema.Trade)
+        .set({ tags: sql`array_remove(${schema.Trade.tags}, ${id})` })
+        .where(and(
+          eq(schema.Trade.userId, userId),
+          sql`${id} = any(${schema.Trade.tags})`,
+        ))
+      await tx.delete(schema.TradeTag).where(and(
+        eq(schema.TradeTag.id, id),
+        eq(schema.TradeTag.userId, userId),
+      ))
     })
 
-    for (const trade of trades) {
-      const updatedTags = (trade.tags || []).filter((tagId: string) => tagId !== id)
-      await db.update(schema.Trade).set({ tags: updatedTags }).where(and(
-        eq(schema.Trade.id, trade.id),
-        eq(schema.Trade.userId, userId),
-      )).returning()
-    }
-
-    // Delete the tag
-    await db.delete(schema.TradeTag).where(and(
-      eq(schema.TradeTag.id, id),
-      eq(schema.TradeTag.userId, userId),
-    )).returning()
-
-    return NextResponse.json({ success: true })
+    return createSuccessResponse({ deleted: true }, undefined, undefined, requestId)
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete tag' },
-      { status: 500 }
+    reportError(error, {
+      surface: 'api',
+      operation: 'delete-tag',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to delete tag',
+      500,
+      undefined,
+      'SERVER_ERROR',
+      requestId,
     )
   }
 }

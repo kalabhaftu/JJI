@@ -21,10 +21,7 @@ import {
   User,
   BarChart2
 } from "lucide-react"
-import { 
-  removeAccountsFromTradesAction, 
-  renameAccountAction
-} from "@/server/accounts"
+import { apiRequest } from '@/lib/api/client'
 import { toast } from 'sonner'
 import { useSWRConfig } from 'swr'
 import useSWR from 'swr'
@@ -299,7 +296,13 @@ export function DataManagementCard() {
     if (!user || !accountToRename || !newAccountNumber) return
     try {
       setRenameLoading(true)
-      await renameAccountAction(accountToRename, newAccountNumber)
+      await apiRequest('/api/v1/data-management/accounts', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          oldAccountNumber: accountToRename,
+          newAccountNumber,
+        }),
+      })
       await refetchAccounts()
       toast.success('Account renamed', {
         description: `${accountToRename} → ${newAccountNumber}`,

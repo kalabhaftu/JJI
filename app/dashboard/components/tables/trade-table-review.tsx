@@ -19,7 +19,14 @@ import { useData } from '@/context/data-provider'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { useFilteredTrades } from '@/hooks/use-filtered-trades'
 import { useMediaQuery } from '@/hooks/use-media-query'
-import { cn, formatCurrency, formatQuantity, parsePositionTime, getPnlIntensity, formatTradeDate } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import {
+  formatCurrency,
+  formatQuantity,
+  formatTradeDate,
+  getPnlIntensity,
+  parsePositionTime,
+} from '@/lib/trading/trade-formatting'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { useTableConfigStore } from '@/store/table-config-store'
 import { useUserStore } from '@/store/user-store'

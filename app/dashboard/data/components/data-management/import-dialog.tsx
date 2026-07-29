@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import { useData } from '@/context/data-provider'
 import { useAccounts } from '@/hooks/use-accounts'
 import { FileDropzone } from '@/components/ui/file-dropzone'
+import { apiRequest } from '@/lib/api/client'
 
 interface ImportJobResponse {
   id: string
@@ -47,18 +48,12 @@ export function ImportDialog() { // Kept name for compatibility
       const formData = new FormData()
       formData.append('file', selectedFile)
 
-      const createJobResponse = await fetch('/api/v1/data/import/jobs', {
+      const createJobResponse = await apiRequest<{ job: ImportJobResponse }>('/api/v1/data/import/jobs', {
         method: 'POST',
         body: formData
       })
-
-      const createJobData = await createJobResponse.json()
-
-      if (!createJobResponse.ok) {
-        throw new Error(createJobData.error || 'Failed to create restore job')
-      }
-
-      const createdJob = createJobData.job as ImportJobResponse
+      const createdJob = createJobResponse.data?.job
+      if (!createdJob) throw new Error('Failed to create restore job')
       setImportJob(createdJob)
 
       const isTerminal = (status: string) =>
@@ -67,16 +62,14 @@ export function ImportDialog() { // Kept name for compatibility
       let latestJob = createdJob
 
       while (!isTerminal(latestJob.status)) {
-        const processResponse = await fetch(`/api/v1/data/import/jobs/${latestJob.id}/process`, {
+        const processResponse = await apiRequest<{
+          job: ImportJobResponse
+          done: boolean
+        }>(`/api/v1/data/import/jobs/${latestJob.id}/process`, {
           method: 'POST'
         })
-
-        const processData = await processResponse.json()
-        if (!processResponse.ok) {
-          throw new Error(processData.error || 'Restore processing failed')
-        }
-
-        latestJob = processData.job as ImportJobResponse
+        if (!processResponse.data?.job) throw new Error('Restore processing failed')
+        latestJob = processResponse.data.job
         setImportJob(latestJob)
 
         if (!isTerminal(latestJob.status)) {
@@ -135,17 +128,11 @@ export function ImportDialog() { // Kept name for compatibility
     if (!importJob?.id || !isImporting) return
 
     try {
-      const response = await fetch(`/api/v1/data/import/jobs/${importJob.id}/cancel`, {
+      const response = await apiRequest<{ job: ImportJobResponse }>(`/api/v1/data/import/jobs/${importJob.id}/cancel`, {
         method: 'POST'
       })
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to cancel restore job')
-      }
-
-      if (data.job) {
-        setImportJob(data.job as ImportJobResponse)
+      if (response.data?.job) {
+        setImportJob(response.data.job)
       }
 
       toast.info('Cancelling restore', {

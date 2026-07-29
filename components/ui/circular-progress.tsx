@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { cn, formatPercent } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { formatPercent } from '@/lib/trading/trade-formatting'
 
 interface CircularProgressProps {
   value: number

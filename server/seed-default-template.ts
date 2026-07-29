@@ -1,4 +1,4 @@
-'use server'
+import 'server-only'
 
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'

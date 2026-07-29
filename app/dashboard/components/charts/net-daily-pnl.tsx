@@ -5,7 +5,7 @@ import * as RechartsPrimitive from "recharts"
 import { WidgetCard, ChartTooltip as SharedChartTooltip } from '../widget-card'
 import { useWidgetData } from '@/hooks/use-widget-data'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
-import { formatNumber } from "@/lib/utils"
+import { formatNumber } from '@/lib/trading/trade-formatting'
 import { WidgetSize } from '@/app/dashboard/types/dashboard'
 import {
   Bar,

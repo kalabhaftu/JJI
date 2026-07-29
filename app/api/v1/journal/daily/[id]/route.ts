@@ -1,33 +1,42 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { getResolvedUserIdentity } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { isJournalEmotion } from '@/lib/journal-emotions'
 import { and, eq } from 'drizzle-orm'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
-  if (rateLimitRes) return rateLimitRes
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'sensitive')
+  if (limited) return limited
 
   try {
-    const { internalUserId } = await getResolvedUserIdentity()
+    const identity = await getResolvedUserIdentitySafe()
+    if (!identity) {
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    }
+    const internalUserId = identity.internalUserId
     const { id } = await params
     const body = await request.json()
     const { note, emotion } = body
 
     if (emotion !== undefined && emotion !== null && !isJournalEmotion(emotion)) {
-      return NextResponse.json({ error: 'Invalid emotion value' }, { status: 400 })
+      return createErrorResponse('Invalid emotion value', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
     const existing = await db.query.DailyNote.findFirst({
       where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, internalUserId)),
     })
-    if (!existing) return NextResponse.json({ error: 'Journal not found' }, { status: 404 })
+    if (!existing) {
+      return createErrorResponse('Journal not found', 404, undefined, 'NOT_FOUND', requestId)
+    }
 
     const journal = (await db.update(schema.DailyNote).set({
       note: note !== undefined ? note : existing.note,
@@ -37,13 +46,15 @@ export async function PUT(
       eq(schema.DailyNote.userId, internalUserId),
     )).returning())[0]
 
-    return NextResponse.json({ journal })
-  } catch (error: any) {
-    logger.error({ error: error?.message, context: 'api' }, 'PUT /api/v1/journal/daily/[id]')
-    if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    return NextResponse.json({ error: 'Failed to update journal entry' }, { status: 500 })
+    return createSuccessResponse({ journal }, undefined, undefined, requestId)
+  } catch (error) {
+    reportError(error, {
+      surface: 'api',
+      operation: 'update-daily-journal',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse('Failed to update journal entry', 500, undefined, 'JOURNAL_UPDATE_FAILED', requestId)
   }
 }
 
@@ -51,28 +62,37 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
-  if (rateLimitRes) return rateLimitRes
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'sensitive')
+  if (limited) return limited
 
   try {
-    const { internalUserId } = await getResolvedUserIdentity()
+    const identity = await getResolvedUserIdentitySafe()
+    if (!identity) {
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    }
+    const internalUserId = identity.internalUserId
     const { id } = await params
 
     const existing = await db.query.DailyNote.findFirst({
       where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, internalUserId)),
     })
-    if (!existing) return NextResponse.json({ error: 'Journal not found' }, { status: 404 })
+    if (!existing) {
+      return createErrorResponse('Journal not found', 404, undefined, 'NOT_FOUND', requestId)
+    }
 
     await db.delete(schema.DailyNote).where(and(
       eq(schema.DailyNote.id, id),
       eq(schema.DailyNote.userId, internalUserId),
     ))
-    return NextResponse.json({ success: true })
-  } catch (error: any) {
-    logger.error({ error: error?.message, context: 'api' }, 'DELETE /api/v1/journal/daily/[id]')
-    if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    return NextResponse.json({ error: 'Failed to delete journal entry' }, { status: 500 })
+    return createSuccessResponse({ deleted: true }, undefined, undefined, requestId)
+  } catch (error) {
+    reportError(error, {
+      surface: 'api',
+      operation: 'delete-daily-journal',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse('Failed to delete journal entry', 500, undefined, 'JOURNAL_DELETE_FAILED', requestId)
   }
 }

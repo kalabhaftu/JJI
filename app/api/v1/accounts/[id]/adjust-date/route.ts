@@ -1,26 +1,29 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
-import { invalidateUserCaches } from '@/server/accounts'
+import { invalidateUserAccountCaches } from '@/server/accounts/cache'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger';
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { recordAuditEvent } from '@/lib/audit-logger'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { getClientIp } from '@/lib/security/client-ip'
+import { DomainError, isDomainError } from '@/lib/domain-error'
 
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitResponse = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const { id: accountId } = await params
@@ -28,65 +31,84 @@ export async function POST(
     const { newDate, isPropFirm, notificationId } = await request.json()
 
     if (!newDate) {
-      return NextResponse.json(
-        { success: false, error: 'New date is required' },
-        { status: 400 }
-      )
+      return createErrorResponse('New date is required', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
     const adjustedDate = new Date(newDate)
     if (isNaN(adjustedDate.getTime())) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid date format' },
-        { status: 400 }
+      return createErrorResponse('Invalid date format', 400, undefined, 'VALIDATION_ERROR', requestId)
+    }
+
+    await db.transaction(async (tx) => {
+      const updated = isPropFirm
+        ? await tx.update(schema.MasterAccount)
+          .set({ createdAt: adjustedDate })
+          .where(and(
+            eq(schema.MasterAccount.id, accountId),
+            eq(schema.MasterAccount.userId, internalUserId),
+          ))
+          .returning({ id: schema.MasterAccount.id })
+        : await tx.update(schema.Account)
+          .set({ createdAt: adjustedDate })
+          .where(and(
+            eq(schema.Account.id, accountId),
+            eq(schema.Account.userId, internalUserId),
+          ))
+          .returning({ id: schema.Account.id })
+      if (updated.length === 0) {
+        throw new DomainError('Account not found', 'NOT_FOUND', 404)
+      }
+
+      if (notificationId) {
+        await tx.update(schema.Notification)
+          .set({ isRead: true })
+          .where(and(
+            eq(schema.Notification.id, notificationId),
+            eq(schema.Notification.userId, internalUserId),
+          ))
+      }
+      await recordAuditEvent({
+        userId: internalUserId,
+        action: 'ACCOUNT_DATE_ADJUSTED',
+        entityType: isPropFirm ? 'MasterAccount' : 'Account',
+        entityId: accountId,
+        source: 'api',
+        requestId,
+        ipAddress: getClientIp(request.headers),
+        afterData: { createdAt: adjustedDate.toISOString() },
+      }, tx as never)
+    })
+
+    await invalidateUserAccountCaches(internalUserId, requestId)
+
+    return createSuccessResponse(
+      { adjusted: true },
+      'Account creation date adjusted successfully',
+      undefined,
+      requestId,
+    )
+  } catch (error) {
+    if (isDomainError(error)) {
+      return createErrorResponse(
+        error.message,
+        error.status,
+        undefined,
+        error.code,
+        requestId,
       )
     }
-
-    if (isPropFirm) {
-      await db
-        .update(schema.MasterAccount)
-        .set({ createdAt: adjustedDate })
-        .where(
-          and(
-            eq(schema.MasterAccount.id, accountId),
-            eq(schema.MasterAccount.userId, internalUserId)
-          )
-        )
-    } else {
-      await db
-        .update(schema.Account)
-        .set({ createdAt: adjustedDate })
-        .where(
-          and(
-            eq(schema.Account.id, accountId),
-            eq(schema.Account.userId, internalUserId)
-          )
-        )
-    }
-
-    if (notificationId) {
-      await db
-        .update(schema.Notification)
-        .set({ isRead: true })
-        .where(
-          and(
-            eq(schema.Notification.id, notificationId),
-            eq(schema.Notification.userId, internalUserId)
-          )
-        )
-    }
-
-    await invalidateUserCaches(internalUserId)
-
-    return NextResponse.json({
-      success: true,
-      message: 'Account creation date adjusted successfully'
+    reportError(error, {
+      surface: 'api',
+      operation: 'adjust-account-date',
+      route: request.nextUrl.pathname,
+      requestId,
     })
-  } catch (error) {
-    logger.error('Adjust account date error: ' + (error instanceof Error ? error.message : String(error)))
-    return NextResponse.json(
-      { success: false, error: 'Failed to adjust account date' },
-      { status: 500 }
+    return createErrorResponse(
+      'Failed to adjust account date',
+      500,
+      undefined,
+      'ACCOUNT_DATE_ADJUST_FAILED',
+      requestId,
     )
   }
 }

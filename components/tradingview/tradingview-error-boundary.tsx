@@ -1,10 +1,10 @@
 'use client'
 
 import React from 'react'
-import * as Sentry from '@sentry/nextjs'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { reportError } from '@/lib/observability/report-error'
 
 interface TradingViewErrorBoundaryProps {
   children: React.ReactNode
@@ -30,7 +30,11 @@ export class TradingViewErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    Sentry.captureException(error, { extra: { errorInfo } })
+    reportError(error, {
+      surface: 'client',
+      operation: 'render-tradingview-chart',
+      extra: { componentStack: errorInfo.componentStack },
+    })
   }
 
   handleRetry = () => {
@@ -56,7 +60,7 @@ export class TradingViewErrorBoundary extends React.Component<
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="text-sm text-muted-foreground">
-              <p>Error: {this.state.error?.message || 'Unknown error occurred'}</p>
+              <p>The chart could not be rendered. Try loading it again.</p>
             </div>
             <div className="flex gap-2">
               <Button onClick={this.handleRetry} size="sm">
@@ -72,5 +76,4 @@ export class TradingViewErrorBoundary extends React.Component<
     return this.props.children
   }
 }
-
 

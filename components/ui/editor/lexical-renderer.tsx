@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import * as Sentry from '@sentry/nextjs'
 import { cn } from '@/lib/utils'
 
 interface LexicalRendererProps {
@@ -112,8 +111,8 @@ function normalizeLexicalValue(value?: string | null): LexicalNode[] | null {
     if (parsed?.root && Array.isArray(parsed.root.children)) {
       return parsed.root.children as LexicalNode[]
     }
-  } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'components/ui/editor/lexical-renderer', phase: 'parseState' } })
+  } catch {
+    // Legacy plain-text journal content intentionally falls back to text rendering.
     return null
   }
 

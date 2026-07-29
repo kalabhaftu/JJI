@@ -1,5 +1,4 @@
 'use server'
-import * as Sentry from '@sentry/nextjs'
 import { createClient, ensureUserInDatabase } from '@/server/auth'
 import { NextResponse } from 'next/server'
 import { logActivity } from '@/lib/activity-logger'
@@ -7,6 +6,8 @@ import { captureUserGeo } from '@/server/geolocation'
 import { resolveInternalUserId } from '@/server/user-identity'
 import { getSafeRedirectPath } from '@/lib/security/redirects'
 import logger from '@/lib/logger'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([
@@ -18,6 +19,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 }
 
 export async function GET(request: Request) {
+  const requestId = resolveRequestId(request.headers)
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
   const error_code = searchParams.get('error_code')
@@ -50,7 +52,13 @@ export async function GET(request: Request) {
             'ensureUserInDatabase'
           )
          } catch (error) {
-           Sentry.captureException(error, { extra: { route: '/api/auth/callback', phase: 'ensureUserInDatabase' } })
+           reportError(error, {
+             surface: 'api',
+             operation: 'sync-auth-callback-user',
+             route: '/api/auth/callback',
+             requestId,
+             userId: data.user.id,
+           })
            // Auth succeeded; DB sync can happen on the next page load.
          }
 
@@ -71,7 +79,12 @@ export async function GET(request: Request) {
 
       return NextResponse.redirect(new URL('/', baseUrl))
      } catch (error) {
-       Sentry.captureException(error, { extra: { route: '/api/auth/callback' } })
+       reportError(error, {
+         surface: 'api',
+         operation: 'exchange-auth-callback-code',
+         route: '/api/auth/callback',
+         requestId,
+       })
        return NextResponse.redirect(new URL('/', baseUrl))
      }
   }

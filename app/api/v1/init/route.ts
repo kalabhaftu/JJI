@@ -1,15 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { headers } from 'next/headers'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getInitBootstrapData } from '@/server/init-bootstrap'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { getCountryLabel, normalizeCityName, normalizeCountryCode } from '@/lib/geo'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
-  if (rateLimitResponse) return rateLimitResponse
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
+  if (limited) return limited
 
   try {
     const payload = await getInitBootstrapData()
@@ -37,23 +40,30 @@ export async function GET(request: NextRequest) {
               countryCode: countryCode || null,
               country: country || null,
               city: city || null,
-            }).returning().then((rows) => rows[0]).catch((err: unknown) => logger.error('Geo logging failed' + ' : ' + err))
+            }).returning().then((rows) => rows[0]).catch((error: unknown) => reportError(error, {
+              surface: 'server',
+              operation: 'record-user-geo-change',
+              route: request.nextUrl.pathname,
+              requestId,
+            }))
           }
-        }).catch((err: unknown) => logger.error('Geo logging failed on ip' + ' : ' + err))
+        }).catch((error: unknown) => reportError(error, {
+          surface: 'server',
+          operation: 'load-user-geo-history',
+          route: request.nextUrl.pathname,
+          requestId,
+        }))
       }
     }
 
-    const response = NextResponse.json(payload)
+    return createSuccessResponse(payload, undefined, undefined, requestId, {
+      headers: {
+        'Cache-Control': 'private, no-store, no-cache, max-age=0, must-revalidate',
+      },
+    })
     
-    // Access and payment state must reflect immediately after webhook-driven updates.
-    response.headers.set('Cache-Control', 'private, no-store, no-cache, max-age=0, must-revalidate')
-    return response
-    
-  } catch (error: any) {
-    if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-    logger.error('/api/v1/init failed' + ' : ' + error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  } catch (error) {
+    reportError(error, { surface: 'api', operation: 'load-init-bootstrap', route: request.nextUrl.pathname, requestId })
+    return createErrorResponse('Internal server error', 500, undefined, 'INIT_FAILED', requestId)
   }
 }

@@ -9,11 +9,3 @@ export const DIRECT_SYNC_STATUS = {
 export function directSyncUnderDevelopmentMessage(service: DirectSyncService) {
   return `${service} live sync is currently under development. Use CSV import or TradingView webhooks for now.`
 }
-
-export function directSyncUnavailablePayload(service: DirectSyncService) {
-  return {
-    success: false,
-    underDevelopment: true,
-    message: directSyncUnderDevelopmentMessage(service),
-  }
-}

@@ -1,4 +1,5 @@
 import React from 'react'
+import dynamic from 'next/dynamic'
 import { WidgetType, WidgetSize } from '../types/dashboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WidgetErrorBoundary } from '@/components/error-boundary'
@@ -18,30 +19,69 @@ import AvgWinLoss from '../components/kpi/avg-win-loss'
 
 import SessionAnalysis from '../components/kpi/session-analysis'
 import StreakKpi from '../components/kpi/streak-kpi'
-
-// Chart components
-import NetDailyPnL from '../components/charts/net-daily-pnl'
-import WeekdayPnL from '../components/charts/weekday-pnl'
-import TradeDurationPerformance from '../components/charts/trade-duration-performance'
-import PerformanceScore from '../components/charts/performance-score'
-import PnLByInstrument from '../components/charts/pnl-by-instrument'
-import EquityCurveWidget from '../components/charts/equity-curve-widget'
-import OutcomeDistributionWidget from '../components/charts/outcome-distribution-widget'
-import DayOfWeekPerformanceWidget from '../components/charts/day-of-week-performance-widget'
-import DrawdownChart from '../components/charts/drawdown-chart'
-import PerformanceSummaryWidget from '../components/charts/performance-summary'
-import CalendarHeatmapWidget from '../components/charts/calendar-heatmap'
-import TimeProfitScatter from '../components/charts/time-profit-scatter'
-import ExcursionScatter from '../components/charts/excursion-scatter'
-import {
-  AccountCurveWidget,
-  DisciplineAnalyticsWidget,
-  TagPerformanceWidget,
-  TimeOfDayPerformanceWidget,
-} from '../components/charts/analytics-widgets'
 import { PropFirmAccountStatisticsWidget } from '../components/prop-firm-widgets/prop-firm-account-statistics-widget'
-import { PropFirmGrowthCurveWidget } from '../components/prop-firm-widgets/prop-firm-growth-curve-widget'
 import { PropFirmObjectivesTodayWidget } from '../components/prop-firm-widgets/prop-firm-objectives-today-widget'
+
+function ChartLoadingFallback() {
+  return (
+    <div
+      aria-busy="true"
+      aria-label="Loading chart"
+      className="h-full min-h-40 w-full animate-pulse rounded-lg bg-muted/30 motion-reduce:animate-none"
+    />
+  )
+}
+
+const chartLoading = { loading: ChartLoadingFallback }
+const NetDailyPnL = dynamic(() => import('../components/charts/net-daily-pnl'), chartLoading)
+const WeekdayPnL = dynamic(() => import('../components/charts/weekday-pnl'), chartLoading)
+const TradeDurationPerformance = dynamic(
+  () => import('../components/charts/trade-duration-performance'),
+  chartLoading,
+)
+const PerformanceScore = dynamic(() => import('../components/charts/performance-score'), chartLoading)
+const PnLByInstrument = dynamic(() => import('../components/charts/pnl-by-instrument'), chartLoading)
+const EquityCurveWidget = dynamic(() => import('../components/charts/equity-curve-widget'), chartLoading)
+const OutcomeDistributionWidget = dynamic(
+  () => import('../components/charts/outcome-distribution-widget'),
+  chartLoading,
+)
+const DayOfWeekPerformanceWidget = dynamic(
+  () => import('../components/charts/day-of-week-performance-widget'),
+  chartLoading,
+)
+const DrawdownChart = dynamic(() => import('../components/charts/drawdown-chart'), chartLoading)
+const PerformanceSummaryWidget = dynamic(
+  () => import('../components/charts/performance-summary'),
+  chartLoading,
+)
+const CalendarHeatmapWidget = dynamic(
+  () => import('../components/charts/calendar-heatmap'),
+  chartLoading,
+)
+const TimeProfitScatter = dynamic(() => import('../components/charts/time-profit-scatter'), chartLoading)
+const ExcursionScatter = dynamic(() => import('../components/charts/excursion-scatter'), chartLoading)
+const AccountCurveWidget = dynamic(
+  () => import('../components/charts/analytics-widgets').then(module => module.AccountCurveWidget),
+  chartLoading,
+)
+const DisciplineAnalyticsWidget = dynamic(
+  () => import('../components/charts/analytics-widgets').then(module => module.DisciplineAnalyticsWidget),
+  chartLoading,
+)
+const TagPerformanceWidget = dynamic(
+  () => import('../components/charts/analytics-widgets').then(module => module.TagPerformanceWidget),
+  chartLoading,
+)
+const TimeOfDayPerformanceWidget = dynamic(
+  () => import('../components/charts/analytics-widgets').then(module => module.TimeOfDayPerformanceWidget),
+  chartLoading,
+)
+const PropFirmGrowthCurveWidget = dynamic(
+  () => import('../components/prop-firm-widgets/prop-firm-growth-curve-widget')
+    .then(module => module.PropFirmGrowthCurveWidget),
+  chartLoading,
+)
 
 export interface WidgetConfig {
   type: WidgetType

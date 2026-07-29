@@ -27,14 +27,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  initiateTradovateOAuth,
-  updateDailySyncTimeAction,
-} from "./actions";
 import { TRADOVATE_FEE_TYPE_KEYS } from "./fee-types";
 import { useTradovateSyncStore } from "@/store/tradovate-sync-store";
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
 import { logger } from '@/lib/logger';
+import { apiRequest } from '@/lib/api/client';
 
 function translateTradovateFeeType(key: string): string {
   switch (key) {
@@ -95,7 +92,14 @@ export function TradovateCredentialsManager() {
   const handleStartOAuth = useCallback(async (accountId: string = "default") => {
     try {
       setIsLoading(true);
-      const result = await initiateTradovateOAuth(accountId);
+      const response = await apiRequest<{ authUrl?: string; state?: string; error?: string }>(
+        '/api/v1/tradovate/oauth',
+        {
+          method: 'POST',
+          body: JSON.stringify({ accountId }),
+        },
+      );
+      const result = response.data ?? {};
       if (result.error || !result.authUrl || !result.state) {
         toast.error("Failed to initiate oauth connection");
         return;
@@ -162,10 +166,17 @@ export function TradovateCredentialsManager() {
         utcTimeString = localDate.toISOString();
       }
       
-      const result = await updateDailySyncTimeAction(
-        selectedAccountId,
-        utcTimeString
+      const response = await apiRequest<{ success: boolean; error?: string }>(
+        '/api/v1/tradovate/synchronizations/schedule',
+        {
+          method: 'PATCH',
+          body: JSON.stringify({
+            accountId: selectedAccountId,
+            utcTimeString,
+          }),
+        },
       );
+      const result = response.data ?? { success: false };
       
       if (result.success) {
         toast.success("Daily sync time updated");

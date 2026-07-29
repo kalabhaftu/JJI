@@ -1,13 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 
 // GET - Get backtest input mode preference
 export async function GET(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -15,7 +18,7 @@ export async function GET(request: NextRequest) {
     const userId = identity?.internalUserId
 
     if (!userId) {
-      return NextResponse.json({ mode: 'manual' }, { status: 200 })
+      return createSuccessResponse({ mode: 'manual' }, undefined, { fallback: true }, requestId)
     }
 
     const userSettings = await db.query.UserSettings.findFirst({
@@ -23,17 +26,25 @@ export async function GET(request: NextRequest) {
       columns: { backtestInputMode: true },
     })
 
-    return NextResponse.json({ 
+    return createSuccessResponse({
       mode: userSettings?.backtestInputMode || 'manual' 
-    }, { status: 200 })
+    }, undefined, undefined, requestId)
   } catch (error) {
-    return NextResponse.json({ mode: 'manual' }, { status: 200 })
+    reportError(error, {
+      surface: 'api',
+      operation: 'load-backtest-mode',
+      route: request.nextUrl.pathname,
+      requestId,
+      extra: { fallbackUsed: true },
+    })
+    return createSuccessResponse({ mode: 'manual' }, undefined, { fallback: true }, requestId)
   }
 }
 
 // POST - Update backtest input mode preference
 export async function POST(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -41,13 +52,13 @@ export async function POST(request: NextRequest) {
     const userId = identity?.internalUserId
 
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const { mode } = await request.json()
 
     if (!mode || !['manual', 'simple'].includes(mode)) {
-      return NextResponse.json({ error: 'Invalid mode' }, { status: 400 })
+      return createErrorResponse('Invalid mode', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
     await db.insert(schema.UserSettings)
@@ -57,11 +68,20 @@ export async function POST(request: NextRequest) {
         set: { backtestInputMode: mode },
       })
 
-    return NextResponse.json({ success: true, mode }, { status: 200 })
+    return createSuccessResponse({ mode }, undefined, undefined, requestId)
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to update preference' },
-      { status: 500 }
+    reportError(error, {
+      surface: 'api',
+      operation: 'save-backtest-mode',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to update preference',
+      500,
+      undefined,
+      'SERVER_ERROR',
+      requestId,
     )
   }
 }

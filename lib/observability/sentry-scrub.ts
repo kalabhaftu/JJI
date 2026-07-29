@@ -5,6 +5,9 @@ const EXPECTED_CONTROL_FLOW = [
   'Invalid Refresh Token: Refresh Token Not Found',
   "Lock broken by another request with the 'steal' option.",
 ] as const
+const EMAIL_VALUE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
+const SECRET_VALUE = /\b(?:bearer\s+)?[A-Za-z0-9_-]{24,}\b/gi
+const URL_QUERY = /([?&](?:token|key|secret|signature|code)=)[^&\s]+/gi
 
 type SentryLikeEvent = {
   message?: string
@@ -34,9 +37,18 @@ export function shouldDropSentryEvent(
 
 function scrubValue(value: unknown, depth = 0): unknown {
   if (depth > 4) return '[Truncated]'
+  if (typeof value === 'string') {
+    return value
+      .replace(EMAIL_VALUE, '[redacted-email]')
+      .replace(URL_QUERY, '$1[redacted]')
+      .replace(SECRET_VALUE, '[redacted-secret]')
+      .slice(0, 2_000)
+  }
   if (Array.isArray(value)) return value.slice(0, 20).map((item) => scrubValue(item, depth + 1))
   if (!value || typeof value !== 'object') return value
-  if (value instanceof Error) return { name: value.name, message: value.message }
+  if (value instanceof Error) {
+    return { name: value.name, message: scrubValue(value.message, depth + 1) }
+  }
 
   const scrubbed: Record<string, unknown> = {}
   for (const [key, nestedValue] of Object.entries(value)) {
@@ -47,12 +59,25 @@ function scrubValue(value: unknown, depth = 0): unknown {
 }
 
 export function scrubSentryEvent<T extends {
+  message?: string
+  exception?: { values?: Array<{ value?: string }> }
   request?: { headers?: Record<string, unknown>; data?: unknown; cookies?: unknown; query_string?: unknown }
   user?: Record<string, unknown>
   extra?: Record<string, unknown>
   contexts?: Record<string, unknown>
   breadcrumbs?: Array<{ data?: Record<string, unknown> }>
 }>(event: T): T {
+  if (event.message) {
+    event.message = scrubValue(event.message) as string
+  }
+  if (event.exception?.values) {
+    event.exception.values = event.exception.values.map((exception) => ({
+      ...exception,
+      ...(exception.value
+        ? { value: scrubValue(exception.value) as string }
+        : {}),
+    }))
+  }
   if (event.request) {
     delete event.request.data
     delete event.request.cookies

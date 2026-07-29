@@ -14,14 +14,18 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpDown, Trash2, ChevronLeft, ChevronRight, Pencil, Loader2, X, Filter, TrendingUp, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
-import { deleteTradesByIdsAction } from '@/server/accounts'
+import { apiRequest } from '@/lib/api/client'
 import { TradeEditPanel } from '@/app/dashboard/components/tables/trade-edit-panel'
 import { TradeDetailPanel } from '@/app/dashboard/components/tables/trade-detail-panel'
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
-import { formatQuantity, formatTradeData, ensureExtendedTrade, cn } from '@/lib/utils'
-import { updateTradeAction } from '@/server/trades'
+import { cn } from '@/lib/utils'
+import {
+  ensureExtendedTrade,
+  formatQuantity,
+  formatTradeData,
+} from '@/lib/trading/trade-formatting'
 import { ExtendedTrade } from '@/types/trade-extended'
 import { DataTradeTableSkeleton } from '../data-page-skeleton'
 import { useData } from '@/context/data-provider'
@@ -59,7 +63,7 @@ export default function TradeTable() {
     return tradesResponse.data.map((t: any) => ensureExtendedTrade(t))
   }, [tradesResponse])
 
-  const pagination = tradesResponse?.pagination || { total: 0, page: 1, limit: tradesPerPage, totalPages: 0 }
+  const pagination = tradesResponse?.meta?.pagination || { total: 0, page: 1, limit: tradesPerPage, totalPages: 0 }
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'entryDate', direction: 'desc' })
   const [selectedTrades, setSelectedTrades] = useState<Set<string>>(new Set())
@@ -167,7 +171,10 @@ export default function TradeTable() {
         duration: Infinity
       })
 
-      await deleteTradesByIdsAction(ids)
+      await apiRequest('/api/v1/trades/batch/delete', {
+        method: 'POST',
+        body: JSON.stringify({ tradeIds: ids }),
+      })
 
       // Refresh trades data
       refetchTrades()
@@ -234,8 +241,10 @@ export default function TradeTable() {
     if (!selectedTradeForEdit) return
 
     try {
-      // Update the trade with new data via direct action
-      await updateTradeAction(selectedTradeForEdit.id, updatedTrade)
+      await apiRequest(`/api/v1/trades/${selectedTradeForEdit.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(updatedTrade),
+      })
       refetchTrades()
       router.refresh()
 

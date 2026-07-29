@@ -56,7 +56,8 @@ export function usePropFirmStats(initialData?: PropFirmSummaryDTO) {
       }
       const res = await fetch('/api/v1/reports/propfirm')
       if (!res.ok) throw new Error('Failed to fetch prop firm stats')
-      return res.json()
+      const payload = await res.json()
+      return payload.data
     },
     ...(initialData !== undefined && { initialData }),
     staleTime: 2 * 60 * 1000,

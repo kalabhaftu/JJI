@@ -4,9 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTradovateSyncStore } from "@/store/tradovate-sync-store";
 import {
-  handleTradovateCallback,
-} from "../components/import/tradovate/sync/actions";
-import {
   Card,
   CardContent,
   CardDescription,
@@ -18,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
 import logger from '@/lib/logger';
+import { apiRequest } from '@/lib/api/client';
 
 export default function ImportCallbackPage() {
   const router = useRouter();
@@ -116,7 +114,14 @@ export default function ImportCallbackPage() {
         }
 
         // Exchange code for tokens and save token in database
-        const result = await handleTradovateCallback(code, state);
+        const response = await apiRequest<{ connected: boolean; error?: string }>(
+          '/api/v1/tradovate/oauth/callback',
+          {
+            method: 'POST',
+            body: JSON.stringify({ code, state }),
+          },
+        );
+        const result = response.data;
 
         // Defensive programming: ensure result is an object
         if (!result || typeof result !== "object") {
@@ -133,17 +138,11 @@ export default function ImportCallbackPage() {
           return;
         }
 
-        // Validate all required fields exist and are strings
-        if (!result.accessToken || !result.refreshToken || !result.expiresAt) {
+        if (!result?.connected) {
           logger.error({
-            hasAccessToken: !!result.accessToken,
-            hasRefreshToken: !!result.refreshToken,
-            hasExpiresAt: !!result.expiresAt,
-            result,
-          }, "Missing required fields in OAuth result:");
-          setError(
-            "Invalid response from token exchange - missing required fields",
-          );
+            connected: result?.connected,
+          }, "OAuth token exchange did not complete:");
+          setError("OAuth connection did not complete");
           setStatus("error");
           return;
         }

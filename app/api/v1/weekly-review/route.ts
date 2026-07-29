@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentity } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter, aiReviewLimiter, consumeRateLimitKey } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
-import { cleanContent } from '@/lib/utils'
+import { cleanContent } from '@/lib/content/cleaning'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { format, startOfWeek, endOfWeek, subWeeks } from 'date-fns'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
@@ -110,8 +109,7 @@ export async function POST(request: NextRequest) {
     try {
       const rawBody = await request.text()
       requestBody = weeklyReviewRequestSchema.parse(rawBody ? JSON.parse(rawBody) : {})
-     } catch (error) {
-       Sentry.captureException(error, { extra: { route: '/api/v1/weekly-review' } })
+     } catch {
        return NextResponse.json({ error: 'Invalid review request' }, { status: 400 })
      }
 

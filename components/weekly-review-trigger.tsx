@@ -1,10 +1,10 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import * as Sentry from '@sentry/nextjs'
 import { format, startOfWeek, subWeeks } from 'date-fns'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { reportError } from '@/lib/observability/report-error'
 
 /**
  * Invisible component that triggers weekly AI review generation.
@@ -93,7 +93,11 @@ export function WeeklyReviewTrigger() {
         }
         scheduleRetry()
       } catch (error) {
-        Sentry.captureException(error, { extra: { route: 'components/weekly-review-trigger' } })
+        reportError(error, {
+          surface: 'client',
+          operation: 'trigger-weekly-review',
+          route: '/api/v1/weekly-review',
+        })
         scheduleRetry()
       }
     }

@@ -1,5 +1,5 @@
 import type { TradeType } from '@/lib/db/schema/trades';
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 import type { AccountType } from '@/lib/db/schema/accounts';
 
 import { startOfMonth, endOfMonth, parseISO, isWithinInterval, startOfWeek, endOfWeek, format, differenceInDays, getDay } from 'date-fns'
@@ -239,7 +239,7 @@ export function calculateAccountBalanceChart(
     })
 }
 
-import { groupTradesByExecution } from '@/lib/utils'
+import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 import { calculatePerformanceScore, calculateMetricsFromTrades } from '@/lib/performance-score'
 
 export function calculatePnlByStrategy(
@@ -639,7 +639,11 @@ export function calculateSessionAnalysis(
               }
           }
       } catch (error) {
-        Sentry.captureException(error, { extra: { route: 'lib/dashboard/analytics-calculations' } })
+        reportError(error, {
+          surface: 'server',
+          operation: 'calculate-dashboard-analytics',
+          extra: { fallbackUsed: true },
+        })
       }
   })
 

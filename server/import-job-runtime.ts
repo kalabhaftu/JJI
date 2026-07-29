@@ -1,8 +1,9 @@
 import { and, eq, isNull, lt, ne, or, sql } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { ImportJob } from '@/lib/db/schema'
-import * as Sentry from '@sentry/nextjs'
 import { isRedisConfigured, redis } from '@/lib/cache/client'
+import { reportError } from '@/lib/observability/report-error'
+import { recordAuditEvent, type AuditEventInput } from '@/lib/audit-logger'
 
 export const IMPORT_JOB_LEASE_MS = 5 * 60 * 1000
 
@@ -18,7 +19,11 @@ export async function acquireImportLock(jobId: string, workerToken: string, ttlS
     const result = await redis.set(importLockKey(jobId), workerToken, { nx: true, ex: ttlSeconds })
     return result === 'OK'
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'server/import-job-runtime', phase: 'redis-lock-acquire' } })
+    reportError(error, {
+      surface: 'import',
+      operation: 'acquire-import-lock',
+      jobId,
+    })
     // The database lease is the authoritative CAS guard. Keep imports
     // available during a Redis outage while preserving duplicate protection.
     return true
@@ -33,7 +38,11 @@ export async function releaseImportLock(jobId: string, workerToken: string) {
     const currentToken = await redis.get<string>(key)
     if (currentToken === workerToken) await redis.del(key)
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: 'server/import-job-runtime', phase: 'redis-lock-release' } })
+    reportError(error, {
+      surface: 'import',
+      operation: 'release-import-lock',
+      jobId,
+    })
   }
 }
 
@@ -116,4 +125,33 @@ export async function updateClaimedImportJob(params: {
 
   if (!updated) throw new Error('Import job lease lost')
   return updated
+}
+
+export async function completeClaimedImportJob(params: {
+  jobId: string
+  internalUserId: string
+  workerToken: string
+  data: Record<string, any>
+  audit: Omit<AuditEventInput, 'userId' | 'entityId' | 'entityType' | 'source'>
+}) {
+  return db.transaction(async (tx) => {
+    const [updated] = await tx.update(ImportJob)
+      .set({ ...params.data, updatedAt: new Date() })
+      .where(and(
+        eq(ImportJob.id, params.jobId),
+        eq(ImportJob.userId, params.internalUserId),
+        eq(ImportJob.workerToken, params.workerToken),
+      ))
+      .returning()
+    if (!updated) throw new Error('Import job lease lost')
+
+    await recordAuditEvent({
+      userId: params.internalUserId,
+      entityId: params.jobId,
+      entityType: 'ImportJob',
+      source: 'background-job',
+      ...params.audit,
+    }, tx as never)
+    return updated
+  })
 }

@@ -71,7 +71,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
 import { calculateAccountBalances } from "@/lib/utils/balance-calculator"
-import { groupTradesByExecution } from "@/lib/utils"
+import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 import { useLiveAccountTransactions } from '@/hooks/use-live-account-transactions'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { AccountsPageSkeleton } from "./components/accounts-page-skeleton"

@@ -3,6 +3,7 @@
 import { useState, useCallback, type ComponentType } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
+import { apiRequest } from '@/lib/api/client'
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -66,34 +67,30 @@ const METRIC_ICONS: Record<GoalMetric, ComponentType<{ className?: string }>> = 
 }
 
 async function fetchGoals(): Promise<{ goals: Goal[] }> {
-  const res = await fetch('/api/v1/goals')
-  if (!res.ok) throw new Error('Failed to fetch goals')
-  return res.json()
+  const response = await apiRequest<Goal[]>('/api/v1/goals')
+  return { goals: response.data ?? [] }
 }
 
 async function createGoal(data: Partial<Goal>): Promise<{ goal: Goal }> {
-  const res = await fetch('/api/v1/goals', {
+  const response = await apiRequest<Goal>('/api/v1/goals', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to create goal')
-  return res.json()
+  if (!response.data) throw new Error('Failed to create goal')
+  return { goal: response.data }
 }
 
 async function updateGoal(id: string, data: Partial<Goal>): Promise<{ goal: Goal }> {
-  const res = await fetch(`/api/v1/goals/${id}`, {
+  const response = await apiRequest<Goal>(`/api/v1/goals/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!res.ok) throw new Error('Failed to update goal')
-  return res.json()
+  if (!response.data) throw new Error('Failed to update goal')
+  return { goal: response.data }
 }
 
 async function deleteGoal(id: string): Promise<void> {
-  const res = await fetch(`/api/v1/goals/${id}`, { method: 'DELETE' })
-  if (!res.ok) throw new Error('Failed to delete goal')
+  await apiRequest(`/api/v1/goals/${id}`, { method: 'DELETE' })
 }
 
 function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: string) => void; onEdit?: (goal: Goal) => void }) {

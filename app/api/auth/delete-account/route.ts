@@ -4,10 +4,15 @@ import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { deleteUserData } from '@/server/user-data-deletion'
 import { getSupabaseAdminClient } from '@/server/supabase-admin'
 import { enqueueUserStorageCleanup } from '@/server/storage-cleanup-events'
-import { logger } from '@/lib/logger'
-import * as Sentry from '@sentry/nextjs'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { getClientIp } from '@/lib/security/client-ip'
 
 export async function DELETE(request: NextRequest) {
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'auth')
+  if (limited) return limited
   try {
     const authUserId = await getUserIdSafe()
     
@@ -27,6 +32,8 @@ export async function DELETE(request: NextRequest) {
         internalUserId: identity.internalUserId,
         mode: 'delete-account',
         authUserId: identity.authUserId,
+        requestId,
+        ipAddress: getClientIp(request.headers),
       })
       storageOwnerIds = deletion.storageOwnerIds
     }
@@ -35,7 +42,13 @@ export async function DELETE(request: NextRequest) {
     const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(authUserId)
 
     if (authError) {
-      Sentry.captureException(authError, { extra: { route: '/api/auth/delete-account', phase: 'auth-delete' } })
+      reportError(authError, {
+        surface: 'api',
+        operation: 'delete-auth-principal',
+        route: request.nextUrl.pathname,
+        requestId,
+        userId: identity?.internalUserId,
+      })
       return NextResponse.json(
         { error: 'Application data was deleted, but the auth account could not be removed. Please contact support.' },
         { status: 502 }
@@ -49,8 +62,13 @@ export async function DELETE(request: NextRequest) {
         storageOwnerIds,
       })) storageCleanup = 'queued'
     } catch (error) {
-      Sentry.captureException(error, { extra: { route: '/api/auth/delete-account', phase: 'storage-enqueue' } })
-      logger.error({ error }, 'Account storage cleanup could not be queued')
+      reportError(error, {
+        surface: 'background-job',
+        operation: 'enqueue-account-storage-cleanup',
+        route: request.nextUrl.pathname,
+        requestId,
+        userId: identity?.internalUserId,
+      })
     }
 
     return NextResponse.json({
@@ -69,6 +87,12 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
+    reportError(error, {
+      surface: 'api',
+      operation: 'delete-account',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
     return NextResponse.json(
       { 
         error: 'Failed to delete account. Please try again or contact support if the problem persists.',

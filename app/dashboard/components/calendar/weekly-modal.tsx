@@ -29,10 +29,14 @@ import { useData } from '@/context/data-provider'
 import { useTheme } from '@/context/theme-provider'
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload"
 import { getTradingSession } from '@/lib/time-utils'
-import { cn, groupTradesByExecution, type GroupedTrade } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import {
+  groupTradesByExecution,
+  type GroupedTrade,
+} from '@/lib/trading/trade-grouping'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
-import { getWeeklyReview, saveWeeklyReview } from "@/server/weekly-review"
+import { apiRequest } from '@/lib/api/client'
 import { Calendar, BarChart3, CheckCircle2, Loader2, Clock, Image as ImageIcon, Percent, Activity, Target, Trash2, TrendingDown, TrendingUp, Upload, XCircle, Coins, ScrollText, AreaChart as AreaChartIcon, FileText, Sun, Moon, Boxes, Compass } from "lucide-react"
 
 import imageCompression from 'browser-image-compression'
@@ -42,6 +46,28 @@ import React, { useEffect, useMemo, useRef, useState } from "react"
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { toast } from "sonner"
 import { useUserStore } from '@/store/user-store'
+
+async function getWeeklyReview(startDate: Date) {
+  const response = await apiRequest<any>(
+    `/api/v1/weekly-journal?startDate=${encodeURIComponent(startDate.toISOString())}`,
+  )
+  return response.data
+}
+
+async function saveWeeklyReview(data: Record<string, unknown>) {
+  try {
+    const response = await apiRequest<any>('/api/v1/weekly-journal', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+    return { success: true, data: response.data }
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to save review',
+    }
+  }
+}
 
 interface WeeklyModalProps {
   isOpen: boolean;

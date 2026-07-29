@@ -119,12 +119,13 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
 
           const payload = await response.json()
 
-          if (payload?.message === 'DUPLICATE_TRADES') {
+          const responseMessage = payload?.error?.message ?? payload?.message
+          if (responseMessage === 'DUPLICATE_TRADES') {
             return "All trades from this account have already been imported"
           }
 
           if (!response.ok || !payload?.success) {
-            throw new Error(payload?.message || `Sync error for account ${accountId}`)
+            throw new Error(responseMessage || `Sync error for account ${accountId}`)
           }
 
           const savedCount = payload.savedCount || 0

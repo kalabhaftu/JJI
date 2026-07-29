@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { calculateStatistics, groupTradesByExecution } from '@/lib/utils'
+import { calculateStatistics } from '@/lib/statistics/trade-statistics'
+import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 import { calculateMetricsFromTrades } from '@/lib/performance-score'
 import { classifyOutcome } from '@/lib/metrics/outcome'
 import type { TradeType as Trade } from '@/lib/db/schema/trades'

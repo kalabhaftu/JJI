@@ -8,7 +8,7 @@
 
 import type { TradeType } from '@/lib/db/schema/trades';
 
-import { generateTradeHash } from '@/lib/utils'
+import { generateTradeHash } from '@/lib/trading/trade-grouping'
 import { calculateTradeDuration } from '@/lib/time-utils'
 
 export interface ProcessingResult {

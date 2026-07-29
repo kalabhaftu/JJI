@@ -27,6 +27,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
+import { apiRequest } from '@/lib/api/client'
 
 // Schema for manual mode
 const manualBacktestSchema = z.object({
@@ -185,7 +186,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
         const response = await fetch('/api/v1/settings/backtest-mode')
         if (response.ok) {
           const data = await response.json()
-          setInputMode(data.mode || 'manual')
+          setInputMode(data.data?.mode || 'manual')
         }
       } catch (error) {
       } finally {
@@ -198,9 +199,8 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
   const handleModeChange = async (newMode: 'manual' | 'simple') => {
     setInputMode(newMode)
     try {
-      await fetch('/api/v1/settings/backtest-mode', {
+      await apiRequest('/api/v1/settings/backtest-mode', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ mode: newMode })
       })
       toast.success(`Switched to ${newMode === 'manual' ? 'Full Manual' : 'Simple R:R'} mode`)
@@ -905,4 +905,3 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
     </form>
   )
 }
-

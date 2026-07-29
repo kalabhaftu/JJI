@@ -1,11 +1,13 @@
-import { NextResponse } from 'next/server'
-import * as Sentry from '@sentry/nextjs'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { isRedisConfigured, redis } from '@/lib/cache/client'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 export const dynamic = 'force-dynamic'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const requestId = resolveRequestId(request.headers)
   const status: {
     database: 'up' | 'down'
     redis: 'up' | 'down' | 'not_configured'
@@ -23,7 +25,12 @@ export async function GET() {
     await db.execute('SELECT 1')
     status.database = 'up'
   } catch (error) {
-    Sentry.captureException(error, { extra: { route: '/api/health', phase: 'database-check' } })
+    reportError(error, {
+      surface: 'api',
+      operation: 'health-database-check',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
     status.database = 'down'
   }
 
@@ -34,7 +41,12 @@ export async function GET() {
       const ping = await redis.ping()
       if (ping === 'PONG') status.redis = 'up'
      } catch (error) {
-       Sentry.captureException(error, { extra: { route: '/api/health', phase: 'redis-check' } })
+       reportError(error, {
+         surface: 'api',
+         operation: 'health-redis-check',
+         route: request.nextUrl.pathname,
+         requestId,
+       })
        status.redis = 'down'
      }
   }

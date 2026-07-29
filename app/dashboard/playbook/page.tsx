@@ -19,7 +19,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { cn, formatCurrency, formatNoteContent } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { formatNoteContent } from '@/lib/content/cleaning'
+import { formatCurrency } from '@/lib/trading/trade-formatting'
 import { motion } from 'framer-motion'
 import { Eye, FileText, MoreVertical, Pencil, Plus, Trash2 as Trash, Calendar } from 'lucide-react'
 import { useMemo, useState } from 'react'

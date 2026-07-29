@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { toast } from "sonner"
 import type { TradeType } from '@/lib/db/schema/trades';
 
-import { linkTradesToCurrentPhase, checkPhaseProgression, checkAccountBreaches } from '@/server/accounts'
+import { importTradesThroughApi } from '@/lib/api/trade-import-client'
 import ImportTypeSelection, { ImportType } from './import-type-selection'
 import FileUpload from './file-upload'
 import HeaderSelection from './header-selection'
@@ -18,7 +18,7 @@ import { useUserStore } from '@/store/user-store'
 import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
 
-import { generateTradeHash } from '@/lib/utils'
+import { generateTradeHash } from '@/lib/trading/trade-grouping'
 
 export type Step = 
   | 'select-import-type'
@@ -30,17 +30,6 @@ export type Step =
   | 'complete'
   | 'process-file'
   | 'process-trades'
-
-const ASYNC_IMPORT_THRESHOLD = 500
-
-interface TradeImportJobResponse {
-  id: string
-  status: 'queued' | 'processing' | 'completed' | 'failed' | 'cancelled'
-  progress: number
-  totalItems: number
-  importedCount: number
-  error?: string | null
-}
 
 interface ImportTradesCardProps {
   accountId: string
@@ -123,91 +112,20 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
           });
 
       // Link trades to target account (async job for larger payloads)
-      let result: { success: boolean; linkedCount: number }
-      const useAsyncJob = newTrades.length >= ASYNC_IMPORT_THRESHOLD
-
-      if (useAsyncJob) {
-        const createJobResponse = await fetch('/api/v1/trades/import/jobs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accountId, trades: newTrades }),
+      const latestJob = await importTradesThroughApi({
+        accountId,
+        trades: newTrades,
+      })
+      if (latestJob.status === 'cancelled') {
+        toast.info('Import cancelled', {
+          description: 'The import job was cancelled before completion.',
+          duration: 5000,
         })
-        const createJobData = await createJobResponse.json().catch(() => null)
-
-        if (!createJobResponse.ok || !createJobData?.job) {
-          throw new Error(createJobData?.error || 'Failed to create import job')
-        }
-
-        let latestJob = createJobData.job as TradeImportJobResponse
-        const isTerminal = (status: TradeImportJobResponse['status']) =>
-          status === 'completed' || status === 'failed' || status === 'cancelled'
-
-        while (!isTerminal(latestJob.status)) {
-          const processResponse = await fetch(`/api/v1/trades/import/jobs/${latestJob.id}/process`, {
-            method: 'POST',
-          })
-          const processData = await processResponse.json().catch(() => null)
-          if (!processResponse.ok || !processData?.job) {
-            throw new Error(processData?.error || 'Import processing failed')
-          }
-          latestJob = processData.job as TradeImportJobResponse
-          if (!isTerminal(latestJob.status)) {
-            await new Promise((resolve) => setTimeout(resolve, 350))
-          }
-        }
-
-        if (latestJob.status === 'cancelled') {
-          toast.info('Import cancelled', {
-            description: 'The import job was cancelled before completion.',
-            duration: 5000,
-          })
-          setIsSaving(false)
-          return
-        }
-
-        if (latestJob.status === 'failed') {
-          throw new Error(latestJob.error || 'Import failed')
-        }
-
-        result = {
-          success: true,
-          linkedCount: latestJob.importedCount || 0,
-        }
-      } else {
-        try {
-          const syncResult = await linkTradesToCurrentPhase(accountId, newTrades)
-          result = {
-            success: !!syncResult?.success,
-            linkedCount: syncResult?.linkedCount || 0,
-          }
-        } catch (linkError: any) {
-          const errorMessage = linkError?.message || String(linkError)
-
-          if (errorMessage.includes('No active phase')) {
-            toast.error("No Active Phase", {
-              description: "This account doesn't have an active phase. Please set up account phases first.",
-              duration: 5000,
-            })
-          } else if (errorMessage.includes('not found')) {
-            toast.error("Account Not Found", {
-              description: "The selected account could not be found. Please try again or create the account first.",
-              duration: 5000,
-            })
-          } else if (errorMessage.includes('inactive')) {
-            toast.error("Inactive Phase", {
-              description: "Cannot add trades to an inactive phase. Please activate the phase first.",
-              duration: 5000,
-            })
-          } else {
-            toast.error("Import Failed", {
-              description: errorMessage.length > 100 ? "An error occurred while importing trades. Please try again." : errorMessage,
-              duration: 5000,
-            })
-          }
-
-          setIsSaving(false)
-          return
-        }
+        return
+      }
+      const result = {
+        success: true,
+        linkedCount: latestJob.importedCount || 0,
       }
 
       if (!result?.success) {
@@ -243,32 +161,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
       // Update the trades in background
       refreshTrades()
       
-      // Check for account breaches after successful import
-      try {
-        const breachResult = await checkAccountBreaches(accountId)
-        if (breachResult && typeof breachResult === 'object' && 'isFailed' in breachResult && breachResult.isFailed) {
-          toast.error("Account Failed!", {
-            description: `Account failed due to rule breach: Account rules violated`,
-          })
-        }
-      } catch (breachError) {
-        // Don't fail the import if breach check fails
-      }
-
-      // Check for phase progression after successful import
-      try {
-        const progressResult = await checkPhaseProgression(accountId)
-        if (progressResult && typeof progressResult === 'object' && 'canProgress' in progressResult) {
-          if (progressResult.canProgress) {
-            toast.success("Phase Target Reached!", {
-              description: `Account has reached the profit target for phase ${(progressResult as any).currentPhase?.phaseNumber}. Phase progression will be processed.`,
-            })
-          }
-        }
-      } catch (progressError) {
-        // Don't fail the import if phase progression check fails
-      }
-
       // Show success message with phase information
       toast.success("Import Completed", {
         description: `Successfully imported ${importedCount} ${importedCount === 1 ? 'trade' : 'trades'}.`,

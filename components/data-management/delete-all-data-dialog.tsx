@@ -116,7 +116,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete data')
+        throw new Error(result.error?.message || 'Failed to delete data')
       }
 
       toast.success('All data deleted', {

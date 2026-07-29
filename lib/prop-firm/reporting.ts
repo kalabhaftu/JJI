@@ -2,7 +2,10 @@ import type { PhaseAccountType } from '@/lib/db/schema/accounts';
 import type { TradeType } from '@/lib/db/schema/trades';
 import type { PayoutType, MasterAccountType } from '@/lib/db/schema/accounts';
 
-import { groupTradesByExecution, type GroupedTrade } from '@/lib/utils'
+import {
+  groupTradesByExecution,
+  type GroupedTrade,
+} from '@/lib/trading/trade-grouping'
 import { calculateWinRate } from '@/lib/metrics/outcome'
 
 export type PropFirmLifecycleStatus =

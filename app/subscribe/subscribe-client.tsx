@@ -45,21 +45,22 @@ export function SubscribeClient() {
       const data = await res.json()
 
       if (!data.success) {
-        toast.error('Payment Error', { description: data.error || 'Failed to create invoice' })
+        toast.error('Payment Error', { description: data.error?.message || 'Failed to create invoice' })
         return
       }
+      const payment = data.data
 
-      if (data.freeAccess) {
+      if (payment?.freeAccess) {
         toast.success('Access Granted!', { description: 'Redirecting to dashboard...' })
         router.push('/dashboard')
         return
       }
 
-      const paymentUrl = data.paymentUrl || data.invoiceUrl
+      const paymentUrl = payment?.paymentUrl || payment?.invoiceUrl
       if (paymentUrl) {
         // Store payment record ID for status polling
-        if (data.paymentRecordId) {
-          sessionStorage.setItem('pendingPaymentId', data.paymentRecordId)
+        if (payment.paymentRecordId) {
+          sessionStorage.setItem('pendingPaymentId', payment.paymentRecordId)
         }
         // Redirect through the app so expired sessions cannot reopen stale provider links.
         window.location.href = paymentUrl

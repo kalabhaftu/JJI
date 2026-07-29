@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { nanoid } from 'nanoid'
@@ -7,6 +6,9 @@ import { z } from 'zod'
 import { applyRateLimit, webhookLimiter } from '@/lib/rate-limiter'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { recordAuditEvent } from '@/lib/audit-logger'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,6 +58,7 @@ function parseWebhookDate(value: string | undefined) {
 }
 
 export async function POST(req: NextRequest) {
+  const requestId = resolveRequestId(req.headers)
   const rl = await applyRateLimit(req, webhookLimiter)
   if (rl) return rl
 
@@ -68,8 +71,7 @@ export async function POST(req: NextRequest) {
     let body: unknown
     try {
       body = JSON.parse(rawBody)
-     } catch (error) {
-       Sentry.captureException(error, { extra: { route: '/api/v1/import/webhook/tradingview' } })
+     } catch {
        return createErrorResponse('Invalid JSON body', 400, undefined, 'INVALID_JSON')
      }
 
@@ -122,36 +124,59 @@ export async function POST(req: NextRequest) {
     const closeIso = closeDate.toISOString()
     const tradeIdentityKey = `tv-${symbol}-${entryIso}-${tradeId}`
 
-    await db.insert(schema.Trade).values({
-      id: tradeId,
-      userId: userSettings.userId,
-      accountId: defaultAccount.id,
-      accountNumber: defaultAccount.number,
-      instrument: symbol,
-      symbol,
-      side: payload.side,
-      entryPrice: String(payload.entry_price),
-      closePrice: String(payload.close_price),
-      entryPriceValue: payload.entry_price,
-      closePriceValue: payload.close_price,
-      quantity: payload.quantity,
-      pnl: payload.pnl,
-      entryDate: entryIso,
-      closeDate: closeIso,
-      entryTime: entryDate,
-      exitTime: closeDate,
-      stopLoss: payload.stop_loss ? String(payload.stop_loss) : null,
-      stopLossValue: payload.stop_loss ?? null,
-      takeProfit: payload.take_profit ? String(payload.take_profit) : null,
-      takeProfitValue: payload.take_profit ?? null,
-      comment: payload.comment || 'Imported via TradingView webhook',
-      tradeIdentityKey,
-      timeInPosition: Math.max(0, Math.floor((closeDate.getTime() - entryDate.getTime()) / 1000)),
-    } as any)
+    await db.transaction(async (tx) => {
+      await tx.insert(schema.Trade).values({
+        id: tradeId,
+        userId: userSettings.userId,
+        accountId: defaultAccount.id,
+        accountNumber: defaultAccount.number,
+        instrument: symbol,
+        symbol,
+        side: payload.side,
+        entryPrice: String(payload.entry_price),
+        closePrice: String(payload.close_price),
+        entryPriceValue: payload.entry_price,
+        closePriceValue: payload.close_price,
+        quantity: payload.quantity,
+        pnl: payload.pnl,
+        entryDate: entryIso,
+        closeDate: closeIso,
+        entryTime: entryDate,
+        exitTime: closeDate,
+        stopLoss: payload.stop_loss ? String(payload.stop_loss) : null,
+        stopLossValue: payload.stop_loss ?? null,
+        takeProfit: payload.take_profit ? String(payload.take_profit) : null,
+        takeProfitValue: payload.take_profit ?? null,
+        comment: payload.comment || 'Imported via TradingView webhook',
+        tradeIdentityKey,
+        timeInPosition: Math.max(0, Math.floor((closeDate.getTime() - entryDate.getTime()) / 1000)),
+      } as any)
+      await recordAuditEvent({
+        userId: userSettings.userId,
+        action: 'TRADE_CREATED',
+        entityType: 'Trade',
+        entityId: tradeId,
+        source: 'api',
+        requestId,
+        afterData: {
+          source: 'tradingview-webhook',
+          accountId: defaultAccount.id,
+          instrument: symbol,
+          side: payload.side,
+          quantity: payload.quantity,
+          pnl: payload.pnl,
+        },
+      }, tx as never)
+    })
 
     return createSuccessResponse({ tradeId }, `Trade imported: ${symbol} ${payload.side}`)
   } catch (err: any) {
-    logger.error('TradingView webhook import failed: ' + (err instanceof Error ? err.message : String(err)))
+    reportError(err, {
+      surface: 'api',
+      operation: 'import-tradingview-webhook',
+      route: req.nextUrl.pathname,
+      requestId,
+    })
     return createErrorResponse('Internal server error', 500)
   }
 }

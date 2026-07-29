@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
-import { saveTradesAction } from '@/server/database';
+import { saveTradesForUser } from '@/server/trades/save';
 import { eq, and, gte, lte, desc, count } from 'drizzle-orm';
 import { logger } from '@/lib/logger';
 import { consumeRateLimitKey, thorLimiter } from '@/lib/rate-limiter';
@@ -133,7 +133,11 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    const result = await saveTradesAction(trades as any[])
+    const requestId = req.headers.get('x-request-id')
+    const result = await saveTradesForUser(user.id, trades as any[], {
+      source: 'api',
+      ...(requestId ? { requestId } : {}),
+    })
 
     if (result.error && result.error !== 'DUPLICATE_TRADES') {
       return NextResponse.json(

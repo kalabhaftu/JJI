@@ -1,4 +1,4 @@
-import { calculateStatistics } from '@/lib/utils'
+import { calculateStatistics } from '@/lib/statistics/trade-statistics'
 import { getMockTradesList } from '@/lib/demo/mock-data'
 
 interface DemoJournalFilters {

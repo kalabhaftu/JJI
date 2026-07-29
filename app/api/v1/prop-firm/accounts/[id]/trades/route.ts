@@ -1,7 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
 import { z } from 'zod'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
@@ -12,6 +10,12 @@ import { classifyOutcome } from '@/lib/metrics/outcome'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { enqueuePhaseEvaluation } from '@/server/phase-evaluation-events'
+import { recordAuditEvent } from '@/lib/audit-logger'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { getClientIp } from '@/lib/security/client-ip'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -36,16 +40,14 @@ const AddTradeSchema = z.object({
 })
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
     const internalUserId = identity.internalUserId
 
@@ -63,10 +65,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!masterAccount) {
-      return NextResponse.json(
-        { success: false, error: 'Master account not found or unauthorized' },
-        { status: 404 }
-      )
+      return createErrorResponse('Master account not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     // Find the current phase (regardless of status)
@@ -76,34 +75,34 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     )
 
     if (!currentPhase) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'No phase found for the current phase number. Please check your account configuration.' 
-        },
-        { status: 400 }
+      return createErrorResponse(
+        'No phase found for the current phase number. Please check your account configuration.',
+        409,
+        undefined,
+        'NO_ACTIVE_PHASE',
+        requestId,
       )
     }
     
     // Don't allow adding trades to failed or archived phases
     if (currentPhase.status === 'failed' || currentPhase.status === 'archived') {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: `Cannot add trades to a ${currentPhase.status} phase. This phase is no longer active.` 
-        },
-        { status: 403 }
+      return createErrorResponse(
+        `Cannot add trades to a ${currentPhase.status} phase. This phase is no longer active.`,
+        409,
+        undefined,
+        'PHASE_NOT_ACTIVE',
+        requestId,
       )
     }
 
     // Check if the phase account has a phaseId set
     if (!currentPhase.phaseId) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Please set the ID for the current phase before adding trades.' 
-        },
-        { status: 403 }
+      return createErrorResponse(
+        'Please set the ID for the current phase before adding trades.',
+        409,
+        undefined,
+        'PHASE_ID_REQUIRED',
+        requestId,
       )
     }
 
@@ -122,6 +121,24 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       const createdTrade = (await tx.insert(schema.Trade).values(tradePayload as any).returning())[0]
 
       await tx.insert(schema.TradeExecution).values(buildSyntheticExecutionsFromTrade(tradePayload as any) as any)
+      await recordAuditEvent({
+        userId: internalUserId,
+        action: 'TRADE_CREATED',
+        entityType: 'Trade',
+        entityId: createdTrade.id,
+        source: 'api',
+        requestId,
+        ipAddress: getClientIp(request.headers),
+        afterData: {
+          masterAccountId,
+          phaseAccountId: currentPhase.id,
+          instrument: createdTrade.instrument,
+          side: createdTrade.side,
+          quantity: createdTrade.quantity,
+          pnl: createdTrade.pnl,
+          commission: createdTrade.commission,
+        },
+      }, tx as never)
 
       return createdTrade
     })
@@ -130,49 +147,53 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       source: 'prop-firm-trade-created',
       masterAccountId,
       phaseAccountId: currentPhase.id,
+      requestId,
     })
 
-    return NextResponse.json({
-      success: true,
-      data: trade,
-      evaluation: null,
-      evaluationQueued: true,
-      message: 'Trade added successfully'
-    })
+    return createSuccessResponse(
+      trade,
+      'Trade added successfully',
+      { evaluation: null, evaluationQueued: true },
+      requestId,
+      { status: 201 },
+    )
 
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Validation failed',
-          details: error.errors
-        },
-        { status: 400 }
+      return createErrorResponse(
+        'Validation failed',
+        400,
+        error.flatten(),
+        'VALIDATION_ERROR',
+        requestId,
       )
     }
 
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to add trade' 
-      },
-      { status: 500 }
+    reportError(error, {
+      surface: 'api',
+      operation: 'create-prop-firm-trade',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to add trade',
+      500,
+      undefined,
+      'TRADE_CREATE_FAILED',
+      requestId,
     )
   }
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
     const internalUserId = identity.internalUserId
 
@@ -202,10 +223,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!masterAccount) {
-      return NextResponse.json(
-        { success: false, error: 'Master account not found or unauthorized' },
-        { status: 404 }
-      )
+      return createErrorResponse('Master account not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     // FIXED: Filter phases based on query parameter
@@ -275,37 +293,40 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       ? Math.round((statistics.winningTrades / tradableTradesCount) * 1000) / 10
       : 0
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        masterAccount: {
-          id: masterAccount.id,
-          accountName: masterAccount.accountName,
-          propFirmName: masterAccount.propFirmName,
-          currentPhase: masterAccount.currentPhase
-        },
-        trades,
-        statistics,
-          filter: {
-            applied: phaseFilter,
-            availablePhases: masterAccount.PhaseAccount.map(
-              (p: (typeof masterAccount.PhaseAccount)[number]) => ({
-                phaseNumber: p.phaseNumber,
-                status: p.status,
-                tradeCount: buildGroupedTradeCountSummary(p.Trade as any).groupedTradeCount,
-              })
-            ),
-          }
+    return createSuccessResponse({
+      masterAccount: {
+        id: masterAccount.id,
+        accountName: masterAccount.accountName,
+        propFirmName: masterAccount.propFirmName,
+        currentPhase: masterAccount.currentPhase
+      },
+      trades,
+      statistics,
+      filter: {
+        applied: phaseFilter,
+        availablePhases: masterAccount.PhaseAccount.map(
+          (p: (typeof masterAccount.PhaseAccount)[number]) => ({
+            phaseNumber: p.phaseNumber,
+            status: p.status,
+            tradeCount: buildGroupedTradeCountSummary(p.Trade as any).groupedTradeCount,
+          })
+        ),
       }
-    })
+    }, undefined, undefined, requestId)
 
   } catch (error) {
-    return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Failed to fetch trades' 
-      },
-      { status: 500 }
+    reportError(error, {
+      surface: 'api',
+      operation: 'list-prop-firm-trades',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to fetch trades',
+      500,
+      undefined,
+      'SERVER_ERROR',
+      requestId,
     )
   }
 }

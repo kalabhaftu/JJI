@@ -11,13 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import type { DashboardTemplateType as DashboardLayoutType } from '@/lib/db/schema';
 
-import {
-  updateIsFirstConnectionAction
-} from '@/server/user-data';
-import {
-  revalidateCache,
-  saveDashboardLayoutAction,
-} from '@/server/database';
+import { apiRequest } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase';
 import { signOut } from '@/server/auth';
 import { useUserStore } from '@/store/user-store';
@@ -306,7 +300,8 @@ export const DataProvider: React.FC<{
               })
 
               if (!initResponse.ok) throw new Error('Failed to fetch initial data')
-              return initResponse.json()
+              const payload = await initResponse.json()
+              return payload.data
             })()
         
         if (!initData.isAuthenticated) {
@@ -510,8 +505,6 @@ export const DataProvider: React.FC<{
       
       usePropFirmStore.getState().clearCache()
       
-      await revalidateCache([`trades-${user.id}`, `user-data-${user.id}-${locale}`])
-      
       await queryClient.invalidateQueries({ queryKey: ['v1'] })
       
       await new Promise(resolve => setTimeout(resolve, 200))
@@ -571,7 +564,10 @@ export const DataProvider: React.FC<{
   const changeIsFirstConnection = useCallback(async (isFirstConnection: boolean) => {
     if (!user?.id) return
     setIsFirstConnection(isFirstConnection)
-    await updateIsFirstConnectionAction(isFirstConnection)
+    await apiRequest('/api/v1/settings/onboarding', {
+      method: 'PATCH',
+      body: JSON.stringify({ isFirstConnection }),
+    })
   }, [user?.id, setIsFirstConnection])
 
   const { updateTrades, groupTrades, ungroupTrades, appendTagsToTrades } = useDataProviderTradeMutations({
@@ -582,9 +578,6 @@ export const DataProvider: React.FC<{
   const saveDashboardLayout = useCallback(async (layout: DashboardLayoutType) => {
     if (!user?.id) return
     setDashboardLayout(layout)
-    await saveDashboardLayoutAction(layout)
-    revalidateCache([`user-data-${user.id}`])
-
     // Update localStorage to keep cache fresh for next visit
     try {
       localStorage.setItem(`dashboard-layout-${user.id}`, JSON.stringify(layout))

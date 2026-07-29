@@ -19,10 +19,10 @@ Application code uses `DATABASE_URL` through `lib/db/client.ts`. Migration and a
 ## Development workflow
 
 1. Change the Drizzle schema.
-2. Generate the migration with the repository tool.
+2. Create the migration with `supabase migration new <name>`.
 3. Review generated SQL and data effects.
 4. Add explicit data-preservation SQL when required.
-5. Run `bunx drizzle-kit check`.
+5. Run `bun run db:migrations:check`.
 6. Run focused migration tests and the full test suite.
 
 `bun run db:push` is limited to disposable development databases.

@@ -1,34 +1,51 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { deleteUserData } from '@/server/user-data-deletion'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { getSupabaseAdminClient } from '@/server/supabase-admin'
 import { enqueueUserStorageCleanup } from '@/server/storage-cleanup-events'
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { getClientIp } from '@/lib/security/client-ip'
 
 export async function DELETE(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
     const deletion = await deleteUserData({
       internalUserId: identity.internalUserId,
       mode: 'delete-account',
       authUserId: identity.authUserId,
+      requestId,
+      ipAddress: getClientIp(request.headers),
     })
 
     const supabaseAdmin = getSupabaseAdminClient()
     const { error: deleteAuthError } = await supabaseAdmin.auth.admin.deleteUser(deletion.authUserId)
     
     if (deleteAuthError) {
-      logger.error(`Failed to delete user from Supabase Auth: ${deleteAuthError.message}`)
-      return NextResponse.json({ error: 'Failed to fully delete account from auth provider' }, { status: 500 })
+      reportError(deleteAuthError, {
+        surface: 'api',
+        operation: 'delete-auth-principal',
+        route: request.nextUrl.pathname,
+        requestId,
+        userId: identity.internalUserId,
+      })
+      return createErrorResponse(
+        'Failed to fully delete account from auth provider',
+        502,
+        undefined,
+        'AUTH_ACCOUNT_DELETE_FAILED',
+        requestId,
+      )
     }
 
     let storageCleanup: 'queued' | 'pending' = 'pending'
@@ -38,13 +55,34 @@ export async function DELETE(request: NextRequest) {
         storageOwnerIds: deletion.storageOwnerIds,
       })) storageCleanup = 'queued'
     } catch (error) {
-      Sentry.captureException(error, { extra: { route: '/api/v1/user/delete', phase: 'storage-enqueue' } })
-      logger.error({ error }, 'Account storage cleanup could not be queued')
+      reportError(error, {
+        surface: 'background-job',
+        operation: 'enqueue-account-storage-cleanup',
+        route: request.nextUrl.pathname,
+        requestId,
+        userId: identity.internalUserId,
+      })
     }
 
-    return NextResponse.json({ success: true, message: 'Account deleted successfully', storageCleanup })
+    return createSuccessResponse(
+      { storageCleanup },
+      'Account deleted successfully',
+      undefined,
+      requestId,
+    )
   } catch (error) {
-    logger.error('Account deletion error: ' + (error instanceof Error ? error.message : String(error)))
-    return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 })
+    reportError(error, {
+      surface: 'api',
+      operation: 'delete-user-account',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse(
+      'Failed to delete account',
+      500,
+      undefined,
+      'ACCOUNT_DELETE_FAILED',
+      requestId,
+    )
   }
 }

@@ -1,16 +1,19 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { getResolvedUserIdentity } from '@/server/user-identity'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -23,7 +26,7 @@ export async function PATCH(
     })
 
     if (!notification) {
-      return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
+      return createErrorResponse('Notification not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     const updated = (await db.update(schema.Notification).set({
@@ -34,13 +37,18 @@ export async function PATCH(
       eq(schema.Notification.userId, internalUserId),
     )).returning())[0]
 
-    return NextResponse.json({ success: true, data: updated })
+    return createSuccessResponse(updated, undefined, undefined, requestId)
   } catch (error: any) {
-    logger.error({ error: error?.message, context: 'api' }, 'PATCH /api/v1/notifications/[id]')
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
-    return NextResponse.json({ error: 'Failed to update notification' }, { status: 500 })
+    reportError(error, {
+      surface: 'api',
+      operation: 'update-notification',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse('Failed to update notification', 500, undefined, 'SERVER_ERROR', requestId)
   }
 }
 
@@ -48,7 +56,8 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const requestId = resolveRequestId(request.headers)
+  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -60,7 +69,7 @@ export async function DELETE(
     })
 
     if (!notification) {
-      return NextResponse.json({ error: 'Notification not found' }, { status: 404 })
+      return createErrorResponse('Notification not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
     await db.delete(schema.Notification).where(and(
@@ -68,12 +77,22 @@ export async function DELETE(
       eq(schema.Notification.userId, internalUserId),
     ))
 
-    return NextResponse.json({ success: true, message: 'Notification deleted' })
+    return createSuccessResponse(
+      { deleted: true },
+      'Notification deleted',
+      undefined,
+      requestId,
+    )
   } catch (error: any) {
-    logger.error({ error: error?.message, context: 'api' }, 'DELETE /api/v1/notifications/[id]')
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
-    return NextResponse.json({ error: 'Failed to delete notification' }, { status: 500 })
+    reportError(error, {
+      surface: 'api',
+      operation: 'delete-notification',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse('Failed to delete notification', 500, undefined, 'SERVER_ERROR', requestId)
   }
 }

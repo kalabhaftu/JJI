@@ -6,12 +6,7 @@ import { type InferSelectModel } from 'drizzle-orm'
 import { Trade as schemaTrade } from '@/lib/db/schema'
 
 type PrismaTrade = InferSelectModel<typeof schemaTrade>
-import {
-  groupTradesAction,
-  ungroupTradesAction,
-  updateTradesAction,
-  appendTagsToTradesAction,
-} from '@/server/database'
+import { apiRequest } from '@/lib/api/client'
 
 interface UseDataProviderTradeMutationsParams {
   userId: string | undefined
@@ -62,7 +57,11 @@ export function useDataProviderTradeMutations({
     })
 
     try {
-      const updatedCount = await updateTradesAction(tradeIds, update)
+      const response = await apiRequest<{ updated: number }>('/api/v1/trades/batch/update', {
+        method: 'POST',
+        body: JSON.stringify({ tradeIds, update }),
+      })
+      const updatedCount = response.data?.updated ?? 0
       if (updatedCount < tradeIds.length) {
         throw new Error('Trade update did not save. Refresh and try again.')
       }
@@ -76,14 +75,20 @@ export function useDataProviderTradeMutations({
   const groupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId) return
 
-    await groupTradesAction(tradeIds)
+    await apiRequest('/api/v1/trades/batch/group', {
+      method: 'POST',
+      body: JSON.stringify({ tradeIds }),
+    })
     await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
   }, [userId, queryClient])
 
   const ungroupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId) return
 
-    await ungroupTradesAction(tradeIds)
+    await apiRequest('/api/v1/trades/batch/ungroup', {
+      method: 'POST',
+      body: JSON.stringify({ tradeIds }),
+    })
     await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
   }, [userId, queryClient])
 
@@ -131,7 +136,10 @@ export function useDataProviderTradeMutations({
     })
 
     try {
-      await appendTagsToTradesAction(tradeIds, tagIds)
+      await apiRequest('/api/v1/trades/batch/tag', {
+        method: 'POST',
+        body: JSON.stringify({ tradeIds, tags: tagIds, mode: 'append' }),
+      })
       await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
     } catch (error) {
       await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })

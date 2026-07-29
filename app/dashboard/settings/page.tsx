@@ -76,7 +76,7 @@ import {
   Eye,
 } from "lucide-react"
 import { motion } from "framer-motion"
-import * as Sentry from '@sentry/nextjs'
+import { reportError } from '@/lib/observability/report-error'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { toast } from "sonner"
@@ -171,10 +171,14 @@ export default function SettingsPage() {
         setIsLoadingWebhook(true)
         const res = await fetch('/api/v1/auth/webhook-token')
         const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Failed to fetch webhook token')
-        if (data.token) setWebhookToken(data.token)
+        if (!res.ok) throw new Error(data.error?.message || 'Failed to fetch webhook token')
+        if (data.data?.token) setWebhookToken(data.data.token)
       } catch (error) {
-        Sentry.captureException(error, { tags: { surface: 'settings', operation: 'load-webhook-token' } })
+        reportError(error, {
+          surface: 'client',
+          operation: 'load-webhook-token',
+          route: '/dashboard/settings',
+        })
       } finally {
         setIsLoadingWebhook(false)
       }
@@ -188,10 +192,14 @@ export default function SettingsPage() {
         setIsLoadingSubscription(true)
         const res = await fetch('/api/v1/subscription/status')
         const data = await res.json()
-        if (!res.ok || !data.success) throw new Error(data.error || 'Failed to load subscription status')
+        if (!res.ok || !data.success) throw new Error(data.error?.message || 'Failed to load subscription status')
         setSubscriptionData(data.data)
       } catch (error) {
-        Sentry.captureException(error, { tags: { surface: 'settings', operation: 'load-subscription' } })
+        reportError(error, {
+          surface: 'client',
+          operation: 'load-subscription',
+          route: '/dashboard/settings',
+        })
         setSubscriptionData(null)
       } finally {
         setIsLoadingSubscription(false)
@@ -213,11 +221,11 @@ export default function SettingsPage() {
       setIsRegeneratingWebhook(true)
       const res = await fetch('/api/v1/auth/webhook-token', { method: 'POST' })
       const data = await res.json()
-      if (!res.ok || typeof data.token !== 'string' || data.token.length === 0) {
-        throw new Error(data.error || 'Failed to regenerate token')
+      if (!res.ok || typeof data.data?.token !== 'string' || data.data.token.length === 0) {
+        throw new Error(data.error?.message || 'Failed to regenerate token')
       }
 
-      setWebhookToken(data.token)
+      setWebhookToken(data.data.token)
       setWebhookCopied(false)
       toast.success('Token regenerated', {
         description: 'Your TradingView webhook token has been regenerated. Update your TradingView alert.',
@@ -274,7 +282,11 @@ export default function SettingsPage() {
         const safeThreshold = typeof result.data.breakEvenThreshold === 'number' ? result.data.breakEvenThreshold : 10
         setBreakEvenDraft(String(safeThreshold))
       } catch (error) {
-        Sentry.captureException(error, { tags: { surface: 'settings', operation: 'load-profile' } })
+        reportError(error, {
+          surface: 'client',
+          operation: 'load-profile',
+          route: '/dashboard/settings',
+        })
         toast.error('Could not load your profile settings')
       } finally {
         setIsLoadingProfile(false)

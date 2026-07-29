@@ -5,6 +5,7 @@ import { createAllDailyAnchors } from '@/lib/services/anchor-service'
 import { runDailyMaintenance } from '@/lib/services/maintenance-service'
 import { logger } from '@/lib/logger'
 import { inngest } from '@/lib/inngest/client'
+import { reportError } from '@/lib/observability/report-error'
 
 /**
  * GET /api/cron/maintenance
@@ -36,7 +37,13 @@ export async function GET(request: NextRequest) {
     logger.info('[Maintenance Cron] Task: Phase Evaluation')
     await inngest.send({
       name: 'jji/phase.evaluate',
-      data: { source: 'maintenance-cron', requestedAt: timestamp },
+      data: {
+        source: 'maintenance-cron',
+        requestedAt: timestamp,
+        ...(request.headers.get('x-request-id')
+          ? { requestId: request.headers.get('x-request-id') }
+          : {}),
+      },
     })
     results.tasks.phaseEvaluation = { queued: true }
 
@@ -55,7 +62,13 @@ export async function GET(request: NextRequest) {
       ...results
     })
   } catch (error) {
-    logger.error('[Maintenance Cron] Execution failed: ' + (error instanceof Error ? error.message : String(error)))
+    const requestId = request.headers.get('x-request-id')
+    reportError(error, {
+      surface: 'cron',
+      operation: 'run-daily-maintenance',
+      route: '/api/cron/maintenance',
+      ...(requestId ? { requestId } : {}),
+    })
     return NextResponse.json({
       success: false,
       error: 'Maintenance failed',

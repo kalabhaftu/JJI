@@ -1,16 +1,19 @@
-import { logger } from '@/lib/logger';
-import { NextRequest, NextResponse } from "next/server";
-import { directSyncUnavailablePayload } from '@/lib/integrations/direct-sync-status'
+import { NextRequest } from "next/server";
+import { directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { createErrorResponse } from '@/lib/api-response'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function POST(request: NextRequest) {
-  try {
-    await request.json().catch(() => null)
-    return NextResponse.json(directSyncUnavailablePayload('Tradovate'), { status: 503 });
-  } catch (error) {
-    logger.error({ error }, "Error performing Tradovate sync:");
-    return NextResponse.json(
-      { success: false, message: "Failed to perform Tradovate sync" },
-      { status: 500 }
-    );
-  }
+  const requestId = resolveRequestId(request.headers)
+  const limited = await applyApiRoutePolicy(request, 'sensitive')
+  if (limited) return limited
+  await request.json().catch(() => null)
+  return createErrorResponse(
+    directSyncUnderDevelopmentMessage('Tradovate'),
+    503,
+    { underDevelopment: true },
+    'DIRECT_SYNC_UNAVAILABLE',
+    requestId,
+  )
 }

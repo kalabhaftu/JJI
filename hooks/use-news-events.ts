@@ -15,7 +15,8 @@ export interface NewsEvent {
 async function fetchNewsEvents(): Promise<NewsEvent[]> {
   const res = await fetch('/api/v1/news-events')
   if (!res.ok) throw new Error('Failed to fetch news events')
-  return res.json()
+  const payload = await res.json()
+  return payload.data ?? []
 }
 
 export function useNewsEvents() {

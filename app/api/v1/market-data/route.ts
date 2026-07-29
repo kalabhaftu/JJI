@@ -65,7 +65,7 @@ export async function GET(request: Request) {
       low: quote.low,
       close: quote.close,
       volume: quote.volume
-    })).filter(quote => quote.open != null && quote.close != null)
+    })).filter((quote: any) => quote.open != null && quote.close != null)
 
     return NextResponse.json(ohlcData)
 

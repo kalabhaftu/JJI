@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Fuse from 'fuse.js'
@@ -111,7 +111,7 @@ const docsNavigation: DocsNavSection[] = [
       { title: 'Backend Structure', href: '/docs/for-developers/backend', description: 'API and server architecture' },
       { title: 'Architecture', href: '/docs/for-developers/architecture', description: 'System organization and boundaries' },
       { title: 'Data Model Principles', href: '/docs/for-developers/database', description: 'Core data domains and rules' },
-      { title: 'Prisma Optimization', href: '/docs/for-developers/prisma-optimization', description: 'Database query performance' },
+      { title: 'Database Optimization', href: '/docs/for-developers/database-optimization', description: 'Drizzle ORM and query performance' },
       { title: 'Performance Baseline', href: '/docs/for-developers/performance-baseline', description: 'Performance targets and approach' },
     ],
   },
@@ -239,33 +239,72 @@ function DocsSearchPanel({
   setSearchQuery,
   searchResults,
   docsHref,
+  inputRef,
 }: {
   searchQuery: string
   setSearchQuery: (value: string) => void
   searchResults: Array<{ title: string; href: string; section: string; parentTitle: string | null }>
   docsHref: (href?: string) => string
+  inputRef?: React.RefObject<HTMLInputElement | null>
 }) {
+  const [selectedIndex, setSelectedIndex] = useState(0)
   const showResults = searchQuery.trim().length >= 2
+
+  useEffect(() => {
+    setSelectedIndex(0)
+  }, [searchQuery])
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showResults || searchResults.length === 0) return
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault()
+      setSelectedIndex((prev) => (prev + 1) % searchResults.length)
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault()
+      setSelectedIndex((prev) => (prev - 1 + searchResults.length) % searchResults.length)
+    } else if (event.key === 'Enter') {
+      const selected = searchResults[selectedIndex]
+      if (selected) {
+        event.preventDefault()
+        const targetHref = docsHref(selected.href)
+        setSearchQuery('')
+        window.location.href = targetHref
+      }
+    } else if (event.key === 'Escape') {
+      setSearchQuery('')
+    }
+  }
 
   return (
     <div className="relative">
       <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
       <Input
+        ref={inputRef}
         value={searchQuery}
         onChange={(event) => setSearchQuery(event.target.value)}
-        placeholder="Search docs..."
-        className="h-10 rounded-2xl border-border/70 bg-background pl-9 text-sm shadow-none"
+        onKeyDown={handleKeyDown}
+        placeholder="Search docs... (Cmd+K)"
+        className="h-10 rounded-2xl border-border/70 bg-background pl-9 pr-14 text-sm shadow-none"
       />
+      <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+        <kbd className="inline-flex h-5 items-center rounded border border-border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
+          ⌘K
+        </kbd>
+      </div>
 
       {showResults && (
         <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-2xl border bg-popover shadow-2xl">
           <div className="max-h-[22rem] overflow-y-auto p-2">
             {searchResults.length > 0 ? (
-              searchResults.map((result) => (
+              searchResults.map((result, idx) => (
                 <Link
                   key={result.href}
                   href={docsHref(result.href) as any}
-                  className="flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-accent/60"
+                  className={cn(
+                    'flex items-start justify-between gap-3 rounded-xl px-3 py-2.5 transition-colors',
+                    idx === selectedIndex ? 'bg-accent text-accent-foreground' : 'hover:bg-accent/60'
+                  )}
                   onClick={() => setSearchQuery('')}
                 >
                   <div className="min-w-0">
@@ -310,6 +349,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
   const { docsHref } = usePublicSurfaceRouting()
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim() || searchQuery.trim().length < 2) {
@@ -319,9 +359,38 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
     return docsSearch.search(searchQuery.trim()).slice(0, 8).map((result) => result.item)
   }, [searchQuery])
 
+  // Global Cmd+K / Ctrl+K search focus shortcut
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Smooth scroll handler for anchor links (#hash)
   useEffect(() => {
     setMobileMenuOpen(false)
     setSearchQuery('')
+
+    const scrollToHash = () => {
+      const hash = window.location.hash.replace('#', '')
+      if (hash) {
+        const element = document.getElementById(hash) || document.getElementById(`heading-${hash}`)
+        if (element) {
+          setTimeout(() => {
+            element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          }, 100)
+        }
+      }
+    }
+
+    scrollToHash()
+    window.addEventListener('hashchange', scrollToHash)
+    return () => window.removeEventListener('hashchange', scrollToHash)
   }, [pathname])
 
   return (
@@ -348,6 +417,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
                   setSearchQuery={setSearchQuery}
                   searchResults={searchResults}
                   docsHref={docsHref}
+                  inputRef={searchInputRef}
                 />
                 <div className="mt-3">
                   <OpenSourceNotice />

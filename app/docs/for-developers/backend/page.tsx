@@ -19,21 +19,22 @@ export default function BackendDocsPage() {
 
       <DocsSection title="Key backend responsibilities">
         <ul>
-          <li>Dashboard data aggregation and filtering</li>
-          <li>Report generation and analytics computation</li>
-          <li>User-scoped data isolation (one user never sees another's data)</li>
-          <li>Trade import parsing and validation</li>
-          <li>Prop-firm phase evaluation and tracking</li>
-          <li>Background jobs via Vercel Cron (daily maintenance, phase evaluation, subscription checks)</li>
+          <li>Dashboard data aggregation and SQL metric computation via Drizzle ORM</li>
+          <li>Report generation, equity curve calculations, and trade analytics</li>
+          <li>User-scoped data isolation enforcing strict <code>user_id</code> query scoping</li>
+          <li>Trade import parsing, column mapping, and async background job queueing</li>
+          <li>Prop-firm challenge phase evaluation engine and daily anchor tracking</li>
+          <li>Async background job execution via <strong>Inngest</strong> (<code>/api/inngest</code> handler for <code>processImportJob</code>, <code>checkBreaches</code>, <code>resetDailyAnchors</code>, and <code>cleanupUserStorage</code>)</li>
         </ul>
       </DocsSection>
 
-      <DocsSection title="Security">
+      <DocsSection title="Security & Rate Limiting">
         <ul>
-          <li>Row-Level Security (RLS) via Supabase for database-level user isolation</li>
-          <li>Server-side auth enforcement in all route handlers</li>
-          <li>Rate limiting on API endpoints</li>
-          <li>CSP headers configured in security.config.js</li>
+          <li>Database tenant isolation via PostgreSQL and Supabase Auth token validation</li>
+          <li>Server-side identity verification in all API route handlers</li>
+          <li>Distributed rate limiting powered by Upstash Redis and <code>@upstash/ratelimit</code></li>
+          <li>Prompt injection pre-filtering and AI request token limits on AI routes</li>
+          <li>Content Security Policy (CSP) headers and strict API CORS middleware</li>
         </ul>
       </DocsSection>
     </DocsPage>

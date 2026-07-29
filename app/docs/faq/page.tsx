@@ -11,7 +11,7 @@ const faqs = [
   },
   {
     q: 'How do I import trades?',
-    a: 'Navigate to the import flow from the dashboard navbar. JJI supports importing from CSV files, TradingView webhooks, Tradovate sync, DxFeed sync, Rithmic sync, Thor, Match-Trader, and Exness. The import wizard lets you review parsed results - including any parsing errors or warnings - before saving trades to your account. This ensures you have full control over what gets imported.',
+    a: 'Navigate to the import flow from the dashboard navbar or press Cmd+I. JJI supports importing CSV files (NinjaTrader 8, Tradovate, Rithmic, Interactive Brokers, Webull, Thor, Match-Trader, Exness) and real-time TradingView webhooks. Direct broker API syncs (Tradovate, Rithmic) are currently under development. The import wizard provides a column mapper and parsed preview before saving trades to your account.',
   },
   {
     q: 'What data formats are supported?',

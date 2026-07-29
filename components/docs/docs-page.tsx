@@ -36,19 +36,31 @@ export function DocsPage({
 
 export function DocsSection({
   title,
+  id: customId,
   description,
   children,
   className,
 }: {
   title: string
+  id?: string
   description?: string
   children: ReactNode
   className?: string
 }) {
+  const sectionId =
+    customId ||
+    title
+      .toLowerCase()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .trim()
+
   return (
-    <section className={cn('space-y-5', className)}>
+    <section id={sectionId} className={cn('space-y-5 scroll-mt-24', className)}>
       <div className="space-y-2">
-        <h2>{title}</h2>
+        <h2 id={`heading-${sectionId}`} className="scroll-mt-24">
+          {title}
+        </h2>
         {description && <p className="text-muted-foreground">{description}</p>}
       </div>
       {children}

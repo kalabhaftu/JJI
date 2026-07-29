@@ -1,102 +1,17 @@
-import { logger } from '@/lib/logger';
 import { NextRequest, NextResponse } from "next/server";
-import {
-  getTradovateSynchronizations,
-  removeTradovateToken,
-  updateTradovateIncludedFeeTypes,
-} from "@/app/dashboard/components/import/tradovate/sync/actions";
+import { directSyncUnavailablePayload } from '@/lib/integrations/direct-sync-status';
 
+// Tradovate live sync is under development — all endpoints are disabled.
 export async function GET() {
-  try {
-    const result = await getTradovateSynchronizations();
-    if (result.error) {
-      return NextResponse.json(
-        { success: false, message: result.error },
-        { status: 400 }
-      );
-    }
-
-    const cleaned = (result.synchronizations || []).map((sync) => ({
-      ...sync,
-      token: sync.token ? 'present' : null
-    }));
-
-    return NextResponse.json({
-      success: true,
-      data: cleaned,
-    });
-  } catch (error) {
-    logger.error("Error fetching Tradovate synchronizations: " + error);
-    return NextResponse.json(
-      { success: false, message: "Failed to fetch Tradovate synchronizations" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(directSyncUnavailablePayload('Tradovate'), { status: 503 });
 }
 
 export async function PATCH(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const accountId = body?.accountId as string | undefined;
-    const includedFeeTypes = body?.includedFeeTypes as Record<string, boolean> | undefined;
-
-    if (!accountId || !includedFeeTypes || typeof includedFeeTypes !== "object") {
-      return NextResponse.json(
-        { success: false, message: "accountId and includedFeeTypes are required" },
-        { status: 400 }
-      );
-    }
-
-    const result = await updateTradovateIncludedFeeTypes(accountId, includedFeeTypes);
-    if (result.error) {
-      return NextResponse.json(
-        { success: false, message: result.error },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Fee config updated",
-    });
-  } catch (error) {
-    logger.error({ error: error instanceof Error ? error : new Error(String(error)), layer: 'api' }, "Error updating Tradovate fee config");
-    return NextResponse.json(
-      { success: false, message: "Failed to update fee config" },
-      { status: 500 }
-    );
-  }
+  await request.json().catch(() => null);
+  return NextResponse.json(directSyncUnavailablePayload('Tradovate'), { status: 503 });
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const accountId = body?.accountId as string | undefined;
-
-    if (!accountId) {
-      return NextResponse.json(
-        { success: false, message: "accountId is required" },
-        { status: 400 }
-      );
-    }
-
-    const result = await removeTradovateToken(accountId);
-    if (result.error) {
-      return NextResponse.json(
-        { success: false, message: result.error },
-        { status: 400 }
-      );
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: "Synchronization removed",
-    });
-  } catch (error) {
-    logger.error({ error: error instanceof Error ? error : new Error(String(error)), layer: 'api' }, "Error deleting Tradovate synchronization");
-    return NextResponse.json(
-      { success: false, message: "Failed to delete synchronization" },
-      { status: 500 }
-    );
-  }
+  await request.json().catch(() => null);
+  return NextResponse.json(directSyncUnavailablePayload('Tradovate'), { status: 503 });
 }

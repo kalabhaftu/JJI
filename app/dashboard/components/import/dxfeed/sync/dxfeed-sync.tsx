@@ -1,8 +1,7 @@
 'use client'
 
-import { DxFeedCredentialsManager } from './dxfeed-credentials-manager'
 import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Construction } from "lucide-react"
 
 export function DxFeedSync({ onBack }: { onBack?: () => void }) {
   return (
@@ -22,11 +21,19 @@ export function DxFeedSync({ onBack }: { onBack?: () => void }) {
         <div className="flex flex-col space-y-1">
           <h2 className="text-lg font-semibold">DxFeed Auto Sync</h2>
           <p className="text-sm text-muted-foreground">
-            Connect your DxFeed account to automatically synchronize your trades daily.
+            Direct broker sync
           </p>
         </div>
       </div>
-      <DxFeedCredentialsManager />
+      <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center">
+        <Construction className="h-10 w-10 text-amber-500" />
+        <div className="space-y-1">
+          <p className="text-sm font-semibold text-amber-500">Under Development</p>
+          <p className="text-sm text-muted-foreground max-w-xs">
+            DxFeed live sync is not yet available. Use CSV import or TradingView webhooks in the meantime.
+          </p>
+        </div>
+      </div>
     </div>
   )
 }

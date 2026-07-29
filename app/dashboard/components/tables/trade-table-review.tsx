@@ -538,7 +538,7 @@ export function TradeTableReview() {
   }, [activeTab, updatePageIndex])
 
   // Server-paginated trades (prevents multi-MB payloads on "All time")
-  const { data: pagedTradesData } = useFilteredTrades({
+  const { data: pagedTradesData, isLoading: isLoadingTrades } = useFilteredTrades({
     accounts: accountNumbers?.length ? accountNumbers : undefined,
     dateFrom: dateRange?.from?.toISOString?.(),
     dateTo: dateRange?.to?.toISOString?.(),
@@ -734,7 +734,12 @@ export function TradeTableReview() {
       </div>
 
       <div className="rounded-2xl sm:rounded-3xl border border-border bg-background shadow-md w-full overflow-hidden">
-        {table.getRowModel().rows.length > 0 ? (
+        {isLoadingTrades ? (
+          <div className="flex min-h-[350px] flex-col items-center justify-center gap-4 bg-muted/10 text-muted-foreground p-8 text-center w-full border border-dashed border-border/40 rounded-2xl sm:rounded-3xl">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <p className="text-sm font-medium">Loading trades...</p>
+          </div>
+        ) : table.getRowModel().rows.length > 0 ? (
           isMobile ? (
             <div className="w-full px-3 py-3 sm:px-4 space-y-3">
               {table.getRowModel().rows.map((row) => (

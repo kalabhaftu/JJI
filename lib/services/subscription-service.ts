@@ -35,7 +35,7 @@ import { createOrUpdateNotification } from './notification-service'
 
 const PRICE_USD = parseFloat(process.env.SUBSCRIPTION_PRICE_USD || '10')
 const GRACE_DAYS = parseInt(process.env.SUBSCRIPTION_GRACE_DAYS || '3', 10)
-const PROVIDER_PENDING_EXPIRY_MS = 24 * 60 * 60 * 1000
+const PAYMENT_LINK_EXPIRY_MS = 30 * 60 * 1000
 const PAYMENT_RECONCILIATION_BATCH_SIZE = 100
 const PENDING_PROVIDER_STATUSES: Array<NowPaymentStatus | 'pending'> = [
   'pending',
@@ -55,9 +55,13 @@ function amountsMatch(actual: number | string | null | undefined, expected: numb
   return Number.isFinite(value) && Math.abs(value - expected) < 0.01
 }
 
-function shouldMirrorExpiredByAge(record: { createdAt: Date; providerStatus: string | null | undefined }) {
+function getPaymentDeadline(record: { createdAt: Date; dueDate?: Date | null }) {
+  return record.dueDate || new Date(record.createdAt.getTime() + PAYMENT_LINK_EXPIRY_MS)
+}
+
+function shouldMirrorExpiredByAge(record: { createdAt: Date; dueDate?: Date | null; providerStatus: string | null | undefined }) {
   if (!isPendingProviderStatus(record.providerStatus)) return false
-  return Date.now() - record.createdAt.getTime() >= PROVIDER_PENDING_EXPIRY_MS
+  return new Date() >= getPaymentDeadline(record)
 }
 
 function validateIpnPayload(paymentRecord: any, payload: IpnPayload) {
@@ -211,11 +215,13 @@ export async function createSubscriptionInvoice(
   if (existingPending) {
     const refreshedExisting = await reconcilePaymentRecord(existingPending.id, userId)
     if (refreshedExisting && isPendingProviderStatus(refreshedExisting.providerStatus)) {
+      const deadline = getPaymentDeadline({ createdAt: refreshedExisting.createdAt || new Date(), dueDate: refreshedExisting.dueDate })
       return {
         subscription,
         invoiceUrl: refreshedExisting.invoiceUrl,
         invoiceId: refreshedExisting.providerInvoiceId,
         paymentRecordId: refreshedExisting.id,
+        expiresAt: deadline,
         freeAccess: false,
         reusedExisting: true,
       }
@@ -270,6 +276,7 @@ export async function createSubscriptionInvoice(
   // Create NOWPayments invoice
   const periodStart = new Date()
   const periodEnd = new Date(periodStart.getTime() + 30 * 86400000)
+  const paymentDeadline = new Date(periodStart.getTime() + PAYMENT_LINK_EXPIRY_MS)
   const orderId = `sub_${subscription.id}_${Date.now()}`
   const payCurrency = options?.payCurrency?.trim().toLowerCase()
 
@@ -299,7 +306,7 @@ export async function createSubscriptionInvoice(
       payCurrency: payCurrency || null,
       subscriptionPeriodStart: periodStart,
       subscriptionPeriodEnd: periodEnd,
-      dueDate: periodStart,
+      dueDate: paymentDeadline,
       promoCodeId: promoCodeRecord?.id,
       discountAmount,
       updatedAt: new Date(),
@@ -310,6 +317,7 @@ export async function createSubscriptionInvoice(
     invoiceUrl: invoice.invoice_url,
     invoiceId: invoice.id,
     paymentRecordId: paymentRecord?.id,
+    expiresAt: paymentDeadline,
     freeAccess: false,
     reusedExisting: false,
   }
@@ -344,6 +352,26 @@ export async function handleIpnWebhook(payload: IpnPayload) {
   if (validationError) {
     logger.warn({ reason: validationError, payment_id, invoice_id, order_id }, '[Subscription] Rejected IPN payload')
     return { processed: false, reason: validationError, status: 400 }
+  }
+
+  if (isSuccessStatus(payment_status) && shouldMirrorExpiredByAge({
+    createdAt: paymentRecord.createdAt || new Date(),
+    dueDate: paymentRecord.dueDate,
+    providerStatus: paymentRecord.providerStatus,
+  })) {
+    await db.update(PaymentRecord)
+      .set({
+        providerPaymentId: String(payment_id),
+        payCurrency: payload.pay_currency,
+        payAmount: payload.pay_amount,
+        rawProviderPayload: payload as any,
+        providerStatus: 'expired',
+        expiredAt: paymentRecord.expiredAt || new Date(),
+      })
+      .where(eq(PaymentRecord.id, paymentRecord.id))
+    logger.warn({ paymentId: paymentRecord.id }, '[Subscription] Received successful provider payment after local payment window')
+    revalidateSubscriptionAccess(paymentRecord.userId)
+    return { processed: true, reason: 'Payment arrived after local expiration', status: 'expired' }
   }
 
   // Idempotency: skip if already in terminal state
@@ -447,19 +475,26 @@ async function reconcilePaymentRecord(paymentRecordId: string, userId?: string) 
     return record
   }
 
+  if (shouldMirrorExpiredByAge({ ...record, createdAt: record.createdAt || new Date() })) {
+    await markPaymentRecordExpired(record.id)
+    return db.query.PaymentRecord.findFirst({
+      where: and(
+        eq(PaymentRecord.id, paymentRecordId),
+        userId ? eq(PaymentRecord.userId, userId) : undefined
+      ),
+      with: {
+        Subscription: true,
+      },
+    }) as any
+  }
+
   if (record.providerPaymentId) {
     try {
       const provider = await getPaymentStatus(record.providerPaymentId)
       await handleIpnWebhook(provider as unknown as IpnPayload)
     } catch (error) {
-      if (shouldMirrorExpiredByAge({ ...record, createdAt: record.createdAt || new Date() })) {
-        await markPaymentRecordExpired(record.id)
-      } else {
-        throw error
-      }
+      throw error
     }
-  } else if (shouldMirrorExpiredByAge({ ...record, createdAt: record.createdAt || new Date() })) {
-    await markPaymentRecordExpired(record.id)
   }
 
   return db.query.PaymentRecord.findFirst({

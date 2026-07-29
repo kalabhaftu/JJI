@@ -55,13 +55,14 @@ export function SubscribeClient() {
         return
       }
 
-      if (data.invoiceUrl) {
+      const paymentUrl = data.paymentUrl || data.invoiceUrl
+      if (paymentUrl) {
         // Store payment record ID for status polling
         if (data.paymentRecordId) {
           sessionStorage.setItem('pendingPaymentId', data.paymentRecordId)
         }
-        // Redirect to NOWPayments hosted invoice page
-        window.location.href = data.invoiceUrl
+        // Redirect through the app so expired sessions cannot reopen stale provider links.
+        window.location.href = paymentUrl
       }
     } catch (error) {
       toast.error('Error', { description: 'Something went wrong. Please try again.' })

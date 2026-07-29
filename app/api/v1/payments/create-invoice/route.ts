@@ -9,6 +9,11 @@ import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { createSubscriptionInvoice, validatePromoCode } from '@/lib/services/subscription-service'
 import { logger } from '@/lib/logger'
 
+function paymentRedirectUrl(request: NextRequest, paymentRecordId?: string | null) {
+  if (!paymentRecordId) return null
+  return new URL(`/api/v1/payments/redirect?paymentRecordId=${encodeURIComponent(paymentRecordId)}`, request.url).toString()
+}
+
 export async function POST(request: NextRequest) {
   const rl = await applyRateLimit(request, apiLimiter)
   if (rl) return rl
@@ -53,11 +58,15 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    const paymentUrl = paymentRedirectUrl(request, result.paymentRecordId)
+
     return NextResponse.json({
       success: true,
-      invoiceUrl: result.invoiceUrl,
+      invoiceUrl: paymentUrl,
+      paymentUrl,
       invoiceId: result.invoiceId,
       paymentRecordId: result.paymentRecordId,
+      expiresAt: result.expiresAt,
       reusedExisting: Boolean(result.reusedExisting),
     })
   } catch (error) {

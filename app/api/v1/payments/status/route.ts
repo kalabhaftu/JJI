@@ -4,6 +4,8 @@ import { db } from '@/lib/db/client'
 import { refreshPaymentRecordStatus } from '@/lib/services/subscription-service'
 import { logger } from '@/lib/logger'
 
+const PENDING_PROVIDER_STATUSES = new Set(['pending', 'waiting', 'confirming', 'confirmed', 'sending', 'partially_paid'])
+
 export async function GET(request: NextRequest) {
   try {
     const identity = await getResolvedUserIdentitySafe()
@@ -32,15 +34,25 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Payment not found' }, { status: 404 })
     }
 
+    const deadline = record.dueDate || (record.createdAt ? new Date(record.createdAt.getTime() + 30 * 60 * 1000) : null)
+    const isPending = Boolean(record.providerStatus && PENDING_PROVIDER_STATUSES.has(record.providerStatus))
+    const canOpenInvoice = Boolean(record.invoiceUrl && isPending && deadline && deadline > new Date())
+    const paymentUrl = canOpenInvoice
+      ? new URL(`/api/v1/payments/redirect?paymentRecordId=${encodeURIComponent(record.id)}`, request.url).toString()
+      : null
+
     const payload = {
       id: record.id,
       providerStatus: record.providerStatus,
       amountUsd: record.amountUsd,
       payCurrency: record.payCurrency,
       payAmount: record.payAmount,
-      invoiceUrl: record.invoiceUrl,
+      invoiceUrl: paymentUrl,
+      paymentUrl,
+      canOpenInvoice,
       paidAt: record.paidAt,
       expiredAt: record.expiredAt,
+      expiresAt: deadline,
       subscriptionPeriodEnd: record.subscriptionPeriodEnd,
       createdAt: record.createdAt,
       subscriptionStatus: record.Subscription?.status || null,

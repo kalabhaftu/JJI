@@ -15,8 +15,11 @@ type PaymentStatus = {
   payCurrency: string | null
   payAmount: number | null
   invoiceUrl: string | null
+  paymentUrl: string | null
+  canOpenInvoice: boolean
   paidAt: string | null
   expiredAt: string | null
+  expiresAt: string | null
   subscriptionPeriodEnd: string | null
 }
 
@@ -122,6 +125,12 @@ export default function SubscribeStatusPage() {
                     <span>{new Date(status.subscriptionPeriodEnd).toLocaleDateString()}</span>
                   </div>
                 )}
+                {status?.expiresAt && !isFinished && (
+                  <div className="flex justify-between gap-3">
+                    <span className="text-muted-foreground">Payment window</span>
+                    <span>{new Date(status.expiresAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -138,9 +147,9 @@ export default function SubscribeStatusPage() {
                       <RefreshCw className="mr-2 h-4 w-4" />
                       Refresh Status
                     </Button>
-                    {status?.invoiceUrl && (
+                    {status?.canOpenInvoice && status?.paymentUrl && (
                       <Button variant="outline" onClick={() => { 
-                        window.location.href = status.invoiceUrl! 
+                        window.location.href = status.paymentUrl!
                       }} className="w-full">
                         Open Invoice
                       </Button>

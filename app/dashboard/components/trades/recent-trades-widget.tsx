@@ -26,7 +26,7 @@ export default function RecentTradesWidget() {
   // This ensures partial closes are shown as single trades, not multiple entries
   const groupedTrades = React.useMemo(() => {
     return groupTradesByExecution(formattedTrades)
-  }, [formattedTrades, groupTradesByExecution])
+  }, [formattedTrades])
 
   // All trades sorted newest-first
   const allRecentTrades = React.useMemo(() => {

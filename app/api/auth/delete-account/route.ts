@@ -47,7 +47,7 @@ export async function DELETE(request: NextRequest) {
         operation: 'delete-auth-principal',
         route: request.nextUrl.pathname,
         requestId,
-        userId: identity?.internalUserId,
+        ...(identity?.internalUserId ? { userId: identity.internalUserId } : {}),
       })
       return NextResponse.json(
         { error: 'Application data was deleted, but the auth account could not be removed. Please contact support.' },

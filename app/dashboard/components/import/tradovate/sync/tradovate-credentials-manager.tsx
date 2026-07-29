@@ -30,7 +30,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { TRADOVATE_FEE_TYPE_KEYS } from "./fee-types";
 import { useTradovateSyncStore } from "@/store/tradovate-sync-store";
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
-import { logger } from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 import { apiRequest } from '@/lib/api/client';
 
 function translateTradovateFeeType(key: string): string {
@@ -83,7 +83,11 @@ export function TradovateCredentialsManager() {
         toast.success(`Account ${accountId} deleted`);
       } catch (error) {
         toast.error(`Failed to delete account ${accountId}`);
-        logger.error("Delete error: " + (error instanceof Error ? error.message : String(error)));
+        reportError(error, {
+          surface: 'client',
+          operation: 'delete-tradovate-connection',
+          entityId: accountId,
+        })
       }
     },
     [deleteAccount],
@@ -114,6 +118,11 @@ export function TradovateCredentialsManager() {
       // Redirect to Tradovate OAuth
       window.location.href = result.authUrl;
     } catch (error) {
+      reportError(error, {
+        surface: 'client',
+        operation: 'start-tradovate-oauth',
+        route: '/api/v1/tradovate/oauth',
+      })
       toast.error("Failed to initiate oauth connection");
     } finally {
       setIsLoading(false);
@@ -131,7 +140,10 @@ export function TradovateCredentialsManager() {
       toast.success("Accounts reloaded successfully");
     } catch (error) {
       toast.error("Failed to reload accounts");
-      logger.error("Reload error: " + (error instanceof Error ? error.message : String(error)));
+      reportError(error, {
+        surface: 'client',
+        operation: 'reload-tradovate-connections',
+      })
     } finally {
       setIsReloading(false);
     }
@@ -187,7 +199,11 @@ export function TradovateCredentialsManager() {
       }
     } catch (error) {
       toast.error("Failed to update daily sync time");
-      logger.error("Update sync time error: " + (error instanceof Error ? error.message : String(error)));
+      reportError(error, {
+        surface: 'client',
+        operation: 'update-tradovate-sync-time',
+        entityId: selectedAccountId,
+      })
     } finally {
       setIsSavingTime(false);
     }

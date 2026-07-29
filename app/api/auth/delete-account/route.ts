@@ -60,6 +60,7 @@ export async function DELETE(request: NextRequest) {
       if (await enqueueUserStorageCleanup({
         internalUserId: identity?.internalUserId ?? authUserId,
         storageOwnerIds,
+        requestId,
       })) storageCleanup = 'queued'
     } catch (error) {
       reportError(error, {

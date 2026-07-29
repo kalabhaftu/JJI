@@ -8,6 +8,7 @@ import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { calculateReportStatistics } from '@/lib/statistics/report-statistics'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
+import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 import { getWebsiteURL } from '@/server/auth'
 import { and, eq, desc } from 'drizzle-orm'
 
@@ -139,7 +140,7 @@ export async function POST(req: NextRequest) {
     const appUrl = await getWebsiteURL()
     return createSuccessResponse({ slug, url: new URL(`/reports/shared/${slug}`, appUrl).toString(), id: shared!.id })
   } catch (err) {
-    logger.error('Reports share creation failed' + ' : ' + err)
+    reportApiHandlerError(req, err, 'create-shared-report')
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -167,7 +168,7 @@ export async function GET(req: NextRequest) {
     })
     return createSuccessResponse({ reports })
   } catch (err) {
-    logger.error('Reports share list failed' + ' : ' + err)
+    reportApiHandlerError(req, err, 'list-shared-reports')
     return createErrorResponse('Internal server error', 500)
   }
 }
@@ -205,7 +206,7 @@ export async function DELETE(req: NextRequest) {
 
     return createSuccessResponse({ deleted: true })
   } catch (err) {
-    logger.error('Reports share deletion failed' + ' : ' + err)
+    reportApiHandlerError(req, err, 'delete-shared-report')
     return createErrorResponse('Internal server error', 500)
   }
 }

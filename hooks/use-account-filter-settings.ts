@@ -12,7 +12,7 @@ async function fetchAccountFilterSettings(): Promise<AccountFilterSettings> {
   })
   if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch settings`)
   const data = await response.json()
-  if (!data.success) throw new Error(data.error || 'Failed to fetch settings')
+  if (!data.success) throw new Error(data.error?.message || 'Failed to fetch settings')
   return data.data || DEFAULT_FILTER_SETTINGS
 }
 
@@ -24,7 +24,7 @@ async function saveAccountFilterSettings(settings: AccountFilterSettings): Promi
   })
   if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to save settings`)
   const data = await response.json()
-  if (!data.success) throw new Error(data.error || 'Failed to save settings')
+  if (!data.success) throw new Error(data.error?.message || 'Failed to save settings')
   return data.data
 }
 

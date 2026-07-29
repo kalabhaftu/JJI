@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
 import { z } from 'zod'
-import { revalidateTag } from 'next/cache'
 import { validatePhaseId } from '@/lib/validation/phase-id-validator'
 import { db } from '@/lib/db/client'
-import * as schema from '@/lib/db/schema'
-import { eq, desc, asc } from 'drizzle-orm'
+import { desc, asc } from 'drizzle-orm'
+import { createPropFirmAccountForUser } from '@/server/accounts/prop-firm-lifecycle'
+import { resolveRequestId } from '@/lib/observability/request-id'
+import { getClientIp } from '@/lib/security/client-ip'
 
 const CreateMasterAccountSchema = z.object({
   accountName: z.string().min(1, 'Account name is required'),
@@ -37,9 +38,10 @@ const CreateMasterAccountSchema = z.object({
   fundedMinProfitForPayout: z.number().min(0).default(100)
 })
 
-export async function POST(request: NextRequest) {
+async function createPropFirmAccount(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
+  const requestId = resolveRequestId(request.headers)
 
   try {
     const identity = await getResolvedUserIdentitySafe()
@@ -66,89 +68,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = await db.transaction(async (tx) => {
-      const masterAccount = (await tx.insert(schema.MasterAccount).values({
-        id: crypto.randomUUID(),
-        userId: internalUserId,
-        accountName: validatedData.accountName,
-        propFirmName: validatedData.propFirmName,
-        accountSize: validatedData.accountSize,
-        evaluationType: validatedData.evaluationType,
-        currentPhase: 1,
-        status: 'active'
-      }).returning())[0]
-
-      const phase1 = (await tx.insert(schema.PhaseAccount).values({
-        id: crypto.randomUUID(),
-        masterAccountId: masterAccount!.id,
-        phaseNumber: 1,
-        phaseId: validatedData.phase1AccountId,
-        status: 'active',
-        profitTargetPercent: validatedData.evaluationType === 'Instant' ? 0 : validatedData.phase1ProfitTargetPercent,
-        dailyDrawdownPercent: validatedData.phase1DailyDrawdownPercent,
-        maxDrawdownPercent: validatedData.phase1MaxDrawdownPercent,
-        maxDrawdownType: validatedData.phase1MaxDrawdownType || 'static',
-        minTradingDays: validatedData.phase1MinTradingDays,
-        timeLimitDays: validatedData.phase1TimeLimitDays || undefined,
-        consistencyRulePercent: validatedData.phase1ConsistencyRulePercent
-      }).returning())[0]
-
-      let phase2 = null
-      if (validatedData.evaluationType === 'Two Step') {
-        phase2 = (await tx.insert(schema.PhaseAccount).values({
-          id: crypto.randomUUID(),
-          masterAccountId: masterAccount!.id,
-          phaseNumber: 2,
-          phaseId: null,
-          status: 'pending',
-          profitTargetPercent: validatedData.phase2ProfitTargetPercent!,
-          dailyDrawdownPercent: validatedData.phase2DailyDrawdownPercent!,
-          maxDrawdownPercent: validatedData.phase2MaxDrawdownPercent!,
-          maxDrawdownType: validatedData.phase2MaxDrawdownType || 'static',
-          minTradingDays: validatedData.phase2MinTradingDays || 0,
-          timeLimitDays: validatedData.phase2TimeLimitDays || undefined,
-          consistencyRulePercent: validatedData.phase2ConsistencyRulePercent || 0
-        }).returning())[0]
-      }
-
-      const fundedPhaseNumber = validatedData.evaluationType === 'One Step' ? 2 : 
-                               validatedData.evaluationType === 'Instant' ? 1 : 3
-      
-      const fundedPhase = (await tx.insert(schema.PhaseAccount).values({
-        id: crypto.randomUUID(),
-        masterAccountId: masterAccount!.id,
-        phaseNumber: fundedPhaseNumber,
-        phaseId: null,
-        status: validatedData.evaluationType === 'Instant' ? 'active' : 'pending',
-        profitTargetPercent: 0,
-        dailyDrawdownPercent: validatedData.fundedDailyDrawdownPercent,
-        maxDrawdownPercent: validatedData.fundedMaxDrawdownPercent,
-        maxDrawdownType: validatedData.fundedMaxDrawdownType || 'static',
-        minTradingDays: 0,
-        timeLimitDays: undefined,
-        consistencyRulePercent: 0,
-        profitSplitPercent: validatedData.fundedProfitSplitPercent,
-        payoutCycleDays: validatedData.fundedPayoutCycleDays,
-        minProfitForPayout: validatedData.fundedMinProfitForPayout || 100
-      }).returning())[0]
-
-      if (validatedData.evaluationType === 'Instant') {
-        await tx.update(schema.PhaseAccount)
-          .set({ phaseId: validatedData.phase1AccountId })
-          .where(eq(schema.PhaseAccount.id, fundedPhase!.id))
-        
-        await tx.update(schema.MasterAccount)
-          .set({ currentPhase: fundedPhaseNumber })
-          .where(eq(schema.MasterAccount.id, masterAccount!.id))
-      }
-
-      return {
-        masterAccount,
-        phases: [phase1, phase2, fundedPhase].filter(Boolean)
-      }
-    })
-
-    revalidateTag(`accounts-${internalUserId}`)
+    const result = await createPropFirmAccountForUser(
+      internalUserId,
+      validatedData,
+      {
+        source: 'api',
+        requestId,
+        ipAddress: getClientIp(request.headers),
+      },
+    )
     
     return NextResponse.json({
       success: true,
@@ -211,7 +139,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    logger.error('[API] Failed to create master account: ' + error)
+    reportApiHandlerError(request, error, 'create-prop-firm-account')
     return NextResponse.json(
       { 
         success: false, 
@@ -222,7 +150,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+async function listPropFirmAccounts(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -252,6 +180,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
+    reportApiHandlerError(request, error, 'list-prop-firm-accounts')
     return NextResponse.json(
       { 
         success: false, 
@@ -261,3 +190,6 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export const POST = withCanonicalApiResponse(createPropFirmAccount)
+export const GET = withCanonicalApiResponse(listPropFirmAccounts)

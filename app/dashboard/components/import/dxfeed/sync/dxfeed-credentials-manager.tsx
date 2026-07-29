@@ -28,7 +28,7 @@ import { Label } from '@/components/ui/label'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
 import { useDxFeedSyncContext } from '@/context/dxfeed-sync-context'
-import { logger } from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 import { apiRequest } from '@/lib/api/client'
 
 export function DxFeedCredentialsManager() {
@@ -60,7 +60,11 @@ export function DxFeedCredentialsManager() {
         toast.success(`Account ${accountId} deleted`)
       } catch (error) {
         toast.error(`Failed to delete account ${accountId}`)
-        logger.error({ error: error instanceof Error ? error : new Error(String(error)), layer: 'ui' }, 'Delete error')
+        reportError(error, {
+          surface: 'client',
+          operation: 'delete-dxfeed-connection',
+          entityId: accountId,
+        })
       }
     },
     [deleteAccount],
@@ -84,7 +88,7 @@ export function DxFeedCredentialsManager() {
       const result = response.data ?? {}
 
       if (result.error) {
-        toast.error(result.error)
+        toast.error(result.error || 'Failed to save DxFeed credentials')
         return
       }
 
@@ -94,6 +98,11 @@ export function DxFeedCredentialsManager() {
       setLoginPassword('')
       await loadAccounts()
     } catch (error) {
+      reportError(error, {
+        surface: 'client',
+        operation: 'connect-dxfeed',
+        route: '/api/v1/dxfeed/credentials',
+      })
       toast.error("Authentication failed. Check your credentials.")
     } finally {
       setIsLoading(false)
@@ -111,7 +120,10 @@ export function DxFeedCredentialsManager() {
       toast.success("Accounts reloaded successfully")
     } catch (error) {
       toast.error("Failed to reload accounts")
-      logger.error({ error: error instanceof Error ? error : new Error(String(error)), layer: 'ui' }, 'Reload error')
+      reportError(error, {
+        surface: 'client',
+        operation: 'reload-dxfeed-connections',
+      })
     } finally {
       setIsReloading(false)
     }
@@ -170,7 +182,11 @@ export function DxFeedCredentialsManager() {
       }
     } catch (error) {
       toast.error("Failed to update daily sync time")
-      logger.error({ error: error instanceof Error ? error : new Error(String(error)), layer: 'ui' }, 'Update sync time error')
+      reportError(error, {
+        surface: 'client',
+        operation: 'update-dxfeed-sync-time',
+        entityId: selectedAccountId,
+      })
     } finally {
       setIsSavingTime(false)
     }

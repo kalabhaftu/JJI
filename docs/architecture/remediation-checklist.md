@@ -41,14 +41,16 @@ Legend:
 - [x] Add sanitized context to phase, import, cron, API, and background-job failures.
 - [x] Add privacy-scrubber coverage for cookies, authorization, tokens, email, body, journal, trade, and upload values.
 - [x] Document safe non-production verification.
+- [x] Add a guarded local verification harness for client, server, phase, and import failures.
+- [x] Add and validate a versioned Sentry alert manifest for all seven required alert classes.
 - [ ] Verify the live Sentry project, releases, source maps, grouping, and request-ID search.
-- [ ] Configure and verify Sentry-native alerts for new page errors.
-- [ ] Configure and verify Sentry-native alerts for API 5xx spikes.
-- [ ] Configure and verify Sentry-native alerts for phase failures.
-- [ ] Configure and verify Sentry-native alerts for import failures.
-- [ ] Configure and verify Sentry-native alerts for limiter backend failures.
-- [ ] Configure and verify Sentry-native alerts for cron/background failures.
-- [ ] Configure and verify Sentry-native release-regression alerts.
+- [ ] Activate and verify Sentry-native alerts for new page errors from the reviewed manifest.
+- [ ] Activate and verify Sentry-native alerts for API 5xx spikes from the reviewed manifest.
+- [ ] Activate and verify Sentry-native alerts for phase failures from the reviewed manifest.
+- [ ] Activate and verify Sentry-native alerts for import failures from the reviewed manifest.
+- [ ] Activate and verify Sentry-native alerts for limiter backend failures from the reviewed manifest.
+- [ ] Activate and verify Sentry-native alerts for cron/background failures from the reviewed manifest.
+- [ ] Activate and verify Sentry-native release-regression alerts from the reviewed manifest.
 - [ ] Trigger one controlled provider notification after explicit approval.
 
 ## 3. Request correlation
@@ -60,6 +62,7 @@ Legend:
 - [x] Propagate request IDs through logger/Sentry context.
 - [x] Propagate request IDs through account, trade, payout, audit, phase, and import operations.
 - [x] Propagate request IDs through Inngest phase and import events.
+- [x] Propagate request IDs through daily-anchor and storage-cleanup Inngest events.
 - [x] Add route and operation tags without private request payloads.
 - [ ] Verify one deployed response through logs, Sentry, and its durable audit row.
 
@@ -105,9 +108,10 @@ Legend:
 - [x] Preserve protocol bodies for webhooks, redirects, files, exports, streams, health, auth callbacks, cron, and Inngest.
 - [x] Document the breaking v1 envelope.
 - [x] Migrate AI chat, message-error, insight, and journal-analysis routes while preserving the text-stream success protocol.
-- [ ] Migrate remaining AI format and mapping routes to the envelope.
-- [ ] Migrate remaining prop-firm account lifecycle routes to the envelope.
-- [ ] Migrate remaining backtesting and trading-model routes to the envelope.
+- [x] Preserve AI format and mapping text streams as explicit protocol exemptions while standardizing reporting and request IDs.
+- [x] Migrate prop-firm account lifecycle, phase-advance, and transition routes to the envelope.
+- [x] Migrate backtesting, trading-model, and weekly-review routes to the envelope.
+- [x] Add a source contract guard covering every v1 route and the eight reviewed protocol exemptions.
 - [ ] Add contract coverage for every migrated route family after dependencies are repaired.
 - [x] Inventory browser-triggered mutation Server Actions.
 - [x] Move account, trade, payout, provider, template, notification-setting, onboarding, and funded-decision mutations behind classified APIs.
@@ -131,6 +135,7 @@ Legend:
 - [x] Cover limiter success, rejection, timeout, failure, fail-closed, fail-open read, and trusted-exemption decisions in focused tests.
 - [x] Add CI route-policy enforcement.
 - [x] Emit rate-backend failure and sustained fail-open telemetry.
+- [x] Apply an explicit Upstash SDK timeout and map timeouts through the reviewed fail-open/fail-closed policy.
 - [ ] Configure the corresponding Sentry provider alert.
 
 ## 7. Account monolith
@@ -147,6 +152,9 @@ Legend:
 - [x] Preserve returned account and payout shapes during caller migration.
 - [x] Move API handlers to direct domain imports.
 - [x] Preserve cache keys and notification-after-commit timing.
+- [x] Extract account notification coordination.
+- [x] Extract one authoritative, transactional phase-progression operation.
+- [x] Extract prop-firm account lifecycle with ownership, audit, and cache invalidation.
 - [ ] Add database-backed characterization coverage for transaction rollback and notification timing.
 
 ## 8. Import monolith
@@ -159,6 +167,8 @@ Legend:
 - [x] Extract lookup-map construction.
 - [x] Extract leasing and worker-token state.
 - [x] Extract progress, cancellation, and resume state.
+- [x] Add authenticated resume APIs for archive and trade-import jobs.
+- [x] Restore failed/cancelled archive imports from persisted progress without duplicating completed work.
 - [x] Extract trade/backtest chunk execution.
 - [x] Preserve chunking, progress calculation, object paths, payloads, and resumability.
 - [x] Keep retry state transitions idempotent.
@@ -195,6 +205,7 @@ Legend:
 - [x] Redact credentials, journal content, uploads, request bodies, and personal fields.
 - [x] Add audit redaction, bulk-summary, request-correlation, and rollback-propagation tests.
 - [x] Preserve a final deletion audit row with nullable user ownership and `ON DELETE SET NULL`.
+- [x] Audit prop-firm creation, update, deletion, and phase advancement transactionally.
 - [ ] Apply and verify the audit migration in staging.
 
 ## 11. Migration workflow

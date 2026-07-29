@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
+import { reportError } from '@/lib/observability/report-error'
 import { type SynchronizationType } from '@/lib/db/schema'
 import { DEFAULT_INCLUDED_FEE_TYPES } from '@/app/dashboard/components/import/tradovate/sync/fee-types'
 import logger from '@/lib/logger'
@@ -198,7 +199,11 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
     } catch (error) {
       const errorMsg = `Sync error for account ${accountId}: ${error instanceof Error ? error.message : "Unknown error"}`
-      console.error('Sync error:', error)
+      reportError(error, {
+        surface: 'client',
+        operation: 'sync-tradovate-account',
+        entityId: accountId,
+      })
       return { success: false, message: errorMsg }
     }
   }, [accounts, disabled, refreshTrades, loadAccounts])
@@ -226,7 +231,10 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       }
 
     } catch (error) {
-      console.error('Error during bulk sync:', error)
+      reportError(error, {
+        surface: 'client',
+        operation: 'sync-all-tradovate-accounts',
+      })
     } finally {
       setIsAutoSyncing(false)
     }

@@ -1,4 +1,4 @@
-import logger from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 export interface RithmicCredentialSet {
   id: string // unique identifier for this credential set
   credentials: {
@@ -27,7 +27,7 @@ export function saveRithmicData(data: RithmicCredentialSet): void {
     }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData))
   } catch (error) {
-    logger.error({ event: 'system_error', error: error }, 'Failed to save Rithmic data:')
+    reportError(error, { surface: 'client', operation: 'save-rithmic-credentials' })
   }
 }
 
@@ -36,7 +36,7 @@ export function getRithmicData(id: string): RithmicCredentialSet | null {
     const allData = getAllRithmicData()
     return allData[id] || null
   } catch (error) {
-    logger.error({ event: 'system_error', error: error }, 'Failed to retrieve Rithmic data:')
+    reportError(error, { surface: 'client', operation: 'read-rithmic-credentials' })
     return null
   }
 }
@@ -72,7 +72,7 @@ export function getAllRithmicData(): Record<string, RithmicCredentialSet> {
     
     return validatedData
   } catch (error) {
-    logger.error({ event: 'system_error', error: error }, 'Failed to retrieve all Rithmic data:')
+    reportError(error, { surface: 'client', operation: 'read-all-rithmic-credentials' })
     // If there's an error, clear the corrupted data
     localStorage.removeItem(STORAGE_KEY)
     return {}
@@ -89,7 +89,7 @@ export function clearRithmicData(id?: string): void {
       localStorage.removeItem(STORAGE_KEY)
     }
   } catch (error) {
-    logger.error({ event: 'system_error', error: error }, 'Failed to clear Rithmic data:')
+    reportError(error, { surface: 'client', operation: 'clear-rithmic-credentials' })
   }
 }
 
@@ -103,7 +103,7 @@ export function updateLastSyncTime(id: string): void {
       })
     }
   } catch (error) {
-    logger.error({ event: 'system_error', error: error }, 'Failed to update last sync time:')
+    reportError(error, { surface: 'client', operation: 'update-rithmic-sync-time' })
   }
 }
 

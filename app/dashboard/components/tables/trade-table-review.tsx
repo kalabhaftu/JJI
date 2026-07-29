@@ -60,7 +60,7 @@ import { DataTableColumnHeader } from './column-header'
 import TradeChartModal from './trade-chart-modal'
 import TradeReplayModal from './trade-replay-modal'
 import { TradeTableMobileCard } from './trade-table-mobile-card'
-import { logger } from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 
 export interface ExtendedTrade extends Omit<Trade, 'tags'> {
   tags: string[]
@@ -695,7 +695,10 @@ export function TradeTableReview() {
       tableRef.current?.resetRowSelection()
       setSelectedTrades([])
     } catch (error) {
-      logger.error({ err: error }, 'Failed to bulk tag trades:')
+      reportError(error, {
+        surface: 'client',
+        operation: 'bulk-tag-trades',
+      })
     }
   }, [selectedTrades, appendTagsToTrades])
 

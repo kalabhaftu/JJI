@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode } from 'react'
 import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
+import { reportError } from '@/lib/observability/report-error'
 
 /** Client-safe subset of Synchronization (token stripped, replaced with hasToken) */
 export interface DxFeedSyncAccount {
@@ -158,7 +159,11 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
         const errorMsg = `Sync error for account ${accountId}: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
-        console.error('Sync error:', error)
+        reportError(error, {
+          surface: 'client',
+          operation: 'sync-dxfeed-account',
+          entityId: accountId,
+        })
         return { success: false, message: errorMsg }
       }
     },
@@ -181,7 +186,10 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     } catch (error) {
-      console.error('Error during bulk sync:', error)
+      reportError(error, {
+        surface: 'client',
+        operation: 'sync-all-dxfeed-accounts',
+      })
     } finally {
       isAutoSyncingRef.current = false
       setIsAutoSyncing(false)

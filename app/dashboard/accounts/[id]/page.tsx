@@ -206,7 +206,7 @@ export default function LiveAccountDetailPage() {
 
       const data = await response.json()
       if (!data.success) {
-        throw new Error(data.error || 'Failed to fetch account data')
+        throw new Error(data.error?.message || 'Failed to fetch account data')
       }
 
       const accountData = data.data
@@ -561,4 +561,3 @@ export default function LiveAccountDetailPage() {
     </div>
   )
 }
-

@@ -1,8 +1,9 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import yahooFinance from 'yahoo-finance2';
 import { getUserIdSafe } from '@/server/auth';
+import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const userId = await getUserIdSafe();
     if (!userId) {
@@ -69,8 +70,8 @@ export async function GET(request: Request) {
 
     return NextResponse.json(ohlcData)
 
-  } catch (error: any) {
-    console.error('Yahoo Finance API Error:', error)
-    return NextResponse.json({ error: error.message || 'Failed to fetch market data' }, { status: 500 })
+  } catch (error) {
+    reportApiHandlerError(request, error, 'fetch-market-data')
+    return NextResponse.json({ error: 'Failed to fetch market data' }, { status: 500 })
   }
 }

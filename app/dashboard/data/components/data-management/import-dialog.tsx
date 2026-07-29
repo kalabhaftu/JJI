@@ -33,6 +33,50 @@ export function ImportDialog() { // Kept name for compatibility
   const [importResults, setImportResults] = useState<any>(null)
   const [importJob, setImportJob] = useState<ImportJobResponse | null>(null)
 
+  const waitForImportCompletion = async (initialJob: ImportJobResponse) => {
+    const isTerminal = (status: string) =>
+      status === 'completed' || status === 'failed' || status === 'cancelled'
+    let latestJob = initialJob
+
+    while (!isTerminal(latestJob.status)) {
+      const processResponse = await apiRequest<{
+        job: ImportJobResponse
+        done: boolean
+      }>(`/api/v1/data/import/jobs/${latestJob.id}/process`, {
+        method: 'POST'
+      })
+      if (!processResponse.data?.job) throw new Error('Restore processing failed')
+      latestJob = processResponse.data.job
+      setImportJob(latestJob)
+
+      if (!isTerminal(latestJob.status)) {
+        await new Promise(resolve => setTimeout(resolve, 400))
+      }
+    }
+
+    if (latestJob.status === 'cancelled') {
+      toast.info('Restore cancelled', {
+        description: 'Restore job was cancelled before completion.'
+      })
+      return
+    }
+    if (latestJob.status === 'failed') {
+      throw new Error(latestJob.error || 'Restore job failed')
+    }
+
+    setImportResults({
+      imported: latestJob.importedCount || 0,
+      skipped: latestJob.skippedCount || 0
+    })
+    toast.success('System Restore Complete!', {
+      description: `Restored ${latestJob.importedCount || 0} trades. Skipped ${latestJob.skippedCount || 0} duplicates.`
+    })
+    setTimeout(() => {
+      refreshTrades()
+      refetchAccounts()
+    }, 1000)
+  }
+
   const handleImport = async () => {
     if (!selectedFile) return
 
@@ -55,57 +99,32 @@ export function ImportDialog() { // Kept name for compatibility
       const createdJob = createJobResponse.data?.job
       if (!createdJob) throw new Error('Failed to create restore job')
       setImportJob(createdJob)
-
-      const isTerminal = (status: string) =>
-        status === 'completed' || status === 'failed' || status === 'cancelled'
-
-      let latestJob = createdJob
-
-      while (!isTerminal(latestJob.status)) {
-        const processResponse = await apiRequest<{
-          job: ImportJobResponse
-          done: boolean
-        }>(`/api/v1/data/import/jobs/${latestJob.id}/process`, {
-          method: 'POST'
-        })
-        if (!processResponse.data?.job) throw new Error('Restore processing failed')
-        latestJob = processResponse.data.job
-        setImportJob(latestJob)
-
-        if (!isTerminal(latestJob.status)) {
-          await new Promise(resolve => setTimeout(resolve, 400))
-        }
-      }
-
-      if (latestJob.status === 'cancelled') {
-        toast.info('Restore cancelled', {
-          description: 'Restore job was cancelled before completion.'
-        })
-        return
-      }
-
-      if (latestJob.status === 'failed') {
-        throw new Error(latestJob.error || 'Restore job failed')
-      }
-
-      setImportResults({
-        imported: latestJob.importedCount || 0,
-        skipped: latestJob.skippedCount || 0
-      })
-
-      toast.success('System Restore Complete!', {
-        description: `Restored ${latestJob.importedCount || 0} trades. Skipped ${latestJob.skippedCount || 0} duplicates.`
-      })
-
-      // Refresh data
-      setTimeout(() => {
-        refreshTrades()
-        refetchAccounts()
-      }, 1000)
+      await waitForImportCompletion(createdJob)
 
     } catch (error) {
       toast.error('Restore Failed', {
         description: error instanceof Error ? error.message : 'An unexpected error occurred'
+      })
+    } finally {
+      setIsImporting(false)
+    }
+  }
+
+  const handleResumeImport = async () => {
+    if (!importJob?.id || !['failed', 'cancelled'].includes(importJob.status)) return
+    try {
+      setIsImporting(true)
+      setImportResults(null)
+      const response = await apiRequest<{ job: ImportJobResponse }>(
+        `/api/v1/data/import/jobs/${importJob.id}/resume`,
+        { method: 'POST' },
+      )
+      if (!response.data?.job) throw new Error('Resume returned no import job')
+      setImportJob(response.data.job)
+      await waitForImportCompletion(response.data.job)
+    } catch (error) {
+      toast.error('Resume Failed', {
+        description: error instanceof Error ? error.message : 'Unable to resume restore job',
       })
     } finally {
       setIsImporting(false)
@@ -257,6 +276,11 @@ export function ImportDialog() { // Kept name for compatibility
             {isImporting ? (
               <Button variant="destructive" onClick={handleCancelImport}>
                 Cancel Restore
+              </Button>
+            ) : importJob && ['failed', 'cancelled'].includes(importJob.status) ? (
+              <Button onClick={handleResumeImport}>
+                <RotateCcw className="mr-2 h-4 w-4" />
+                Resume Restore
               </Button>
             ) : (
               <Button variant="ghost" onClick={handleClose}>

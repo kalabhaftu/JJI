@@ -19,6 +19,7 @@ import {
   RithmicCredentialSet,
   updateLastSyncTime,
 } from "@/lib/rithmic-storage";
+import { reportError } from '@/lib/observability/report-error'
 import {
   Dialog,
   DialogContent,
@@ -109,7 +110,11 @@ export function RithmicCredentialsManager({
       const result = await response.json();
       setSynchronizations(result.data || []);
     } catch (error) {
-      logger.error("Error fetching synchronizations: " + (error instanceof Error ? error.message : String(error)));
+      reportError(error, {
+        surface: 'client',
+        operation: 'list-rithmic-connections',
+        route: '/api/v1/rithmic/synchronizations',
+      })
       toast.error("Failed to load synchronizations");
     } finally {
       setIsLoadingSynchronizations(false);
@@ -141,7 +146,11 @@ export function RithmicCredentialsManager({
         }
       } catch (error) {
         toast.error("Synchronization failed");
-        logger.error("Sync error: " + (error instanceof Error ? error.message : String(error)));
+        reportError(error, {
+          surface: 'client',
+          operation: 'sync-rithmic-connection',
+          entityId: credential.id,
+        })
       } finally {
         setSyncingId(null);
       }
@@ -189,7 +198,11 @@ export function RithmicCredentialsManager({
         updateLastSyncTime(credential.id);
       } catch (error) {
         toast.error("Synchronization failed");
-        logger.error("Load more data error: " + (error instanceof Error ? error.message : String(error)));
+        reportError(error, {
+          surface: 'client',
+          operation: 'load-more-rithmic-data',
+          entityId: credential.id,
+        })
       } finally {
         setSyncingId(null);
       }
@@ -225,7 +238,12 @@ export function RithmicCredentialsManager({
         );
         toast.success("Synchronization connection removed");
       } catch (error) {
-        logger.error("Error deleting synchronization: " + (error instanceof Error ? error.message : String(error)));
+        reportError(error, {
+          surface: 'client',
+          operation: 'delete-rithmic-connection',
+          route: '/api/v1/rithmic/synchronizations',
+          entityId: accountId,
+        })
         toast.error("Failed to delete synchronization");
       } finally {
         setDeletingSyncId(null);

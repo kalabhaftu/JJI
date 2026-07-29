@@ -116,7 +116,9 @@ export const usePropFirmStore = create<PropFirmStore>((set, get) => ({
       const params = new URLSearchParams({ resetTimezone })
       const accountResponse = await fetch(`/api/v1/prop-firm/accounts/${id}?${params.toString()}`)
       const accountJson = await accountResponse.json()
-      if (!accountResponse.ok || !accountJson.success) throw new Error(accountJson.error || 'Failed to load prop firm account')
+      if (!accountResponse.ok || !accountJson.success) {
+        throw new Error(accountJson.error?.message || 'Failed to load prop firm account')
+      }
 
       set((state) => ({
         cache: {

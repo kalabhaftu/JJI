@@ -9,8 +9,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
+import { reportError } from '@/lib/observability/report-error'
+import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function GET(request: NextRequest) {
+  const requestId = resolveRequestId(request.headers)
   // Set a very short timeout since this is just a fallback check
   const controller = new AbortController()
   const timeoutId = setTimeout(() => controller.abort(), 500) // 500ms timeout
@@ -21,6 +24,12 @@ export async function GET(request: NextRequest) {
     const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
     if (!supabaseUrl || !supabaseKey) {
+      reportError(new Error('Supabase auth configuration is unavailable'), {
+        surface: 'api',
+        operation: 'check-auth-configuration',
+        route: request.nextUrl.pathname,
+        requestId,
+      })
       return NextResponse.json(
         { error: 'Configuration error' },
         { status: 500 }
@@ -92,6 +101,12 @@ export async function GET(request: NextRequest) {
       }
 
       if (error.message.includes('fetch failed') || error.message.includes('ConnectTimeoutError')) {
+        reportError(error, {
+          surface: 'api',
+          operation: 'check-auth-network',
+          route: request.nextUrl.pathname,
+          requestId,
+        })
         return NextResponse.json(
           { error: 'Network error' },
           { status: 503 }
@@ -99,6 +114,12 @@ export async function GET(request: NextRequest) {
       }
     }
 
+    reportError(error, {
+      surface: 'api',
+      operation: 'check-auth',
+      route: request.nextUrl.pathname,
+      requestId,
+    })
     return NextResponse.json(
       { error: 'Auth check failed' },
       { status: 500 }

@@ -195,7 +195,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
             message: result.error || 'Account name already exists'
           })
         }
-        throw new Error(result.error || 'Failed to create account')
+        throw new Error(result.error?.message || 'Failed to create account')
       }
 
       toast.success("Account created!", {
@@ -741,4 +741,3 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
     </>
   )
 }
-

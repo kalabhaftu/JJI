@@ -144,10 +144,7 @@ export function useTradingModels(filters?: TradingModelFilters) {
       const response = await fetch(`/api/v1/user/trading-models${buildTradingModelQuery(filters)}`)
       if (!response.ok) throw new Error('Failed to fetch trading models')
       const data = await response.json()
-      // API shape: { success: true, models: [...] }
-      if (Array.isArray(data)) return data
-      if (Array.isArray(data?.models)) return data.models
-      if (Array.isArray(data?.tradingModels)) return data.tradingModels
+      if (Array.isArray(data?.data?.models)) return data.data.models
       return []
     },
     staleTime: 5 * 60 * 1000,

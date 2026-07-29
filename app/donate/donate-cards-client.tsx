@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Heart, Copy, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { getTokenMeta } from '@/lib/constants/crypto-tokens'
+import { reportError } from '@/lib/observability/report-error'
 
 interface DonationAddr {
   token: string
@@ -25,7 +26,11 @@ export function DonateCardsClient() {
       .then(r => r.json())
       .then(data => { if (data.success) setAddresses(data.data) })
       .catch((e) => {
-        console.error('Failed to load crypto addresses', e)
+        reportError(e, {
+          surface: 'client',
+          operation: 'load-donation-addresses',
+          route: '/api/v1/donations',
+        })
       })
       .finally(() => setLoading(false))
   }, [])
@@ -36,7 +41,11 @@ export function DonateCardsClient() {
       setCopiedIndex(index)
       toast.success('Address copied!')
       setTimeout(() => setCopiedIndex(null), 2000)
-    } catch {
+    } catch (error) {
+      reportError(error, {
+        surface: 'client',
+        operation: 'copy-donation-address',
+      })
       toast.error('Failed to copy')
     }
   }

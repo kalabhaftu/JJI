@@ -38,7 +38,7 @@ import {
 import MonthlyView from "./monthly-view"
 import YearlyView from "./yearly-view"
 import { Logo } from "@/components/logo"
-import { logger } from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 
 const formatCompact = (value: number) => {
   if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(1)}k`
@@ -156,7 +156,10 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
         toast.success("Screenshot saved!")
       }, 'image/png')
     } catch (err) {
-      logger.error(err)
+      reportError(err, {
+        surface: 'client',
+        operation: 'capture-calendar-screenshot',
+      })
       toast.error("Failed to capture screenshot")
     }
   }, [currentDate])

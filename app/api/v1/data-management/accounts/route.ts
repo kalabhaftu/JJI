@@ -3,7 +3,6 @@ import { db } from '@/lib/db/client'
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
 import * as schema from '@/lib/db/schema'
 import { and, eq } from 'drizzle-orm'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
@@ -115,7 +114,12 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error: any) {
-    logger.error('Data management accounts API failed', error, 'Data Management Accounts')
+    reportError(error, {
+      surface: 'api',
+      operation: 'list-data-management-accounts',
+      route: request.nextUrl.pathname,
+      requestId: resolveRequestId(request.headers),
+    })
     return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
   }
 }

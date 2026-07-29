@@ -3,7 +3,6 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { z } from "zod"
 
 import { ensureUserInDatabase } from "@/server/auth"
-import { logger } from '@/lib/logger';
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
@@ -34,9 +33,6 @@ export async function POST(request: NextRequest) {
   const parsed = restoreSessionSchema.safeParse(body)
 
   if (!parsed.success) {
-    if (process.env.NODE_ENV !== "production") {
-      logger.error("Session restore schema validation failed: " + JSON.stringify(parsed.error.format()) + " Body received: " + JSON.stringify(body))
-    }
     return NextResponse.json({ authenticated: false, error: "invalid_tokens" }, { status: 400 })
   }
 

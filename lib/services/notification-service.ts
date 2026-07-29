@@ -185,7 +185,10 @@ export async function createRiskAlert(
                     to: user.email,
                     subject: `Prop Firm Rule Breach Detected: ${metadata.accountName}`,
                     html: `<p>Your prop firm account <strong>${escapeHtml(metadata.accountName)}</strong> has breached the ${escapeHtml(breachTypeStr)}.</p>
-                           <p>Current: $${metadata.used.toFixed(2)} / Limit: $${metadata.limit.toFixed(2)} (${currentPercentage.toFixed(1)}%)</p>`
+                           <p>Current: $${metadata.used.toFixed(2)} / Limit: $${metadata.limit.toFixed(2)} (${currentPercentage.toFixed(1)}%)</p>`,
+                    idempotencyKey: `risk-breach/${phaseAccountId}/${riskType}`,
+                    operation: 'send-risk-breach-email',
+                    entityId: phaseAccountId,
                 })
             }
          } catch (error) {

@@ -258,7 +258,7 @@ export default function SettingsPage() {
         const result = await response.json()
 
         if (!response.ok || !result.success) {
-          throw new Error(result.error || 'Failed to load profile')
+          throw new Error(result.error?.message || 'Failed to load profile')
         }
 
         const nextFirstName = result.data.firstName || ''
@@ -322,7 +322,7 @@ export default function SettingsPage() {
           duration: 3000
         })
       } else {
-        throw new Error(result.error || 'Update failed')
+        throw new Error(result.error?.message || 'Update failed')
       }
     } catch (error) {
       toast.error("Update failed", {
@@ -367,7 +367,7 @@ export default function SettingsPage() {
       const result = await response.json()
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to save Auto-adjust Account Date preference')
+        throw new Error(result.error?.message || 'Failed to save Auto-adjust Account Date preference')
       }
 
       setProfileData(prev => ({
@@ -406,7 +406,7 @@ export default function SettingsPage() {
 
       const result = await response.json()
       if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to update break-even threshold')
+        throw new Error(result.error?.message || 'Failed to update break-even threshold')
       }
 
       const next = typeof result.data?.breakEvenThreshold === 'number'
@@ -446,7 +446,7 @@ export default function SettingsPage() {
       const result = await response.json()
 
       if (!response.ok || !result.success) {
-        throw new Error(result.error || 'Failed to update P&L display mode')
+        throw new Error(result.error?.message || 'Failed to update P&L display mode')
       }
 
         setProfileData(prev => ({
@@ -494,7 +494,7 @@ export default function SettingsPage() {
       const result = await response.json()
 
       if (!result.success) {
-        throw new Error(result.error || 'Failed to update AI preferences')
+        throw new Error(result.error?.message || 'Failed to update AI preferences')
       }
 
       toast.success('AI preferences updated', {
@@ -531,7 +531,7 @@ export default function SettingsPage() {
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to delete account')
+        throw new Error(result.error?.message || 'Failed to delete account')
       }
 
       toast.success("Account deleted", {

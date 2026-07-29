@@ -64,7 +64,7 @@ export function FeedbackFormClient() {
       if (data.success) {
         setSubmitted(true)
       } else {
-        toast.error(data.error || 'Failed to submit feedback')
+        toast.error(data.error?.message || 'Failed to submit feedback')
       }
     } catch {
       toast.error('Something went wrong. Please try again.')

@@ -181,6 +181,10 @@ export async function POST(req: NextRequest) {
         html: `<p>Thanks for taking the time to help improve JJI.</p>
           <p>We received <strong>${safeSubject}</strong>. Your feedback is now in the support queue and we will follow up if a reply is needed.</p>
           <p>- The JJI team</p>`,
+        idempotencyKey: `feedback-received/${feedback.id}`,
+        operation: 'send-feedback-receipt',
+        requestId,
+        entityId: feedback.id,
       })
     }
 

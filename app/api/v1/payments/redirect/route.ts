@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { db } from '@/lib/db/client'
 import { refreshPaymentRecordStatus } from '@/lib/services/subscription-service'
-import { logger } from '@/lib/logger'
+import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 
 const PENDING_PROVIDER_STATUSES = new Set(['pending', 'waiting', 'confirming', 'confirmed', 'sending', 'partially_paid'])
 
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.redirect(record.invoiceUrl!)
   } catch (error) {
-    logger.error({ error, context: 'Payment Redirect' }, 'Payment redirect failed')
+    reportApiHandlerError(request, error, 'resolve-payment-redirect')
     return statusRedirect(request)
   }
 }

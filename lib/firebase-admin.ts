@@ -1,4 +1,5 @@
 import logger from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 import { getApps, initializeApp, cert } from 'firebase-admin/app'
 import { getMessaging } from 'firebase-admin/messaging'
 
@@ -22,7 +23,11 @@ if (!apps.length) {
       logger.warn({ event: 'system_warn' }, 'Firebase admin credentials not found in environment variables.')
     }
   } catch (error) {
-    logger.error({ event: 'system_error', error: error }, 'Firebase admin initialization error:')
+    reportError(error, {
+      surface: 'server',
+      operation: 'initialize-firebase-admin',
+      tags: { provider: 'firebase' },
+    })
   }
 }
 

@@ -113,7 +113,7 @@ export default function AccountSettingsPage() {
           isArchived: accountData.isArchived || false
         })
       } else {
-        throw new Error(data.error || 'Failed to fetch account details')
+        throw new Error(data.error?.message || 'Failed to fetch account details')
       }
     } catch (error) {
       toast.error('Failed to fetch account details', {
@@ -192,7 +192,7 @@ export default function AccountSettingsPage() {
         })
         fetchAccount() // Refresh the data
       } else {
-        throw new Error(data.error || 'Failed to update account')
+        throw new Error(data.error?.message || 'Failed to update account')
       }
     } catch (error) {
       toast.error('Failed to update account', {
@@ -225,7 +225,7 @@ export default function AccountSettingsPage() {
         })
         router.push('/dashboard/prop-firm/accounts')
       } else {
-        throw new Error(data.error || 'Failed to delete account')
+        throw new Error(data.error?.message || 'Failed to delete account')
       }
     } catch (error) {
       toast.error('Failed to delete account', {

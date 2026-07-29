@@ -1,5 +1,5 @@
 import { Resend } from 'resend'
-import logger from '@/lib/logger'
+import { reportError } from '@/lib/observability/report-error'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const from = process.env.RESEND_FROM_EMAIL || 'JJI <onboarding@resend.dev>'
@@ -14,14 +14,45 @@ export function escapeHtml(value: string) {
   })[character] ?? character)
 }
 
-export async function sendEmail(input: { to: string; subject: string; html: string }) {
-  if (!resend) return { skipped: true as const }
+export interface SendEmailInput {
+  to: string
+  subject: string
+  html: string
+  idempotencyKey: string
+  operation: string
+  requestId?: string
+  entityId?: string
+}
+
+export async function sendEmail(input: SendEmailInput) {
+  if (!resend) {
+    return { skipped: true as const, delivered: false as const, providerId: null }
+  }
 
   try {
-    const result = await resend.emails.send({ from, to: [input.to], subject: input.subject, html: input.html })
-    return { skipped: false as const, result }
+    const result = await resend.emails.send(
+      { from, to: [input.to], subject: input.subject, html: input.html },
+      { idempotencyKey: input.idempotencyKey.slice(0, 256) },
+    )
+    if (result.error) {
+      throw new Error(`Resend rejected email delivery: ${result.error.name ?? 'provider_error'}`)
+    }
+    return {
+      skipped: false as const,
+      delivered: true as const,
+      providerId: result.data?.id ?? null,
+    }
   } catch (error) {
-    logger.error({ event: 'email_delivery_failed', error, subject: input.subject, recipientPresent: Boolean(input.to) }, 'Resend email delivery failed')
-    return { skipped: false as const, result: null }
+    reportError(error, {
+      surface: 'background-job',
+      operation: input.operation,
+      ...(input.requestId ? { requestId: input.requestId } : {}),
+      ...(input.entityId ? { entityId: input.entityId } : {}),
+      tags: {
+        provider: 'resend',
+        recipientPresent: Boolean(input.to),
+      },
+    })
+    return { skipped: false as const, delivered: false as const, providerId: null }
   }
 }

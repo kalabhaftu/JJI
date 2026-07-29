@@ -6,7 +6,7 @@ import { useUserStore } from '@/store/user-store'
 import { toast } from 'sonner'
 import { useData } from '@/context/data-provider'
 import { clearAccountsCache } from '@/hooks/use-accounts'
-import { logger } from '@/lib/logger'
+import { reportError } from '@/lib/observability/report-error'
 
 export type TourId = 'onboarding' | 'dashboard' | 'analytics' | 'settings'
 
@@ -628,7 +628,11 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setDbUser(result.data)
       }
     } catch (error) {
-      logger.error({ error }, 'Failed to save onboarding status:')
+      reportError(error, {
+        surface: 'client',
+        operation: 'save-tour-status',
+        route: '/api/auth/profile',
+      })
     }
   }, [storeUser, onboardingStatus, setDbUser])
 
@@ -652,7 +656,10 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await fetch(endpoint, { method: 'DELETE' })
         clearAccountsCache()
       } catch (error) {
-        logger.error({ error }, 'Failed to delete onboarding demo account on skip:')
+        reportError(error, {
+          surface: 'client',
+          operation: 'delete-onboarding-account-on-skip',
+        })
       }
     }
 
@@ -688,7 +695,10 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
           toast.error('Failed to clean up demo account.', { id: toastId })
         }
       } catch (error) {
-        logger.error({ error }, 'Failed to delete onboarding demo account:')
+        reportError(error, {
+          surface: 'client',
+          operation: 'delete-onboarding-account-on-complete',
+        })
         toast.error('Error cleaning up demo account.', { id: toastId })
       }
     }
@@ -798,7 +808,10 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       document.body.removeChild(link)
       toast.success("Sample CSV file downloaded successfully!")
     } catch (e) {
-      logger.error({ error: e }, "Failed to generate sample CSV:")
+      reportError(e, {
+        surface: 'client',
+        operation: 'generate-onboarding-sample-csv',
+      })
     }
   }
 

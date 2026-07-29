@@ -111,7 +111,7 @@ export function PhaseTransitionDialog({
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to transition phase')
+        throw new Error(result.error?.message || 'Failed to transition phase')
       }
 
       toast.success("Phase Transition Successful", {

@@ -56,8 +56,11 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
 
       if (!response.ok) throw new Error('Failed to fetch backtests')
       const data = await response.json()
+      const backtests = Array.isArray(data.data?.backtests)
+        ? data.data.backtests
+        : []
 
-      const transformedBacktests: BacktestTrade[] = data.backtests.map((bt: any) => ({
+      const transformedBacktests: BacktestTrade[] = backtests.map((bt: any) => ({
         id: bt.id,
         pair: bt.pair,
         direction: bt.direction,
@@ -453,4 +456,3 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
     </div>
   )
 }
-

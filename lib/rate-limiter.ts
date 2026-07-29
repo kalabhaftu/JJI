@@ -27,7 +27,7 @@ function reportRateLimitBackendUnavailable(
   failClosed: boolean,
   requestId?: string,
 ) {
-  logger.error({ event: 'rate_limit_backend_unavailable', error: {
+  logger.warn({ event: 'rate_limit_backend_unavailable', backend: {
     has_KV_URL: !!process.env.KV_REST_API_URL,
     has_UPSTASH_URL: !!process.env.UPSTASH_REDIS_REST_URL,
     failClosed,
@@ -103,6 +103,7 @@ const ephemeralCache = new Map()
 
 // ─── Upstash Limiter Instances ───
 const ratelimiterInstances = new Map<string, Ratelimit>()
+const UPSTASH_TIMEOUT_MS = 1_500
 
 function getUpstashLimiter(config: LimiterConfig): Ratelimit {
   const cacheKey = `${config.points}:${config.duration}`
@@ -114,10 +115,43 @@ function getUpstashLimiter(config: LimiterConfig): Ratelimit {
       limiter: Ratelimit.slidingWindow(config.points, `${config.duration} s`),
       ephemeralCache: ephemeralCache,
       analytics: false,
+      timeout: UPSTASH_TIMEOUT_MS,
     })
     ratelimiterInstances.set(cacheKey, limiter)
   }
   return limiter
+}
+
+function isUpstashTimeout(result: unknown): boolean {
+  return Boolean(
+    result
+    && typeof result === 'object'
+    && 'reason' in result
+    && (result as { reason?: unknown }).reason === 'timeout'
+  )
+}
+
+async function consumeUpstashLimit(
+  key: string,
+  limiter: LimiterConfig,
+  requestId?: string,
+) {
+  const result = await getUpstashLimiter(limiter).limit(key)
+  // Upstash intentionally returns success after its timeout. Sensitive JJI
+  // policies must convert that result back into the configured fail-closed
+  // decision instead of silently bypassing enforcement.
+  if (isUpstashTimeout(result)) {
+    return {
+      unavailable: handleUnavailableLimiter(
+        limiter,
+        requestId,
+        new Error(`Upstash rate-limit request exceeded ${UPSTASH_TIMEOUT_MS}ms`),
+      ),
+      result: null,
+    }
+  }
+  backendUnavailableCount = 0
+  return { unavailable: null, result }
 }
 
 // ─── Exported limiter configs (drop-in compatible with existing imports) ───
@@ -177,8 +211,14 @@ export async function consumeRateLimitKey(
   }
 
   try {
-    const upstashLimiter = getUpstashLimiter(limiter)
-    const { success, remaining } = await upstashLimiter.limit(key)
+    const outcome = await consumeUpstashLimit(key, limiter)
+    if (outcome.unavailable) {
+      return {
+        allowed: !outcome.unavailable.failClosed,
+        remaining: outcome.unavailable.remaining,
+      }
+    }
+    const { success, remaining } = outcome.result!
     return { allowed: success, remaining }
   } catch (error) {
     const unavailable = handleUnavailableLimiter(limiter, undefined, error)
@@ -211,8 +251,13 @@ export async function applyRateLimit(
   }
 
   try {
-    const upstashLimiter = getUpstashLimiter(limiter)
-    const { success, limit, remaining, reset } = await upstashLimiter.limit(identifier)
+    const outcome = await consumeUpstashLimit(identifier, limiter, requestId)
+    if (outcome.unavailable) {
+      return outcome.unavailable.failClosed
+        ? rateLimitUnavailableResponse(requestId)
+        : null
+    }
+    const { success, limit, remaining, reset } = outcome.result!
 
     if (!success) {
       return ErrorResponses.rateLimited(

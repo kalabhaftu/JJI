@@ -18,6 +18,7 @@ import {
 } from '@/app/dashboard/components/import/tradovate/sync/fee-types'
 import { logger as baseLogger } from '@/lib/logger';
 import { DIRECT_SYNC_STATUS, directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
+import { reportError } from '@/lib/observability/report-error'
 
 
 function formatDateForAPI(date: Date): string {
@@ -62,7 +63,12 @@ const logger = {
     baseLogger.warn(`[TRADOVATE] ${message}`, error)
   },
   error: (message: string, error?: any) => {
-    baseLogger.error(`[TRADOVATE] ${message}`, error)
+    reportError(error instanceof Error ? error : new Error(message), {
+      surface: 'server',
+      operation: 'tradovate-integration',
+      tags: { provider: 'tradovate' },
+      extra: { failure: message },
+    })
   }
 }
 

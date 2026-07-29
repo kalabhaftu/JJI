@@ -3,9 +3,9 @@ import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { saveTradesForUser } from '@/server/trades/save';
 import { eq, and, gte, lte, desc, count } from 'drizzle-orm';
-import { logger } from '@/lib/logger';
 import { consumeRateLimitKey, thorLimiter } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/security/client-ip';
+import { reportApiHandlerError } from '@/lib/api/canonical-handler';
 
 // Common authentication function to use across all methods
 async function authenticateRequest(req: NextRequest) {
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
-    logger.error('[thor/store] Error processing request: ' + error)
+    reportApiHandlerError(req, error, 'store-thor-trades')
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -230,10 +230,10 @@ export async function GET(req: NextRequest) {
     }, { status: 200 });
     
   } catch (error) {
-    logger.error('[thor/store] Error retrieving trades: ' + error);
+    reportApiHandlerError(req, error, 'list-thor-trades');
     return NextResponse.json({ 
       error: 'Failed to retrieve trades', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
+      details: 'Internal server error'
     }, { status: 500 });
   }
 }
@@ -276,10 +276,10 @@ export async function DELETE(req: NextRequest) {
     }, { status: 200 });
     
   } catch (error) {
-    logger.error('[thor/store] Error deleting trades: ' + error);
+    reportApiHandlerError(req, error, 'delete-thor-trades');
     return NextResponse.json({ 
       error: 'Failed to delete trades', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
+      details: 'Internal server error'
     }, { status: 500 });
   }
 }

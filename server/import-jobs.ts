@@ -153,6 +153,82 @@ export async function cancelImportJob(jobId: string, internalUserId: string) {
   return { job: serializeImportJob(updated), status: 200 as const }
 }
 
+export async function resumeImportJob(
+  jobId: string,
+  internalUserId: string,
+  context: { requestId?: string; source: 'api' | 'background-job' },
+) {
+  const current = await db.query.ImportJob.findFirst({
+    where: (table, { and, eq }) => and(
+      eq(table.id, jobId),
+      eq(table.userId, internalUserId),
+    ),
+  })
+  if (!current) {
+    return { error: 'Import job not found', status: 404 as const }
+  }
+  if (current.status !== 'failed' && current.status !== 'cancelled') {
+    return {
+      error: 'Only failed or cancelled import jobs can be resumed',
+      status: 409 as const,
+    }
+  }
+
+  const persistedState = current.state && typeof current.state === 'object'
+    ? current.state as Record<string, unknown>
+    : {}
+  const archivePhase = parseJobState(current.state).phase
+  const resumeStage = persistedState.kind === 'trade_import'
+    ? 'trades'
+    : archivePhase === 'completed'
+      ? 'preparing'
+      : archivePhase
+
+  const updated = await db.transaction(async (tx) => {
+    const [resumed] = await tx.update(schema.ImportJob).set({
+      status: 'queued',
+      stage: resumeStage,
+      cancelRequested: false,
+      error: null,
+      completedAt: null,
+      workerToken: null,
+      leaseExpiresAt: null,
+      eventId: null,
+      updatedAt: new Date(),
+    }).where(and(
+      eq(schema.ImportJob.id, jobId),
+      eq(schema.ImportJob.userId, internalUserId),
+      eq(schema.ImportJob.status, current.status),
+    )).returning()
+    if (!resumed) {
+      throw new Error('Import job changed before it could be resumed')
+    }
+
+    await recordAuditEvent({
+      userId: internalUserId,
+      action: 'DATA_IMPORT_RESUMED',
+      entityType: 'ImportJob',
+      entityId: jobId,
+      source: context.source,
+      requestId: context.requestId ?? null,
+      beforeData: {
+        status: current.status,
+        stage: current.stage,
+        progress: current.progress,
+      },
+      afterData: {
+        status: resumed.status,
+        stage: resumed.stage,
+        progress: resumed.progress,
+      },
+    }, tx as never)
+
+    return resumed
+  })
+
+  return { job: serializeImportJob(updated), status: 200 as const }
+}
+
 export async function processImportJobChunk(
   jobId: string,
   internalUserId: string,

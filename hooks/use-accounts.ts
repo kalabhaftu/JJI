@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
-import logger from '@/lib/logger'
+import { reportError } from '@/lib/observability/report-error'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 
 interface UnifiedAccount {
@@ -52,7 +52,10 @@ function broadcastAccountsUpdate() {
     try {
       callback()
     } catch (error) {
-      logger.error({ error }, 'Account cache subscriber failed')
+      reportError(error, {
+        surface: 'client',
+        operation: 'notify-account-cache-subscriber',
+      })
     }
   })
 }

@@ -16,6 +16,7 @@ import { useTradesStore } from "@/store/trades-store";
 import { getUserId } from "@/server/auth";
 import { useUserStore } from "@/store/user-store";
 import logger from "@/lib/logger";
+import { reportError } from '@/lib/observability/report-error'
 
 interface RithmicCredentials {
   username: string;
@@ -447,7 +448,10 @@ export function RithmicSyncContextProvider({
           const message = JSON.parse(event.data);
           handleMessage(message);
         } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
+          reportError(error, {
+            surface: 'client',
+            operation: 'parse-rithmic-websocket-message',
+          })
           const errorMessage =
             error instanceof Error ? error.message : "Unknown error";
           setConnectionStatus(`Failed to parse message: ${errorMessage}`);
@@ -460,7 +464,10 @@ export function RithmicSyncContextProvider({
       };
 
       newWs.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        reportError(error, {
+          surface: 'client',
+          operation: 'rithmic-websocket-error',
+        })
         setConnectionStatus("WebSocket error occurred");
         handleMessage({
           type: "connection_status",
@@ -657,7 +664,11 @@ export function RithmicSyncContextProvider({
           message: "Sync started successfully",
         };
       } catch (error) {
-        console.error("Auto-sync error:", error);
+        reportError(error, {
+          surface: 'client',
+          operation: 'auto-sync-rithmic-credential',
+          entityId: credentialId,
+        })
         handleMessage({
           type: "log",
           level: "error",

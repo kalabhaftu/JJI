@@ -4,7 +4,7 @@ import * as schema from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { applyRateLimit, publicLimiter } from '@/lib/rate-limiter'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { logger } from '@/lib/logger'
+import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     })
     return response
   } catch (error) {
-    logger.error('Shared report view count failed' + ' : ' + error)
+    reportApiHandlerError(request, error, 'record-shared-report-view')
     return createErrorResponse('Internal server error', 500)
   }
 }

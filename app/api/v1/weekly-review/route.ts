@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentity } from '@/server/user-identity'
@@ -27,7 +28,7 @@ const weeklyReviewResultSchema = z.object({
   focusNextWeek: z.string().trim().min(1).max(1_000),
 }).strict()
 
-export async function GET(request: NextRequest) {
+async function getWeeklyReviews(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -72,15 +73,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: reviews })
   } catch (error: any) {
-    logger.error({ error: error?.message, layer: 'api' }, 'GET /api/v1/weekly-review failed')
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    reportApiHandlerError(request, error, 'list-weekly-reviews')
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
+async function createWeeklyReview(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -355,7 +356,7 @@ RULES:
         }
         aiResult = weeklyReviewResultSchema.parse(cleanContent(JSON.parse(jsonMatch[0])))
     } catch (error) {
-      logger.error({ error, layer: 'ai' }, 'Weekly review generation failed')
+      reportApiHandlerError(request, error, 'generate-weekly-review')
       return NextResponse.json(
         { error: 'AI review generation failed', code: 'AI_PROVIDER_ERROR' },
         { status: 502 },
@@ -392,7 +393,6 @@ RULES:
     logger.info({ latencyMs: Date.now() - start, grade: aiResult.grade, layer: 'api' }, 'POST /api/v1/weekly-review')
     return NextResponse.json({ success: true, data: review })
   } catch (error: any) {
-    logger.error({ error: error?.message, latencyMs: Date.now() - start, layer: 'api' }, 'POST /api/v1/weekly-review failed')
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -406,6 +406,10 @@ RULES:
       })
       return NextResponse.json({ success: true, data: existing, cached: true })
     }
+    reportApiHandlerError(request, error, 'create-weekly-review')
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
+
+export const GET = withCanonicalApiResponse(getWeeklyReviews)
+export const POST = withCanonicalApiResponse(createWeeklyReview)

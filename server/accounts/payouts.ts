@@ -4,10 +4,9 @@ import { recordAuditEvent } from '@/lib/audit-logger'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
-import { NotificationService } from '@/server/services/notification-service'
 import { invalidateUserAccountCaches } from '@/server/accounts/cache'
+import { notifyPayoutRequested } from '@/server/accounts/notifications'
 import { DomainError } from '@/lib/domain-error'
-import { reportError } from '@/lib/observability/report-error'
 
 export interface PayoutRequestInput {
   masterAccountId: string
@@ -139,26 +138,13 @@ export async function savePayoutForUser(
   })
 
   await invalidateUserAccountCaches(userId, context.requestId)
-  try {
-    await NotificationService.send({
-      userId,
-      type: 'SYSTEM',
-      title: 'Payout Requested',
-      message: `Request for $${payout.amount.toFixed(2)} submitted.`,
-      data: {
-        payoutId: newPayout.id,
-        amount: payout.amount,
-        phaseAccountId: payout.phaseAccountId,
-      },
-    })
-  } catch (error) {
-    reportError(error, {
-      surface: 'server',
-      operation: 'notify-payout-created',
-      entityId: newPayout.id,
-      ...(context.requestId ? { requestId: context.requestId } : {}),
-    })
-  }
+  await notifyPayoutRequested({
+    userId,
+    payoutId: newPayout.id,
+    phaseAccountId: payout.phaseAccountId,
+    amount: payout.amount,
+    ...(context.requestId ? { requestId: context.requestId } : {}),
+  })
 
   return {
     success: true,

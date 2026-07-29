@@ -89,7 +89,7 @@ export default function AccountPayoutsPage() {
       if (data.success) {
         setAccount(data.data.account)
       } else {
-        throw new Error(data.error || 'Failed to fetch account details')
+        throw new Error(data.error?.message || 'Failed to fetch account details')
       }
     } catch (error) {
       toast.error('Failed to fetch account details', {
@@ -112,7 +112,7 @@ export default function AccountPayoutsPage() {
       if (data.success) {
         setPayouts(data.data)
       } else {
-        throw new Error(data.error || 'Failed to fetch payouts')
+        throw new Error(data.error?.message || 'Failed to fetch payouts')
       }
     } catch (error) {
       toast.error('Failed to fetch payouts', {
@@ -177,7 +177,7 @@ export default function AccountPayoutsPage() {
         toast.success('Payout request deleted successfully')
         fetchPayouts()
       } else {
-        throw new Error(data.error || 'Failed to delete payout')
+        throw new Error(data.error?.message || 'Failed to delete payout')
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to delete payout')

@@ -15,6 +15,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { useData } from "@/context/data-provider"
 import { useAccountFilterSettings } from "@/hooks/use-account-filter-settings"
 import { toast } from "sonner"
+import { reportError } from '@/lib/observability/report-error'
 
 interface AccountSelectorProps {
   onSave?: () => void
@@ -264,10 +265,17 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       })
 
       setAccountNumbers(accountNumbersToSave)
-      refreshTrades().catch((e) => { console.error('Failed to refresh trades', e) })
+      refreshTrades().catch((error) => reportError(error, {
+        surface: 'client',
+        operation: 'refresh-trades-after-account-filter',
+      }))
       toast.success(`${selectedAccounts.size} account(s) selected`)
       onSave?.()
-    } catch {
+    } catch (error) {
+      reportError(error, {
+        surface: 'client',
+        operation: 'save-account-filter-selection',
+      })
       toast.error("Failed to save account selection")
     }
   }
@@ -311,10 +319,17 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     try {
       await updateSettings({ selectedAccounts: [], selectedPhaseAccountIds: [] })
       setAccountNumbers([])
-      refreshTrades().catch((e) => { console.error('Failed to refresh trades', e) })
+      refreshTrades().catch((error) => reportError(error, {
+        surface: 'client',
+        operation: 'refresh-trades-after-account-filter-clear',
+      }))
       toast.success("Selection cleared")
       onSave?.()
-    } catch {
+    } catch (error) {
+      reportError(error, {
+        surface: 'client',
+        operation: 'clear-account-filter-selection',
+      })
       toast.error("Failed to clear selection")
     }
   }

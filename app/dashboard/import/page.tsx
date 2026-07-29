@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
 import logger from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 import { apiRequest } from '@/lib/api/client';
 
 export default function ImportCallbackPage() {
@@ -125,23 +126,28 @@ export default function ImportCallbackPage() {
 
         // Defensive programming: ensure result is an object
         if (!result || typeof result !== "object") {
-          logger.error("Invalid result from handleTradovateCallback:", result);
+          reportError(new Error('Invalid OAuth callback response'), {
+            surface: 'client',
+            operation: 'complete-tradovate-oauth',
+            route: '/api/v1/tradovate/oauth/callback',
+          })
           setError("Invalid response from OAuth callback handler");
           setStatus("error");
           return;
         }
 
         if (result.error) {
-          logger.error({ error: result.error }, "OAuth callback error:");
-          setError(result.error);
+          setError(result.error || 'Import failed');
           setStatus("error");
           return;
         }
 
         if (!result?.connected) {
-          logger.error({
-            connected: result?.connected,
-          }, "OAuth token exchange did not complete:");
+          reportError(new Error('OAuth token exchange did not complete'), {
+            surface: 'client',
+            operation: 'complete-tradovate-oauth',
+            route: '/api/v1/tradovate/oauth/callback',
+          })
           setError("OAuth connection did not complete");
           setStatus("error");
           return;
@@ -167,12 +173,11 @@ export default function ImportCallbackPage() {
           router.push("/dashboard");
         }, 1000);
       } catch (error) {
-        logger.error({
-          error: error instanceof Error ? error.message : "Unknown error",
-          stack: error instanceof Error ? error.stack : undefined,
-          errorType: typeof error,
-          errorString: String(error),
-        }, "OAuth callback error:");
+        reportError(error, {
+          surface: 'client',
+          operation: 'complete-tradovate-oauth',
+          route: '/api/v1/tradovate/oauth/callback',
+        })
 
         let errorMessage = "Unknown error occurred";
         if (error instanceof Error) {

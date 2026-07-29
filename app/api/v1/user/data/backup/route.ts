@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
-import { logger } from '@/lib/logger'
+import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 import { db } from '@/lib/db/client'
 import { format } from 'date-fns'
 import { USER_SETTINGS_SELECT, mergeUserSettings } from '@/lib/user-settings'
@@ -211,7 +211,7 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    logger.error({ error, layer: 'Backup' }, 'Backup generation failed')
+    reportApiHandlerError(request, error, 'generate-user-data-backup')
     return NextResponse.json(
       { success: false, error: 'Failed to generate backup' },
       { status: 500 }

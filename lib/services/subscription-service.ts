@@ -685,7 +685,12 @@ async function expireAbandonedPayments(userId?: string) {
       const updated = await reconcilePaymentRecord(record.id, record.userId)
       if (updated?.providerStatus === 'expired') expiredCount++
     } catch (error) {
-      logger.error(error, `Failed to expire payment record ${record.id}`, 'Subscription Expiry')
+      reportError(error, {
+        surface: 'background-job',
+        operation: 'expire-abandoned-payment',
+        entityId: record.id,
+        userId: record.userId,
+      })
     }
   }
 
@@ -810,6 +815,10 @@ async function createPaymentNotification(
       ...(options?.invalidationKey ? { invalidationKey: options.invalidationKey } : {}),
     })
   } catch (error) {
-    logger.error(error, 'Failed to create subscription notification', 'Subscription Notification')
+    reportError(error, {
+      surface: 'server',
+      operation: 'create-subscription-notification',
+      userId,
+    })
   }
 }

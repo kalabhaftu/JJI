@@ -7,7 +7,6 @@ import type { Route } from 'next'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, sql } from 'drizzle-orm'
-import logger from '@/lib/logger'
 
 export const safeDbOperation = async <T>(
   operation: () => Promise<T>,
@@ -16,7 +15,10 @@ export const safeDbOperation = async <T>(
   try {
     return await operation()
   } catch (error) {
-    logger.error({ event: 'system_error', error: error }, 'Database operation failed:')
+    reportError(error, {
+      surface: 'server',
+      operation: 'safe-database-operation',
+    })
     return fallbackValue
   }
 }
@@ -662,7 +664,11 @@ export async function verifyOtp(email: string, token: string, type: 'email' | 's
         }
 
       } catch (dbError) {
-        logger.error({ event: 'auth_user_sync_failed', error: dbError }, 'Supabase auth succeeded but user database sync failed')
+        reportError(dbError, {
+          surface: 'server',
+          operation: 'sync-verified-auth-user',
+          userId: verifiedUser.id,
+        })
       }
 
       const internalUser = await db.query.User.findFirst({

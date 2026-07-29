@@ -32,7 +32,17 @@ Configure native alerts using existing Sentry notification destinations:
 - cron/background-job failures;
 - release regressions.
 
+The reviewable source manifest is `config/sentry-alerts.json`. It intentionally
+contains no destination identifiers or credentials and declares
+`activationRequiresApproval: true`. CI verifies that every required alert class
+remains represented. Applying the manifest to a live Sentry project remains a
+provider operation requiring explicit approval.
+
 Verify source maps and release association, grouping, request-ID search, privacy
 scrubbing, then one controlled notification. Controlled failures must run from
 an authenticated non-production environment or a local test harness; do not add
 a public crash endpoint.
+
+The local-only harness is `bun run observability:verify-local -- <surface>`.
+It refuses production targets and requires `JJI_CONTROLLED_FAILURES=1`.
+Supported surfaces are `client`, `server`, `phase-evaluation`, and `import`.

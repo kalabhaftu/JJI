@@ -24,19 +24,31 @@ export async function POST(request: NextRequest) {
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return ErrorResponses.unauthorized()
+      return ErrorResponses.unauthorized(requestId)
     }
 
     const contentLength = Number(request.headers.get('content-length') || 0)
     if (contentLength > MAX_TRADE_IMPORT_BODY_BYTES) {
-      return createErrorResponse('Trade import payload is too large', 413)
+      return createErrorResponse(
+        'Trade import payload is too large',
+        413,
+        undefined,
+        'PAYLOAD_TOO_LARGE',
+        requestId,
+      )
     }
 
     const body = await request.json().catch(() => null)
     const parsed = tradeImportSchema.safeParse(body)
 
     if (!parsed.success) {
-      return createErrorResponse('Validation failed', 400, parsed.error.flatten(), 'VALIDATION_ERROR')
+      return createErrorResponse(
+        'Validation failed',
+        400,
+        parsed.error.flatten(),
+        'VALIDATION_ERROR',
+        requestId,
+      )
     }
 
     const job = await createTradeImportJob({

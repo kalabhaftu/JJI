@@ -14,6 +14,7 @@ import {
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Logo } from '@/components/logo'
+import { reportError } from '@/lib/observability/report-error'
 
 interface PerformanceCardProps {
     period: string
@@ -116,7 +117,10 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
             toast.success('Stats copied to clipboard')
             setTimeout(() => setIsCopied(false), 2500)
         }).catch((e) => {
-            console.error('Failed to copy to clipboard', e)
+            reportError(e, {
+                surface: 'client',
+                operation: 'copy-performance-report',
+            })
             toast.error('Could not access clipboard')
         })
     }, [period, displayName, stats, isProfit])

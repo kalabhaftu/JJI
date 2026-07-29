@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
@@ -31,7 +32,7 @@ async function getTradingModelId(context: TradingModelRouteContext) {
 }
 
 // PATCH - Update trading model
-export async function PATCH(
+async function updateTradingModel(
   request: NextRequest,
   context: TradingModelRouteContext
 ) {
@@ -95,6 +96,7 @@ export async function PATCH(
         { status: 400 }
       )
     }
+    reportApiHandlerError(request, error, 'update-trading-model')
     return NextResponse.json(
       { error: 'Failed to update model' },
       { status: 500 }
@@ -103,7 +105,7 @@ export async function PATCH(
 }
 
 // DELETE - Delete trading model
-export async function DELETE(
+async function deleteTradingModel(
   request: NextRequest,
   context: TradingModelRouteContext
 ) {
@@ -150,9 +152,13 @@ export async function DELETE(
         : 'Model deleted successfully',
     })
   } catch (error) {
+    reportApiHandlerError(request, error, 'delete-trading-model')
     return NextResponse.json(
       { error: 'Failed to delete model' },
       { status: 500 }
     )
   }
 }
+
+export const PATCH = withCanonicalApiResponse(updateTradingModel)
+export const DELETE = withCanonicalApiResponse(deleteTradingModel)

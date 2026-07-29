@@ -1,4 +1,4 @@
-import logger from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getClientIp } from '@/lib/security/client-ip'
@@ -22,8 +22,11 @@ export async function captureUserGeo(userId: string, headers: Headers): Promise<
       region,
     })
   } catch (err) {
-    // Silent failure - geo tracking should never break the user flow
-    logger.error({ event: 'system_error', error: err }, '[GeoCapture] Failed:')
+    reportError(err, {
+      surface: 'background-job',
+      operation: 'capture-user-geo',
+      userId,
+    })
   }
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import logger from '@/lib/logger'
+import { reportError } from '@/lib/observability/report-error'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
@@ -193,7 +193,10 @@ export function LexicalEditor({
       PlaceholderNode
     ],
     onError: (error: Error) => {
-      logger.error({ err: error }, 'Lexical Editor Error')
+      reportError(error, {
+        surface: 'client',
+        operation: 'render-lexical-editor',
+      })
     },
   }
 

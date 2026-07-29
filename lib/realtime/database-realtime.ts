@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase'
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import logger from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 
 const REALTIME_TABLES = ['Trade', 'Account', 'MasterAccount', 'PhaseAccount', 'Payout', 'DailyNote', 'Notification'] as const
 type RealtimeTable = typeof REALTIME_TABLES[number]
@@ -181,7 +182,11 @@ class DatabaseRealtimeManager {
       try {
         callback(change)
       } catch (error) {
-        logger.error({ err: error }, '[Realtime] Callback error:')
+        reportError(error, {
+          surface: 'client',
+          operation: 'dispatch-realtime-change',
+          tags: { table },
+        })
       }
     }
   }
@@ -191,7 +196,11 @@ class DatabaseRealtimeManager {
       try {
         callback(status)
       } catch (error) {
-        logger.error({ err: error }, '[Realtime] Status callback error:')
+        reportError(error, {
+          surface: 'client',
+          operation: 'dispatch-realtime-status',
+          tags: { status },
+        })
       }
     }
   }
@@ -341,4 +350,3 @@ export function useDatabaseRealtime(options: {
 }
 
 export default DatabaseRealtime
-

@@ -159,7 +159,7 @@ export function useDashboardPropFirmAccount() {
         const response = await fetch('/api/v1/prop-firm/accounts')
         const payload = await response.json()
         if (!response.ok || !payload.success) {
-          throw new Error(payload.error || 'Failed to load prop firm accounts')
+          throw new Error(payload.error?.message || 'Failed to load prop firm accounts')
         }
 
         const nextAccounts: DashboardPropFirmAccountOption[] = (Array.isArray(payload.data) ? payload.data : []).filter(isSelectableOrBlownAccount)

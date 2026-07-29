@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "activationRequiresApproval": true,
+  "rules": [
+    {
+      "id": "new-unhandled-page-error",
+      "dataset": "errors",
+      "query": "is:unresolved error.unhandled:true surface:client",
+      "trigger": "first_seen"
+    },
+    {
+      "id": "api-5xx-spike",
+      "dataset": "events",
+      "query": "event.type:error surface:api",
+      "trigger": "count_above_baseline"
+    },
+    {
+      "id": "phase-evaluation-failure",
+      "dataset": "errors",
+      "query": "surface:phase-evaluation",
+      "trigger": "first_seen_or_regression"
+    },
+    {
+      "id": "import-terminal-failure",
+      "dataset": "errors",
+      "query": "surface:import OR operation:process-import-job",
+      "trigger": "first_seen_or_regression"
+    },
+    {
+      "id": "rate-limit-backend-failure",
+      "dataset": "errors",
+      "query": "operation:rate-limit-backend",
+      "trigger": "count_greater_than_zero"
+    },
+    {
+      "id": "cron-background-failure",
+      "dataset": "errors",
+      "query": "surface:cron OR surface:background-job",
+      "trigger": "first_seen_or_regression"
+    },
+    {
+      "id": "release-regression",
+      "dataset": "errors",
+      "query": "is:regressed",
+      "trigger": "regression"
+    }
+  ]
+}

@@ -5,7 +5,6 @@ import { logActivity } from '@/lib/activity-logger'
 import { captureUserGeo } from '@/server/geolocation'
 import { resolveInternalUserId } from '@/server/user-identity'
 import { getSafeRedirectPath } from '@/lib/security/redirects'
-import logger from '@/lib/logger'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
@@ -67,7 +66,13 @@ export async function GET(request: Request) {
         resolveInternalUserId(data.user.id).then(internalId => {
           if (internalId) captureUserGeo(internalId, request.headers)
         }).catch((e) => {
-          logger.error({ error: e, userId: data.user.id }, 'Error updating geo log during auth callback')
+          reportError(e, {
+            surface: 'background-job',
+            operation: 'capture-auth-callback-geo',
+            route: '/api/auth/callback',
+            requestId,
+            userId: data.user.id,
+          })
         })
 
         if (action === 'link') {

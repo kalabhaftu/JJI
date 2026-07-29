@@ -108,7 +108,7 @@ export function PhaseTransitionApprovalDialog({
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to transition phase')
+        throw new Error(result.error?.message || 'Failed to transition phase')
       }
 
       // Mark notification as resolved (delete it since action is complete)
@@ -237,4 +237,3 @@ export function PhaseTransitionApprovalDialog({
     </Dialog>
   )
 }
-

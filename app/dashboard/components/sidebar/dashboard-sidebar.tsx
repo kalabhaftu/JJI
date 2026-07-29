@@ -46,7 +46,7 @@ import { useRithmicSyncContext } from '@/context/rithmic-sync-context'
 import { getAllRithmicData } from '@/lib/rithmic-storage'
 import { toast } from 'sonner'
 import { useEffect, useRef, useState } from 'react'
-import { logger } from '@/lib/logger';
+import { reportError } from '@/lib/observability/report-error'
 import { MOBILE_SYNC_EVENT } from '@/lib/navigation/mobile-nav'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 
@@ -143,7 +143,10 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
         })
       }
     } catch (err) {
-      logger.error("Error during manual sync: " + err)
+      reportError(err, {
+        surface: 'client',
+        operation: 'run-manual-broker-sync',
+      })
       await refreshTrades()
       toast.error("Manual sync failed to complete")
     } finally {

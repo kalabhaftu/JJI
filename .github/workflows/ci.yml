@@ -45,6 +45,21 @@ jobs:
 
       - name: API Route Policies
         run: bun run architecture:check-api-policies
+
+      - name: API Response Contract
+        run: bun run architecture:check-api-contract
+
+      - name: Service Integrations
+        run: bun run architecture:check-services
+
+      - name: Architecture Replacements
+        run: bun run architecture:check-replacements
+
+      - name: Observability Paths
+        run: bun run architecture:check-observability
+
+      - name: Sentry Alert Manifest
+        run: bun run observability:check-alerts
         
       - name: Type Check
         run: bun run type-check

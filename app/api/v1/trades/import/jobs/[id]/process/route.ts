@@ -19,13 +19,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return ErrorResponses.unauthorized()
+      return ErrorResponses.unauthorized(requestId)
     }
 
     const { id } = await params
     const job = await getTradeImportJobForUser(id, identity.internalUserId)
     if (!job) {
-      return ErrorResponses.notFound('Import job')
+      return ErrorResponses.notFound('Import job', requestId)
     }
 
     if (job.status !== 'completed' && job.status !== 'failed' && job.status !== 'cancelled') {

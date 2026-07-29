@@ -252,7 +252,7 @@ export default function PlaybookPage() {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error || 'Failed to save model')
+      throw new Error(error.error?.message || 'Failed to save model')
     }
 
     await queryClient.invalidateQueries({ queryKey: ['trading-models'] })
@@ -266,7 +266,7 @@ export default function PlaybookPage() {
       })
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error || 'Failed to delete model')
+        throw new Error(error.error?.message || 'Failed to delete model')
       }
       toast.success('Model removed from playbook')
       await queryClient.invalidateQueries({ queryKey: ['trading-models'] })

@@ -273,3 +273,23 @@ Legend:
 - [x] Create local Conventional Commit checkpoints.
 - [ ] Confirm the final tree contains intended commits plus the preserved user work.
 - [ ] Push, migrate, deploy, activate alerts, or release only with explicit approval.
+
+## 15. Additional monolith remediation
+
+The 2026-07-29 follow-up scan was checked against the current source. The CSV parser remains
+intentionally cohesive; every file below has more than one responsibility and stays tracked
+until its old implementation is gone.
+
+- [x] Replace the 857-line `server/auth.ts` with client, identity, provider, OTP, and user-provisioning modules.
+- [x] Replace the 824-line subscription service with access, payments, promotions, checks, and notification modules.
+- [ ] Split dashboard analytics by curve, strategy, time/calendar, risk, and behavioral calculations.
+- [x] Reduce the journal AI API route to request/auth/query orchestration.
+- [x] Move journal-analysis prompt generation and rule fallback behind a server AI module.
+- [x] Extract the deterministic journal-analysis fallback from provider orchestration.
+- [ ] Split the remaining journal AI server module into preparation, prompt, and provider modules.
+- [ ] Split settings profile/plan, preferences, integrations, and destructive-account UI into focused components.
+- [ ] Split the weekly modal data access, document serialization, metrics, charts, and journal UI.
+- [ ] Move tour definitions, persistence, event handling, and CSV download out of the tour context.
+- [ ] Move Rithmic protocol handling and synchronization orchestration out of the context provider.
+- [ ] Finish the archive-import facade and trade-import job split without duplicate lifecycle paths.
+- [ ] Add a source guard preventing these compatibility entrypoints from regrowing.

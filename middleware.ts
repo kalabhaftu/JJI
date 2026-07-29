@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
     "font-src 'self'",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.sentry.io",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.sentry.io https://vitals.vercel-insights.com https://*.vercel-insights.com",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",

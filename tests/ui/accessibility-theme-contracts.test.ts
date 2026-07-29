@@ -100,10 +100,9 @@ describe('accessibility and theme source contracts', () => {
   })
 
   it('keeps the operational type floor at 12px', () => {
-    const tailwindConfig = source('tailwind.config.ts')
-    expect(tailwindConfig).not.toContain("'xxs': ['0.625rem'")
-    expect(tailwindConfig).not.toContain("'xxxs': ['0.5rem'")
-    expect(tailwindConfig).not.toContain("'nano': ['0.375rem'")
+    expect(globals).not.toContain('--text-xxs')
+    expect(globals).not.toContain('--text-xxxs')
+    expect(globals).not.toContain('--text-nano')
     for (const token of ['6', '7', '8', '9', '10', '11']) {
       expect(globals).toContain(`.text-\\[${token}px\\]`)
     }

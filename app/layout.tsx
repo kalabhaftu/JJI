@@ -11,6 +11,8 @@ import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { RouteAwareFooter } from "@/components/route-aware-footer";
 import { headers } from 'next/headers'
 import { BRAND } from '@/lib/constants/brand'
+import { Analytics } from "@vercel/analytics/next"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const DEFAULT_SITE_URL = BRAND.siteUrl
 const SITE_NAME = BRAND.name
@@ -135,6 +137,8 @@ export default async function RootLayout({
             </TooltipProvider>
           </ThemeProvider>
         </ErrorBoundaryWrapper>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

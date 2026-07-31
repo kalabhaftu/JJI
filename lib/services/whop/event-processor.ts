@@ -166,9 +166,9 @@ async function extractUserId(membershipData: any): Promise<string | null> {
   // 3. Fallback: Retrieve user via Whop SDK if user_id is provided
   if (membershipData?.user_id) {
     try {
-      const whopUser = await whopClient.users.retrieve(membershipData.user_id)
+      const whopUser: any = await whopClient.users.retrieve(membershipData.user_id)
       if (whopUser?.email) {
-        const cleanEmail = whopUser.email.trim().toLowerCase()
+        const cleanEmail = String(whopUser.email).trim().toLowerCase()
         const user = await db.query.User.findFirst({
           where: eq(User.email, cleanEmail),
         })

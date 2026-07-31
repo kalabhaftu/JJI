@@ -42,9 +42,13 @@ export async function createWhopCheckoutLink(
 
   // Extract clean plan_xxx if rawPlanValue is a URL
   let resolvedPlanId = rawPlanValue
-  if (rawPlanValue.includes('checkout/')) {
-    const parts = rawPlanValue.split('checkout/')[1].split('/')[0].split('?')[0]
-    if (parts) resolvedPlanId = parts
+  const checkoutSplit = rawPlanValue.split('checkout/')[1]
+  if (checkoutSplit) {
+    const segment = checkoutSplit.split('/')[0]
+    if (segment) {
+      const parts = segment.split('?')[0]
+      if (parts) resolvedPlanId = parts
+    }
   }
 
   // 1. Try creating official checkout session via Whop API to preserve metadata

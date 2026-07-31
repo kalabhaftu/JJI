@@ -13,32 +13,18 @@ export default function SubscribeSuccessPage() {
   const [status, setStatus] = useState<'checking' | 'confirmed' | 'pending'>('checking')
 
   useEffect(() => {
-    const paymentId = sessionStorage.getItem('pendingPaymentId')
-    if (!paymentId) {
-      setStatus('pending')
-      return
-    }
-
-    // Poll payment status
+    // Poll our subscription status endpoint to see if the webhook has upgraded the account
     let attempts = 0
-    const maxAttempts = 10
+    const maxAttempts = 15 // Wait up to ~75 seconds for webhook
 
     async function checkStatus() {
       try {
-        const res = await fetch(`/api/v1/payments/status?paymentRecordId=${paymentId}&refresh=true`)
+        const res = await fetch('/api/v1/subscription/status')
         const data = await res.json()
 
-        if (data.success && data.data) {
-          if (data.data.providerStatus === 'finished') {
-            setStatus('confirmed')
-            sessionStorage.removeItem('pendingPaymentId')
-            router.refresh()
-            return true
-          }
-          if (['failed', 'expired', 'refunded'].includes(data.data.providerStatus)) {
-            router.replace('/subscribe/cancelled')
-            return true
-          }
+        if (data.success && data.data?.hasAccess) {
+          setStatus('confirmed')
+          return true
         }
       } catch {
         return false
@@ -58,7 +44,7 @@ export default function SubscribeSuccessPage() {
     checkStatus()
 
     return () => clearInterval(interval)
-  }, [router])
+  }, [])
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -79,7 +65,7 @@ export default function SubscribeSuccessPage() {
             </div>
             <h1 className="text-xl font-semibold">Verifying Payment...</h1>
             <p className="text-sm text-muted-foreground">
-              Please wait while we confirm your payment on the blockchain.
+              Please wait while we confirm your payment securely. Your account will be upgraded momentarily.
             </p>
           </div>
         )}
@@ -96,13 +82,13 @@ export default function SubscribeSuccessPage() {
             </motion.div>
             <h1 className="text-xl font-semibold">Payment Confirmed!</h1>
             <p className="text-sm text-muted-foreground">
-              Your subscription is now active. Welcome to JJI Pro!
+              Your subscription is now active! We've sent an email with your receipt and onboarding details.
             </p>
             <Button onClick={() => {
               router.refresh()
               router.push('/dashboard')
-            }} className="mt-4">
-              Go to Dashboard →
+            }} className="mt-4 w-full">
+              Enter Dashboard →
             </Button>
           </div>
         )}
@@ -112,13 +98,16 @@ export default function SubscribeSuccessPage() {
             <div className="mx-auto w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
               <Clock className="h-8 w-8 text-amber-500" />
             </div>
-            <h1 className="text-xl font-semibold">Payment Processing</h1>
+            <h1 className="text-xl font-semibold">Verification Delayed</h1>
             <p className="text-sm text-muted-foreground">
-              Your payment is being processed. Blockchain confirmations may take a few minutes.
-              You&apos;ll receive a notification once confirmed. Access opens only after server-side payment verification.
+              Your payment was successful, but our server hasn't received the confirmation from Whop yet. 
+              This usually resolves in a minute. You can safely go to your dashboard, and it will unlock automatically.
             </p>
-            <Button variant="outline" onClick={() => router.push('/subscribe/status')} className="mt-4">
-              Check Status
+            <Button onClick={() => {
+              router.refresh()
+              router.push('/dashboard')
+            }} className="mt-4 w-full">
+              Go to Dashboard
             </Button>
           </div>
         )}

@@ -11,8 +11,9 @@
 import { and, eq } from 'drizzle-orm'
 
 import { db } from '@/lib/db/client'
-import { PaymentRecord, Subscription } from '@/lib/db/schema'
+import { PaymentRecord, Subscription, User } from '@/lib/db/schema'
 import logger from '@/lib/logger'
+import { sendWelcomeEmail } from '../emails/welcome-email'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -147,6 +148,19 @@ export async function upsertWhopSubscription(
       })
       .returning()
     sub = newSub
+
+    // Send Welcome Email if this is their first time getting an active subscription
+    if (localStatus === 'active') {
+      const user = await db.query.User.findFirst({
+        where: eq(User.id, internalUserId)
+      })
+      if (user?.email) {
+        // Fire and forget
+        sendWelcomeEmail(user.email, user.firstName).catch(err => {
+          logger.error({ err, userId: internalUserId }, 'Failed to send welcome email')
+        })
+      }
+    }
   } else {
     // Only update if the new status or dates are more recent.
     // Always win on terminal states (expired, cancelled).
@@ -168,6 +182,18 @@ export async function upsertWhopSubscription(
           updatedAt: new Date(),
         })
         .where(eq(Subscription.id, sub.id))
+
+      // Send Welcome Email if they are upgrading from a non-active state to active
+      if (!wasActive && localStatus === 'active') {
+        const user = await db.query.User.findFirst({
+          where: eq(User.id, internalUserId)
+        })
+        if (user?.email) {
+          sendWelcomeEmail(user.email, user.firstName).catch(err => {
+            logger.error({ err, userId: internalUserId }, 'Failed to send welcome email')
+          })
+        }
+      }
     }
   }
 

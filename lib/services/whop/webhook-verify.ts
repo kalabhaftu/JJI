@@ -38,10 +38,10 @@ function parseSignatureHeader(header: string): { version: string; signature: Buf
 }
 
 /**
- * Computes the HMAC-SHA256 of the raw body using the webhook secret.
+ * Computes the HMAC-SHA256 of the raw body using the provided webhook secret.
  */
-function computeHmac(rawBody: string): Buffer {
-  return createHmac('sha256', WHOP_CONFIG.webhookSecret)
+function computeHmac(rawBody: string, secret: string): Buffer {
+  return createHmac('sha256', secret)
     .update(rawBody, 'utf8')
     .digest()
 }
@@ -70,11 +70,22 @@ export function verifyWhopWebhookSignature(
     // Currently only 'v1' is supported. Reject unknown versions.
     if (parsed.version !== 'v1') return false
 
-    const expected = computeHmac(rawBody)
+    let expected = computeHmac(rawBody, WHOP_CONFIG.webhookSecret)
 
-    if (parsed.signature.length !== expected.length) return false
+    if (parsed.signature.length === expected.length && timingSafeEqual(parsed.signature, expected)) {
+      return true
+    }
 
-    return timingSafeEqual(parsed.signature, expected)
+    // Fallback for Sandbox: If routing Sandbox webhooks to Production, try the sandbox secret
+    const sandboxSecret = process.env.WHOP_SANDBOX_WEBHOOK_SECRET
+    if (sandboxSecret) {
+      expected = computeHmac(rawBody, sandboxSecret)
+      if (parsed.signature.length === expected.length && timingSafeEqual(parsed.signature, expected)) {
+        return true
+      }
+    }
+
+    return false
   } catch {
     return false
   }

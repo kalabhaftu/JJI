@@ -3,8 +3,8 @@
  *
  * Whop SDK singleton and environment configuration.
  *
- * Validates all required environment variables at module load time so
- * misconfiguration surfaces immediately rather than at runtime in a handler.
+ * Validates all required environment variables at runtime so
+ * misconfiguration surfaces immediately.
  *
  * All Whop-specific server credentials are in this file; nothing else in the
  * application should read WHOP_* env vars directly.
@@ -37,21 +37,28 @@ function optionalEnv(name: string, defaultValue: string): string {
  * Import this instead of reading env vars directly elsewhere.
  */
 export const WHOP_CONFIG = {
-  apiKey: requireEnv('WHOP_API_KEY'),
-  webhookSecret: requireEnv('WHOP_WEBHOOK_SECRET'),
+  get apiKey() {
+    return requireEnv('WHOP_API_KEY')
+  },
+  get webhookSecret() {
+    return requireEnv('WHOP_WEBHOOK_SECRET')
+  },
   /**
-   * Plan ID for the "Pro" tier. Format: plan_xxx
-   * Set in the Whop seller dashboard and stored here for server-side use only.
+   * Plan ID for the "Pro" tier. Format: plan_xxx or full checkout URL.
    */
   planIds: {
-    pro: requireEnv('WHOP_PLAN_ID_PRO'),
+    get pro(): string {
+      return requireEnv('WHOP_PLAN_ID_PRO')
+    },
   },
   /**
    * 'sandbox' | 'production'
    * Controls checkout URL construction and safety guards.
    */
-  environment: optionalEnv('WHOP_ENVIRONMENT', 'sandbox') as 'sandbox' | 'production',
-} as const
+  get environment() {
+    return optionalEnv('WHOP_ENVIRONMENT', 'sandbox') as 'sandbox' | 'production'
+  },
+}
 
 export type WhopPlanKey = keyof typeof WHOP_CONFIG.planIds
 
@@ -69,8 +76,7 @@ export function getWhopClient(): Whop {
   if (!_client) {
     _client = new Whop({
       apiKey: WHOP_CONFIG.apiKey,
-      // Disable automatic retries on the client level — we handle retries
-      // explicitly in the reconciliation layer to avoid webhook re-entrancy.
+      baseURL: WHOP_CONFIG.environment === 'sandbox' ? 'https://sandbox-api.whop.com/api/v1' : undefined,
       maxRetries: 0,
       timeout: 15_000,
     })

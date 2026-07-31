@@ -1,4 +1,6 @@
 import { eq } from 'drizzle-orm'
+import * as Sentry from '@sentry/nextjs'
+
 import { db } from '@/lib/db/client'
 import { WhopWebhookEvent, Subscription, User } from '@/lib/db/schema'
 import logger from '@/lib/logger'
@@ -56,6 +58,7 @@ export async function processWhopWebhookEvent(payload: WhopWebhookPayload): Prom
       .where(eq(WhopWebhookEvent.eventId, eventId))
   } catch (err: any) {
     logger.error({ eventId, eventType, err }, '[WhopWebhook] Failed to process event')
+    Sentry.captureException(err, { tags: { operation: 'whop-webhook-processor', eventType } })
     await db
       .update(WhopWebhookEvent)
       .set({

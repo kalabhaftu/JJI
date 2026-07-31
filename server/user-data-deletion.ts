@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 import { and, eq, inArray } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
+import { cancelWhopMembership } from '@/lib/services/whop/client'
 
 export type UserDeletionMode = 'purge-data' | 'delete-account'
 
@@ -142,6 +143,24 @@ export async function deleteUserData({ internalUserId, mode, authUserId: inputAu
         await tx.delete(schema.PromoRedemption).where(eq(schema.PromoRedemption.userId, internalUserId))
 
         if (mode === 'delete-account') {
+          // Cancel any active Whop memberships before deleting records
+          const paymentRecords = await db.query.PaymentRecord.findMany({
+            where: and(
+              eq(schema.PaymentRecord.userId, internalUserId),
+              eq(schema.PaymentRecord.provider, 'whop')
+            ),
+            columns: { whopMembershipId: true, providerStatus: true }
+          })
+
+          for (const pr of paymentRecords) {
+            if (pr.whopMembershipId && pr.providerStatus === 'active') {
+              // We do not await this, or we catch errors so we don't block account deletion
+              cancelWhopMembership(pr.whopMembershipId).catch(err => {
+                Sentry.captureException(err, { tags: { operation: 'cancel-whop-membership' } })
+              })
+            }
+          }
+
           await tx.delete(schema.PaymentRecord).where(eq(schema.PaymentRecord.userId, internalUserId))
           await tx.delete(schema.Subscription).where(eq(schema.Subscription.userId, internalUserId))
         }

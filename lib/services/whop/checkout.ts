@@ -3,6 +3,7 @@ import { User } from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
 import { WHOP_CONFIG, whopClient, type WhopPlanKey } from './client'
 import { logger } from '@/lib/logger'
+import * as Sentry from '@sentry/nextjs'
 
 export interface WhopCheckoutResult {
   checkoutUrl: string
@@ -72,6 +73,7 @@ export async function createWhopCheckoutLink(
     }
   } catch (err: any) {
     logger.warn({ err: err?.message || err }, '[WhopCheckout] API checkout session creation failed, falling back to direct URL')
+    Sentry.captureException(err, { tags: { operation: 'create-whop-checkout' } })
   }
 
   let baseUrl = rawPlanValue

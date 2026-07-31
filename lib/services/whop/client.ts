@@ -52,3 +52,15 @@ export function getWhopClient(): Whop {
 }
 
 export const whopClient = getWhopClient()
+
+import * as Sentry from '@sentry/nextjs'
+
+export async function cancelWhopMembership(membershipId: string): Promise<boolean> {
+  try {
+    await whopClient.memberships.cancel(membershipId)
+    return true
+  } catch (error) {
+    Sentry.captureException(error, { tags: { operation: 'cancel-whop-membership-jji' } })
+    return false
+  }
+}

@@ -3,6 +3,7 @@ import { and, eq } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { PaymentRecord, Subscription, User } from '@/lib/db/schema'
 import logger from '@/lib/logger'
+import * as Sentry from '@sentry/nextjs'
 import { sendWelcomeEmail } from '../emails/welcome-email'
 
 export interface WhopMembershipSnapshot {
@@ -101,6 +102,7 @@ export async function upsertWhopSubscription(
       if (user?.email) {
         sendWelcomeEmail(user.email, user.firstName).catch(err => {
           logger.error({ err, userId: internalUserId }, 'Failed to send welcome email')
+          Sentry.captureException(err, { tags: { operation: 'send-welcome-email' } })
         })
       }
     }
@@ -132,6 +134,7 @@ export async function upsertWhopSubscription(
         if (user?.email) {
           sendWelcomeEmail(user.email, user.firstName).catch(err => {
             logger.error({ err, userId: internalUserId }, 'Failed to send welcome email')
+            Sentry.captureException(err, { tags: { operation: 'send-welcome-email' } })
           })
         }
       }

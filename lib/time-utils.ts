@@ -6,14 +6,12 @@ export const DEFAULT_TIMEZONE = 'America/New_York';
 export type MarketSession = 'Asia' | 'London' | 'New York';
 export type KillzoneBadge = 'London Killzone' | 'NY Killzone' | 'Lunch Time' | 'NY PM Session';
 
-// Sessions (for analysis) - single continuous assignment in New York time
 const MARKET_SESSIONS = [
   { name: 'New York', start: 8, end: 17 },
   { name: 'London', start: 3, end: 8 },
   { name: 'Asia', start: 18, end: 3 }, // Display range; fallback captures the remainder
 ];
 
-// Killzones (indicators only)
 const KILLZONE_BADGES = [
   { name: 'London Killzone', start: 2, end: 5 }, // (02:00 - 05:00)
   { name: 'NY Killzone', start: 7, end: 10 },    // Forex (07:00 - 10:00)
@@ -21,13 +19,8 @@ const KILLZONE_BADGES = [
   { name: 'NY PM Session', start: 13, end: 16 }, // (13:00 - 16:00)
 ];
 
-/**
- * Returns the analytical market session in America/New_York time.
- * The mapping is continuous with no Outside Session bucket:
- * - New York: 08:00-17:00
- * - London: 03:00-08:00
- * - Asia: everything else
- */
+// Continuous session mapping in America/New_York time:
+// New York 08:00-17:00, London 03:00-08:00, Asia everything else.
 export function getTradingSession(date: Date | string | number): MarketSession {
   if (!date) return 'Asia';
   const parsedDate = new Date(date);
@@ -55,7 +48,7 @@ export function getKillzoneBadge(date: Date | string | number, symbol?: string):
   const minute = nyDate.getMinutes();
   const time = hour + minute / 60;
 
-  // NY Killzone has special logic for Indices
+  // NY killzone has special logic for Indices
   const isIndex = symbol && (
     symbol.includes('US30') || 
     symbol.includes('NAS100') || 
@@ -68,11 +61,9 @@ export function getKillzoneBadge(date: Date | string | number, symbol?: string):
   if (isIndex) {
     if (time >= 8.5 && time < 11) return 'NY Killzone';
   } else {
-    // Forex NY AM
     if (time >= 7 && time < 10) return 'NY Killzone';
   }
 
-  // Check other killzones
   for (const kz of KILLZONE_BADGES) {
     if (kz.name === 'NY Killzone') continue; // already handled
     
@@ -145,9 +136,6 @@ function formatUserTime(date: Date | string | number, timezone: string = DEFAULT
   return formatInTimeZone(parsedDate, timezone, formatStr);
 }
 
-/**
- * Helper to display time with a custom format string.
- */
 export function formatTimeInZone(date: Date | string | number, formatStr: string = 'HH:mm', timezone: string = DEFAULT_TIMEZONE): string {
   if (!date) return 'N/A';
   const parsedDate = new Date(date);
@@ -156,9 +144,8 @@ export function formatTimeInZone(date: Date | string | number, formatStr: string
 }
 
 /**
- * Calculate trade duration in seconds with timezone-safe parsing.
- * 
- * Handles common CSV timestamp formats:
+ * Timezone-safe trade duration in seconds. Handles ISO 8601 and common CSV
+ * timestamp formats:
  * - ISO 8601: "2024-01-15T09:30:00Z" or "2024-01-15T09:30:00-05:00"
  * - US format: "01/15/2024 09:30:00" (assumed broker timezone if no offset)
  * - Plain date: "2024-01-15" with separate time field
@@ -174,7 +161,6 @@ export function calculateTradeDuration(
   if (!entryDate || !closeDate) return 0;
 
   try {
-    // Parse dates, handling various formats
     const entry = normalizeToUTC(entryDate, fallbackTimezone);
     const close = normalizeToUTC(closeDate, fallbackTimezone);
 
@@ -203,29 +189,23 @@ function normalizeToUTC(
 ): Date | null {
   if (!date) return null;
   
-  // Already a Date object
   if (date instanceof Date) {
     return isNaN(date.getTime()) ? null : date;
   }
   
-  // Number (timestamp)
   if (typeof date === 'number') {
     const d = new Date(date);
     return isNaN(d.getTime()) ? null : d;
   }
   
-  // String - check if it has timezone info
   const dateStr = String(date).trim();
   
-  // ISO 8601 with timezone (Z or +/-offset)
   if (/Z$|[+-]\d{2}:\d{2}$|[+-]\d{4}$/.test(dateStr)) {
     const d = new Date(dateStr);
     return isNaN(d.getTime()) ? null : d;
   }
   
-  // ISO 8601 without timezone - assume fallback timezone
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(dateStr)) {
-    // Convert to zoned time then to UTC
     try {
       const zonedDate = toZonedTime(new Date(dateStr + 'Z'), fallbackTimezone);
       const offset = getTimezoneOffset(fallbackTimezone, new Date(dateStr));
@@ -237,7 +217,6 @@ function normalizeToUTC(
      }
   }
   
-  // Plain date format (various) - parse and assume fallback timezone
   const d = new Date(dateStr);
   return isNaN(d.getTime()) ? null : d;
 }

@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
+import * as Sentry from '@sentry/nextjs'
 
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
@@ -39,6 +40,7 @@ export async function POST(request: NextRequest) {
 
     return createSuccessResponse(checkout)
   } catch (error: any) {
+    Sentry.captureException(error, { tags: { operation: 'create-whop-checkout-route' } })
     return createErrorResponse(
       'Failed to create checkout link',
       500,

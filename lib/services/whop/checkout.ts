@@ -42,11 +42,14 @@ export async function createWhopCheckoutLink(
 
   const referenceId = `jji_${internalUserId}_${Date.now()}`
 
-  // Build the Whop checkout URL.
-  // Whop checkout URLs follow the pattern: https://whop.com/checkout/<plan_id>/
-  // We append the internal user ID as a query parameter which Whop passes
-  // through to the checkout page metadata so the webhook can identify the user.
-  const url = new URL(`https://whop.com/checkout/${planId}/`)
+  // If the configured plan is already a full URL (like a sandbox storefront link),
+  // we use it directly. Otherwise, we assume it's a plan ID and build the checkout URL.
+  let baseUrl = planId
+  if (!baseUrl.startsWith('http')) {
+    baseUrl = `https://whop.com/checkout/${planId}/`
+  }
+
+  const url = new URL(baseUrl)
   url.searchParams.set('d2c', '1')
   url.searchParams.set('metadata[jji_user_id]', internalUserId)
   url.searchParams.set('metadata[jji_reference_id]', referenceId)

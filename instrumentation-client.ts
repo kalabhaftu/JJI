@@ -1,6 +1,5 @@
 import * as Sentry from '@sentry/nextjs'
 import { scrubSentryEvent, shouldDropSentryEvent } from '@/lib/observability/sentry-scrub'
-import { hasTelemetryConsent } from '@/lib/observability/telemetry-consent'
 
 Sentry.init({
   dsn: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -14,14 +13,10 @@ Sentry.init({
     Sentry.browserTracingIntegration(),
   ],
   beforeSend(event, hint) {
-    if (!hasTelemetryConsent()) return null
     const error = hint.originalException
     if (error instanceof Error && error.message?.includes('blocked by client')) return null
     if (shouldDropSentryEvent(event, error)) return null
     return scrubSentryEvent(event)
-  },
-  beforeSendTransaction(event) {
-    return hasTelemetryConsent() ? event : null
   },
 })
 

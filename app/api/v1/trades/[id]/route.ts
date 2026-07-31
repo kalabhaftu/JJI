@@ -1,177 +1,142 @@
-import { NextRequest } from 'next/server'
-import { z } from 'zod'
-
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
-import { isDomainError } from '@/lib/domain-error'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { invalidateTradesCache } from '@/lib/cache/invalidate-trade'
-import { getClientIp } from '@/lib/security/client-ip'
-import { parseTradeUpdate } from '@/lib/trades/update-schema'
-import { createSignedStorageUrl } from '@/server/storage-admin'
-import {
-  deleteTradeForUser,
-  updateTradeForUser,
-} from '@/server/trades/mutations'
+import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
+import { and, eq } from 'drizzle-orm'
+import { invalidateTradesCache } from '@/lib/cache/invalidate-trade'
+import { parseTradeUpdate } from '@/lib/trades/update-schema'
+import { getClientIp } from '@/lib/security/client-ip'
+import { z } from 'zod'
+import { createSignedStorageUrl } from '@/server/storage-admin'
 
-interface RouteContext {
-  params: Promise<{ id: string }>
-}
-
-async function invalidateTradeCaches(
-  userId: string,
-  accountId: string | null,
-  requestId: string,
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    await invalidateTradesCache(userId, accountId)
-  } catch (error) {
-    reportError(error, {
-      surface: 'server',
-      operation: 'invalidate-trade-cache',
-      userId,
-      requestId,
-    })
-  }
-}
-
-export async function GET(request: NextRequest, { params }: RouteContext) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const { id } = await params
+
     const trade = await db.query.Trade.findFirst({
-      where: (table, operators) => operators.and(
-        operators.eq(table.id, id),
-        operators.eq(table.userId, identity.internalUserId),
-      ),
-      with: { executions: true },
+      where: (table, { eq }) => eq(table.id, id),
+      with: {
+        executions: true,
+      },
     })
+
     if (!trade) {
-      return createErrorResponse('Trade not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json({ error: 'Trade not found' }, { status: 404 })
     }
 
-    const imageFields = [
-      'imageOne',
-      'imageTwo',
-      'imageThree',
-      'imageFour',
-      'imageFive',
-      'imageSix',
-      'cardPreviewImage',
-    ] as const
-    for (const field of imageFields) {
-      if (!trade[field]) continue
-      const signedUrl = await createSignedStorageUrl(trade[field]!, 3600)
-      if (signedUrl) (trade as any)[field] = signedUrl
+    if (trade.userId !== identity.internalUserId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
-    return createSuccessResponse(trade, undefined, undefined, requestId)
-  } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'get-trade',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Internal Server Error', 500, undefined, 'SERVER_ERROR', requestId)
+
+    const imageFields = ['imageOne', 'imageTwo', 'imageThree', 'imageFour', 'imageFive', 'imageSix', 'cardPreviewImage'] as const
+    for (const field of imageFields) {
+      if (trade[field]) {
+        const signedUrl = await createSignedStorageUrl(trade[field]!, 3600)
+        if (signedUrl) (trade as any)[field] = signedUrl
+      }
+    }
+
+    return NextResponse.json({ success: true, trade })
+  } catch (error: any) {
+    logger.error({ error: error?.message, layer: 'api' }, 'GET /api/v1/trades/[id] failed')
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
 
-export async function PATCH(request: NextRequest, { params }: RouteContext) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const { id } = await params
     const body = parseTradeUpdate(await request.json())
-    const { existing, updated } = await updateTradeForUser(
-      identity.internalUserId,
-      id,
-      body,
-      {
-        requestId,
-        ipAddress: getClientIp(request.headers),
-      },
-    )
-    await invalidateTradeCaches(
-      identity.internalUserId,
-      existing.accountId,
-      requestId,
-    )
-    return createSuccessResponse(updated, undefined, undefined, requestId)
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return createErrorResponse(
-        'Invalid trade update',
-        400,
-        error.flatten(),
-        'VALIDATION_ERROR',
-        requestId,
-      )
-    }
-    if (isDomainError(error)) {
-      return createErrorResponse(error.message, error.status, undefined, error.code, requestId)
-    }
-    reportError(error, {
-      surface: 'api',
-      operation: 'update-trade',
-      route: request.nextUrl.pathname,
-      requestId,
+
+    const existing = await db.query.Trade.findFirst({ where: (table, { eq }) => eq(table.id, id) })
+    if (!existing) return NextResponse.json({ error: 'Trade not found' }, { status: 404 })
+    if (existing.userId !== identity.internalUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+
+    const updated = (await db.update(schema.Trade).set(body).where(and(
+      eq(schema.Trade.id, id),
+      eq(schema.Trade.userId, identity.internalUserId),
+    )).returning())[0]
+    await db.insert(schema.AuditLog).values({
+      userId: identity.internalUserId,
+      action: 'UPDATE_TRADE',
+      entityId: id,
+      beforeData: existing,
+      afterData: updated,
+      ipAddress: getClientIp(request.headers),
     })
-    return createErrorResponse('Internal Server Error', 500, undefined, 'SERVER_ERROR', requestId)
+
+
+    await invalidateTradesCache(identity.internalUserId, existing.accountId)
+
+    return NextResponse.json({ success: true, trade: updated })
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: 'Invalid trade update', details: error.flatten() }, { status: 400 })
+    }
+    logger.error({ error: error?.message, layer: 'api' }, 'PATCH /api/v1/trades/[id] failed')
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: RouteContext) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const { id } = await params
-    const existing = await deleteTradeForUser(identity.internalUserId, id, {
-      requestId,
+
+    const existing = await db.query.Trade.findFirst({ where: (table, { eq }) => eq(table.id, id) })
+    if (!existing) return NextResponse.json({ error: 'Trade not found' }, { status: 404 })
+    if (existing.userId !== identity.internalUserId) return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+
+    await db.delete(schema.Trade).where(and(
+      eq(schema.Trade.id, id),
+      eq(schema.Trade.userId, identity.internalUserId),
+    ))
+    await db.insert(schema.AuditLog).values({
+      userId: identity.internalUserId,
+      action: 'DELETE_TRADE',
+      entityId: id,
+      beforeData: existing,
+      afterData: null,
       ipAddress: getClientIp(request.headers),
     })
-    await invalidateTradeCaches(
-      identity.internalUserId,
-      existing.accountId,
-      requestId,
-    )
-    return createSuccessResponse(
-      { deleted: true },
-      'Trade deleted successfully',
-      undefined,
-      requestId,
-    )
-  } catch (error) {
-    if (isDomainError(error)) {
-      return createErrorResponse(error.message, error.status, undefined, error.code, requestId)
-    }
-    reportError(error, {
-      surface: 'api',
-      operation: 'delete-trade',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Internal Server Error', 500, undefined, 'SERVER_ERROR', requestId)
+
+    
+    await invalidateTradesCache(identity.internalUserId, existing.accountId)
+
+    return NextResponse.json({ success: true, message: 'Trade deleted successfully' })
+  } catch (error: any) {
+    logger.error({ error: error?.message, layer: 'api' }, 'DELETE /api/v1/trades/[id] failed')
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

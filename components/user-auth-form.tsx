@@ -185,8 +185,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         setIsLoading(true)
         setAuthMethod('discord')
         try {
-            const result = await signInWithDiscord(nextUrl)
-            if (result.url) window.location.assign(result.url)
+            await signInWithDiscord(nextUrl)
         } catch (error) {
             setAuthMethod(null)
             setIsLoading(false)
@@ -201,8 +200,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         setIsLoading(true)
         setAuthMethod('google')
         try {
-            const result = await signInWithGoogle(nextUrl)
-            if (result.url) window.location.assign(result.url)
+            await signInWithGoogle(nextUrl)
         } catch (error) {
             setAuthMethod(null)
             setIsLoading(false)

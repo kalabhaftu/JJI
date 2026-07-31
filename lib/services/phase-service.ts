@@ -3,16 +3,8 @@ import { PhaseAccount, MasterAccount, BreachRecord, Notification } from '@/lib/d
 import { and, asc, eq } from 'drizzle-orm'
 import { PhaseEvaluationEngine } from '@/lib/prop-firm/phase-evaluation-engine'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
-import { reportError } from '@/lib/observability/report-error'
-import { dispatchPhaseRiskAlerts } from '@/lib/services/phase-notifications'
-import { recordAuditEvent } from '@/lib/audit-logger'
-import logger from '@/lib/logger'
 
-async function applyPhaseEvaluation(
-  phase: any,
-  evaluation: Awaited<ReturnType<typeof PhaseEvaluationEngine.evaluatePhase>>,
-  requestId?: string,
-) {
+async function applyPhaseEvaluation(phase: any, evaluation: Awaited<ReturnType<typeof PhaseEvaluationEngine.evaluatePhase>>) {
   const masterAccount = await db.query.MasterAccount.findFirst({
     where: (table, { eq }) => eq(table.id, phase.masterAccountId),
     with: {
@@ -22,16 +14,13 @@ async function applyPhaseEvaluation(
     },
   })
 
-  if (!masterAccount) return false
+  if (!masterAccount) return
 
   if (evaluation.isFailed) {
-    return db.transaction(async (tx) => {
-      const transitioned = await tx.update(PhaseAccount)
+    await db.transaction(async (tx) => {
+      await tx.update(PhaseAccount)
         .set({ status: 'failed', endDate: new Date() })
         .where(and(eq(PhaseAccount.id, phase.id), eq(PhaseAccount.status, 'active')))
-        .returning({ id: PhaseAccount.id })
-
-      if (transitioned.length === 0) return false
 
       await tx.update(MasterAccount)
         .set({ status: 'failed' })
@@ -52,28 +41,14 @@ async function applyPhaseEvaluation(
       }).onConflictDoNothing({
         target: [BreachRecord.phaseAccountId, BreachRecord.breachType],
       })
-      await recordAuditEvent({
-        userId: masterAccount.userId,
-        action: 'PHASE_FAILED',
-        entityType: 'PhaseAccount',
-        entityId: phase.id,
-        source: 'background-job',
-        ...(requestId ? { requestId } : {}),
-        beforeData: { status: 'active' },
-        afterData: {
-          status: 'failed',
-          breachType: evaluation.drawdown.breachType,
-          breachAmount: evaluation.drawdown.breachAmount,
-        },
-      }, tx as never)
-      return true
     })
+    return
   }
 
-  if (!evaluation.isPassed || !evaluation.canAdvance) return false
+  if (!evaluation.isPassed || !evaluation.canAdvance) return
 
   const currentPhase = masterAccount.PhaseAccount.find((candidate) => candidate.id === phase.id)
-  if (!currentPhase) return false
+  if (!currentPhase) return
 
   const nextPhase = masterAccount.PhaseAccount.find(
     (candidate) => candidate.phaseNumber === currentPhase.phaseNumber + 1,
@@ -87,13 +62,13 @@ async function applyPhaseEvaluation(
     : `Phase ${currentPhase.phaseNumber + 1}`
 
   if (nextPhase?.phaseId?.trim()) {
-    return db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const transitioned = await tx.update(PhaseAccount)
         .set({ status: 'passed', endDate: new Date() })
         .where(and(eq(PhaseAccount.id, currentPhase.id), eq(PhaseAccount.status, 'active')))
         .returning({ id: PhaseAccount.id })
 
-      if (transitioned.length === 0) return false
+      if (transitioned.length === 0) return
 
       await tx.update(PhaseAccount)
         .set({ status: 'active', startDate: new Date() })
@@ -101,18 +76,8 @@ async function applyPhaseEvaluation(
       await tx.update(MasterAccount)
         .set({ currentPhase: nextPhase.phaseNumber })
         .where(and(eq(MasterAccount.id, masterAccount.id), eq(MasterAccount.status, 'active')))
-      await recordAuditEvent({
-        userId: masterAccount.userId,
-        action: 'PHASE_ADVANCED',
-        entityType: 'MasterAccount',
-        entityId: masterAccount.id,
-        source: 'background-job',
-        ...(requestId ? { requestId } : {}),
-        beforeData: { currentPhase: currentPhase.phaseNumber },
-        afterData: { currentPhase: nextPhase.phaseNumber },
-      }, tx as never)
-      return true
     })
+    return
   }
 
   const notificationType = isTransitioningToFunded
@@ -122,13 +87,13 @@ async function applyPhaseEvaluation(
     ? `Your ${masterAccount.accountName} has passed all evaluation phases. Please confirm your firm's approval.`
     : `Your ${masterAccount.accountName} has met the profit target. Enter your ${nextPhaseName} account ID to continue.`
 
-  return db.transaction(async (tx) => {
+  await db.transaction(async (tx) => {
     const updated = await tx.update(PhaseAccount)
       .set({ status: 'pending_approval', endDate: new Date() })
       .where(and(eq(PhaseAccount.id, currentPhase.id), eq(PhaseAccount.status, 'active')))
       .returning({ id: PhaseAccount.id })
 
-    if (updated.length === 0) return false
+    if (updated.length === 0) return
 
     await tx.insert(Notification).values({
       userId: masterAccount.userId,
@@ -147,20 +112,6 @@ async function applyPhaseEvaluation(
       actionRequired: true,
       updatedAt: new Date(),
     })
-    await recordAuditEvent({
-      userId: masterAccount.userId,
-      action: 'PHASE_PENDING_APPROVAL',
-      entityType: 'PhaseAccount',
-      entityId: currentPhase.id,
-      source: 'background-job',
-      ...(requestId ? { requestId } : {}),
-      beforeData: { status: 'active' },
-      afterData: {
-        status: 'pending_approval',
-        nextPhaseNumber: nextPhase?.phaseNumber ?? currentPhase.phaseNumber + 1,
-      },
-    }, tx as never)
-    return true
   })
 }
 
@@ -169,11 +120,7 @@ async function applyPhaseEvaluation(
  * Handles bulk evaluation and management of prop firm phase accounts.
  */
 
-export async function evaluateAllActivePhases(options?: {
-  masterAccountId?: string
-  phaseAccountId?: string
-  requestId?: string
-}) {
+export async function evaluateAllActivePhases(options?: { masterAccountId?: string; phaseAccountId?: string }) {
   const results = {
     totalPhases: 0,
     evaluated: 0,
@@ -211,36 +158,12 @@ export async function evaluateAllActivePhases(options?: {
       try {
         const evaluation = await PhaseEvaluationEngine.evaluatePhase(
           phase.masterAccountId,
-          phase.id,
-          options?.requestId ? { requestId: options.requestId } : {},
+          phase.id
         )
 
         results.evaluated++
 
-        const stateChanged = await applyPhaseEvaluation(
-          phase,
-          evaluation,
-          options?.requestId,
-        )
-        if (!evaluation.isFailed || stateChanged) {
-          await dispatchPhaseRiskAlerts(
-            evaluation.alerts,
-            options?.requestId ? { requestId: options.requestId } : {},
-          )
-        }
-
-        logger.info({
-          event: 'phase_evaluation_completed',
-          phaseAccountId: phase.id,
-          masterAccountId: phase.masterAccountId,
-          requestId: options?.requestId,
-          outcome: evaluation.isFailed
-            ? 'failed'
-            : evaluation.isPassed
-              ? 'passed'
-              : 'continued',
-          stateChanged,
-        }, 'Phase evaluation completed')
+        await applyPhaseEvaluation(phase, evaluation)
 
         if (evaluation.isFailed) results.failed++
 
@@ -252,22 +175,10 @@ export async function evaluateAllActivePhases(options?: {
       } catch (error) {
         const errorMsg = `Phase ${phase.id} (${phase.MasterAccount.accountName}): evaluation failed`
         results.errors.push(errorMsg)
-        reportError(error, {
-          surface: 'phase-evaluation',
-          operation: 'evaluate-active-phase',
-          entityId: phase.id,
-          ...(options?.requestId ? { requestId: options.requestId } : {}),
-          extra: { masterAccountId: phase.masterAccountId },
-        })
       }
     }
   } catch (err) {
     results.errors.push(`General Evaluation Error: ${err instanceof Error ? err.message : 'unknown error'}`)
-    reportError(err, {
-      surface: 'phase-evaluation',
-      operation: 'evaluate-all-active-phases',
-      ...(options?.requestId ? { requestId: options.requestId } : {}),
-    })
   }
 
   return results

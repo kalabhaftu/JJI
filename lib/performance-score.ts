@@ -1,4 +1,4 @@
-import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
+import { groupTradesByExecution } from '@/lib/utils'
 import { classifyOutcome, DEFAULT_BREAK_EVEN_THRESHOLD, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { 
   calculateRSquared, 
@@ -267,3 +267,4 @@ export function calculateMetricsFromTrades(
     consistencyScore
   }
 }
+

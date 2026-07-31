@@ -1,12 +1,10 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { createTradeImportJob } from '@/server/trade-import-jobs'
 import { enqueueImportJob } from '@/server/import-job-events'
-import { createErrorResponse, createSuccessResponse, ErrorResponses } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { createErrorResponse } from '@/lib/api-response'
 
 const MAX_TRADE_IMPORT_ROWS = 5000
 const MAX_TRADE_IMPORT_BODY_BYTES = 2 * 1024 * 1024
@@ -17,38 +15,25 @@ const tradeImportSchema = z.object({
 }).strict()
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'import')
+  const rateLimitResponse = await applyRateLimit(request, importLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return ErrorResponses.unauthorized(requestId)
+      return createErrorResponse('Unauthorized', 401)
     }
 
     const contentLength = Number(request.headers.get('content-length') || 0)
     if (contentLength > MAX_TRADE_IMPORT_BODY_BYTES) {
-      return createErrorResponse(
-        'Trade import payload is too large',
-        413,
-        undefined,
-        'PAYLOAD_TOO_LARGE',
-        requestId,
-      )
+      return createErrorResponse('Trade import payload is too large', 413)
     }
 
     const body = await request.json().catch(() => null)
     const parsed = tradeImportSchema.safeParse(body)
 
     if (!parsed.success) {
-      return createErrorResponse(
-        'Validation failed',
-        400,
-        parsed.error.flatten(),
-        'VALIDATION_ERROR',
-        requestId,
-      )
+      return createErrorResponse('Validation failed', 400, parsed.error.flatten(), 'VALIDATION_ERROR')
     }
 
     const job = await createTradeImportJob({
@@ -61,23 +46,10 @@ export async function POST(request: NextRequest) {
       jobId: job.id,
       internalUserId: identity.internalUserId,
       kind: 'trade',
-      requestId,
     })
 
-    return createSuccessResponse(
-      { job },
-      'Import job created',
-      undefined,
-      requestId,
-      { status: 201 },
-    )
+    return NextResponse.json({ success: true, job }, { status: 201 })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'create-trade-import-job',
-      route: '/api/v1/trades/import/jobs',
-      requestId,
-    })
-    return createErrorResponse('Failed to create trade import job', 500, undefined, 'SERVER_ERROR', requestId)
+    return createErrorResponse('Failed to create trade import job', 500)
   }
 }

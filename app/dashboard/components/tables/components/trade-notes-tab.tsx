@@ -238,10 +238,10 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
             const payload = await response.json().catch(() => null)
 
             if (!response.ok) {
-                throw new Error(payload?.error?.message || 'Failed to load custom templates')
+                throw new Error(payload?.error || 'Failed to load custom templates')
             }
 
-            const templates = Array.isArray(payload?.data?.templates) ? payload.data.templates : []
+            const templates = Array.isArray(payload?.templates) ? payload.templates : []
             setCustomTemplates(templates)
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Failed to load custom templates')
@@ -292,10 +292,10 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
 
             const payload = await response.json().catch(() => null)
             if (!response.ok) {
-                throw new Error(payload?.error?.message || 'Failed to save template')
+                throw new Error(payload?.error || 'Failed to save template')
             }
 
-            toast.success(payload?.data?.updated ? 'Template updated' : 'Template saved')
+            toast.success(payload?.updated ? 'Template updated' : 'Template saved')
             setIsTemplateNameDialogOpen(false)
             setTemplateName('')
             await loadCustomTemplates()
@@ -314,7 +314,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
             })
             const payload = await response.json().catch(() => null)
             if (!response.ok) {
-                throw new Error(payload?.error?.message || 'Failed to delete template')
+                throw new Error(payload?.error || 'Failed to delete template')
             }
 
             setCustomTemplates((prev) => prev.filter((template) => template.id !== templateId))

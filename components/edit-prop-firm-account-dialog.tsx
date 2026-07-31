@@ -170,7 +170,7 @@ export function EditPropFirmAccountDialog({
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to update account')
+        throw new Error(errorData.error || 'Failed to update account')
       }
 
       toast.success('Account Updated', {
@@ -291,3 +291,4 @@ export function EditPropFirmAccountDialog({
     </>
   )
 }
+

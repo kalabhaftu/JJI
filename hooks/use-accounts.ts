@@ -4,8 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
-import { reportError } from '@/lib/observability/report-error'
-import { isDemoSurface } from '@/lib/public-surface-routing'
+import logger from '@/lib/logger'
 
 interface UnifiedAccount {
   id: string
@@ -52,10 +51,7 @@ function broadcastAccountsUpdate() {
     try {
       callback()
     } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'notify-account-cache-subscriber',
-      })
+      logger.error({ error }, 'Account cache subscriber failed')
     }
   })
 }
@@ -88,7 +84,7 @@ export function useAccounts(options: UseAccountsOptions = {}) {
   
   const router = useRouter()
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   const url = (user?.id || isDemo) ? `/api/v1/accounts?page=${page}&limit=${limit}&status=${status}&type=${type}&search=${encodeURIComponent(search)}` : null
   
@@ -99,7 +95,7 @@ export function useAccounts(options: UseAccountsOptions = {}) {
   const accounts: UnifiedAccount[] = useMemo(() => {
     return data?.data || []
   }, [data])
-  const pagination = data?.meta?.pagination || { total: 0, page: 1, limit: 50, totalPages: 1 }
+  const pagination = data?.pagination || { total: 0, page: 1, limit: 50, totalPages: 1 }
 
   const refetch = useCallback(async () => {
     await mutate()

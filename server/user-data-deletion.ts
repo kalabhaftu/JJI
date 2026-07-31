@@ -1,8 +1,7 @@
+import * as Sentry from '@sentry/nextjs'
 import { and, eq, inArray } from 'drizzle-orm'
-import { recordAuditEvent } from '@/lib/audit-logger'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { reportError } from '@/lib/observability/report-error'
 
 export type UserDeletionMode = 'purge-data' | 'delete-account'
 
@@ -16,8 +15,6 @@ type UserDeletionInput = {
   internalUserId: string
   mode: UserDeletionMode
   authUserId?: string
-  requestId?: string
-  ipAddress?: string | null
 }
 
 type IdRow = { id: string }
@@ -28,15 +25,13 @@ type IdRow = { id: string }
  * not be rolled back by an object-store outage, and object cleanup is retried
  * by the job system after this transaction commits.
  */
-export async function deleteUserData({
-  internalUserId,
-  mode,
-  authUserId: inputAuthUserId,
-  requestId,
-  ipAddress,
-}: UserDeletionInput): Promise<UserDeletionResult> {
-  try {
-    const result = await db.transaction(async (tx) => {
+export async function deleteUserData({ internalUserId, mode, authUserId: inputAuthUserId }: UserDeletionInput): Promise<UserDeletionResult> {
+  return Sentry.withScope(async (scope) => {
+    scope.setTag('operation', mode)
+    scope.setTag('user_identity_type', 'internal')
+
+    try {
+      const result = await db.transaction(async (tx) => {
         const user = inputAuthUserId
           ? { id: internalUserId, auth_user_id: inputAuthUserId }
           : await db.query.User.findFirst({
@@ -153,6 +148,7 @@ export async function deleteUserData({
 
         if (mode === 'delete-account') {
           await tx.delete(schema.UserSettings).where(eq(schema.UserSettings.userId, internalUserId))
+          await tx.delete(schema.User).where(eq(schema.User.id, internalUserId))
         } else {
           await tx.update(schema.User).set({ isFirstConnection: true }).where(eq(schema.User.id, internalUserId))
           await tx.insert(schema.UserSettings).values({
@@ -164,49 +160,28 @@ export async function deleteUserData({
           })
         }
 
-        await recordAuditEvent({
-          userId: internalUserId,
-          action: mode === 'delete-account'
-            ? 'USER_ACCOUNT_DELETED'
-            : 'USER_DATA_PURGED',
-          entityType: 'User',
-          entityId: internalUserId,
-          source: 'api',
-          requestId: requestId ?? null,
-          ipAddress: ipAddress ?? null,
-          afterData: {
-            mode,
-            accountRetained: mode === 'purge-data',
-          },
-        }, tx as never)
-
-        if (mode === 'delete-account') {
-          await tx.delete(schema.User).where(eq(schema.User.id, internalUserId))
-        }
-
         return {
           authUserId: user.auth_user_id,
           internalUserId: user.id,
           storageOwnerIds: Array.from(new Set([user.id, user.auth_user_id])),
         }
-    })
+      })
 
-    if (result) return result
-    if (inputAuthUserId) {
-      return {
-        authUserId: inputAuthUserId,
-        internalUserId,
-        storageOwnerIds: Array.from(new Set([internalUserId, inputAuthUserId])),
+      if (result) return result
+      if (inputAuthUserId) {
+        return {
+          authUserId: inputAuthUserId,
+          internalUserId,
+          storageOwnerIds: Array.from(new Set([internalUserId, inputAuthUserId])),
+        }
       }
+      throw new Error('Deletion transaction returned no identity')
+    } catch (error) {
+      Sentry.captureException(error, {
+        tags: { operation: mode },
+        extra: { internalUserId },
+      })
+      throw error
     }
-    throw new Error('Deletion transaction returned no identity')
-  } catch (error) {
-    reportError(error, {
-      surface: 'server',
-      operation: mode,
-      userId: internalUserId,
-      ...(requestId ? { requestId } : {}),
-    })
-    throw error
-  }
+  })
 }

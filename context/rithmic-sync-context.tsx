@@ -16,11 +16,23 @@ import { useTradesStore } from "@/store/trades-store";
 import { getUserId } from "@/server/auth";
 import { useUserStore } from "@/store/user-store";
 import logger from "@/lib/logger";
-import { reportError } from '@/lib/observability/report-error'
-import {
-  parseRithmicRateLimitMessage,
-  type RithmicCredentials,
-} from '@/lib/rithmic/sync-contract'
+
+interface RithmicCredentials {
+  username: string;
+  password: string;
+  server_type: string;
+  location: string;
+  userId: string;
+}
+
+function parseRateLimitMessage(detail: string) {
+  const match = detail.match(
+    /Maximum (\d+) attempts allowed per (\d+\.?\d*) minutes\. Please wait (\d+\.?\d*) minutes/
+  );
+  return match
+    ? { max: match[1], period: match[2], wait: match[3] }
+    : { max: "2", period: "15", wait: "12" };
+}
 
 interface RithmicSyncContextType {
   // Core connection management
@@ -435,10 +447,7 @@ export function RithmicSyncContextProvider({
           const message = JSON.parse(event.data);
           handleMessage(message);
         } catch (error) {
-          reportError(error, {
-            surface: 'client',
-            operation: 'parse-rithmic-websocket-message',
-          })
+          console.error("Error parsing WebSocket message:", error);
           const errorMessage =
             error instanceof Error ? error.message : "Unknown error";
           setConnectionStatus(`Failed to parse message: ${errorMessage}`);
@@ -451,10 +460,7 @@ export function RithmicSyncContextProvider({
       };
 
       newWs.onerror = (error) => {
-        reportError(error, {
-          surface: 'client',
-          operation: 'rithmic-websocket-error',
-        })
+        console.error("WebSocket error:", error);
         setConnectionStatus("WebSocket error occurred");
         handleMessage({
           type: "connection_status",
@@ -560,7 +566,7 @@ export function RithmicSyncContextProvider({
         // Handle rate limit error specifically
         if (response.status === 429) {
           const data = await response.json();
-          const params = parseRithmicRateLimitMessage(data.detail);
+          const params = parseRateLimitMessage(data.detail);
 
           toast.error("Rithmic Rate Limit Exceeded", {
             description: `Maximum ${params.max} attempts allowed per ${params.period} minutes. Please wait ${params.wait} minutes.`,
@@ -651,11 +657,7 @@ export function RithmicSyncContextProvider({
           message: "Sync started successfully",
         };
       } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'auto-sync-rithmic-credential',
-          entityId: credentialId,
-        })
+        console.error("Auto-sync error:", error);
         handleMessage({
           type: "log",
           level: "error",
@@ -702,7 +704,7 @@ export function RithmicSyncContextProvider({
       // Handle rate limit error specifically
       if (response.status === 429) {
         const data = await response.json();
-        const params = parseRithmicRateLimitMessage(data.detail);
+        const params = parseRateLimitMessage(data.detail);
 
         toast.error("Rithmic Rate Limit Exceeded", {
           description: `Maximum ${params.max} attempts allowed per ${params.period} minutes. Please wait ${params.wait} minutes.`,

@@ -1,7 +1,13 @@
-import { reportError } from '@/lib/observability/report-error'
+import * as Sentry from '@sentry/nextjs'
+
+import logger from '@/lib/logger';
 
 type ErrorSource = 'CLIENT' | 'SERVER' | 'API'
 type ErrorLevel = 'WARNING' | 'ERROR' | 'CRITICAL'
+
+export function shouldIgnoreError(message: string, metadata?: Record<string, unknown>) {
+  return false;
+}
 
 interface SentryErrorInput {
   source: ErrorSource
@@ -15,30 +21,30 @@ interface SentryErrorInput {
 }
 
 export async function logError(input: SentryErrorInput): Promise<void> {
-  const error = new Error(String(input.message || 'Unexpected application error'))
-  if (input.stack) error.stack = input.stack
+  try {
+    const messageStr = String(input.message || '')
+    if (shouldIgnoreError(messageStr, input.metadata)) {
+      return
+    }
 
-  const reportContext = {
-    surface: input.source === 'CLIENT'
-      ? 'client'
-      : input.source === 'API'
-        ? 'api'
-        : 'server',
-    operation: 'legacy-error-report',
-    level: input.level === 'WARNING'
-      ? 'warning'
-      : input.level === 'CRITICAL'
-        ? 'fatal'
-        : 'error',
-    extra: {
-      ipAddress: input.ipAddress,
-      metadata: input.metadata,
-    },
-    ...(input.url ? { route: input.url } : {}),
-    ...(input.userId ? { userId: input.userId } : {}),
-  } as const
+    const error = new Error(messageStr)
+    if (input.stack) error.stack = input.stack
 
-  reportError(error, reportContext)
+    const context = {
+      level: input.level === 'WARNING' ? 'warning' : 'error',
+      tags: { source: input.source },
+      extra: {
+        url: input.url,
+        ipAddress: input.ipAddress,
+        metadata: input.metadata,
+      },
+      ...(input.userId ? { user: { id: input.userId } } : {}),
+    } satisfies NonNullable<Parameters<typeof Sentry.captureException>[1]>
+
+    Sentry.captureException(error, context)
+  } catch (err) {
+    logger.error({ err }, '[SentryCapture] Failed to capture error:')
+  }
 }
 
 /**

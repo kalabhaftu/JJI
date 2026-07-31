@@ -8,8 +8,6 @@ import { logger } from '@/lib/logger'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
 import { NextResponse } from 'next/server'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 export const maxDuration = 30;
 
@@ -25,7 +23,6 @@ const requestSchema = z.object({
 }).strict();
 
 export async function POST(req: NextRequest) {
-  const requestId = resolveRequestId(req.headers)
   // Apply rate limiting
   const rateLimitResult = await applyRateLimit(req, aiLimiter);
   if (rateLimitResult) return rateLimitResult;
@@ -126,12 +123,6 @@ Return an array of normalized trade objects. Process ALL rows.`,
         headers: { "Content-Type": "application/json" },
       });
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'stream-ai-trade-format',
-      route: req.nextUrl.pathname,
-      requestId,
-    })
     return new Response(JSON.stringify({ error: "Invalid request format" }), {
       status: 400,
       headers: { "Content-Type": "application/json" },

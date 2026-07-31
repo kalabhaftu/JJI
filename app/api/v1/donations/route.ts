@@ -1,13 +1,10 @@
-import { NextRequest } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { applyRateLimit, publicLimiter } from '@/lib/rate-limiter'
 
 export async function GET(req: NextRequest) {
-  const requestId = resolveRequestId(req.headers)
-  const rl = await applyApiRoutePolicy(req, 'public-read')
+  const rl = await applyRateLimit(req, publicLimiter)
   if (rl) return rl
 
   try {
@@ -17,20 +14,9 @@ export async function GET(req: NextRequest) {
       columns: { token: true, network: true, address: true },
     })
 
-    return createSuccessResponse(addresses, undefined, undefined, requestId)
+    return NextResponse.json({ success: true, data: addresses })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'list-donation-addresses',
-      route: req.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse(
-      'Failed to fetch addresses',
-      500,
-      undefined,
-      'SERVER_ERROR',
-      requestId,
-    )
+    Sentry.captureException(error, { extra: { route: '/api/v1/donations' } })
+    return NextResponse.json({ success: false, error: 'Failed to fetch addresses' }, { status: 500 })
   }
 }

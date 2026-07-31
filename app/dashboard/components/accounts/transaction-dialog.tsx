@@ -80,7 +80,7 @@ export function TransactionDialog({
       const result = await response.json()
 
       if (!result.success) {
-        throw new Error(result.error?.message || 'Transaction failed')
+        throw new Error(result.error || 'Transaction failed')
       }
 
       toast.success(

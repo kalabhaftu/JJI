@@ -1,6 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
 
 export interface TradingModel {
   id: string
@@ -26,7 +25,7 @@ function buildTradingModelQuery(filters?: TradingModelFilters) {
 
 export function useTradingModels(filters?: TradingModelFilters) {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   const { data, isLoading, error } = useQuery<TradingModel[] | null>({
     queryKey: ['trading-models', filters ?? {}, isDemo],
@@ -144,7 +143,10 @@ export function useTradingModels(filters?: TradingModelFilters) {
       const response = await fetch(`/api/v1/user/trading-models${buildTradingModelQuery(filters)}`)
       if (!response.ok) throw new Error('Failed to fetch trading models')
       const data = await response.json()
-      if (Array.isArray(data?.data?.models)) return data.data.models
+      // API shape: { success: true, models: [...] }
+      if (Array.isArray(data)) return data
+      if (Array.isArray(data?.models)) return data.models
+      if (Array.isArray(data?.tradingModels)) return data.tradingModels
       return []
     },
     staleTime: 5 * 60 * 1000,

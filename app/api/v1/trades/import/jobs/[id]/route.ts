@@ -1,41 +1,31 @@
-import { NextRequest } from 'next/server'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { NextRequest, NextResponse } from 'next/server'
+import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { getTradeImportJobForUser } from '@/server/trade-import-jobs'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'import')
+  const rateLimitResponse = await applyRateLimit(request, importLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
     const job = await getTradeImportJobForUser(id, identity.internalUserId)
 
     if (!job) {
-      return createErrorResponse('Import job not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json({ success: false, error: 'Import job not found' }, { status: 404 })
     }
 
-    return createSuccessResponse({ job }, undefined, undefined, requestId)
+    return NextResponse.json({ success: true, job })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'get-trade-import-job',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to fetch import job', 500, undefined, 'SERVER_ERROR', requestId)
+    return NextResponse.json({ success: false, error: 'Failed to fetch import job' }, { status: 500 })
   }
 }

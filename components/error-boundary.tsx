@@ -5,7 +5,7 @@ import { AlertTriangle, RefreshCw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
-import { reportError } from '@/lib/observability/report-error'
+import logger from "@/lib/logger";
 
 interface ErrorBoundaryProps {
   children: ReactNode
@@ -46,12 +46,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     this.props.onError?.(error, errorInfo)
 
-    reportError(error, {
-      surface: 'client',
-      operation: 'react-error-boundary',
-      route: window.location.pathname,
-      extra: { componentStack: errorInfo.componentStack },
-    })
+    logger.error({ err: error, errorInfo }, 'ErrorBoundary caught an error:')
   }
 
   handleRetry = (): void => {
@@ -259,4 +254,5 @@ export function DashboardErrorBoundary({
     </ErrorBoundaryWrapper>
   )
 }
+
 

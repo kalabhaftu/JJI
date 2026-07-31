@@ -1,4 +1,5 @@
 import { logger } from '@/lib/logger';
+import * as Sentry from '@sentry/nextjs'
 import { NextResponse, NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
@@ -12,8 +13,6 @@ import { buildFeedbackAttachmentPath } from '@/lib/storage/paths'
 import { escapeHtml, sendEmail } from '@/lib/email'
 
 import { getSupabaseAdminClient } from '@/server/supabase-admin'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 const MAX_FILES = 3
@@ -71,7 +70,6 @@ function sanitizeOriginalFileName(fileName: string) {
 }
 
 export async function POST(req: NextRequest) {
-  const requestId = resolveRequestId(req.headers)
   const rl = await applyRateLimit(req, feedbackLimiter)
   if (rl) return rl
 
@@ -141,14 +139,7 @@ export async function POST(req: NextRequest) {
           url: `storage://feedback-attachments/${uploadData.path}`,
         })
        } catch (error) {
-         reportError(error, {
-           surface: 'api',
-           operation: 'upload-feedback-attachment',
-           route: req.nextUrl.pathname,
-           requestId,
-           userId: identity?.internalUserId,
-           extra: { fileType: file.type, fileSize: file.size },
-         })
+         Sentry.captureException(error, { extra: { route: '/api/v1/feedback', phase: 'attachment-upload' } })
          logger.warn(`Feedback attachment upload failed (type: ${file.type}, size: ${file.size})`)
          return createErrorResponse('Unable to upload feedback attachment', 503, undefined, 'ATTACHMENT_UPLOAD_FAILED')
        }
@@ -181,10 +172,6 @@ export async function POST(req: NextRequest) {
         html: `<p>Thanks for taking the time to help improve JJI.</p>
           <p>We received <strong>${safeSubject}</strong>. Your feedback is now in the support queue and we will follow up if a reply is needed.</p>
           <p>- The JJI team</p>`,
-        idempotencyKey: `feedback-received/${feedback.id}`,
-        operation: 'send-feedback-receipt',
-        requestId,
-        entityId: feedback.id,
       })
     }
 

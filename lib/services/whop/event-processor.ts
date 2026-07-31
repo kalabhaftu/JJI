@@ -13,7 +13,7 @@ import {
   upsertWhopSubscription,
   type WhopMembershipSnapshot,
 } from './membership-sync'
-import { revalidateSubscriptionAccess } from '@/lib/services/subscription/notifications'
+
 
 export interface WhopWebhookPayload {
   id: string         // event id
@@ -120,7 +120,7 @@ async function handleMembershipEvent(membershipData: any) {
   await upsertWhopSubscription(snapshot, internalUserId)
 
   // Revalidate access caches so UI reflects new status
-  revalidateSubscriptionAccess(internalUserId)
+  // Subscription access check logic handles revalidation automatically on main
 }
 
 /**

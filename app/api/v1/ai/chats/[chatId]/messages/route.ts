@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
@@ -12,10 +12,6 @@ import { getOrSetCached } from '@/lib/cache/unified-cache'
 import { CachePrefix, CacheTTL } from '@/lib/cache/redis-cache'
 import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
 import { applyRateLimit, aiLimiter, consumeRateLimitKey } from '@/lib/rate-limiter'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 export const maxDuration = 60
 
@@ -309,12 +305,9 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ chatId: string }> }
 ) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'ai')
-  if (limited) return limited
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userId = identity.internalUserId
   const { chatId } = await params
@@ -334,7 +327,7 @@ export async function GET(
     })
 
     if (!chat) {
-      return createErrorResponse('Chat not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
     }
 
     const messages = await db.query.AIChatMessage.findMany({
@@ -344,12 +337,9 @@ export async function GET(
       offset: skip,
     })
 
-    return createSuccessResponse(messages, undefined, undefined, requestId, {
-      headers: { 'x-page': String(page), 'x-limit': String(limit) },
-    })
+    return NextResponse.json({ success: true, data: messages })
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'list-ai-chat-messages', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to fetch messages', 500, undefined, 'AI_MESSAGES_READ_FAILED', requestId)
+    return NextResponse.json({ error: 'Failed to fetch messages' }, { status: 500 })
   }
 }
 
@@ -357,10 +347,9 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ chatId: string }> }
 ) {
-  const requestId = resolveRequestId(request.headers)
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userId = identity.internalUserId
 
@@ -379,23 +368,20 @@ export async function POST(
     })
 
     if (!chat) {
-      return createErrorResponse('Chat not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json({ error: 'Chat not found' }, { status: 404 })
     }
 
     // Check general AI Access and Limits
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
-      return createErrorResponse(aiGuard.reason, 403, undefined, 'PAYWALL', requestId)
+      return NextResponse.json({ error: aiGuard.reason, code: 'PAYWALL' }, { status: 403 })
     }
 
     const dailyLimit = Number(aiGuard.settings?.maxMessagesPerDay ?? 0)
     if (dailyLimit <= 0) {
-      return createErrorResponse(
-        'AI messaging is currently unavailable for this account.',
-        429,
-        undefined,
-        'AI_DAILY_LIMIT',
-        requestId,
+      return NextResponse.json(
+        { error: 'AI messaging is currently unavailable for this account.', code: 'AI_DAILY_LIMIT' },
+        { status: 429 },
       )
     }
     const dailyQuota = await consumeRateLimitKey(
@@ -403,17 +389,14 @@ export async function POST(
       { points: dailyLimit, duration: 86400, failClosed: true },
     )
     if (!dailyQuota.allowed) {
-      return createErrorResponse(
-        `You have reached your daily limit of ${dailyLimit || 'default'} AI messages. Try again tomorrow.`,
-        429,
-        undefined,
-        'AI_DAILY_LIMIT',
-        requestId,
+      return NextResponse.json(
+        { error: `You have reached your daily limit of ${dailyLimit || 'default'} AI messages. Try again tomorrow.`, code: 'AI_DAILY_LIMIT' },
+        { status: 429 },
       )
     }
 
     if (!(await hasCurrentAiDataConsent(userId))) {
-      return createErrorResponse('AI data processing consent is required', 412, undefined, 'AI_DATA_CONSENT_REQUIRED', requestId)
+      return NextResponse.json({ error: 'AI data processing consent is required', code: 'AI_DATA_CONSENT_REQUIRED' }, { status: 412 })
     }
 
     const body = await request.json()
@@ -422,32 +405,26 @@ export async function POST(
     const prompt = typeof body?.prompt === 'string' ? body.prompt : body?.content
 
     if (!prompt || !prompt.trim()) {
-      return createErrorResponse('Message content is required', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json({ error: 'Message content is required' }, { status: 400 })
     }
 
     if (prompt.length > 8000) {
-      return createErrorResponse('Message content is too long', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json({ error: 'Message content is too long' }, { status: 400 })
     }
 
     // 1. Abuse Protection Pre-filters
     if (isPromptSuspicious(prompt)) {
-      return createErrorResponse(
-        'Security Alert: Unsupported command execution or prompt injection attempt detected. Request blocked.',
-        400,
-        undefined,
-        'SECURITY_ALERT',
-        requestId,
-      )
+      return NextResponse.json({
+        error: 'Security Alert: Unsupported command execution or prompt injection attempt detected. Request blocked.',
+        code: 'SECURITY_ALERT'
+      }, { status: 400 })
     }
 
     if (isPromptOffScope(prompt)) {
-      return createErrorResponse(
-        'I can only assist with topics related to trading, risk management, performance metrics, psychology, journaling, or account configuration.',
-        400,
-        undefined,
-        'OFF_SCOPE',
-        requestId,
-      )
+      return NextResponse.json({
+        error: 'I can only assist with topics related to trading, risk management, performance metrics, psychology, journaling, or account configuration.',
+        code: 'OFF_SCOPE'
+      }, { status: 400 })
     }
 
     // Save user's message
@@ -564,7 +541,6 @@ ${dataContext}`
 
     return result.toTextStreamResponse()
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'stream-ai-chat-message', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to process message', 500, undefined, 'AI_MESSAGE_FAILED', requestId)
+    return NextResponse.json({ error: 'Failed to process message' }, { status: 500 })
   }
 }

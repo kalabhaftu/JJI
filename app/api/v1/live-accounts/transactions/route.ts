@@ -1,21 +1,21 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 
 // GET /api/live-accounts/transactions - Get all transactions for user's accounts
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
     const userId = identity.internalUserId
 
@@ -25,21 +25,15 @@ export async function GET(request: NextRequest) {
       orderBy: (table, { desc }) => [desc(table.createdAt)]
     })
 
-    return createSuccessResponse(transactions, undefined, undefined, requestId)
+    return NextResponse.json({
+      success: true,
+      data: transactions
+    })
 
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'list-live-account-transactions',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      undefined,
-      'LIVE_ACCOUNT_TRANSACTIONS_FAILED',
-      requestId,
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
     )
   }
 }

@@ -1,28 +1,25 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { recordAuditEvent } from '@/lib/audit-logger'
-import { getClientIp } from '@/lib/security/client-ip'
-import { and, eq } from 'drizzle-orm'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 
 // POST /api/live-accounts/[id]/transactions - Create deposit or withdrawal
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
     const userId = identity.internalUserId
 
@@ -32,25 +29,40 @@ export async function POST(
 
     // Validate input
     if (!type || amount === undefined || amount === null || amount === '') {
-      return createErrorResponse('Type and amount are required', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Type and amount are required' },
+        { status: 400 }
+      )
     }
 
     if (!['DEPOSIT', 'WITHDRAWAL'].includes(type)) {
-      return createErrorResponse('Type must be DEPOSIT or WITHDRAWAL', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Type must be DEPOSIT or WITHDRAWAL' },
+        { status: 400 }
+      )
     }
 
     const numericAmount = Number(amount)
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-      return createErrorResponse('Amount must be a positive number', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Amount must be a positive number' },
+        { status: 400 }
+      )
     }
 
     // Validate minimum amounts
     if (type === 'DEPOSIT' && numericAmount < 5) {
-      return createErrorResponse('Minimum deposit amount is $5', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Minimum deposit amount is $5' },
+        { status: 400 }
+      )
     }
 
     if (type === 'WITHDRAWAL' && numericAmount < 10) {
-      return createErrorResponse('Minimum withdrawal amount is $10', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Minimum withdrawal amount is $10' },
+        { status: 400 }
+      )
     }
 
     // Verify account belongs to user
@@ -59,24 +71,21 @@ export async function POST(
     })
 
     if (!account) {
-      return createErrorResponse('Account not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Account not found' },
+        { status: 404 }
+      )
     }
 
     // For withdrawals, check if account has sufficient balance
     if (type === 'WITHDRAWAL') {
       // Calculate current balance including trades and previous transactions
       const trades = await db.query.Trade.findMany({
-        where: (table, { eq, and }) => and(
-          eq(table.userId, userId),
-          eq(table.accountNumber, account.number),
-        )
+        where: (table, { eq }) => eq(table.accountNumber, account.number)
       })
 
       const transactions = await db.query.LiveAccountTransaction.findMany({
-        where: (table, { eq, and }) => and(
-          eq(table.userId, userId),
-          eq(table.accountId, accountId),
-        )
+        where: (table, { eq }) => eq(table.accountId, accountId)
       })
 
       const totalPnL = trades.reduce(
@@ -91,12 +100,9 @@ export async function POST(
       const currentBalance = Number(account.startingBalance || 0) + totalPnL + totalTransactions
 
       if (currentBalance < numericAmount) {
-        return createErrorResponse(
-          `Insufficient balance. Current balance: $${currentBalance.toFixed(2)}`,
-          400,
-          undefined,
-          'INSUFFICIENT_BALANCE',
-          requestId,
+        return NextResponse.json(
+          { success: false, error: `Insufficient balance. Current balance: $${currentBalance.toFixed(2)}` },
+          { status: 400 }
         )
       }
     }
@@ -104,33 +110,25 @@ export async function POST(
     // Create transaction
     const transactionAmount = type === 'DEPOSIT' ? numericAmount : -numericAmount
 
-    const transaction = await db.transaction(async (tx) => {
-      const created = (await tx.insert(schema.LiveAccountTransaction).values({
-        id: crypto.randomUUID(),
-        accountId,
-        userId,
-        type: type as 'DEPOSIT' | 'WITHDRAWAL',
-        amount: transactionAmount,
-        description: typeof description === 'string' ? description.slice(0, 500) : null,
-      }).returning())[0]
-      await recordAuditEvent({
-        userId,
-        action: `LIVE_ACCOUNT_${type}`,
-        entityType: 'LiveAccountTransaction',
-        entityId: created.id,
-        source: 'api',
-        requestId,
-        ipAddress: getClientIp(request.headers),
-        afterData: { accountId, type, amount: transactionAmount },
-      }, tx as never)
-      return created
+    const transaction = (await db.insert(schema.LiveAccountTransaction).values({
+      id: crypto.randomUUID(),
+      accountId,
+      userId,
+      type: type as 'DEPOSIT' | 'WITHDRAWAL',
+      amount: transactionAmount,
+      description: description || null
+    }).returning())[0]
+
+    return NextResponse.json({
+      success: true,
+      data: transaction
     })
 
-    return createSuccessResponse(transaction, undefined, undefined, requestId)
-
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'create-live-account-transaction', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Internal server error', 500, undefined, 'LIVE_ACCOUNT_TRANSACTION_FAILED', requestId)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 
@@ -139,14 +137,16 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
     const userId = identity.internalUserId
 
@@ -158,22 +158,27 @@ export async function GET(
     })
 
     if (!account) {
-      return createErrorResponse('Account not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Account not found' },
+        { status: 404 }
+      )
     }
 
     // Get transactions
     const transactions = await db.query.LiveAccountTransaction.findMany({
-      where: (table, { eq, and }) => and(
-        eq(table.userId, userId),
-        eq(table.accountId, accountId),
-      ),
+      where: (table, { eq }) => eq(table.accountId, accountId),
       orderBy: (table, { desc }) => [desc(table.createdAt)]
     })
 
-    return createSuccessResponse(transactions, undefined, undefined, requestId)
+    return NextResponse.json({
+      success: true,
+      data: transactions
+    })
 
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'list-live-account-transactions', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Internal server error', 500, undefined, 'LIVE_ACCOUNT_TRANSACTIONS_FAILED', requestId)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

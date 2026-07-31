@@ -1,33 +1,28 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
+import * as schema from '@/lib/db/schema'
+import { eq, and } from 'drizzle-orm'
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { logActivity, getClientIp } from '@/lib/activity-logger'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger';
 import { withCache, getUserCacheVersion } from '@/lib/cache/helpers'
 import { CacheKeys, CacheTTL } from '@/lib/cache/keys'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { isDomainError } from '@/lib/domain-error'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { getClientIp } from '@/lib/security/client-ip'
-import {
-  deleteLiveAccountForUser,
-  updateLiveAccountForUser,
-} from '@/server/accounts/lifecycle'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'authenticated-read')
+  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id: accountId } = await params
@@ -90,54 +85,120 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     )
 
     if (!data) {
-      return createErrorResponse('Account not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Account not found' },
+        { status: 404 }
+      )
     }
 
-    return createSuccessResponse(data, undefined, undefined, requestId)
-  } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'get-account',
-      route: request.nextUrl.pathname,
-      requestId,
+    return NextResponse.json({
+      success: true,
+      data
     })
-    return createErrorResponse('Failed to fetch account', 500, undefined, 'SERVER_ERROR', requestId)
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/accounts/[id]', method: 'GET' } })
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch account' },
+      { status: 500 }
+    )
   }
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const internalUserId = identity.internalUserId
     const { id: accountId } = await params
-    const body = await request.json() as {
-      name?: string
-      broker?: string
-      isArchived?: boolean
-      startingBalance?: number | string
-      number?: string
-    }
-    const { account: updatedAccount } = await updateLiveAccountForUser(
-      internalUserId,
-      accountId,
-      body,
-      {
-        source: 'api',
-        requestId,
-        ipAddress: getClientIp(request.headers),
-      },
-    )
+    const body = await request.json()
+    const { name, broker, isArchived, startingBalance, number } = body
 
-    return createSuccessResponse(
-      {
+    const existingAccount = await db.query.Account.findFirst({
+      where: (table, { eq, and }) => and(eq(table.id, accountId), eq(table.userId, internalUserId)),
+    })
+
+    if (!existingAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Account not found' },
+        { status: 404 }
+      )
+    }
+
+    const updateData: any = {}
+
+    if (typeof isArchived === 'boolean') {
+      updateData.isArchived = isArchived
+    }
+
+    // Name is always editable
+    if (name !== undefined) {
+      if (!name.trim()) {
+        return NextResponse.json({ success: false, error: 'Name is required' }, { status: 400 })
+      }
+      updateData.name = name.trim()
+    }
+
+    // Balance, Broker, and Number are one-time editable if the account is not yet "fully configured"
+    // or if they are currently defaults (like 0 balance).
+    if (!existingAccount.isConfigured) {
+      if (startingBalance !== undefined) {
+        updateData.startingBalance = parseFloat(startingBalance)
+      }
+      if (number !== undefined) {
+        updateData.number = number.trim()
+      }
+      if (broker !== undefined) {
+        if (!broker.trim()) {
+          return NextResponse.json({ success: false, error: 'Broker is required' }, { status: 400 })
+        }
+        updateData.broker = broker.trim()
+      }
+
+      // If we performed a one-time edit of these sensitive fields, lock them for the future
+      if (startingBalance !== undefined || number !== undefined || broker !== undefined) {
+        updateData.isConfigured = true
+      }
+    } else {
+      // If already configured, we ignore startingBalance, number, and broker updates
+      // but we still allowed 'name' above.
+      // Optionally log or notify that these fields are locked.
+    }
+
+    const updatedAccount = (await db.update(schema.Account).set(updateData).where(and(
+      eq(schema.Account.id, accountId),
+      eq(schema.Account.userId, internalUserId),
+    )).returning())[0]
+    if (!updatedAccount) {
+      return NextResponse.json({ success: false, error: 'Account not found during update' }, { status: 404 })
+    }
+
+    if (typeof isArchived === 'boolean') {
+      const { invalidateUserCaches } = await import('@/server/accounts')
+      await invalidateUserCaches(internalUserId)
+    }
+
+    const action = typeof isArchived === 'boolean'
+      ? (isArchived ? 'ACCOUNT_ARCHIVED' : 'ACCOUNT_UNARCHIVED')
+      : (existingAccount.isConfigured ? 'ACCOUNT_RENAMED' : 'ACCOUNT_CONFIGURED')
+
+    logActivity({
+      userId: internalUserId,
+      action,
+      entity: 'Account',
+      entityId: accountId,
+      metadata: { updatedFields: Object.keys(updateData), accountNumber: updatedAccount.number },
+      ipAddress: getClientIp(request),
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: {
         id: updatedAccount.id,
         number: updatedAccount.number,
         name: updatedAccount.name,
@@ -146,85 +207,101 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         startingBalance: updatedAccount.startingBalance,
         isArchived: updatedAccount.isArchived,
         isConfigured: updatedAccount.isConfigured,
-      },
-      undefined,
-      undefined,
-      requestId,
-    )
-  } catch (error) {
-    if (isDomainError(error)) {
-      return createErrorResponse(
-        error.message,
-        error.status,
-        undefined,
-        error.code,
-        requestId,
-      )
-    }
-    reportError(error, {
-      surface: 'api',
-      operation: 'update-account',
-      route: request.nextUrl.pathname,
-      requestId,
+      }
     })
-    return createErrorResponse(
-      'Failed to update account',
-      500,
-      undefined,
-      'ACCOUNT_UPDATE_FAILED',
-      requestId,
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/accounts/[id]', method: 'PATCH' } })
+    return NextResponse.json(
+      { success: false, error: 'Failed to update account' },
+      { status: 500 }
     )
   }
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const internalUserId = identity.internalUserId
     const { id: accountId } = await params
 
-    await deleteLiveAccountForUser(internalUserId, accountId, {
-      source: 'api',
-      requestId,
-      ipAddress: getClientIp(request.headers),
+    const existingAccount = await db.query.Account.findFirst({
+      where: (table, { eq, and }) => and(eq(table.id, accountId), eq(table.userId, internalUserId)),
     })
 
-    return createSuccessResponse(
-      { deleted: true },
-      'Account and all associated trades deleted successfully',
-      undefined,
-      requestId,
-    )
-  } catch (error) {
-    if (isDomainError(error)) {
-      return createErrorResponse(
-        error.message,
-        error.status,
-        undefined,
-        error.code,
-        requestId,
+    if (!existingAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Account not found' },
+        { status: 404 }
       )
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'delete-account',
-      route: request.nextUrl.pathname,
-      requestId,
+
+    // Fetch all trade images for the account before deleting
+    const accountTrades = await db.query.Trade.findMany({
+      where: (table, { eq, and }) => and(eq(table.accountId, accountId), eq(table.userId, internalUserId)),
+      columns: {
+        imageOne: true,
+        imageTwo: true,
+        imageThree: true,
+        imageFour: true,
+        imageFive: true,
+        imageSix: true,
+        cardPreviewImage: true,
+      },
     })
-    return createErrorResponse(
-      'Failed to delete account',
-      500,
-      undefined,
-      'ACCOUNT_DELETE_FAILED',
-      requestId,
+
+    const imageUrls = accountTrades.flatMap((t) => [
+      t.imageOne,
+      t.imageTwo,
+      t.imageThree,
+      t.imageFour,
+      t.imageFive,
+      t.imageSix,
+      t.cardPreviewImage,
+    ]).filter((url): url is string => !!url)
+
+    if (imageUrls.length > 0) {
+      try {
+        const { deletePublicStorageUrls } = await import('@/server/storage-admin')
+        await deletePublicStorageUrls(imageUrls)
+      } catch (err) {
+        logger.error('Failed to delete account trade images from storage: ' + (err instanceof Error ? err.message : String(err)))
+        // We continue with DB deletion even if storage cleanup fails
+      }
+    }
+
+    await db.delete(schema.Account).where(and(
+      eq(schema.Account.id, accountId),
+      eq(schema.Account.userId, internalUserId),
+    ))
+
+    const { invalidateUserCaches } = await import('@/server/accounts')
+    await invalidateUserCaches(internalUserId)
+
+    logActivity({
+      userId: internalUserId,
+      action: 'ACCOUNT_DELETED',
+      entity: 'Account',
+      entityId: accountId,
+      metadata: { accountNumber: existingAccount.number },
+      ipAddress: getClientIp(request),
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'Account and all associated trades deleted successfully'
+    })
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/accounts/[id]', method: 'DELETE' } })
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete account' },
+      { status: 500 }
     )
   }
 }

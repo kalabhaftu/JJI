@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest'
 const SECURITY_CRITICAL_QUERY_FILES = [
   'server/trade-import-jobs.ts',
   'app/api/v1/prop-firm/accounts/validate-trade/route.ts',
-  'server/integrations/tradovate.ts',
+  'app/dashboard/components/import/tradovate/sync/actions.ts',
   'app/api/v1/ai/chats/[chatId]/messages/route.ts',
 ]
 

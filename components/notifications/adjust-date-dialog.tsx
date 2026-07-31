@@ -59,7 +59,7 @@ export function AdjustDateDialog({
         toast.success('Account date adjusted successfully')
         onComplete()
       } else {
-        throw new Error(result.error?.message || 'Failed to adjust date')
+        throw new Error(result.error || 'Failed to adjust date')
       }
     } catch (error) {
       toast.error('Adjustment failed', {

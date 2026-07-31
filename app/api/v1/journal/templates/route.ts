@@ -1,13 +1,10 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { eq, and, asc } from 'drizzle-orm'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 const createTemplateSchema = z.object({
   name: z.string().trim().min(1).max(60),
@@ -41,13 +38,12 @@ function isMissingJournalTemplateTableError(error: unknown): boolean {
 }
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   try {
@@ -63,46 +59,31 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return createSuccessResponse({ templates }, undefined, undefined, requestId)
+    return NextResponse.json({ templates })
   } catch (error) {
     if (isMissingJournalTemplateTableError(error)) {
-      return createSuccessResponse(
-        { templates: [], migrationRequired: true },
-        undefined,
-        undefined,
-        requestId,
-      )
+      return NextResponse.json({
+        templates: [],
+        migrationRequired: true,
+      })
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'list-journal-templates',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to load templates', 500, undefined, 'TEMPLATE_LIST_FAILED', requestId)
+    throw error
   }
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const json = await request.json().catch(() => null)
   const parsed = createTemplateSchema.safeParse(json)
   if (!parsed.success) {
-    return createErrorResponse(
-      'Invalid template payload',
-      400,
-      parsed.error.flatten(),
-      'VALIDATION_ERROR',
-      requestId,
-    )
+    return NextResponse.json({ error: 'Invalid template payload' }, { status: 400 })
   }
 
   const { name, content } = parsed.data
@@ -119,46 +100,31 @@ export async function POST(request: NextRequest) {
         eq(schema.JournalTemplate.id, existingByName.id),
         eq(schema.JournalTemplate.userId, userId),
       )).returning())[0]
-      return createSuccessResponse({ template: updated, updated: true }, undefined, undefined, requestId)
+      return NextResponse.json({ template: updated, updated: true })
     }
 
     const count = await db.$count(schema.JournalTemplate, eq(schema.JournalTemplate.userId, userId))
 
     if (count >= MAX_CUSTOM_TEMPLATES) {
-      return createErrorResponse(
-        `Maximum ${MAX_CUSTOM_TEMPLATES} custom templates allowed`,
-        409,
-        undefined,
-        'TEMPLATE_LIMIT_REACHED',
-        requestId,
+      return NextResponse.json(
+        { error: `Maximum ${MAX_CUSTOM_TEMPLATES} custom templates allowed` },
+        { status: 409 }
       )
     }
 
     const created = (await db.insert(schema.JournalTemplate).values({ userId, name, content }).returning())[0]
 
-    return createSuccessResponse(
-      { template: created, created: true },
-      undefined,
-      undefined,
-      requestId,
-      { status: 201 },
-    )
+    return NextResponse.json({ template: created, created: true }, { status: 201 })
   } catch (error) {
     if (isMissingJournalTemplateTableError(error)) {
-      return createErrorResponse(
-        'Custom templates are temporarily unavailable until the latest database migration is applied.',
-        503,
-        { migrationRequired: true },
-        'MIGRATION_REQUIRED',
-        requestId,
+      return NextResponse.json(
+        {
+          error: 'Custom templates are temporarily unavailable until the latest database migration is applied.',
+          migrationRequired: true,
+        },
+        { status: 503 }
       )
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'save-journal-template',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to save template', 500, undefined, 'TEMPLATE_SAVE_FAILED', requestId)
+    throw error
   }
 }

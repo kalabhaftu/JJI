@@ -19,14 +19,7 @@ import { useData } from '@/context/data-provider'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { useFilteredTrades } from '@/hooks/use-filtered-trades'
 import { useMediaQuery } from '@/hooks/use-media-query'
-import { cn } from '@/lib/utils'
-import {
-  formatCurrency,
-  formatQuantity,
-  formatTradeDate,
-  getPnlIntensity,
-  parsePositionTime,
-} from '@/lib/trading/trade-formatting'
+import { cn, formatCurrency, formatQuantity, parsePositionTime, getPnlIntensity, formatTradeDate } from '@/lib/utils'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { useTableConfigStore } from '@/store/table-config-store'
 import { useUserStore } from '@/store/user-store'
@@ -58,9 +51,8 @@ import { useRouter } from 'next/navigation'
 import React from 'react'
 import { DataTableColumnHeader } from './column-header'
 import TradeChartModal from './trade-chart-modal'
-import TradeReplayModal from './trade-replay-modal'
 import { TradeTableMobileCard } from './trade-table-mobile-card'
-import { reportError } from '@/lib/observability/report-error'
+import { logger } from '@/lib/logger';
 
 export interface ExtendedTrade extends Omit<Trade, 'tags'> {
   tags: string[]
@@ -74,8 +66,6 @@ const VALID_COLUMN_IDS = [
   'entryPrice',
   'closePrice',
   'timeInPosition',
-  'mae',
-  'mfe',
   'pnl',
   'commission',
   'quantity',
@@ -175,7 +165,6 @@ type ColumnFactoryParams = {
   onRowSelectionChange: (ids: string[], value: boolean) => void
   onViewDetails: (trade: ExtendedTrade) => void
   onEditTrade: (trade: Trade | ExtendedTrade) => void
-  onViewReplay: (trade: ExtendedTrade) => void
   formatValue: ReturnType<typeof useDashboardDisplay>['formatValue']
   isPrivacyMode: boolean
   maskSensitiveValue: ReturnType<typeof useDashboardDisplay>['maskSensitiveValue']
@@ -187,7 +176,6 @@ const useTradeTableColumns = ({
   onRowSelectionChange,
   onViewDetails,
   onEditTrade,
-  onViewReplay,
   formatValue,
   isPrivacyMode,
   maskSensitiveValue,
@@ -381,18 +369,6 @@ const useTradeTableColumns = ({
       size: 90,
     },
     {
-      accessorKey: 'mae',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="MAE" tableId="trade-table" className="justify-end px-0" />,
-      cell: ({ row }) => <div className="text-right font-mono text-muted-foreground tabular-nums">{row.original.mae != null ? formatValue(row.original.mae, { kind: 'money' }) : '--'}</div>,
-      size: 90,
-    },
-    {
-      accessorKey: 'mfe',
-      header: ({ column }) => <DataTableColumnHeader column={column} title="MFE" tableId="trade-table" className="justify-end px-0" />,
-      cell: ({ row }) => <div className="text-right font-mono text-muted-foreground tabular-nums">{row.original.mfe != null ? formatValue(row.original.mfe, { kind: 'money' }) : '--'}</div>,
-      size: 90,
-    },
-    {
       accessorKey: 'quantity',
       header: ({ column }) => <DataTableColumnHeader column={column} title="Qty" tableId="trade-table" className="justify-end px-0" />,
       cell: ({ row }) => <div className="text-right font-mono font-medium tabular-nums">{formatQuantity(row.original.quantity)}</div>,
@@ -414,9 +390,6 @@ const useTradeTableColumns = ({
             <Button variant='ghost' size='sm' className="h-7 px-2 text-[11px]" data-tour="edit-trade-btn" onClick={() => onEditTrade(tradeToEdit as ExtendedTrade)}>
               Edit
             </Button>
-            <Button variant='ghost' size='sm' className="h-7 px-2 text-[11px]" onClick={() => onViewReplay(tradeToEdit as ExtendedTrade)}>
-              Replay
-            </Button>
           </div>
         )
       },
@@ -424,7 +397,7 @@ const useTradeTableColumns = ({
       enableHiding: false,
       size: 100,
     },
-  ], [timezone, onRowSelectionChange, onViewDetails, onEditTrade, onViewReplay, formatValue, isPrivacyMode, maskSensitiveValue, getTradeRMultipleInfo])
+  ], [timezone, onRowSelectionChange, onViewDetails, onEditTrade, formatValue, isPrivacyMode, maskSensitiveValue, getTradeRMultipleInfo])
 }
 
 export function TradeTableReview() {
@@ -482,7 +455,6 @@ export function TradeTableReview() {
   const [pageIndex, setPageIndex] = React.useState(tableConfig?.pageIndex ?? 0)
   const [selectedTrades, setSelectedTrades] = React.useState<string[]>([])
   const [isChartModalOpen, setIsChartModalOpen] = React.useState(false)
-  const [isReplayModalOpen, setIsReplayModalOpen] = React.useState(false)
   const [selectedTradeForChart, setSelectedTradeForChart] = React.useState<ExtendedTrade | null>(null)
 
   React.useEffect(() => {
@@ -566,7 +538,7 @@ export function TradeTableReview() {
   }, [activeTab, updatePageIndex])
 
   // Server-paginated trades (prevents multi-MB payloads on "All time")
-  const { data: pagedTradesData, isLoading: isLoadingTrades } = useFilteredTrades({
+  const { data: pagedTradesData } = useFilteredTrades({
     accounts: accountNumbers?.length ? accountNumbers : undefined,
     dateFrom: dateRange?.from?.toISOString?.(),
     dateTo: dateRange?.to?.toISOString?.(),
@@ -601,11 +573,6 @@ export function TradeTableReview() {
     setIsChartModalOpen(true)
   }, [])
 
-  const handleViewReplay = React.useCallback((trade: ExtendedTrade) => {
-    setSelectedTradeForChart(trade)
-    setIsReplayModalOpen(true)
-  }, [])
-
   const handleSelectTrade = React.useCallback((tradeIds: string[], value: boolean) => {
     setSelectedTrades((prev) => {
       if (value) {
@@ -623,7 +590,6 @@ export function TradeTableReview() {
     onRowSelectionChange: handleSelectTrade,
     onViewDetails: handleViewDetails,
     onEditTrade: handleEditTrade,
-    onViewReplay: handleViewReplay,
     formatValue,
     isPrivacyMode,
     maskSensitiveValue,
@@ -695,10 +661,7 @@ export function TradeTableReview() {
       tableRef.current?.resetRowSelection()
       setSelectedTrades([])
     } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'bulk-tag-trades',
-      })
+      logger.error({ err: error }, 'Failed to bulk tag trades:')
     }
   }, [selectedTrades, appendTagsToTrades])
 
@@ -771,12 +734,7 @@ export function TradeTableReview() {
       </div>
 
       <div className="rounded-2xl sm:rounded-3xl border border-border bg-background shadow-md w-full overflow-hidden">
-        {isLoadingTrades ? (
-          <div className="flex min-h-[350px] flex-col items-center justify-center gap-4 bg-muted/10 text-muted-foreground p-8 text-center w-full border border-dashed border-border/40 rounded-2xl sm:rounded-3xl">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            <p className="text-sm font-medium">Loading trades...</p>
-          </div>
-        ) : table.getRowModel().rows.length > 0 ? (
+        {table.getRowModel().rows.length > 0 ? (
           isMobile ? (
             <div className="w-full px-3 py-3 sm:px-4 space-y-3">
               {table.getRowModel().rows.map((row) => (
@@ -1003,15 +961,7 @@ export function TradeTableReview() {
         isOpen={isChartModalOpen}
         onClose={() => {
           setIsChartModalOpen(false)
-          setTimeout(() => setSelectedTradeForChart(null), 200)
-        }}
-        trade={selectedTradeForChart}
-      />
-      <TradeReplayModal
-        isOpen={isReplayModalOpen}
-        onClose={() => {
-          setIsReplayModalOpen(false)
-          setTimeout(() => setSelectedTradeForChart(null), 200)
+          setSelectedTradeForChart(null)
         }}
         trade={selectedTradeForChart}
       />

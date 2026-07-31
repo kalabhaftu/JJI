@@ -1,12 +1,9 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { eq, and } from 'drizzle-orm'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -28,13 +25,12 @@ function isMissingJournalTemplateTableError(error: unknown): boolean {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { id } = await params
@@ -47,7 +43,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!existing) {
-      return createErrorResponse('Template not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json({ error: 'Template not found' }, { status: 404 })
     }
 
     await db
@@ -57,23 +53,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         eq(schema.JournalTemplate.userId, identity.internalUserId),
       ))
 
-    return createSuccessResponse({ deleted: true }, undefined, undefined, requestId)
+    return NextResponse.json({ success: true })
   } catch (error) {
     if (isMissingJournalTemplateTableError(error)) {
-      return createErrorResponse(
-        'Custom templates are temporarily unavailable until the latest database migration is applied.',
-        503,
-        { migrationRequired: true },
-        'MIGRATION_REQUIRED',
-        requestId,
+      return NextResponse.json(
+        {
+          error: 'Custom templates are temporarily unavailable until the latest database migration is applied.',
+          migrationRequired: true,
+        },
+        { status: 503 }
       )
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'delete-journal-template',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to delete template', 500, undefined, 'TEMPLATE_DELETE_FAILED', requestId)
+    throw error
   }
 }

@@ -19,13 +19,13 @@ Application code uses `DATABASE_URL` through `lib/db/client.ts`. Migration and a
 ## Development workflow
 
 1. Change the Drizzle schema.
-2. Create the migration with `supabase migration new <name>`.
+2. Generate the migration with the repository tool.
 3. Review generated SQL and data effects.
 4. Add explicit data-preservation SQL when required.
-5. Run `bun run db:migrations:check`.
+5. Run `npx drizzle-kit check`.
 6. Run focused migration tests and the full test suite.
 
-`bun run db:push` is limited to disposable development databases.
+`npm run db:push` is limited to disposable development databases.
 
 The `0000`–`0002` files are historical Drizzle baselines. Production records
 them as superseded; `20260726004500_align_drizzle_runtime_schema.sql` performs

@@ -29,13 +29,6 @@
       "when": 1785146928770,
       "tag": "0003_daily_chronomancer",
       "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1785486950087,
-      "tag": "0004_whop_integration",
-      "breakpoints": true
     }
   ]
 }

@@ -4,7 +4,6 @@ import { fetchWithError, handleFetchError } from '@/lib/utils/fetch-with-error'
 import { API_TIMEOUT } from '@/lib/constants'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
 
 interface PropFirmAccountLocal {
   id: string
@@ -92,7 +91,7 @@ interface UsePropFirmRealtimeResult {
 
 export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePropFirmRealtimeResult {
   const { accountId, enabled = true } = options
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
   const user = useUserStore(state => state.user)
   
   const [account, setAccount] = useState<PropFirmAccountLocal | null>(null)

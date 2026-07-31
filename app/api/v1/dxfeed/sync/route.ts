@@ -1,19 +1,16 @@
-import { NextRequest } from "next/server";
-import { directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse } from '@/lib/api-response'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { logger } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import { directSyncUnavailablePayload } from '@/lib/integrations/direct-sync-status'
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
-  await request.json().catch(() => null)
-  return createErrorResponse(
-    directSyncUnderDevelopmentMessage('DxFeed'),
-    503,
-    { underDevelopment: true },
-    'DIRECT_SYNC_UNAVAILABLE',
-    requestId,
-  )
+  try {
+    await request.json().catch(() => null)
+    return NextResponse.json(directSyncUnavailablePayload('DxFeed'), { status: 503 });
+  } catch (error) {
+    logger.error("Error performing DxFeed sync: " + (error instanceof Error ? error.message : String(error)));
+    return NextResponse.json(
+      { success: false, message: "Failed to perform DxFeed sync" },
+      { status: 500 }
+    );
+  }
 }

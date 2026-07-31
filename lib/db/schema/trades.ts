@@ -70,7 +70,6 @@ export const Trade = pgTable('Trade', {
   mae: doublePrecision('mae'),
   mfe: doublePrecision('mfe'),
   setup: text('setup'),
-  isMissedTrade: boolean('isMissedTrade').default(false),
 }, (table) => {
   return {
     userIdIdx: index('trade_user_id_idx').on(table.userId),

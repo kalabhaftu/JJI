@@ -1,7 +1,8 @@
 'use client'
 
 import React from 'react'
-import { reportError } from '@/lib/observability/report-error'
+import * as Sentry from '@sentry/nextjs'
+import logger from '@/lib/logger'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
@@ -118,7 +119,8 @@ function toLexicalStateString(value?: string): string {
   try {
     const parsed = JSON.parse(value)
     return JSON.stringify(sanitizeLexicalState(parsed))
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'components/ui/editor/lexical-editor', phase: 'parseState' } })
     // Migrate legacy plain text notes to a safe Lexical paragraph state.
     return JSON.stringify({
       root: {
@@ -193,10 +195,7 @@ export function LexicalEditor({
       PlaceholderNode
     ],
     onError: (error: Error) => {
-      reportError(error, {
-        surface: 'client',
-        operation: 'render-lexical-editor',
-      })
+      logger.error({ err: error }, 'Lexical Editor Error')
     },
   }
 

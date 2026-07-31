@@ -10,19 +10,18 @@ import { eq } from 'drizzle-orm'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { db } from '@/lib/db/client'
 import { PaymentRecord } from '@/lib/db/schema'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { verifyAuth } from '@/server/user-identity'
-import { getUserAccessStatus } from '@/lib/services/subscription/access'
+import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { getUserAccessStatus } from '@/lib/services/subscription-service'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
+  const requestId = crypto.randomUUID()
   try {
-    const auth = await verifyAuth(request)
+    const auth = await getResolvedUserIdentitySafe()
     if (!auth) {
       return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
 
-    const access = await getUserAccessStatus(auth.user.id, auth.user.role)
+    const access = await getUserAccessStatus(auth.internalUserId)
 
     // Pull the latest payment record to determine provider details
     let provider = 'none'

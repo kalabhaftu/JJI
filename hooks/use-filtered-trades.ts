@@ -82,9 +82,7 @@ export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoM
       }
       const res = await fetch(`/api/v1/trades?${queryString}`)
       if (!res.ok) throw new Error('Failed to fetch trades')
-      const payload = await res.json()
-      if (!payload.success) throw new Error(payload.error?.message ?? 'Failed to fetch trades')
-      return payload.data
+      return res.json()
     },
     enabled,
     staleTime: 2 * 60 * 1000, // 2 min - realtime subscriptions handle live updates

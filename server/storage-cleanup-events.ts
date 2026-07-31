@@ -3,7 +3,6 @@ import { inngest } from '@/lib/inngest/client'
 type StorageCleanupEvent = {
   internalUserId: string
   storageOwnerIds: string[]
-  requestId?: string
 }
 
 /**

@@ -1,39 +1,102 @@
-import { NextRequest } from "next/server";
-import { directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status';
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse } from '@/lib/api-response'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { logger } from '@/lib/logger';
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getTradovateSynchronizations,
+  removeTradovateToken,
+  updateTradovateIncludedFeeTypes,
+} from "@/app/dashboard/components/import/tradovate/sync/actions";
 
-// Tradovate live sync is under development — all endpoints are disabled.
-export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
-  return unavailable(requestId)
+export async function GET() {
+  try {
+    const result = await getTradovateSynchronizations();
+    if (result.error) {
+      return NextResponse.json(
+        { success: false, message: result.error },
+        { status: 400 }
+      );
+    }
+
+    const cleaned = (result.synchronizations || []).map((sync) => ({
+      ...sync,
+      token: sync.token ? 'present' : null
+    }));
+
+    return NextResponse.json({
+      success: true,
+      data: cleaned,
+    });
+  } catch (error) {
+    logger.error("Error fetching Tradovate synchronizations: " + error);
+    return NextResponse.json(
+      { success: false, message: "Failed to fetch Tradovate synchronizations" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function PATCH(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
-  await request.json().catch(() => null);
-  return unavailable(requestId)
+  try {
+    const body = await request.json();
+    const accountId = body?.accountId as string | undefined;
+    const includedFeeTypes = body?.includedFeeTypes as Record<string, boolean> | undefined;
+
+    if (!accountId || !includedFeeTypes || typeof includedFeeTypes !== "object") {
+      return NextResponse.json(
+        { success: false, message: "accountId and includedFeeTypes are required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await updateTradovateIncludedFeeTypes(accountId, includedFeeTypes);
+    if (result.error) {
+      return NextResponse.json(
+        { success: false, message: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Fee config updated",
+    });
+  } catch (error) {
+    logger.error({ error: error instanceof Error ? error : new Error(String(error)), layer: 'api' }, "Error updating Tradovate fee config");
+    return NextResponse.json(
+      { success: false, message: "Failed to update fee config" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
-  await request.json().catch(() => null);
-  return unavailable(requestId)
-}
+  try {
+    const body = await request.json();
+    const accountId = body?.accountId as string | undefined;
 
-function unavailable(requestId: string) {
-  return createErrorResponse(
-    directSyncUnderDevelopmentMessage('Tradovate'),
-    503,
-    { underDevelopment: true },
-    'DIRECT_SYNC_UNAVAILABLE',
-    requestId,
-  )
+    if (!accountId) {
+      return NextResponse.json(
+        { success: false, message: "accountId is required" },
+        { status: 400 }
+      );
+    }
+
+    const result = await removeTradovateToken(accountId);
+    if (result.error) {
+      return NextResponse.json(
+        { success: false, message: result.error },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Synchronization removed",
+    });
+  } catch (error) {
+    logger.error({ error: error instanceof Error ? error : new Error(String(error)), layer: 'api' }, "Error deleting Tradovate synchronization");
+    return NextResponse.json(
+      { success: false, message: "Failed to delete synchronization" },
+      { status: 500 }
+    );
+  }
 }

@@ -8,19 +8,18 @@ import { NextRequest } from 'next/server'
 import { z } from 'zod'
 
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { verifyAuth } from '@/server/user-identity'
+import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { createWhopCheckoutLink } from '@/lib/services/whop/checkout'
-import { getUserAccessStatus } from '@/lib/services/subscription/access'
+import { getUserAccessStatus } from '@/lib/services/subscription-service'
 
 const CheckoutRequestSchema = z.object({
   planId: z.enum(['pro']),
 })
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
+  const requestId = crypto.randomUUID()
   try {
-    const auth = await verifyAuth(request)
+    const auth = await getResolvedUserIdentitySafe()
     if (!auth) {
       return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
     }
@@ -34,7 +33,7 @@ export async function POST(request: NextRequest) {
     const { planId } = result.data
 
     // Check if user already has an active subscription to prevent double-billing
-    const access = await getUserAccessStatus(auth.user.id, auth.user.role)
+    const access = await getUserAccessStatus(auth.internalUserId)
     if (access.hasAccess && access.status !== 'past_due') {
       return createErrorResponse(
         'You already have an active subscription.',
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const checkout = await createWhopCheckoutLink(auth.user.id, planId)
+    const checkout = await createWhopCheckoutLink(auth.internalUserId, planId)
 
     return createSuccessResponse(checkout, undefined, undefined, requestId)
   } catch (error: any) {

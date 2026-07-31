@@ -15,9 +15,9 @@ import { db } from '@/lib/db/client'
 import * as Sentry from '@sentry/nextjs'
 import { Trade, TradingModel } from '@/lib/db/schema'
 import { eq, and, or, inArray, gte, lte, isNull, asc } from 'drizzle-orm'
-import { classifyTrade } from '@/lib/trading/trade-formatting'
+import { classifyTrade } from '@/lib/utils'
 import { getTradingSession } from '@/lib/time-utils'
-import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
+import { groupTradesByExecution } from '@/lib/utils'
 import { DEFAULT_BREAK_EVEN_THRESHOLD, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
@@ -620,7 +620,7 @@ function computeAllMetrics(
           Win: Number((dayWinPnL[day] || 0).toFixed(2)),
           Loss: Number((dayLossPnL[day] || 0).toFixed(2))
         }
-      })
+      }).filter(d => d.Win > 0 || d.Loss > 0)
     }
   }
 }

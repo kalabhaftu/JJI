@@ -9,7 +9,7 @@ function source(path: string) {
 describe('demo isolation', () => {
   it('restores fetch and refuses to intercept after leaving /demo', () => {
     const interceptor = source('app/demo/components/demo-network-interceptor.tsx')
-    expect(interceptor).toContain('isDemoSurface(window.location.hostname, window.location.pathname)')
+    expect(interceptor).toContain("window.location.pathname.startsWith('/demo')")
     expect(interceptor).toContain('window.fetch = originalFetch')
     expect(interceptor).toContain("error: 'Not implemented in demo mode'")
   })

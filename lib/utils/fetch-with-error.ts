@@ -1,5 +1,5 @@
 import logger from '@/lib/logger';
-import { reportError } from '@/lib/observability/report-error'
+import * as Sentry from '@sentry/nextjs'
 
 import { 
   API_TIMEOUT, 
@@ -121,12 +121,7 @@ export async function fetchWithError<T = unknown>(
         try {
           data = await response.json()
         } catch (error) {
-          reportError(error, {
-            surface: 'client',
-            operation: 'parse-fetch-error-response',
-            route: url,
-            status: response.status,
-          })
+          Sentry.captureException(error, { extra: { route: 'lib/utils/fetch-with-error', phase: 'parseJSON' } })
           // Response is not valid JSON
           data = null
         }
@@ -285,3 +280,4 @@ function isFetchError(error: unknown): error is FetchError {
     'message' in error
   )
 }
+

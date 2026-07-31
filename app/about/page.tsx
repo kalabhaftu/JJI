@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Heart, Github, Mail, Target, Shield, Zap } from 'lucide-react'
 import { getSiteUiSettings } from '@/server/site-ui-settings'
-import { DOCS_ORIGIN } from '@/lib/public-surface-routing'
 
 export default async function AboutPage() {
   const siteUiSettings = await getSiteUiSettings()
@@ -71,7 +70,7 @@ export default async function AboutPage() {
             </Button>
           )}
           <Button asChild variant="outline" size="lg">
-            <Link href={DOCS_ORIGIN}><Zap className="h-4 w-4 mr-2" />Read the Docs</Link>
+            <Link href="/docs"><Zap className="h-4 w-4 mr-2" />Read the Docs</Link>
           </Button>
         </div>
       </div>

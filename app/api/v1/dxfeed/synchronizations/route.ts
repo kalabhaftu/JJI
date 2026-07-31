@@ -1,31 +1,84 @@
-import { NextRequest } from "next/server";
-import { directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status';
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse } from '@/lib/api-response'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { logger } from '@/lib/logger';
+import * as Sentry from '@sentry/nextjs'
+import { NextRequest, NextResponse } from "next/server";
+import {
+  getDxFeedSynchronizations,
+  removeDxFeedToken,
+} from "@/app/dashboard/components/import/dxfeed/sync/actions";
 
-// DxFeed live sync is under development — all endpoints are disabled.
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
-  return unavailable(requestId)
+  try {
+    const synchronizations = await getDxFeedSynchronizations();
+    
+    // Clean data for client (do not send raw tokens)
+    const cleaned = (synchronizations.synchronizations || []).map((sync) => ({
+      id: sync.id,
+      userId: sync.userId,
+      service: sync.service,
+      accountId: sync.accountId,
+      hasToken: !!sync.token,
+      lastSyncedAt: sync.lastSyncedAt,
+      tokenExpiresAt: sync.tokenExpiresAt,
+      dailySyncTime: sync.dailySyncTime,
+      createdAt: sync.createdAt,
+      updatedAt: sync.updatedAt,
+      // Parse account numbers from JSON token config
+      accountNumbers: (() => {
+        try {
+          const parsed = JSON.parse(sync.token || '{}');
+          return parsed.accountNumbers || [];
+         } catch (error) {
+           Sentry.captureException(error, { extra: { route: '/api/v1/dxfeed/synchronizations' } })
+           return [];
+         }
+      })()
+    }));
+
+    return NextResponse.json({ success: true, data: cleaned });
+  } catch (error) {
+    logger.error("Error fetching DxFeed synchronizations: " + (error instanceof Error ? error.message : String(error)));
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch synchronizations",
+      },
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
-  await request.json().catch(() => null);
-  return unavailable(requestId)
-}
+  try {
+    const body = await request.json();
+    const accountId = body?.accountId as string | undefined;
 
-function unavailable(requestId: string) {
-  return createErrorResponse(
-    directSyncUnderDevelopmentMessage('DxFeed'),
-    503,
-    { underDevelopment: true },
-    'DIRECT_SYNC_UNAVAILABLE',
-    requestId,
-  )
+    if (!accountId) {
+      return NextResponse.json(
+        { success: false, message: "accountId is required" },
+        { status: 400 }
+      );
+    }
+
+    await removeDxFeedToken(accountId);
+
+    return NextResponse.json({
+      success: true,
+      message: "Synchronization removed successfully",
+    });
+  } catch (error) {
+    logger.error("Error deleting DxFeed synchronization: " + (error instanceof Error ? error.message : String(error)));
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Failed to delete synchronization",
+      },
+      { status: 500 }
+    );
+  }
 }

@@ -23,9 +23,7 @@ export default function DayOfWeekPerformanceWidget() {
     )
   }
 
-  const hasData = chartData?.some((d: any) => (d.Win || 0) > 0 || (d.Loss || 0) > 0 || (d.total || 0) > 0)
-
-  if (!hasData) {
+  if (chartData.length === 0) {
     return (
       <WidgetCard title="Performance by Day of Week">
         <div className="flex items-center justify-center h-full text-muted-foreground/50 text-sm">

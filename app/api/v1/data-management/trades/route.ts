@@ -1,28 +1,25 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { and, or, eq, isNull, inArray, not, desc, count } from 'drizzle-orm'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
+  if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
     const internalUserId = identity.internalUserId
 
     const { searchParams } = new URL(request.url)
-    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10) || 1)
-    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10) || 50))
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '50')
     const offset = (page - 1) * limit
 
     // Fetch trades for this user without any specific account/status filters
@@ -56,22 +53,19 @@ export async function GET(request: NextRequest) {
 
     const total = totalResult[0]?.count || 0
 
-    return createSuccessResponse(
-      trades,
-      undefined,
-      {
-        pagination: {
+    return NextResponse.json({
+      success: true,
+      data: trades,
+      pagination: {
         total,
         page,
         limit,
         totalPages: Math.ceil(total / limit)
-        },
-      },
-      requestId,
-    )
+      }
+    })
 
-  } catch (error) {
-    reportError(error, { surface: 'api', operation: 'list-data-management-trades', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Internal server error', 500, undefined, 'DATA_MANAGEMENT_TRADES_FAILED', requestId)
+  } catch (error: any) {
+    logger.error('Data management trades API failed', error, 'Data Management Trades')
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 })
   }
 }

@@ -1,23 +1,20 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { CacheHeaders } from '@/lib/api-cache-headers'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 // GET - Fetch all tags for a user
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const userId = identity.internalUserId
 
@@ -26,36 +23,26 @@ export async function GET(request: NextRequest) {
       orderBy: (table, { asc }) => [asc(table.name)]
     })
 
-    return createSuccessResponse(tags, undefined, undefined, requestId, {
-      headers: CacheHeaders.short,
+    return NextResponse.json({ tags }, {
+      headers: CacheHeaders.short // Cache for 60 seconds
     })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'list-tags',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse(
-      'Failed to fetch tags',
-      500,
-      undefined,
-      'SERVER_ERROR',
-      requestId,
+    return NextResponse.json(
+      { error: 'Failed to fetch tags' },
+      { status: 500 }
     )
   }
 }
 
 // POST - Create a new tag
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const userId = identity.internalUserId
 
@@ -63,7 +50,10 @@ export async function POST(request: NextRequest) {
     const { name, color } = body
 
     if (!name) {
-      return createErrorResponse('Tag name is required', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json(
+        { error: 'Tag name is required' },
+        { status: 400 }
+      )
     }
 
     const existingTag = await db.query.TradeTag.findFirst({
@@ -74,7 +64,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingTag) {
-      return createErrorResponse('Tag with this name already exists', 409, undefined, 'CONFLICT', requestId)
+      return NextResponse.json(
+        { error: 'Tag with this name already exists' },
+        { status: 400 }
+      )
     }
 
     const tag = (await db.insert(schema.TradeTag).values({
@@ -85,20 +78,11 @@ export async function POST(request: NextRequest) {
       userId
     }).returning())[0]
 
-    return createSuccessResponse(tag, undefined, undefined, requestId, { status: 201 })
+    return NextResponse.json({ tag })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'create-tag',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse(
-      'Failed to create tag',
-      500,
-      undefined,
-      'SERVER_ERROR',
-      requestId,
+    return NextResponse.json(
+      { error: 'Failed to create tag' },
+      { status: 500 }
     )
   }
 }

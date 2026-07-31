@@ -1,9 +1,9 @@
 'use client'
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { toast } from 'sonner'
 import { useUserStore } from '@/store/user-store'
-import { reportError } from '@/lib/observability/report-error'
 
 type Theme = 'light' | 'dark' | 'system'
 type AccentPack = 'classic' | 'reports' | 'violet' | 'slate'
@@ -229,11 +229,9 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         throw new Error(`Failed to save ${preference} preference (${response.status})`)
       }
     } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'save-display-preference',
-        route: '/api/auth/profile',
-        tags: { preference },
+      Sentry.captureException(error, {
+        tags: { surface: 'theme-preferences' },
+        extra: { preference },
       })
 
       if (preferenceRequestVersions.current[preference] === version) {

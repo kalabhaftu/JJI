@@ -1,4 +1,5 @@
 import { formatInTimeZone, toZonedTime } from 'date-fns-tz';
+import * as Sentry from '@sentry/nextjs'
 
 export const DEFAULT_TIMEZONE = 'America/New_York';
 
@@ -114,6 +115,7 @@ export function getWeekdayIndexInTimezone(
   try {
     return toZonedTime(parsedDate, timezone).getDay();
   } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'getWeekdayIndexInTimezone', timezone } });
     return null;
   }
 }
@@ -129,6 +131,7 @@ export function getHourInTimezone(
   try {
     return toZonedTime(parsedDate, timezone).getHours();
   } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'getHourInTimezone', timezone } });
     return null;
   }
 }
@@ -186,6 +189,7 @@ export function calculateTradeDuration(
     
     return Math.round(durationMs / 1000); // Convert to seconds
   } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'formatDuration' } })
     return 0;
   }
 }
@@ -228,6 +232,7 @@ function normalizeToUTC(
       const utcDate = new Date(zonedDate.getTime() - offset);
        return isNaN(utcDate.getTime()) ? new Date(dateStr) : utcDate;
      } catch (error) {
+       Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'parseDate' } })
        return new Date(dateStr);
      }
   }
@@ -247,6 +252,7 @@ function getTimezoneOffset(timezone: string, date: Date): number {
     const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
     return tzDate.getTime() - utcDate.getTime();
    } catch (error) {
+     Sentry.captureException(error, { extra: { route: 'lib/time-utils', phase: 'getTimezoneOffset' } })
      return 0;
    }
 }

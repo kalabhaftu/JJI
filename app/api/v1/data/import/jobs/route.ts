@@ -1,11 +1,9 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { createImportJob } from '@/server/import-jobs'
 import { enqueueImportJob } from '@/server/import-job-events'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
+import { createErrorResponse } from '@/lib/api-response'
 
 const MAX_IMPORT_FILE_BYTES = 50 * 1024 * 1024
 const ZIP_MIME_TYPES = new Set(['application/zip', 'application/x-zip-compressed', 'application/octet-stream'])
@@ -27,14 +25,13 @@ function hasZipSignature(bytes: ArrayBuffer) {
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'import')
+  const rateLimitResponse = await applyRateLimit(request, importLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return createErrorResponse('Unauthorized', 401)
     }
 
     const formData = await request.formData()
@@ -85,23 +82,10 @@ export async function POST(request: NextRequest) {
       jobId: job.id,
       internalUserId: identity.internalUserId,
       kind: 'archive',
-      requestId,
     })
 
-    return createSuccessResponse(
-      { job },
-      'Import job created',
-      undefined,
-      requestId,
-      { status: 201 },
-    )
+    return NextResponse.json({ success: true, job }, { status: 201 })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'create-archive-import-job',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to create import job', 500, undefined, 'SERVER_ERROR', requestId)
+    return createErrorResponse('Failed to create import job', 500)
   }
 }

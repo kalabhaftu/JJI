@@ -1,10 +1,5 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
-import { ApplicationErrorScreen } from '@/components/application-error-screen'
-import { reportError } from '@/lib/observability/report-error'
-
 export default function Error({
   error,
   reset,
@@ -12,22 +7,16 @@ export default function Error({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  const [reference, setReference] = useState<string | null>(error.digest ?? null)
-
-  useEffect(() => {
-    const eventId = reportError(error, {
-      surface: 'client',
-      operation: 'app-route-render',
-      route: window.location.pathname,
-    })
-    setReference(error.digest ?? eventId)
-  }, [error])
-
   return (
-    <ApplicationErrorScreen
-      reference={reference}
-      onRetry={reset}
-      details={error.message}
-    />
+    <main id="main-content" role="alert" aria-live="assertive" className="flex min-h-screen flex-col items-center justify-center p-4">
+      <h1 className="mb-4 text-4xl font-bold">Something went wrong</h1>
+      <p className="text-muted-foreground mb-8">{error.message}</p>
+      <button
+        onClick={reset}
+        className="px-4 py-2 bg-primary text-primary-foreground rounded-md"
+      >
+        Try again
+      </button>
+    </main>
   )
 }

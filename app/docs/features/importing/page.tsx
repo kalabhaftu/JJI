@@ -10,9 +10,14 @@ export default function ImportingDocsPage() {
     >
       <DocsSection title="Supported import sources">
         <ul>
-          <li><strong>CSV &amp; File Upload:</strong> Ingest CSV exports from NinjaTrader 8, Tradovate, Rithmic, Interactive Brokers, Webull, Thor, Match-Trader, and Exness. Includes an interactive column mapper for custom CSV formats.</li>
-          <li><strong>TradingView Webhook:</strong> Receive real-time trade alerts and strategy executions directly from TradingView alerts configured with your account webhook token.</li>
-          <li><strong>Direct Broker Sync (Under Development):</strong> Direct live API synchronizations (e.g. Tradovate API, Rithmic direct feeds) are currently disabled while under active development. Import trades from these platforms using CSV exports or webhooks.</li>
+          <li><strong>CSV Upload</strong> - Upload comma-separated trade export files from any broker. Map columns manually if the automatic detection doesn't match.</li>
+          <li><strong>TradingView Webhook</strong> - Configure TradingView alerts to send trade data to your JJI webhook endpoint. Supports strategy tester exports.</li>
+          <li><strong>Tradovate Sync</strong> - Connect your Tradovate account for automatic trade syncing. Requires API credentials in settings.</li>
+          <li><strong>DxFeed Sync</strong> - Direct integration with DxFeed for trade data.</li>
+          <li><strong>Rithmic Sync</strong> - Connect Rithmic trading accounts for automated import.</li>
+          <li><strong>Thor</strong> - Import from Thor trading platform.</li>
+          <li><strong>Match-Trader</strong> - Support for Match-Trader broker platform exports.</li>
+          <li><strong>Exness</strong> - Direct Exness account integration.</li>
         </ul>
       </DocsSection>
 

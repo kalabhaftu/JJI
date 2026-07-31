@@ -5,14 +5,7 @@ import { Trade as schemaTrade } from '@/lib/db/schema'
 type Trade = InferSelectModel<typeof schemaTrade>
 import { useData } from '@/context/data-provider'
 
-const fetcher = async (url: string) => {
-  const response = await fetch(url)
-  const payload = await response.json()
-  if (!response.ok || !payload.success) {
-    throw new Error(payload.error?.message ?? 'Failed to fetch journal trades')
-  }
-  return payload.data
-}
+const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export interface UseJournalParams {
   page?: number

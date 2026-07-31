@@ -15,11 +15,8 @@ type PaymentStatus = {
   payCurrency: string | null
   payAmount: number | null
   invoiceUrl: string | null
-  paymentUrl: string | null
-  canOpenInvoice: boolean
   paidAt: string | null
   expiredAt: string | null
-  expiresAt: string | null
   subscriptionPeriodEnd: string | null
 }
 
@@ -37,7 +34,7 @@ export default function SubscribeStatusPage() {
     try {
       const response = await fetch(`/api/v1/payments/status?paymentRecordId=${id}&refresh=true`)
       const payload = await response.json()
-      if (!payload.success) throw new Error(payload.error?.message || 'Unable to load payment status')
+      if (!payload.success) throw new Error(payload.error || 'Unable to load payment status')
       setStatus(payload.data)
       if (payload.data?.providerStatus === 'finished') {
         sessionStorage.removeItem('pendingPaymentId')
@@ -125,12 +122,6 @@ export default function SubscribeStatusPage() {
                     <span>{new Date(status.subscriptionPeriodEnd).toLocaleDateString()}</span>
                   </div>
                 )}
-                {status?.expiresAt && !isFinished && (
-                  <div className="flex justify-between gap-3">
-                    <span className="text-muted-foreground">Payment window</span>
-                    <span>{new Date(status.expiresAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</span>
-                  </div>
-                )}
               </div>
 
               <div className="flex flex-col gap-2">
@@ -147,9 +138,9 @@ export default function SubscribeStatusPage() {
                       <RefreshCw className="mr-2 h-4 w-4" />
                       Refresh Status
                     </Button>
-                    {status?.canOpenInvoice && status?.paymentUrl && (
+                    {status?.invoiceUrl && (
                       <Button variant="outline" onClick={() => { 
-                        window.location.href = status.paymentUrl!
+                        window.location.href = status.invoiceUrl! 
                       }} className="w-full">
                         Open Invoice
                       </Button>

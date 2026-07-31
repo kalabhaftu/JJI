@@ -19,9 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { cn } from '@/lib/utils'
-import { formatNoteContent } from '@/lib/content/cleaning'
-import { formatCurrency } from '@/lib/trading/trade-formatting'
+import { cn, formatCurrency, formatNoteContent } from '@/lib/utils'
 import { motion } from 'framer-motion'
 import { Eye, FileText, MoreVertical, Pencil, Plus, Trash2 as Trash, Calendar } from 'lucide-react'
 import { useMemo, useState } from 'react'
@@ -252,7 +250,7 @@ export default function PlaybookPage() {
 
     if (!response.ok) {
       const error = await response.json()
-      throw new Error(error.error?.message || 'Failed to save model')
+      throw new Error(error.error || 'Failed to save model')
     }
 
     await queryClient.invalidateQueries({ queryKey: ['trading-models'] })
@@ -266,7 +264,7 @@ export default function PlaybookPage() {
       })
       if (!response.ok) {
         const error = await response.json()
-        throw new Error(error.error?.message || 'Failed to delete model')
+        throw new Error(error.error || 'Failed to delete model')
       }
       toast.success('Model removed from playbook')
       await queryClient.invalidateQueries({ queryKey: ['trading-models'] })

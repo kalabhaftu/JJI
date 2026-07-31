@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { z } from 'zod'
@@ -65,7 +65,7 @@ function buildTradeFilterWhere(params: URLSearchParams) {
 }
 
 // GET - List all trading models for user
-async function listTradingModels(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -173,7 +173,7 @@ async function listTradingModels(request: NextRequest) {
 
     return NextResponse.json({ success: true, models: formattedModels })
   } catch (error) {
-    reportApiHandlerError(request, error, 'list-trading-models')
+    logger.error('Failed to fetch trading models' + ' : ' + error)
     return NextResponse.json(
       { error: 'Failed to fetch models' },
       { status: 500 }
@@ -182,7 +182,7 @@ async function listTradingModels(request: NextRequest) {
 }
 
 // POST - Create new trading model
-async function createTradingModel(request: NextRequest) {
+export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -227,13 +227,9 @@ async function createTradingModel(request: NextRequest) {
         { status: 400 }
       )
     }
-    reportApiHandlerError(request, error, 'create-trading-model')
     return NextResponse.json(
       { error: 'Failed to create model' },
       { status: 500 }
     )
   }
 }
-
-export const GET = withCanonicalApiResponse(listTradingModels)
-export const POST = withCanonicalApiResponse(createTradingModel)

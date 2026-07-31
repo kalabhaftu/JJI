@@ -1,59 +1,31 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { applyRateLimit, importLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { cancelTradeImportJob } from '@/server/trade-import-jobs'
-import { createErrorResponse, createSuccessResponse, ErrorResponses } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'import')
+  const rateLimitResponse = await applyRateLimit(request, importLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return ErrorResponses.unauthorized(requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const { id } = await params
     const result = await cancelTradeImportJob(id, identity.internalUserId)
 
     if ('error' in result) {
-      return createErrorResponse(
-        result.error,
-        result.status,
-        undefined,
-        result.status === 404 ? 'NOT_FOUND' : 'IMPORT_CANCEL_FAILED',
-        requestId,
-      )
+      return NextResponse.json({ success: false, error: result.error }, { status: result.status })
     }
 
-    return createSuccessResponse(
-      { job: result.job },
-      undefined,
-      undefined,
-      requestId,
-      { status: result.status },
-    )
+    return NextResponse.json({ success: true, job: result.job }, { status: result.status })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'cancel-trade-import-job',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse(
-      'Failed to cancel import job',
-      500,
-      undefined,
-      'SERVER_ERROR',
-      requestId,
-    )
+    return NextResponse.json({ success: false, error: 'Failed to cancel import job' }, { status: 500 })
   }
 }

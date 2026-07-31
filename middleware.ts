@@ -1,11 +1,9 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-import { DEMO_HOST, DOCS_HOST, normalizeHostname } from '@/lib/public-surface-routing'
-import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
+const DOCS_HOST = 'docs.justjournalit.site'
 
 export async function middleware(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
   const nonce = btoa(crypto.randomUUID())
   const isDevelopment = process.env.NODE_ENV === 'development'
   const csp = [
@@ -14,7 +12,7 @@ export async function middleware(request: NextRequest) {
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
     "font-src 'self'",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.sentry.io https://vitals.vercel-insights.com https://*.vercel-insights.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.sentry.io",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",
@@ -23,11 +21,10 @@ export async function middleware(request: NextRequest) {
     ...(!isDevelopment ? ['upgrade-insecure-requests'] : []),
   ].join('; ')
   const requestHeaders = new Headers(request.headers)
-  requestHeaders.set(REQUEST_ID_HEADER, requestId)
   requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('Content-Security-Policy', csp)
 
-  const host = normalizeHostname(request.headers.get('host'))
+  const host = request.headers.get('host')?.split(':')[0]
   if (host === DOCS_HOST) {
     const url = request.nextUrl.clone()
     if (!url.pathname.startsWith('/docs')) {
@@ -35,18 +32,6 @@ export async function middleware(request: NextRequest) {
     }
     const rewriteResponse = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
     rewriteResponse.headers.set('Content-Security-Policy', csp)
-    rewriteResponse.headers.set(REQUEST_ID_HEADER, requestId)
-    return rewriteResponse
-  }
-
-  if (host === DEMO_HOST) {
-    const url = request.nextUrl.clone()
-    if (!url.pathname.startsWith('/demo')) {
-      url.pathname = url.pathname === '/' ? '/demo' : `/demo${url.pathname}`
-    }
-    const rewriteResponse = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
-    rewriteResponse.headers.set('Content-Security-Policy', csp)
-    rewriteResponse.headers.set(REQUEST_ID_HEADER, requestId)
     return rewriteResponse
   }
 
@@ -54,11 +39,6 @@ export async function middleware(request: NextRequest) {
     request: { headers: requestHeaders },
   })
   supabaseResponse.headers.set('Content-Security-Policy', csp)
-  supabaseResponse.headers.set(REQUEST_ID_HEADER, requestId)
-
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    return supabaseResponse
-  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -72,7 +52,6 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
           supabaseResponse.headers.set('Content-Security-Policy', csp)
-          supabaseResponse.headers.set(REQUEST_ID_HEADER, requestId)
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -105,7 +84,6 @@ export async function middleware(request: NextRequest) {
     })
     redirectResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
     redirectResponse.headers.set('Content-Security-Policy', csp)
-    redirectResponse.headers.set(REQUEST_ID_HEADER, requestId)
     return redirectResponse
   }
 
@@ -119,7 +97,6 @@ export async function middleware(request: NextRequest) {
     })
     redirectResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
     redirectResponse.headers.set('Content-Security-Policy', csp)
-    redirectResponse.headers.set(REQUEST_ID_HEADER, requestId)
     return redirectResponse
   }
 
@@ -135,7 +112,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - api routes (handled server-side, no session needed at edge)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api/|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

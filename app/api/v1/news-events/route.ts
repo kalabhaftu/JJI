@@ -4,23 +4,16 @@
  * client components must fetch via this endpoint (never import lib/major-news-events).
  */
 
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { MAJOR_NEWS_EVENTS } from '@/lib/constants/major-news-events'
 import { CacheHeaders } from '@/lib/api-cache-headers'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createSuccessResponse } from '@/lib/api-response'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'public-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
-  return createSuccessResponse(
-    MAJOR_NEWS_EVENTS,
-    undefined,
-    undefined,
-    requestId,
-    { headers: CacheHeaders.medium },
-  )
+  return NextResponse.json(MAJOR_NEWS_EVENTS, {
+    headers: CacheHeaders.medium,
+  })
 }

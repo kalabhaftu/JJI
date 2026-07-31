@@ -6,7 +6,6 @@ import { YahooFinanceQuote } from '@/types/yahoo-finance'
 import { getUserId } from '@/server/auth'
 import { getCached, setCached, CachePrefix, CacheTTL } from '@/lib/cache/unified-cache'
 import { logger } from '@/lib/logger';
-import { reportError } from '@/lib/observability/report-error'
 
 const yahooFinance = new YahooFinance()
 
@@ -104,13 +103,10 @@ export async function getMarketData(
             try {
                 await getUserId()
             } catch (dbError: any) {
+                logger.error(`[DB_CHECK_FAILED] ${dbError.message}`);
                 if (dbError.message?.includes('P1001') || dbError.message?.includes('Can\'t reach database')) {
                     logger.warn('Proceeding with market data fetch despite potential DB connection issue...');
                 } else {
-                    reportError(dbError, {
-                        surface: 'server',
-                        operation: 'authorize-market-data-fetch',
-                    })
                     throw dbError;
                 }
             }
@@ -224,11 +220,7 @@ export async function getMarketData(
 
                     logger.warn(`[FETCH_EMPTY] ${queryInterval} on ${querySymbol}`)
                 } catch (e: any) {
-                    reportError(e, {
-                        surface: 'server',
-                        operation: 'fetch-yahoo-market-data-interval',
-                        tags: { interval: queryInterval },
-                    })
+                    logger.error(`[FETCH_ERROR] ${queryInterval} for ${querySymbol}:`, e.message)
 
                     if (e.message.includes('Too Many Requests') || e.message.includes('429')) {
                         logger.warn(`[RATE_LIMIT] Yahoo is throttling both lib and manual. Cooling down for 3s...`)
@@ -246,10 +238,7 @@ export async function getMarketData(
             return { data: [], error: lastError || 'No market data found' }
 
         } catch (e: any) {
-            reportError(e, {
-                surface: 'server',
-                operation: 'fetch-yahoo-market-data',
-            })
+            logger.error('Yahoo Finance API Error:', e)
             return { data: [], error: e.message || 'Failed to fetch market data' }
         } finally {
             // Clean up in-flight request after completion

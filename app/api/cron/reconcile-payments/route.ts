@@ -7,7 +7,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateCronRequest } from '@/lib/cron-auth'
 import { reconcilePendingPayments } from '@/lib/services/subscription-service'
 import { logger } from '@/lib/logger'
-import { reportError } from '@/lib/observability/report-error'
 
 export async function GET(request: NextRequest) {
   const authError = validateCronRequest(request)
@@ -24,13 +23,7 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    const requestId = request.headers.get('x-request-id')
-    reportError(error, {
-      surface: 'cron',
-      operation: 'reconcile-payments',
-      route: '/api/cron/reconcile-payments',
-      ...(requestId ? { requestId } : {}),
-    })
+    logger.error('[Cron] Payment reconciliation failed: ' + (error instanceof Error ? error.message : String(error)))
     return NextResponse.json(
       { success: false, error: 'Payment reconciliation failed', timestamp: new Date().toISOString() },
       { status: 500 }

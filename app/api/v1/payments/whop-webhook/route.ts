@@ -7,8 +7,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { logger } from '@/lib/logger'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import * as Sentry from '@sentry/nextjs'
 import { verifyWhopWebhookSignature } from '@/lib/services/whop/webhook-verify'
 import { processWhopWebhookEvent, type WhopWebhookPayload } from '@/lib/services/whop/event-processor'
 
@@ -16,7 +15,7 @@ import { processWhopWebhookEvent, type WhopWebhookPayload } from '@/lib/services
 const MAX_WEBHOOK_BODY_BYTES = 256 * 1024
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
+  const requestId = crypto.randomUUID()
   try {
     // 1. Read signature header
     const signature = request.headers.get('webhook-signature')
@@ -59,11 +58,13 @@ export async function POST(request: NextRequest) {
     // Return 200 OK fast so Whop doesn't timeout
     return NextResponse.json({ success: true })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'process-whop-webhook',
-      route: request.nextUrl.pathname,
-      requestId,
+    Sentry.captureException(error, {
+      extra: {
+        surface: 'api',
+        operation: 'process-whop-webhook',
+        route: request.nextUrl.pathname,
+        requestId,
+      }
     })
     return NextResponse.json({ success: false, error: 'Internal processing error' }, { status: 500 })
   }

@@ -9,6 +9,7 @@
  * - Service Worker caches
  */
 
+import * as Sentry from '@sentry/nextjs'
 
 const CACHE_VERSION_KEY = 'app_cache_version'
 const CURRENT_CACHE_VERSION = '2.0.0' // Increment to force cache clear
@@ -28,6 +29,7 @@ function checkCacheVersion(): boolean {
     
     return true
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
     return true
   }
 }
@@ -38,6 +40,7 @@ function updateCacheVersion(): void {
   try {
     localStorage.setItem(CACHE_VERSION_KEY, CURRENT_CACHE_VERSION)
     } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
 }
 
@@ -81,6 +84,7 @@ function getAllCacheKeys(excludeKeys: string[] = []): string[] {
       }
     }
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return keys
@@ -89,7 +93,7 @@ function getAllCacheKeys(excludeKeys: string[] = []): string[] {
 /**
  * Clear specific localStorage cache keys
  */
-function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner-dismissed', 'jji-cookie-notice-dismissed', 'jji-telemetry-consent']): number {
+function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner-dismissed']): number {
   if (typeof window === 'undefined') return 0
   
   let clearedCount = 0
@@ -112,6 +116,7 @@ function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner
       }
     }
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -128,6 +133,7 @@ function clearSessionStorage(): number {
     sessionStorage.clear()
     return length
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
     return 0
   }
 }
@@ -149,6 +155,7 @@ async function clearServiceWorkerCaches(): Promise<number> {
       })
     )
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -172,6 +179,7 @@ export async function clearIndexedDB(): Promise<number> {
       }
     }
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -188,6 +196,7 @@ function clearNextJSCache(): void {
       Reflect.deleteProperty(window, '__NEXT_DATA__')
     }
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
 }
 
@@ -214,9 +223,7 @@ export async function clearAllCaches(options: {
   
   const keysToKeep: string[] = []
   if (keepTheme) keysToKeep.push('theme')
-  if (keepConsent) {
-    keysToKeep.push('consent-banner-dismissed', 'jji-cookie-notice-dismissed', 'jji-telemetry-consent')
-  }
+  if (keepConsent) keysToKeep.push('consent-banner-dismissed')
   
   const localStorageCleared = clearLocalStorageCache(keysToKeep)
   const sessionStorageCleared = clearSessionStorage()
@@ -284,6 +291,7 @@ export function clearAccountCaches(): number {
       }
     }
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return clearedCount
@@ -323,6 +331,7 @@ export function getCacheStats(): {
     
     sessionStorageKeys = sessionStorage.length
   } catch (error) {
+    Sentry.captureException(error, { extra: { module: "persistent-cache" } })
   }
   
   return {

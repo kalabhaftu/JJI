@@ -1,28 +1,23 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { calculateAccountBalance } from '@/lib/utils/balance-calculator'
 import { buildGroupedTradeCountSummary } from '@/lib/trade-counts'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { isDomainError } from '@/lib/domain-error'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { getClientIp } from '@/lib/security/client-ip'
-import { createLiveAccountForUser } from '@/server/accounts/lifecycle'
-import { and, eq, inArray, or } from 'drizzle-orm'
+import { logger } from '@/lib/logger'
+import { eq, or, inArray, desc, asc } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'authenticated-read')
+  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const internalUserId = identity.internalUserId
@@ -188,10 +183,7 @@ export async function GET(request: NextRequest) {
 
     const relevantTrades = tradeConditions.length > 0 
       ? await db.query.Trade.findMany({
-          where: (table) => and(
-            eq(table.userId, internalUserId),
-            or(...tradeConditions),
-          ),
+          where: (table, { or }) => or(...tradeConditions)
         })
       : []
 
@@ -202,20 +194,12 @@ export async function GET(request: NextRequest) {
     try {
       if (relevantIds.length > 0) {
         relevantTransactions = await db.query.LiveAccountTransaction.findMany({
-           where: (table) => and(
-             eq(table.userId, internalUserId),
-             inArray(table.accountId, relevantIds),
-           ),
+           where: (table, { inArray }) => inArray(table.accountId, relevantIds)
         })
       }
     } catch (error) {
-      reportError(error, {
-        surface: 'api',
-        operation: 'load-account-transactions',
-        route: request.nextUrl.pathname,
-        requestId,
-        userId: internalUserId,
-      })
+       Sentry.captureException(error, { extra: { route: '/api/v1/accounts' } })
+       // Ignore if not present
      }
     
     // 7. Calculate true equity & grouped counts
@@ -250,92 +234,86 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return createSuccessResponse(
-      finalAccounts,
-      undefined,
-      {
-        pagination: {
+    return NextResponse.json({ 
+       success: true, 
+       data: finalAccounts,
+       pagination: {
           total,
           page,
           limit,
           totalPages: Math.ceil(total / limit)
-        },
-      },
-      requestId,
-    )
+       }
+    })
 
   } catch (error: any) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'list-accounts',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Internal server error', 500, undefined, 'SERVER_ERROR', requestId)
+    logger.error('/api/v1/accounts failed', error, 'Accounts API')
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
   if (rateLimitResponse) return rateLimitResponse
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const internalUserId = identity.internalUserId
-    const body = await request.json() as {
-      name?: string
-      number?: string
-      startingBalance?: number
-      broker?: string
+    const body = await request.json()
+    const { name, number, startingBalance, broker } = body
+
+    if (!name || !number || startingBalance === undefined || startingBalance === null || !broker) {
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: name, number, startingBalance, broker' },
+        { status: 400 }
+      )
     }
-    const account = await createLiveAccountForUser(internalUserId, {
-      name: body.name ?? '',
-      number: body.number ?? '',
-      startingBalance: Number(body.startingBalance),
-      broker: body.broker ?? '',
-    }, {
-      source: 'api',
-      requestId,
-      ipAddress: getClientIp(request.headers),
+
+    const numericStartingBalance = Number(startingBalance)
+    if (!Number.isFinite(numericStartingBalance)) {
+      return NextResponse.json(
+        { success: false, error: 'Starting balance must be a valid number' },
+        { status: 400 }
+      )
+    }
+
+    const existingAccount = await db.query.Account.findFirst({
+      where: (table, { eq, and }) => and(eq(table.number, number), eq(table.userId, internalUserId))
     })
-    return createSuccessResponse(
-      {
+
+    if (existingAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Account number already exists' },
+        { status: 409 }
+      )
+    }
+
+    const account = (await db.insert(schema.Account).values({
+      id: crypto.randomUUID(),
+      number,
+      name,
+      startingBalance: numericStartingBalance,
+      broker,
+      userId: internalUserId
+    }).returning())[0]
+    
+    if (!account) {
+      return NextResponse.json({ success: false, error: 'Failed to create account' }, { status: 500 })
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
         ...account,
         accountType: 'live',
         displayName: account.name || account.number
-      },
-      undefined,
-      undefined,
-      requestId,
-      { status: 201 },
-    )
-  } catch (error: any) {
-    if (isDomainError(error)) {
-      return createErrorResponse(
-        error.message,
-        error.status,
-        undefined,
-        error.code,
-        requestId,
-      )
-    }
-    reportError(error, {
-      surface: 'api',
-      operation: 'create-account',
-      route: request.nextUrl.pathname,
-      requestId,
+      }
     })
-    return createErrorResponse(
-      'Internal server error',
-      500,
-      undefined,
-      'ACCOUNT_CREATE_FAILED',
-      requestId,
-    )
+  } catch (error: any) {
+    logger.error('[API] /api/v1/accounts POST error:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -10,21 +10,4 @@ export async function register() {
   }
 }
 
-export const onRequestError = (
-  ...args: Parameters<typeof Sentry.captureRequestError>
-) => {
-  const request = args[1] as {
-    headers?: Headers | Record<string, string | string[] | undefined>
-  }
-  const requestIdValue = request?.headers instanceof Headers
-    ? request.headers.get('x-request-id') ?? undefined
-    : request?.headers?.['x-request-id']
-  const requestId = Array.isArray(requestIdValue)
-    ? requestIdValue[0]
-    : requestIdValue
-
-  return Sentry.withScope((scope) => {
-    if (requestId) scope.setTag('requestId', requestId)
-    return Sentry.captureRequestError(...args)
-  })
-}
+export const onRequestError = Sentry.captureRequestError

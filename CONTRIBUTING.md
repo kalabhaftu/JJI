@@ -21,14 +21,14 @@
 ## Full gate
 
 ```bash
-bun install --frozen-lockfile
-bun run type-check
-bun run lint
-bun run test -- --run
-bun audit
-bun run security:scan-console
-bunx drizzle-kit check
-bun run build
+npm ci
+npm run type-check
+npm run lint
+npm test -- --run
+npm audit --audit-level=low
+npm run security:scan-console
+npx drizzle-kit check
+npm run build
 ```
 
 ## Database changes

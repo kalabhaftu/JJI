@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
+import * as Sentry from '@sentry/nextjs'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { z } from 'zod'
 import { db } from '@/lib/db/client'
@@ -7,6 +7,7 @@ import * as schema from '@/lib/db/schema'
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
@@ -19,14 +20,7 @@ import {
   buildPropFirmTodayStats,
   getPropFirmTradeTimestamp,
 } from '@/lib/prop-firm/widget-metrics'
-import { eq, and, desc, asc, exists } from 'drizzle-orm'
-import {
-  deletePropFirmAccountForUser,
-  updatePropFirmAccountForUser,
-} from '@/server/accounts/prop-firm-lifecycle'
-import { isDomainError } from '@/lib/domain-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { getClientIp } from '@/lib/security/client-ip'
+import { eq, and, inArray, desc, asc, exists } from 'drizzle-orm'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -53,7 +47,8 @@ function normalizeTimeZone(value: string | null) {
   try {
     Intl.DateTimeFormat('en-US', { timeZone: value }).format(new Date())
     return value
-  } catch {
+  } catch (error) {
+    Sentry.captureException(error, { extra: { route: '/api/v1/prop-firm/accounts/[id]', phase: 'timezone-validation' } })
     return 'UTC'
   }
 }
@@ -72,7 +67,7 @@ function getLatestTradeTimestamp(trades: any[]) {
   return latest
 }
 
-async function getPropFirmAccount(request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -538,7 +533,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
     })
 
   } catch (error: any) {
-    reportApiHandlerError(request, error, 'get-prop-firm-account')
+    logger.error({ error: error?.message, context: 'api' }, 'GET /api/v1/prop-firm/accounts/[id]')
     return NextResponse.json(
       {
         success: false,
@@ -549,7 +544,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
   }
 }
 
-async function updatePropFirmAccount(request: NextRequest, { params }: RouteParams) {
+export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -568,16 +563,32 @@ async function updatePropFirmAccount(request: NextRequest, { params }: RoutePara
     const body = await request.json()
     const updateData = UpdateMasterAccountSchema.parse(body)
 
-    const updatedAccount = await updatePropFirmAccountForUser(
-      internalUserId,
-      masterAccountId,
-      updateData,
-      {
-        source: 'api',
-        requestId: resolveRequestId(request.headers),
-        ipAddress: getClientIp(request.headers),
-      },
-    )
+    // Verify ownership
+    const existingAccount = await db.query.MasterAccount.findFirst({
+      where: (table, { eq, and }) => and(
+        eq(table.id, masterAccountId),
+        eq(table.userId, internalUserId)
+      )
+    })
+
+    if (!existingAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Master account not found or unauthorized' },
+        { status: 404 }
+      )
+    }
+
+    // Update the account
+    const updatedAccount = (await db.update(schema.MasterAccount).set(updateData).where(and(
+      eq(schema.MasterAccount.id, masterAccountId),
+      eq(schema.MasterAccount.userId, internalUserId),
+    )).returning())[0]
+
+    // Invalidate caches after archiving/unarchiving to refresh dashboard
+    if (typeof updateData.isArchived === 'boolean') {
+      const { invalidateUserCaches } = await import('@/server/accounts')
+      await invalidateUserCaches(internalUserId)
+    }
 
     return NextResponse.json({
       success: true,
@@ -595,14 +606,7 @@ async function updatePropFirmAccount(request: NextRequest, { params }: RoutePara
         { status: 400 }
       )
     }
-    if (isDomainError(error)) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: error.status },
-      )
-    }
 
-    reportApiHandlerError(request, error, 'update-prop-firm-account')
     return NextResponse.json(
       {
         success: false,
@@ -613,7 +617,7 @@ async function updatePropFirmAccount(request: NextRequest, { params }: RoutePara
   }
 }
 
-async function deletePropFirmAccount(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -630,15 +634,66 @@ async function deletePropFirmAccount(request: NextRequest, { params }: RoutePara
     const { id: masterAccountId } = await params
     // ID is pure masterAccountId (UUID), not composite
 
-    await deletePropFirmAccountForUser(
-      internalUserId,
-      masterAccountId,
-      {
-        source: 'api',
-        requestId: resolveRequestId(request.headers),
-        ipAddress: getClientIp(request.headers),
-      },
-    )
+    // Verify ownership first
+    const existingAccount = await db.query.MasterAccount.findFirst({
+      where: (table, { eq, and }) => and(
+        eq(table.id, masterAccountId),
+        eq(table.userId, internalUserId)
+      ),
+      with: {
+        PhaseAccount: {
+          columns: { id: true, phaseId: true }
+        }
+      }
+    })
+
+    if (!existingAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Master account not found or unauthorized' },
+        { status: 404 }
+      )
+    }
+
+    // Delete all associated data in a transaction
+    await db.transaction(async (tx) => {
+      // Get all phase IDs for this master account
+      const phaseIds = existingAccount.PhaseAccount.map(
+        (phase: (typeof existingAccount.PhaseAccount)[number]) => phase.id
+      )
+      // Delete all trades associated with this master account strictly by phaseAccountId UUIDs
+      // to prevent deleting trades of other accounts that share the same phaseId or accountName
+      if (phaseIds.length > 0) {
+        const tradeRows = await tx
+          .select({ id: schema.Trade.id })
+          .from(schema.Trade)
+          .where(inArray(schema.Trade.phaseAccountId, phaseIds))
+        const tradeIds = tradeRows.map((trade) => trade.id)
+
+        if (tradeIds.length > 0) {
+          await tx.delete(schema.TradeExecution).where(inArray(schema.TradeExecution.tradeId, tradeIds))
+          await tx.delete(schema.Trade).where(inArray(schema.Trade.id, tradeIds))
+        }
+
+        await tx.delete(schema.DailyAnchor).where(inArray(schema.DailyAnchor.phaseAccountId, phaseIds))
+        await tx.delete(schema.BreachRecord).where(inArray(schema.BreachRecord.phaseAccountId, phaseIds))
+        await tx.delete(schema.Payout).where(inArray(schema.Payout.phaseAccountId, phaseIds))
+      }
+
+      // Delete all phase accounts
+      if (phaseIds.length > 0) {
+        await tx.delete(schema.PhaseAccount).where(eq(schema.PhaseAccount.masterAccountId, masterAccountId))
+      }
+
+      // Finally delete the master account
+      await tx.delete(schema.MasterAccount).where(and(
+        eq(schema.MasterAccount.id, masterAccountId),
+        eq(schema.MasterAccount.userId, internalUserId),
+      ))
+    })
+
+    // Invalidate all cache tags to ensure fresh data
+    const { invalidateUserCaches } = await import('@/server/accounts')
+    await invalidateUserCaches(internalUserId)
 
     return NextResponse.json({
       success: true,
@@ -646,13 +701,6 @@ async function deletePropFirmAccount(request: NextRequest, { params }: RoutePara
     })
 
   } catch (error) {
-    if (isDomainError(error)) {
-      return NextResponse.json(
-        { success: false, error: error.message },
-        { status: error.status },
-      )
-    }
-    reportApiHandlerError(request, error, 'delete-prop-firm-account')
     return NextResponse.json(
       {
         success: false,
@@ -662,7 +710,3 @@ async function deletePropFirmAccount(request: NextRequest, { params }: RoutePara
     )
   }
 }
-
-export const GET = withCanonicalApiResponse(getPropFirmAccount)
-export const PATCH = withCanonicalApiResponse(updatePropFirmAccount)
-export const DELETE = withCanonicalApiResponse(deletePropFirmAccount)

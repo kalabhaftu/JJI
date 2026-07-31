@@ -1,15 +1,9 @@
-import { NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { db } from '@/lib/db/client'
 import { ADMIN_WIDGET_DEFAULTS } from '@/lib/admin-control-plane'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
-export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+export async function GET() {
   try {
     const records = await db.query.AdminWidgetSetting.findMany()
     const byType = new Map(records.map((record: any) => [record.widgetType, record]))
@@ -18,20 +12,9 @@ export async function GET(request: NextRequest) {
       ...(byType.get(item.widgetType) || {}),
     }))
 
-    return createSuccessResponse(data, undefined, undefined, requestId)
+    return NextResponse.json({ success: true, data })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'list-widget-catalog',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse(
-      'Failed to fetch widget catalog',
-      500,
-      undefined,
-      'SERVER_ERROR',
-      requestId,
-    )
+    Sentry.captureException(error, { extra: { route: '/api/v1/dashboard/widget-catalog' } })
+    return NextResponse.json({ success: false, error: 'Failed to fetch widget catalog' }, { status: 500 })
   }
 }

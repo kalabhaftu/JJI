@@ -21,8 +21,7 @@ import {
   calculateDisciplineAnalytics,
 } from '@/lib/dashboard/analytics-calculations'
 import { calculateBalanceInfo } from '@/lib/utils/balance-calculator'
-import { formatCalendarData } from '@/lib/calendar/trade-calendar'
-import { calculateStatistics } from '@/lib/statistics/trade-statistics'
+import { formatCalendarData, calculateStatistics } from '@/lib/utils'
 
 export const MOCK_ACCOUNTS = [
   {
@@ -679,3 +678,4 @@ export function getMockDemoData() {
     widgets
   }
 }
+

@@ -95,7 +95,7 @@ bun run security:scan-console
 bun audit
 bun run build               Build the production application
 bun run build:analyze       Generate bundle analyzer reports
-bun run db:generate         Print the supported Supabase migration command
+bun run db:generate         Generate a reviewed Drizzle migration
 bun run db:studio           Open Drizzle Studio
 ```
 

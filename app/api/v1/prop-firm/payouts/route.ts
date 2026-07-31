@@ -4,97 +4,53 @@
  * DELETE /api/prop-firm/payouts/[id] - Delete a pending payout
  */
 
-import { NextRequest } from 'next/server'
-
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { getClientIp } from '@/lib/security/client-ip'
-import { savePayoutForUser } from '@/server/accounts/payouts'
-import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { isDomainError } from '@/lib/domain-error'
+import { NextRequest, NextResponse } from 'next/server'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { savePayoutAction } from '@/server/accounts'
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'payment')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
-    const identity = await getResolvedUserIdentitySafe()
-    if (!identity) {
-      return createErrorResponse(
-        'Unauthorized',
-        401,
-        undefined,
-        'UNAUTHORIZED',
-        requestId,
-      )
-    }
     const body = await request.json()
     const { masterAccountId, phaseAccountId, amount, notes } = body
 
     if (!masterAccountId || !phaseAccountId || amount === undefined || amount === null || amount === '') {
-      return createErrorResponse(
-        'Missing required fields: masterAccountId, phaseAccountId, and amount',
-        400,
-        undefined,
-        'VALIDATION_ERROR',
-        requestId,
+      return NextResponse.json(
+        { success: false, error: 'Missing required fields: masterAccountId, phaseAccountId, and amount' },
+        { status: 400 }
       )
     }
 
     const numericAmount = Number(amount)
     if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
-      return createErrorResponse(
-        'Amount must be a positive number',
-        400,
-        undefined,
-        'VALIDATION_ERROR',
-        requestId,
+      return NextResponse.json(
+        { success: false, error: 'Amount must be a positive number' },
+        { status: 400 }
       )
     }
 
-    const result = await savePayoutForUser(identity.internalUserId, {
+    const result = await savePayoutAction({
       masterAccountId,
       phaseAccountId,
       amount: numericAmount,
-      ...(notes ? { notes: String(notes) } : {}),
-    }, {
-      source: 'api',
-      requestId,
-      ipAddress: getClientIp(request.headers),
+      notes: notes || undefined
     })
 
-    return createSuccessResponse(
-      result.data,
-      result.message,
-      undefined,
-      requestId,
-    )
+    return NextResponse.json({
+      success: true,
+      data: result.data,
+      message: result.message
+    })
 
   } catch (error) {
-    if (isDomainError(error)) {
-      return createErrorResponse(
-        error.message,
-        error.status,
-        undefined,
-        error.code,
-        requestId,
-      )
-    }
-    reportError(error, {
-      surface: 'api',
-      operation: 'create-payout',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse(
-      'Failed to create payout',
-      500,
-      undefined,
-      'PAYOUT_CREATE_FAILED',
-      requestId,
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to create payout'
+      },
+      { status: 500 }
     )
   }
 }

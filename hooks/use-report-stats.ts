@@ -11,7 +11,6 @@ import { useQuery } from '@tanstack/react-query'
 import { postFetcher } from '@/lib/query/fetcher'
 import type { ReportStatsResponse } from '@/lib/statistics/report-statistics'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
 
 export interface UseReportStatsFilters {
   accountId?: string
@@ -35,7 +34,7 @@ export function useReportStats(
   options?: UseReportStatsOptions,
 ) {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   const cleanedFilters = Object.fromEntries(
     Object.entries(filters).filter(([, v]) => v !== undefined && v !== null && v !== '')

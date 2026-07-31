@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
 import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
-import { reportError } from '@/lib/observability/report-error'
 import { type SynchronizationType } from '@/lib/db/schema'
 import { DEFAULT_INCLUDED_FEE_TYPES } from '@/app/dashboard/components/import/tradovate/sync/fee-types'
 import logger from '@/lib/logger'
@@ -103,7 +102,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       })
       const data = await res.json()
       if (!res.ok || !data.success) {
-        return { success: false, error: data.error?.message || data.message || 'Failed to update' }
+        return { success: false, error: data.message || 'Failed to update' }
       }
       await loadAccounts()
       return { success: true }
@@ -155,13 +154,12 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
         const payload = await response.json()
 
         // Handle duplicate trades (already imported)
-        const responseMessage = payload?.error?.message ?? payload?.message
-        if (responseMessage === "DUPLICATE_TRADES") {
+        if (payload?.message === "DUPLICATE_TRADES") {
           return "All trades from this account have already been imported"
         }
         
         if (!response.ok || !payload?.success) {
-          const errorMsg = responseMessage || `Sync error for account ${accountId}`
+          const errorMsg = payload?.message || `Sync error for account ${accountId}`
           throw new Error(errorMsg)
         }
 
@@ -199,11 +197,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
     } catch (error) {
       const errorMsg = `Sync error for account ${accountId}: ${error instanceof Error ? error.message : "Unknown error"}`
-      reportError(error, {
-        surface: 'client',
-        operation: 'sync-tradovate-account',
-        entityId: accountId,
-      })
+      console.error('Sync error:', error)
       return { success: false, message: errorMsg }
     }
   }, [accounts, disabled, refreshTrades, loadAccounts])
@@ -231,10 +225,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       }
 
     } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'sync-all-tradovate-accounts',
-      })
+      console.error('Error during bulk sync:', error)
     } finally {
       setIsAutoSyncing(false)
     }

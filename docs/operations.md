@@ -13,14 +13,14 @@ Preview must not mutate production database, Storage, Redis, payments, email, OA
 ## Pre-deployment gate
 
 ```bash
-bun install --frozen-lockfile
-bun run type-check
-bun run lint
-bun run test -- --run
-bun audit
-bun run security:scan-console
-bunx drizzle-kit check
-bun run build
+npm ci
+npm run type-check
+npm run lint
+npm test -- --run
+npm audit --audit-level=low
+npm run security:scan-console
+npx drizzle-kit check
+npm run build
 ```
 
 Confirm zero public browser source maps and review route bundle sizes from the build output.
@@ -70,7 +70,7 @@ Confirm zero public browser source maps and review route bundle sizes from the b
 
 ### Vercel
 
-- Build uses Node.js 24 and `bun install --frozen-lockfile`
+- Build uses Node.js 24 and `npm ci`
 - Preview deployment is ready
 - Production domain is `www.justjournalit.site`
 - Preview/pre-release domain is `justjournalit.vercel.app`
@@ -109,28 +109,3 @@ Do not resolve Sentry issues or delete operational evidence until the fix is dep
 - Storage: restore previous bucket visibility and policies only with explicit object-access verification.
 - Redis: delete the affected namespace or let bounded TTLs expire; never flush the full production database during routine rollback.
 - Inngest: pause the affected function or remove its trigger, then inspect incomplete runs before replay.
-
-## Google Search Console setup
-
-1. Deploy the production changes.
-2. Confirm the website opens over HTTPS.
-3. Confirm `/robots.txt` works.
-4. Confirm `/sitemap.xml` works.
-5. Open Google Search Console.
-6. Select "Domain" property.
-7. Enter the root domain without `https://` or paths (e.g. `justjournalit.site`).
-8. Copy Google's DNS TXT verification record.
-9. Add the TXT record through the domain's DNS provider.
-10. Wait for DNS propagation.
-11. Click "Verify" in Google Search Console.
-12. Open the Sitemaps section.
-13. Submit `sitemap.xml`.
-14. Inspect the homepage and important public pages using URL Inspection.
-15. Request indexing where appropriate.
-16. Keep the DNS TXT record after verification.
-
-Note:
-* Adding the site to Search Console does not guarantee immediate indexing.
-* DNS verification may be immediate or may require additional propagation time.
-* Search Console reporting data may take several days to appear.
-* Google decides whether and when each page is indexed.

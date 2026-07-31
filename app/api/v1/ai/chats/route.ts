@@ -1,14 +1,11 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { checkAIAccess } from '@/lib/services/ai-guard-service'
 import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
 import { z } from 'zod'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 const createChatSchema = z.object({
   title: z.string().trim().min(1).max(160).optional(),
@@ -20,13 +17,12 @@ const createChatSchema = z.object({
 }).strict()
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'ai')
-  if (limited) return limited
+  const rl = await applyRateLimit(request, apiLimiter)
+  if (rl) return rl
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userId = identity.internalUserId
 
@@ -34,7 +30,7 @@ export async function GET(request: NextRequest) {
     // Check general AI access
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
-      return createErrorResponse(aiGuard.reason, 403, undefined, 'PAYWALL', requestId)
+      return NextResponse.json({ error: aiGuard.reason, code: 'PAYWALL' }, { status: 403 })
     }
 
     const chats = await db.query.AIChat.findMany({
@@ -55,21 +51,19 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return createSuccessResponse(chats, undefined, undefined, requestId)
+    return NextResponse.json({ success: true, data: chats })
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'list-ai-chats', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to fetch chats', 500, undefined, 'AI_CHATS_READ_FAILED', requestId)
+    return NextResponse.json({ error: 'Failed to fetch chats' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'ai')
-  if (limited) return limited
+  const rl = await applyRateLimit(request, apiLimiter)
+  if (rl) return rl
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userId = identity.internalUserId
 
@@ -77,17 +71,11 @@ export async function POST(request: NextRequest) {
     // Check AI access
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
-      return createErrorResponse(aiGuard.reason, 403, undefined, 'PAYWALL', requestId)
+      return NextResponse.json({ error: aiGuard.reason, code: 'PAYWALL' }, { status: 403 })
     }
 
     if (!(await hasCurrentAiDataConsent(userId))) {
-      return createErrorResponse(
-        'AI data processing consent is required',
-        412,
-        undefined,
-        'AI_DATA_CONSENT_REQUIRED',
-        requestId,
-      )
+      return NextResponse.json({ error: 'AI data processing consent is required', code: 'AI_DATA_CONSENT_REQUIRED' }, { status: 412 })
     }
 
     const { title, accounts, dateRange, customFrom, customTo, dataSources } = createChatSchema.parse(await request.json())
@@ -102,12 +90,9 @@ export async function POST(request: NextRequest) {
       dataSources: dataSources || [],
     }).returning())[0]
 
-    return createSuccessResponse(chat, undefined, undefined, requestId, { status: 201 })
+    return NextResponse.json({ success: true, data: chat })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return createErrorResponse('Invalid chat configuration', 400, error.flatten(), 'VALIDATION_ERROR', requestId)
-    }
-    reportError(error, { surface: 'api', operation: 'create-ai-chat', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to create chat', 500, undefined, 'AI_CHAT_CREATE_FAILED', requestId)
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid chat configuration' }, { status: 400 })
+    return NextResponse.json({ error: 'Failed to create chat' }, { status: 500 })
   }
 }

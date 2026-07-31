@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
-import { saveTradesForUser } from '@/server/trades/save';
+import { saveTradesAction } from '@/server/database';
 import { eq, and, gte, lte, desc, count } from 'drizzle-orm';
+import { logger } from '@/lib/logger';
 import { consumeRateLimitKey, thorLimiter } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/security/client-ip';
-import { reportApiHandlerError } from '@/lib/api/canonical-handler';
 
 // Common authentication function to use across all methods
 async function authenticateRequest(req: NextRequest) {
@@ -133,11 +133,7 @@ export async function POST(req: NextRequest) {
       })
     )
 
-    const requestId = req.headers.get('x-request-id')
-    const result = await saveTradesForUser(user.id, trades as any[], {
-      source: 'api',
-      ...(requestId ? { requestId } : {}),
-    })
+    const result = await saveTradesAction(trades as any[])
 
     if (result.error && result.error !== 'DUPLICATE_TRADES') {
       return NextResponse.json(
@@ -152,7 +148,7 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
-    reportApiHandlerError(req, error, 'store-thor-trades')
+    logger.error('[thor/store] Error processing request: ' + error)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -230,10 +226,10 @@ export async function GET(req: NextRequest) {
     }, { status: 200 });
     
   } catch (error) {
-    reportApiHandlerError(req, error, 'list-thor-trades');
+    logger.error('[thor/store] Error retrieving trades: ' + error);
     return NextResponse.json({ 
       error: 'Failed to retrieve trades', 
-      details: 'Internal server error'
+      details: error instanceof Error ? error.message : 'Unknown error' 
     }, { status: 500 });
   }
 }
@@ -276,10 +272,10 @@ export async function DELETE(req: NextRequest) {
     }, { status: 200 });
     
   } catch (error) {
-    reportApiHandlerError(req, error, 'delete-thor-trades');
+    logger.error('[thor/store] Error deleting trades: ' + error);
     return NextResponse.json({ 
       error: 'Failed to delete trades', 
-      details: 'Internal server error'
+      details: error instanceof Error ? error.message : 'Unknown error' 
     }, { status: 500 });
   }
 }

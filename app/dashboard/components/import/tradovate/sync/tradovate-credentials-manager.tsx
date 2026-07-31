@@ -27,11 +27,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  initiateTradovateOAuth,
+  updateDailySyncTimeAction,
+} from "./actions";
 import { TRADOVATE_FEE_TYPE_KEYS } from "./fee-types";
 import { useTradovateSyncStore } from "@/store/tradovate-sync-store";
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
-import { reportError } from '@/lib/observability/report-error'
-import { apiRequest } from '@/lib/api/client';
+import { logger } from '@/lib/logger';
 
 function translateTradovateFeeType(key: string): string {
   switch (key) {
@@ -83,11 +86,7 @@ export function TradovateCredentialsManager() {
         toast.success(`Account ${accountId} deleted`);
       } catch (error) {
         toast.error(`Failed to delete account ${accountId}`);
-        reportError(error, {
-          surface: 'client',
-          operation: 'delete-tradovate-connection',
-          entityId: accountId,
-        })
+        logger.error("Delete error: " + (error instanceof Error ? error.message : String(error)));
       }
     },
     [deleteAccount],
@@ -96,14 +95,7 @@ export function TradovateCredentialsManager() {
   const handleStartOAuth = useCallback(async (accountId: string = "default") => {
     try {
       setIsLoading(true);
-      const response = await apiRequest<{ authUrl?: string; state?: string; error?: string }>(
-        '/api/v1/tradovate/oauth',
-        {
-          method: 'POST',
-          body: JSON.stringify({ accountId }),
-        },
-      );
-      const result = response.data ?? {};
+      const result = await initiateTradovateOAuth(accountId);
       if (result.error || !result.authUrl || !result.state) {
         toast.error("Failed to initiate oauth connection");
         return;
@@ -118,11 +110,6 @@ export function TradovateCredentialsManager() {
       // Redirect to Tradovate OAuth
       window.location.href = result.authUrl;
     } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'start-tradovate-oauth',
-        route: '/api/v1/tradovate/oauth',
-      })
       toast.error("Failed to initiate oauth connection");
     } finally {
       setIsLoading(false);
@@ -140,10 +127,7 @@ export function TradovateCredentialsManager() {
       toast.success("Accounts reloaded successfully");
     } catch (error) {
       toast.error("Failed to reload accounts");
-      reportError(error, {
-        surface: 'client',
-        operation: 'reload-tradovate-connections',
-      })
+      logger.error("Reload error: " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsReloading(false);
     }
@@ -178,17 +162,10 @@ export function TradovateCredentialsManager() {
         utcTimeString = localDate.toISOString();
       }
       
-      const response = await apiRequest<{ success: boolean; error?: string }>(
-        '/api/v1/tradovate/synchronizations/schedule',
-        {
-          method: 'PATCH',
-          body: JSON.stringify({
-            accountId: selectedAccountId,
-            utcTimeString,
-          }),
-        },
+      const result = await updateDailySyncTimeAction(
+        selectedAccountId,
+        utcTimeString
       );
-      const result = response.data ?? { success: false };
       
       if (result.success) {
         toast.success("Daily sync time updated");
@@ -199,11 +176,7 @@ export function TradovateCredentialsManager() {
       }
     } catch (error) {
       toast.error("Failed to update daily sync time");
-      reportError(error, {
-        surface: 'client',
-        operation: 'update-tradovate-sync-time',
-        entityId: selectedAccountId,
-      })
+      logger.error("Update sync time error: " + (error instanceof Error ? error.message : String(error)));
     } finally {
       setIsSavingTime(false);
     }

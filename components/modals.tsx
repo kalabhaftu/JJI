@@ -64,8 +64,7 @@ export default function Modals() {
           throw new Error('Failed to check trade availability')
         }
 
-        const payload = await response.json()
-        const data = payload.data
+        const data = await response.json()
         const total =
           typeof data?.total === 'number'
             ? data.total

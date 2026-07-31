@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/nextjs'
+
 const regionDisplayNames =
   typeof Intl !== 'undefined' && typeof Intl.DisplayNames !== 'undefined'
     ? new Intl.DisplayNames(['en'], { type: 'region' })
@@ -15,6 +17,7 @@ function decodeLocationPart(value?: string | null): string | null {
     const decoded = decodeURIComponent(trimmed.replace(/\+/g, ' '))
     return decoded.trim() || null
   } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/geo', phase: 'decodeLocationPart' } })
     return trimmed
   }
 }

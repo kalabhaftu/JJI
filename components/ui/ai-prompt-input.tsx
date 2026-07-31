@@ -1,5 +1,5 @@
 import * as React from "react";
-import { reportError } from '@/lib/observability/report-error'
+import logger from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import {
   Tooltip,
@@ -158,10 +158,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       };
 
       recognition.onerror = (event: { error: string }) => {
-        reportError(new Error(event.error), {
-          surface: 'client',
-          operation: 'speech-recognition',
-        })
+        logger.error({ err: new Error(event.error) }, 'Speech recognition error:');
         setIsRecording(false);
         recognitionRef.current = null;
       };

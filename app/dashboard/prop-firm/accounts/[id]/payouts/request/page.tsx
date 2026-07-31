@@ -136,7 +136,7 @@ export default function RequestPayoutPage() {
         toast.success('Payout request submitted successfully')
         router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts`)
       } else {
-        throw new Error(data.error?.message || 'Failed to submit payout request')
+        throw new Error(data.error || 'Failed to submit payout request')
       }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Failed to submit payout request')

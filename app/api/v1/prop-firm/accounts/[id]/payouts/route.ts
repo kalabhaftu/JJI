@@ -1,12 +1,10 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { db } from '@/lib/db/client'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -21,14 +19,16 @@ function isFundedPhase(evaluationType: string, phaseNumber: number): boolean {
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
     const internalUserId = identity.internalUserId
 
@@ -56,7 +56,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!masterAccount) {
-      return createErrorResponse('Account not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Account not found' },
+        { status: 404 }
+      )
     }
 
     // Get current phase
@@ -112,18 +115,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       orderBy: (table, { desc }) => [desc(table.requestDate)]
     }) : []
 
-    return createSuccessResponse(
-      {
+    return NextResponse.json({
+      success: true,
+      data: {
         eligibility,
         history: payoutHistory
-      },
-      undefined,
-      undefined,
-      requestId,
-    )
+      }
+    })
 
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'get-prop-firm-payout-data', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to fetch payout data', 500, undefined, 'PAYOUT_DATA_FAILED', requestId)
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to fetch payout data'
+      },
+      { status: 500 }
+    )
   }
 }

@@ -1,11 +1,10 @@
 import { useQuery } from '@tanstack/react-query'
 import type { PropFirmSummaryDTO } from '@/lib/statistics/propfirm-statistics'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
 
 export function usePropFirmStats(initialData?: PropFirmSummaryDTO) {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   return useQuery<PropFirmSummaryDTO>({
     queryKey: ['propfirm-stats', isDemo],
@@ -56,8 +55,7 @@ export function usePropFirmStats(initialData?: PropFirmSummaryDTO) {
       }
       const res = await fetch('/api/v1/reports/propfirm')
       if (!res.ok) throw new Error('Failed to fetch prop firm stats')
-      const payload = await res.json()
-      return payload.data
+      return res.json()
     },
     ...(initialData !== undefined && { initialData }),
     staleTime: 2 * 60 * 1000,

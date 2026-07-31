@@ -3,7 +3,6 @@
 import { createContext, useContext, useEffect, useState, useRef, useCallback, ReactNode } from 'react'
 import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
-import { reportError } from '@/lib/observability/report-error'
 
 /** Client-safe subset of Synchronization (token stripped, replaced with hasToken) */
 export interface DxFeedSyncAccount {
@@ -120,13 +119,12 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
 
           const payload = await response.json()
 
-          const responseMessage = payload?.error?.message ?? payload?.message
-          if (responseMessage === 'DUPLICATE_TRADES') {
+          if (payload?.message === 'DUPLICATE_TRADES') {
             return "All trades from this account have already been imported"
           }
 
           if (!response.ok || !payload?.success) {
-            throw new Error(responseMessage || `Sync error for account ${accountId}`)
+            throw new Error(payload?.message || `Sync error for account ${accountId}`)
           }
 
           const savedCount = payload.savedCount || 0
@@ -159,11 +157,7 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
         const errorMsg = `Sync error for account ${accountId}: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
-        reportError(error, {
-          surface: 'client',
-          operation: 'sync-dxfeed-account',
-          entityId: accountId,
-        })
+        console.error('Sync error:', error)
         return { success: false, message: errorMsg }
       }
     },
@@ -186,10 +180,7 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
         await new Promise((resolve) => setTimeout(resolve, 1000))
       }
     } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'sync-all-dxfeed-accounts',
-      })
+      console.error('Error during bulk sync:', error)
     } finally {
       isAutoSyncingRef.current = false
       setIsAutoSyncing(false)

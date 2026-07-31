@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useData } from '@/context/data-provider'
-import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
+import { groupTradesByExecution } from '@/lib/utils'
 
 function toNumber(value: unknown, fallback = 0): number {
   const num = typeof value === 'number' ? value : Number(value)

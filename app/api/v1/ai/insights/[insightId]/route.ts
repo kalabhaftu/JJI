@@ -1,24 +1,20 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ insightId: string }> }
 ) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'ai')
-  if (limited) return limited
+  const rl = await applyRateLimit(request, apiLimiter)
+  if (rl) return rl
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userId = identity.internalUserId
 
@@ -30,7 +26,7 @@ export async function DELETE(
     })
 
     if (!insight) {
-      return createErrorResponse('Insight not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json({ error: 'Insight not found' }, { status: 404 })
     }
 
     await db.delete(schema.AISavedInsight).where(and(
@@ -38,14 +34,8 @@ export async function DELETE(
       eq(schema.AISavedInsight.userId, userId),
     ))
 
-    return createSuccessResponse(
-      { deleted: true },
-      'Insight deleted successfully',
-      undefined,
-      requestId,
-    )
+    return NextResponse.json({ success: true, message: 'Insight deleted successfully' })
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'delete-ai-insight', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to delete insight', 500, undefined, 'AI_INSIGHT_DELETE_FAILED', requestId)
+    return NextResponse.json({ error: 'Failed to delete insight' }, { status: 500 })
   }
 }

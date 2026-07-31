@@ -7,8 +7,6 @@ import { applyRateLimit, aiLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
 import { z } from 'zod'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -43,7 +41,6 @@ const mappingRequestSchema = z.object({
 }).strict()
 
 export async function POST(req: NextRequest) {
-  const requestId = resolveRequestId(req.headers)
   const rateLimitRes = await applyRateLimit(req, aiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -95,12 +92,6 @@ Analyze the column names AND the sample data values to make accurate mappings. R
 
     return result.toTextStreamResponse();
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'stream-ai-column-mappings',
-      route: req.nextUrl.pathname,
-      requestId,
-    })
     return new Response(JSON.stringify({ error: "Failed to generate mappings" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },

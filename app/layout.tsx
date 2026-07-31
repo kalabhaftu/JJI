@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { inter } from "@/lib/fonts";
 import "./globals.css";
 import { SafeToaster } from "@/components/safe-toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,8 +11,7 @@ import { ServiceWorkerRegister } from "@/components/service-worker-register";
 import { RouteAwareFooter } from "@/components/route-aware-footer";
 import { headers } from 'next/headers'
 import { BRAND } from '@/lib/constants/brand'
-import { Analytics } from "@vercel/analytics/next"
-import { SpeedInsights } from "@vercel/speed-insights/next"
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const DEFAULT_SITE_URL = BRAND.siteUrl
 const SITE_NAME = BRAND.name
@@ -33,31 +33,9 @@ export const viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL(normalizedSiteUrl),
-  title: {
-    default: SITE_NAME,
-    template: `%s | ${SITE_NAME}`,
-  },
+  title: SITE_NAME,
   description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
-  alternates: {
-    canonical: "/",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-      "max-video-preview": -1,
-    },
-  },
-  ...(process.env.GOOGLE_SITE_VERIFICATION ? {
-    verification: {
-      google: process.env.GOOGLE_SITE_VERIFICATION,
-    },
-  } : {}),
   appleWebApp: {
     title: SITE_NAME,
     capable: true,
@@ -68,7 +46,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    url: '/',
+    url: normalizedSiteUrl,
     images: [
       {
         url: socialImage,
@@ -109,7 +87,7 @@ export default async function RootLayout({
   const nonce = (await headers()).get('x-nonce') || undefined
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} dark`} suppressHydrationWarning>
       <head>
         <meta name="application-name" content={BRAND.name} />
 
@@ -138,7 +116,7 @@ export default async function RootLayout({
           }}
         />
       </head>
-      <body className="font-sans min-h-screen flex flex-col w-full">
+      <body className={`${inter.variable} font-sans min-h-screen flex flex-col w-full`}>
         <a
           href="#main-content"
           className="fixed left-3 top-3 z-[100] -translate-y-20 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg transition-transform focus:translate-y-0"
@@ -158,7 +136,6 @@ export default async function RootLayout({
             </TooltipProvider>
           </ThemeProvider>
         </ErrorBoundaryWrapper>
-        <Analytics />
         <SpeedInsights />
       </body>
     </html>

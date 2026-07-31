@@ -1,5 +1,4 @@
 import React from 'react'
-import dynamic from 'next/dynamic'
 import { WidgetType, WidgetSize } from '../types/dashboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WidgetErrorBoundary } from '@/components/error-boundary'
@@ -19,68 +18,27 @@ import AvgWinLoss from '../components/kpi/avg-win-loss'
 
 import SessionAnalysis from '../components/kpi/session-analysis'
 import StreakKpi from '../components/kpi/streak-kpi'
+
+// Chart components
+import NetDailyPnL from '../components/charts/net-daily-pnl'
+import WeekdayPnL from '../components/charts/weekday-pnl'
+import TradeDurationPerformance from '../components/charts/trade-duration-performance'
+import PerformanceScore from '../components/charts/performance-score'
+import PnLByInstrument from '../components/charts/pnl-by-instrument'
+import EquityCurveWidget from '../components/charts/equity-curve-widget'
+import OutcomeDistributionWidget from '../components/charts/outcome-distribution-widget'
+import DayOfWeekPerformanceWidget from '../components/charts/day-of-week-performance-widget'
+import DrawdownChart from '../components/charts/drawdown-chart'
+import PerformanceSummaryWidget from '../components/charts/performance-summary'
+import {
+  AccountCurveWidget,
+  DisciplineAnalyticsWidget,
+  TagPerformanceWidget,
+  TimeOfDayPerformanceWidget,
+} from '../components/charts/analytics-widgets'
 import { PropFirmAccountStatisticsWidget } from '../components/prop-firm-widgets/prop-firm-account-statistics-widget'
+import { PropFirmGrowthCurveWidget } from '../components/prop-firm-widgets/prop-firm-growth-curve-widget'
 import { PropFirmObjectivesTodayWidget } from '../components/prop-firm-widgets/prop-firm-objectives-today-widget'
-
-function ChartLoadingFallback() {
-  return (
-    <div
-      aria-busy="true"
-      aria-label="Loading chart"
-      className="h-full min-h-40 w-full animate-pulse rounded-lg bg-muted/30 motion-reduce:animate-none"
-    />
-  )
-}
-
-const NetDailyPnL = dynamic(() => import('../components/charts/net-daily-pnl'), { loading: ChartLoadingFallback })
-const WeekdayPnL = dynamic(() => import('../components/charts/weekday-pnl'), { loading: ChartLoadingFallback })
-const TradeDurationPerformance = dynamic(
-  () => import('../components/charts/trade-duration-performance'),
-  { loading: ChartLoadingFallback },
-)
-const PerformanceScore = dynamic(() => import('../components/charts/performance-score'), { loading: ChartLoadingFallback })
-const PnLByInstrument = dynamic(() => import('../components/charts/pnl-by-instrument'), { loading: ChartLoadingFallback })
-const EquityCurveWidget = dynamic(() => import('../components/charts/equity-curve-widget'), { loading: ChartLoadingFallback })
-const OutcomeDistributionWidget = dynamic(
-  () => import('../components/charts/outcome-distribution-widget'),
-  { loading: ChartLoadingFallback },
-)
-const DayOfWeekPerformanceWidget = dynamic(
-  () => import('../components/charts/day-of-week-performance-widget'),
-  { loading: ChartLoadingFallback },
-)
-const DrawdownChart = dynamic(() => import('../components/charts/drawdown-chart'), { loading: ChartLoadingFallback })
-const PerformanceSummaryWidget = dynamic(
-  () => import('../components/charts/performance-summary'),
-  { loading: ChartLoadingFallback },
-)
-const CalendarHeatmapWidget = dynamic(
-  () => import('../components/charts/calendar-heatmap'),
-  { loading: ChartLoadingFallback },
-)
-const TimeProfitScatter = dynamic(() => import('../components/charts/time-profit-scatter'), { loading: ChartLoadingFallback })
-const ExcursionScatter = dynamic(() => import('../components/charts/excursion-scatter'), { loading: ChartLoadingFallback })
-const AccountCurveWidget = dynamic(
-  () => import('../components/charts/analytics-widgets').then(module => module.AccountCurveWidget),
-  { loading: ChartLoadingFallback },
-)
-const DisciplineAnalyticsWidget = dynamic(
-  () => import('../components/charts/analytics-widgets').then(module => module.DisciplineAnalyticsWidget),
-  { loading: ChartLoadingFallback },
-)
-const TagPerformanceWidget = dynamic(
-  () => import('../components/charts/analytics-widgets').then(module => module.TagPerformanceWidget),
-  { loading: ChartLoadingFallback },
-)
-const TimeOfDayPerformanceWidget = dynamic(
-  () => import('../components/charts/analytics-widgets').then(module => module.TimeOfDayPerformanceWidget),
-  { loading: ChartLoadingFallback },
-)
-const PropFirmGrowthCurveWidget = dynamic(
-  () => import('../components/prop-firm-widgets/prop-firm-growth-curve-widget')
-    .then(module => module.PropFirmGrowthCurveWidget),
-  { loading: ChartLoadingFallback },
-)
 
 export interface WidgetConfig {
   type: WidgetType
@@ -166,33 +124,6 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetConfig> = {
     previewHeight: 300,
     getComponent: () => <MiniCalendarWrapper />,
     getPreview: () => <CreateCalendarPreview />
-  },
-  calendarHeatmap: {
-    type: 'calendarHeatmap',
-    defaultSize: 'small-long',
-    allowedSizes: ['small-long', 'medium', 'large', 'extra-large'],
-    category: 'charts',
-    description: 'Github-style 52-week P&L heatmap calendar',
-    previewHeight: 200,
-    getComponent: ({ size }) => <CalendarHeatmapWidget size={size} />,
-    getPreview: () => (
-      <Card className="w-full h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">PnL Heatmap</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2">
-          <div className="flex gap-1 h-20 opacity-50">
-             {Array.from({length: 10}).map((_, i) => (
-                <div key={i} className="flex flex-col gap-1">
-                   {Array.from({length: 7}).map((_, j) => (
-                      <div key={j} className={cn("w-2 h-2 rounded-sm", Math.random() > 0.5 ? "bg-long" : "bg-muted")} />
-                   ))}
-                </div>
-             ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
   },
   recentTrades: {
     type: 'recentTrades',
@@ -444,68 +375,6 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetConfig> = {
                 />
               )
             })}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  },
-  timeProfitScatter: {
-    type: 'timeProfitScatter',
-    defaultSize: 'medium',
-    allowedSizes: ['medium', 'large', 'extra-large'],
-    category: 'charts',
-    description: 'Scatter plot of trade duration vs profit/loss',
-    previewHeight: 250,
-    getComponent: ({ size }) => <TimeProfitScatter size={size} />,
-    getPreview: () => (
-      <Card className="w-full h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">Duration vs Profit</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2">
-          <div className="h-32 relative">
-             {Array.from({length: 15}).map((_, i) => {
-               const x = Math.random() * 80 + 10
-               const y = Math.random() * 80 + 10
-               return (
-                 <div 
-                   key={i} 
-                   className={cn("absolute w-2 h-2 rounded-full", Math.random() > 0.5 ? "bg-long" : "bg-short")} 
-                   style={{ left: `${x}%`, top: `${y}%`, opacity: 0.6 }}
-                 />
-               )
-             })}
-          </div>
-        </CardContent>
-      </Card>
-    )
-  },
-  excursionScatter: {
-    type: 'excursionScatter',
-    defaultSize: 'medium',
-    allowedSizes: ['medium', 'large', 'extra-large'],
-    category: 'charts',
-    description: 'Scatter plot of Maximum Adverse Excursion (MAE) vs Maximum Favorable Excursion (MFE)',
-    previewHeight: 250,
-    getComponent: ({ size }) => <ExcursionScatter size={size} />,
-    getPreview: () => (
-      <Card className="w-full h-full">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm">MAE vs MFE</CardTitle>
-        </CardHeader>
-        <CardContent className="p-2">
-          <div className="h-32 relative">
-             {Array.from({length: 15}).map((_, i) => {
-               const x = Math.random() * 80 + 10
-               const y = Math.random() * 80 + 10
-               return (
-                 <div 
-                   key={i} 
-                   className={cn("absolute w-2 h-2 rounded-full", Math.random() > 0.5 ? "bg-long" : "bg-short")} 
-                   style={{ left: `${x}%`, top: `${y}%`, opacity: 0.6 }}
-                 />
-               )
-             })}
           </div>
         </CardContent>
       </Card>

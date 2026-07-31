@@ -4,7 +4,6 @@ import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
-import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 import { PassThrough } from 'stream'
 import { USER_SETTINGS_SELECT, mergeUserSettings } from '@/lib/user-settings'
 import { eq, and, or, inArray, gte, lte, type SQL } from 'drizzle-orm'
@@ -288,7 +287,7 @@ export async function POST(request: NextRequest) {
       logger.warn('Archive warning: ' + (err instanceof Error ? err.message : String(err)))
     })
     archive.on('error', (err) => {
-      reportApiHandlerError(request, err, 'stream-user-data-export')
+      logger.error('Archive error: ' + (err instanceof Error ? err.message : String(err)))
       stream.destroy(err) // Kill the stream
     })
 
@@ -393,7 +392,7 @@ export async function POST(request: NextRequest) {
 
         await archive.finalize()
       } catch (error) {
-        reportApiHandlerError(request, error, 'build-user-data-export')
+        logger.error('Async archive processing error: ' + (error instanceof Error ? error.message : String(error)))
         stream.destroy(error as Error)
       }
     }
@@ -409,7 +408,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    reportApiHandlerError(request, error, 'initialize-user-data-export')
+    logger.error('Export init error: ' + (error instanceof Error ? error.message : String(error)))
     return NextResponse.json({ error: 'Export failed' }, { status: 500 })
   }
 }

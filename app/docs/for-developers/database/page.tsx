@@ -23,11 +23,11 @@ export default function DatabaseDocsPage() {
 
       <DocsSection title="Key design rules">
         <ul>
-          <li>All data is user-scoped — tables enforce a <code>user_id</code> foreign key constraint and tenant isolation</li>
-          <li>Server-side metric aggregations reduce client bundle size and latency</li>
-          <li>Timestamps are stored in UTC and formatted using date-fns-tz in the user&apos;s configured timezone</li>
-          <li>Database migrations and schema definitions are managed using <strong>Drizzle ORM</strong> and <code>drizzle-kit</code></li>
-          <li>Foreign key relations use cascading deletes or explicit cleanup hooks in maintenance services</li>
+          <li>All data is user-scoped - every table includes a user_id foreign key</li>
+          <li>Soft deletes where possible for audit trail</li>
+          <li>Aggregation happens server-side, not in the client</li>
+          <li>Timestamps are stored in UTC, converted to user timezone at render</li>
+          <li>Database migrations are managed through Prisma</li>
         </ul>
       </DocsSection>
     </DocsPage>

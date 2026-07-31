@@ -1,16 +1,13 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentity } from '@/server/user-identity'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { eq, and, desc, count } from 'drizzle-orm'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -38,24 +35,18 @@ export async function GET(request: NextRequest) {
       unreadCount = result[0]?.count || 0
     }
 
-    return createSuccessResponse({ notifications, unreadCount }, undefined, undefined, requestId)
+    return NextResponse.json({ success: true, data: { notifications, unreadCount } })
   } catch (error: any) {
+    logger.error('GET /api/v1/notifications' + ' : ' + error)
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'list-notifications',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to fetch notifications', 500, undefined, 'SERVER_ERROR', requestId)
+    return NextResponse.json({ error: 'Failed to fetch notifications' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -64,13 +55,7 @@ export async function POST(request: NextRequest) {
     const { type, title, message, priority, data } = body
 
     if (!type || !title || !message) {
-      return createErrorResponse(
-        'Missing required fields: type, title, message',
-        400,
-        undefined,
-        'VALIDATION_ERROR',
-        requestId,
-      )
+      return NextResponse.json({ error: 'Missing required fields: type, title, message' }, { status: 400 })
     }
 
     const notification = (await db.insert(schema.Notification).values({
@@ -102,46 +87,26 @@ export async function POST(request: NextRequest) {
               ...(data ? { payload: JSON.stringify(data) } : {}),
             },
           }).catch((pushError: any) => {
-            reportError(pushError, {
-              surface: 'background-job',
-              operation: 'send-notification-push',
-              route: request.nextUrl.pathname,
-              requestId,
-              userId: internalUserId,
-              entityId: notification?.id,
-            })
+            logger.error('FCM messaging send fail' + ' : ' + pushError)
           })
         }
       }
     } catch (pushError: any) {
-      reportError(pushError, {
-        surface: 'background-job',
-        operation: 'send-notification-push',
-        route: request.nextUrl.pathname,
-        requestId,
-        userId: internalUserId,
-        entityId: notification?.id,
-      })
+      logger.error('Failed to send push notification' + ' : ' + pushError)
     }
 
-    return createSuccessResponse(notification, undefined, undefined, requestId, { status: 201 })
+    return NextResponse.json({ success: true, data: notification })
   } catch (error: any) {
+    logger.error('POST /api/v1/notifications' + ' : ' + error)
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'create-notification',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to create notification', 500, undefined, 'SERVER_ERROR', requestId)
+    return NextResponse.json({ error: 'Failed to create notification' }, { status: 500 })
   }
 }
 
 export async function PATCH(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -151,29 +116,18 @@ export async function PATCH(request: NextRequest) {
       .set({ isRead: true })
       .where(and(eq(schema.Notification.userId, internalUserId), eq(schema.Notification.isRead, false)))
 
-    return createSuccessResponse(
-      { updated: true },
-      'All notifications marked as read',
-      undefined,
-      requestId,
-    )
+    return NextResponse.json({ success: true, message: 'All notifications marked as read' })
   } catch (error: any) {
+    logger.error('PATCH /api/v1/notifications' + ' : ' + error)
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'mark-notifications-read',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to mark notifications as read', 500, undefined, 'SERVER_ERROR', requestId)
+    return NextResponse.json({ error: 'Failed to mark notifications as read' }, { status: 500 })
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -181,22 +135,12 @@ export async function DELETE(request: NextRequest) {
 
     await db.delete(schema.Notification).where(eq(schema.Notification.userId, internalUserId))
 
-    return createSuccessResponse(
-      { deleted: true },
-      'All notifications cleared',
-      undefined,
-      requestId,
-    )
+    return NextResponse.json({ success: true, message: 'All notifications cleared' })
   } catch (error: any) {
+    logger.error('DELETE /api/v1/notifications' + ' : ' + error)
     if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    reportError(error, {
-      surface: 'api',
-      operation: 'clear-notifications',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to clear notifications', 500, undefined, 'SERVER_ERROR', requestId)
+    return NextResponse.json({ error: 'Failed to clear notifications' }, { status: 500 })
   }
 }

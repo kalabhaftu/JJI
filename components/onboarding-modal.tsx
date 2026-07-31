@@ -3,7 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useData } from '@/context/data-provider'
-import { reportError } from '@/lib/observability/report-error'
+import logger from "@/lib/logger"
 
 export default function OnboardingModal() {
   const { isFirstConnection, changeIsFirstConnection } = useData()
@@ -14,10 +14,7 @@ export default function OnboardingModal() {
       try {
         await changeIsFirstConnection(false)
       } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'complete-onboarding',
-        })
+        logger.error({ err: error }, 'Failed to update onboarding status')
       }
     }
   }
@@ -43,4 +40,4 @@ export default function OnboardingModal() {
       </DialogContent>
     </Dialog>
   )
-}
+} 

@@ -1,12 +1,9 @@
-'use client'
-
 import { ReactNode } from 'react'
 import Link from 'next/link'
 import { type LucideIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { cn } from '@/lib/utils'
 
 export function DocsPage({
@@ -36,31 +33,19 @@ export function DocsPage({
 
 export function DocsSection({
   title,
-  id: customId,
   description,
   children,
   className,
 }: {
   title: string
-  id?: string
   description?: string
   children: ReactNode
   className?: string
 }) {
-  const sectionId =
-    customId ||
-    title
-      .toLowerCase()
-      .replace(/[^\w\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .trim()
-
   return (
-    <section id={sectionId} className={cn('space-y-5 scroll-mt-24', className)}>
+    <section className={cn('space-y-5', className)}>
       <div className="space-y-2">
-        <h2 id={`heading-${sectionId}`} className="scroll-mt-24">
-          {title}
-        </h2>
+        <h2>{title}</h2>
         {description && <p className="text-muted-foreground">{description}</p>}
       </div>
       {children}
@@ -149,14 +134,12 @@ export function DocsLinkList({
 }: {
   links: Array<{ href: string; label: string; description: string }>
 }) {
-  const { docsHref } = usePublicSurfaceRouting()
-
   return (
     <div className="grid gap-3 md:grid-cols-2">
       {links.map((link) => (
         <Link
           key={link.href}
-          href={docsHref(link.href) as any}
+          href={link.href as any}
           className="rounded-2xl border border-border/70 bg-card/55 p-4 no-underline transition-colors hover:border-primary/40 hover:bg-accent/25"
         >
           <p className="m-0 text-base font-semibold text-foreground">{link.label}</p>

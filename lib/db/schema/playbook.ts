@@ -1,6 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { index, pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json } from 'drizzle-orm/pg-core';
 import { AdminFeatureFlag, AdminSharingPolicy, User, UserSettings, ImportJob, Notification, Feedback, UserGeoLog, SharedReport, Subscription, Synchronization } from './users';
 import { Trade, TradeExecution, TradeTag } from './trades';
 
@@ -26,13 +25,8 @@ export const ActivityLog = pgTable('ActivityLog', {
   entityId: text('entityId'),
   metadata: jsonb('metadata'),
   ipAddress: text('ipAddress'),
-  requestId: text('requestId'),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
-}, (table) => [
-  index('ActivityLog_requestId_idx')
-    .on(table.requestId)
-    .where(sql`${table.requestId} is not null`),
-]);
+});
 
 export type ActivityLogType = typeof ActivityLog.$inferSelect;
 export type NewActivityLog = typeof ActivityLog.$inferInsert;

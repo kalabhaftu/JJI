@@ -1,8 +1,5 @@
-import { reportError } from '@/lib/observability/report-error'
-import { formatCalendarData } from '@/lib/calendar/trade-calendar'
-import { calculateStatistics } from '@/lib/statistics/trade-statistics'
-import { classifyTrade } from '@/lib/trading/trade-formatting'
-import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
+import * as Sentry from '@sentry/nextjs'
+import { calculateStatistics, classifyTrade, formatCalendarData, groupTradesByExecution } from '@/lib/utils'
 import {
   calculateDayOfWeekPerformance,
   calculateOutcomeDistribution,
@@ -93,11 +90,7 @@ function safeWidget<T>(fn: () => T, fallback: T): T {
   try {
     return fn()
   } catch (error) {
-    reportError(error, {
-      surface: 'server',
-      operation: 'calculate-trade-widget',
-      extra: { fallbackUsed: true },
-    })
+    Sentry.captureException(error, { extra: { route: '/api/v1/trades', widget: 'safeWidget' } })
     return fallback
   }
 }
@@ -116,19 +109,15 @@ export function buildTradeAnalytics(input: AnalyticsInput) {
     pnlDisplayMode,
     relevantTransactions,
   } = input
-
-  // Filter out missed trades from analytics, but keep them for the trades list
-  const analyticsTrades = trades.filter((t: any) => !t.isMissedTrade)
-
-  const grouped = (includeStats || includeCalendar || groupByExecution) ? groupTradesByExecution(analyticsTrades) : undefined
-  const statistics = includeStats ? calculateStatistics(analyticsTrades, accounts, grouped, breakEvenThreshold) : null
-  const calendarData = includeCalendar ? formatCalendarData(analyticsTrades, accounts, timezone, grouped) : null
-  const responseTrades = groupByExecution ? (groupTradesByExecution(trades)) : trades
+  const grouped = (includeStats || includeCalendar || groupByExecution) ? groupTradesByExecution(trades) : undefined
+  const statistics = includeStats ? calculateStatistics(trades, accounts, grouped, breakEvenThreshold) : null
+  const calendarData = includeCalendar ? formatCalendarData(trades, accounts, timezone, grouped) : null
+  const responseTrades = groupByExecution ? (grouped ?? groupTradesByExecution(trades)) : trades
   const filteredAccounts = accountNumbers.length > 0
     ? accounts.filter((account: any) => accountNumbers.includes(account.number) || accountNumbers.includes(account.id))
     : accounts
   const widgetCalendarData = includeWidgets
-    ? (calendarData || formatCalendarData(analyticsTrades, accounts, timezone, grouped))
+    ? (calendarData || formatCalendarData(trades, accounts, timezone, grouped))
     : null
 
   const zeroBalanceResult = {
@@ -139,26 +128,26 @@ export function buildTradeAnalytics(input: AnalyticsInput) {
   }
 
   const widgets = includeWidgets ? {
-    equityCurve: safeWidget(() => calculateEquityCurve(analyticsTrades), []),
-    netDailyPnl: safeWidget(() => calculateNetDailyPnl(analyticsTrades, breakEvenThreshold), []),
-    dailyCumulativePnl: safeWidget(() => calculateDailyCumulativePnl(analyticsTrades, breakEvenThreshold), []),
-    outcomeDistribution: safeWidget(() => calculateOutcomeDistribution(analyticsTrades, breakEvenThreshold), { data: [], totalTrades: 0 } as any),
-    dayOfWeekPerformance: safeWidget(() => calculateDayOfWeekPerformance(analyticsTrades, breakEvenThreshold), []),
-    accountBalanceChart: safeWidget(() => calculateAccountBalanceChart(analyticsTrades, filteredAccounts, breakEvenThreshold), []),
-    pnlByStrategy: safeWidget(() => calculatePnlByStrategy(analyticsTrades, breakEvenThreshold), []),
-    pnlByInstrument: safeWidget(() => calculatePnlByInstrument(analyticsTrades, breakEvenThreshold), []),
-    winRateByStrategy: safeWidget(() => calculateWinRateByStrategy(analyticsTrades, breakEvenThreshold), []),
-    tradeDurationPerformance: safeWidget(() => calculateTradeDurationPerformance(analyticsTrades, breakEvenThreshold), []),
-    weekdayPnl: safeWidget(() => calculateWeekdayPnl(analyticsTrades, breakEvenThreshold), []),
-    performanceScore: safeWidget(() => calculatePerformanceScoreResult(analyticsTrades, breakEvenThreshold), { hasData: false } as any),
-    performanceSummary: safeWidget(() => calculatePerformanceSummaryMetrics(analyticsTrades), { maxDrawdown: 0, avgDrawdown: 0, rCoverage: { total: 0, valid: 0, all: 0 } }),
-    sessionAnalysis: safeWidget(() => calculateSessionAnalysis(analyticsTrades, breakEvenThreshold), {} as any),
-    accountProgression: safeWidget(() => calculateAccountProgression(analyticsTrades, filteredAccounts, breakEvenThreshold), { cumulative: [], balance: [], summary: {} } as any),
-    tagPerformance: safeWidget(() => calculateTagPerformance(analyticsTrades, breakEvenThreshold), {} as any),
-    timeOfDayPerformance: safeWidget(() => calculateTimeOfDayPerformance(analyticsTrades, breakEvenThreshold), []),
-    disciplineAnalytics: safeWidget(() => calculateDisciplineAnalytics(analyticsTrades, breakEvenThreshold), { totalTrades: 0, brokenRules: 0, ruleBrokenRate: 0, ruleCoverage: 0, avgRulesPerTaggedTrade: 0, playbooks: [] } as any),
+    equityCurve: safeWidget(() => calculateEquityCurve(trades), []),
+    netDailyPnl: safeWidget(() => calculateNetDailyPnl(trades, breakEvenThreshold), []),
+    dailyCumulativePnl: safeWidget(() => calculateDailyCumulativePnl(trades, breakEvenThreshold), []),
+    outcomeDistribution: safeWidget(() => calculateOutcomeDistribution(trades, breakEvenThreshold), { data: [], totalTrades: 0 } as any),
+    dayOfWeekPerformance: safeWidget(() => calculateDayOfWeekPerformance(trades, breakEvenThreshold), []),
+    accountBalanceChart: safeWidget(() => calculateAccountBalanceChart(trades, filteredAccounts, breakEvenThreshold), []),
+    pnlByStrategy: safeWidget(() => calculatePnlByStrategy(trades, breakEvenThreshold), []),
+    pnlByInstrument: safeWidget(() => calculatePnlByInstrument(trades, breakEvenThreshold), []),
+    winRateByStrategy: safeWidget(() => calculateWinRateByStrategy(trades, breakEvenThreshold), []),
+    tradeDurationPerformance: safeWidget(() => calculateTradeDurationPerformance(trades, breakEvenThreshold), []),
+    weekdayPnl: safeWidget(() => calculateWeekdayPnl(trades, breakEvenThreshold), []),
+    performanceScore: safeWidget(() => calculatePerformanceScoreResult(trades, breakEvenThreshold), { hasData: false } as any),
+    performanceSummary: safeWidget(() => calculatePerformanceSummaryMetrics(trades), { maxDrawdown: 0, avgDrawdown: 0, rCoverage: { total: 0, valid: 0, all: 0 } }),
+    sessionAnalysis: safeWidget(() => calculateSessionAnalysis(trades, breakEvenThreshold), {} as any),
+    accountProgression: safeWidget(() => calculateAccountProgression(trades, filteredAccounts, breakEvenThreshold), { cumulative: [], balance: [], summary: {} } as any),
+    tagPerformance: safeWidget(() => calculateTagPerformance(trades, breakEvenThreshold), {} as any),
+    timeOfDayPerformance: safeWidget(() => calculateTimeOfDayPerformance(trades, breakEvenThreshold), []),
+    disciplineAnalytics: safeWidget(() => calculateDisciplineAnalytics(trades, breakEvenThreshold), { totalTrades: 0, brokenRules: 0, ruleBrokenRate: 0, ruleCoverage: 0, avgRulesPerTaggedTrade: 0, playbooks: [] } as any),
     calendarData: widgetCalendarData,
-    accountBalancePnl: safeWidget(() => calculateBalanceInfo(filteredAccounts, analyticsTrades, relevantTransactions, { pnlDisplayMode }), zeroBalanceResult),
+    accountBalancePnl: safeWidget(() => calculateBalanceInfo(filteredAccounts, trades, relevantTransactions, { pnlDisplayMode }), zeroBalanceResult),
   } : null
 
   return { responseTrades, statistics, calendarData, widgets }

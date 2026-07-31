@@ -46,11 +46,6 @@ describe('canonical production origin', () => {
     vi.resetModules()
 
     const { getAllowedOrigins } = await import('@/lib/security/origins')
-    expect(getAllowedOrigins()).toEqual([
-      CANONICAL_ORIGIN,
-      'https://docs.justjournalit.site',
-      'https://demo.justjournalit.site',
-      PREVIEW_ORIGIN
-    ])
+    expect(getAllowedOrigins()).toEqual([CANONICAL_ORIGIN, PREVIEW_ORIGIN])
   })
 })

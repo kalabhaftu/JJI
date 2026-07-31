@@ -15,13 +15,9 @@ import {
   pickSettingsPatch,
 } from '@/lib/user-settings'
 import { eq } from 'drizzle-orm'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 // GET /api/auth/profile - Get user profile information
-export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
+export async function GET() {
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
@@ -55,12 +51,6 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'get-auth-profile',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
     return NextResponse.json(
       { error: 'Failed to fetch profile' },
       { status: 500 }
@@ -70,9 +60,6 @@ export async function GET(request: NextRequest) {
 
 // PATCH /api/auth/profile - Update user profile information
 export async function PATCH(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'auth')
-  if (limited) return limited
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
@@ -248,12 +235,6 @@ export async function PATCH(request: NextRequest) {
     })
 
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'update-auth-profile',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
     return NextResponse.json(
       { error: 'Failed to update profile' },
       { status: 500 }

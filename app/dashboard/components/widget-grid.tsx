@@ -13,7 +13,7 @@ import { useTemplates } from '@/context/template-provider'
 import { useData } from '@/context/data-provider'
 import { cn } from '@/lib/utils'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
-import type { WidgetLayout } from '@/lib/dashboard/template-types'
+import type { WidgetLayout } from '@/server/dashboard-templates'
 import type { WidgetType } from '../types/dashboard'
 import WidgetLibraryDialog from './widget-library-dialog'
 import KpiWidgetSelector from './kpi-widget-selector'
@@ -356,7 +356,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
 
               const isChart = (config.category === 'charts' && widget.type !== 'performanceSummary') || widget.type.startsWith('calendar')
               const mobileHeight = getMobileWidgetHeight(widget.type, isChart, config.previewHeight)
-              const isContentSized = isContentSizedMobileWidget(widget.type) || !isChart
+              const isContentSized = isContentSizedMobileWidget(widget.type)
               const minHeight = mobileHeight
 
               return (

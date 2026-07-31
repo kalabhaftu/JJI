@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { CopyIcon, RefreshCwIcon, EyeIcon, ArrowLeft } from "lucide-react"
 import { useState } from "react"
-import { apiRequest } from '@/lib/api/client'
+import { generateThorToken } from "@/server/thor"
 import { toast } from "sonner"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
@@ -31,16 +31,13 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
     try {
       setIsGenerating(true)
       setIsRevealed(false)
-      const response = await apiRequest<{ token: string }>('/api/v1/thor/token', {
-        method: 'POST',
-      })
-      const token = response.data?.token
-      if (!token) {
+      const result = await generateThorToken()
+      if (result.error || !result.token) {
         toast.error('Failed to generate Thor API Token')
         return
       }
       if (!user) return
-      setUser({ ...user, thorToken: token })
+      setUser({ ...user, thorToken: result.token })
       toast.success('Thor API Token generated successfully')
     } catch (error) {
       toast.error('Failed to generate Thor API Token')

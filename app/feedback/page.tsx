@@ -3,11 +3,7 @@ import { FeedbackFormClient } from './feedback-form-client'
 
 export const metadata = {
   title: 'Feedback | JJI',
-  description: 'Submit product feedback, bugs, and feature requests.',
-  robots: {
-    index: false,
-    follow: false,
-  },
+  description: 'Submit product feedback, bugs, and feature requests.'
 }
 
 export default function FeedbackPage() {

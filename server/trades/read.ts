@@ -14,7 +14,6 @@ import {
   type TradeQueryFilters,
 } from './filters'
 import { applyPostQueryFilters, buildAccounts, buildTradeAnalytics, serializeTrades } from './analytics'
-import { reportError } from '@/lib/observability/report-error'
 
 export type TradeResponseMeta =
   | { directPagination: true; truncated: false }
@@ -99,12 +98,7 @@ export async function readTradesForUser(internalUserId: string, filters: TradeQu
       })
     }
   } catch (error) {
-    reportError(error, {
-      surface: 'server',
-      operation: 'load-trade-transactions',
-      userId: internalUserId,
-      extra: { fallbackUsed: true },
-    })
+    Sentry.captureException(error, { extra: { route: '/api/v1/trades', phase: 'transactions' } })
   }
 
   const analytics = buildTradeAnalytics({

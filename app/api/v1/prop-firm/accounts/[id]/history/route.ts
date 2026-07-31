@@ -1,24 +1,24 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { db } from '@/lib/db/client'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
     }
     const internalUserId = identity.internalUserId
 
@@ -43,7 +43,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     })
 
     if (!masterAccount) {
-      return createErrorResponse('Master account not found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json(
+        { success: false, error: 'Master account not found' },
+        { status: 404 }
+      )
     }
 
     const events: any[] = []
@@ -95,19 +98,20 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     events.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
 
-    return createSuccessResponse(
-      {
+    return NextResponse.json({
+      success: true,
+      data: {
         masterAccountId,
         accountName: masterAccount.accountName,
         propFirmName: masterAccount.propFirmName,
         events,
       },
-      undefined,
-      undefined,
-      requestId,
+    })
+  } catch (error: any) {
+    logger.error({ error: error?.message, context: 'api' }, 'GET /api/v1/prop-firm/accounts/[id]/history')
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch account history' },
+      { status: 500 }
     )
-  } catch (error) {
-    reportError(error, { surface: 'api', operation: 'get-prop-firm-account-history', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to fetch account history', 500, undefined, 'ACCOUNT_HISTORY_FAILED', requestId)
   }
 }

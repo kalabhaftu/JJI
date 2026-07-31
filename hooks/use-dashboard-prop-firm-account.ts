@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
 
 const ACCOUNT_STORAGE_KEY = 'dashboard.propFirmWidgets.selectedMasterAccountId'
 const RESET_TIMEZONE_STORAGE_KEY = 'dashboard.propFirmWidgets.resetTimezone'
@@ -88,7 +87,7 @@ function getPreferredAccount(accounts: DashboardPropFirmAccountOption[]) {
 
 export function useDashboardPropFirmAccount() {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   const [accounts, setAccounts] = useState<DashboardPropFirmAccountOption[]>([])
   const [selectedMasterAccountId, setSelectedMasterAccountIdState] = useState<string | null>(null)
@@ -159,7 +158,7 @@ export function useDashboardPropFirmAccount() {
         const response = await fetch('/api/v1/prop-firm/accounts')
         const payload = await response.json()
         if (!response.ok || !payload.success) {
-          throw new Error(payload.error?.message || 'Failed to load prop firm accounts')
+          throw new Error(payload.error || 'Failed to load prop firm accounts')
         }
 
         const nextAccounts: DashboardPropFirmAccountOption[] = (Array.isArray(payload.data) ? payload.data : []).filter(isSelectableOrBlownAccount)

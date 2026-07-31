@@ -4,6 +4,9 @@ import { useEffect, useState, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTradovateSyncStore } from "@/store/tradovate-sync-store";
 import {
+  handleTradovateCallback,
+} from "../components/import/tradovate/sync/actions";
+import {
   Card,
   CardContent,
   CardDescription,
@@ -15,8 +18,6 @@ import { Button } from "@/components/ui/button";
 import { Loader2, CheckCircle, XCircle } from "lucide-react";
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
 import logger from '@/lib/logger';
-import { reportError } from '@/lib/observability/report-error'
-import { apiRequest } from '@/lib/api/client';
 
 export default function ImportCallbackPage() {
   const router = useRouter();
@@ -115,40 +116,34 @@ export default function ImportCallbackPage() {
         }
 
         // Exchange code for tokens and save token in database
-        const response = await apiRequest<{ connected: boolean; error?: string }>(
-          '/api/v1/tradovate/oauth/callback',
-          {
-            method: 'POST',
-            body: JSON.stringify({ code, state }),
-          },
-        );
-        const result = response.data;
+        const result = await handleTradovateCallback(code, state);
 
         // Defensive programming: ensure result is an object
         if (!result || typeof result !== "object") {
-          reportError(new Error('Invalid OAuth callback response'), {
-            surface: 'client',
-            operation: 'complete-tradovate-oauth',
-            route: '/api/v1/tradovate/oauth/callback',
-          })
+          logger.error("Invalid result from handleTradovateCallback:", result);
           setError("Invalid response from OAuth callback handler");
           setStatus("error");
           return;
         }
 
         if (result.error) {
-          setError(result.error || 'Import failed');
+          logger.error({ error: result.error }, "OAuth callback error:");
+          setError(result.error);
           setStatus("error");
           return;
         }
 
-        if (!result?.connected) {
-          reportError(new Error('OAuth token exchange did not complete'), {
-            surface: 'client',
-            operation: 'complete-tradovate-oauth',
-            route: '/api/v1/tradovate/oauth/callback',
-          })
-          setError("OAuth connection did not complete");
+        // Validate all required fields exist and are strings
+        if (!result.accessToken || !result.refreshToken || !result.expiresAt) {
+          logger.error({
+            hasAccessToken: !!result.accessToken,
+            hasRefreshToken: !!result.refreshToken,
+            hasExpiresAt: !!result.expiresAt,
+            result,
+          }, "Missing required fields in OAuth result:");
+          setError(
+            "Invalid response from token exchange - missing required fields",
+          );
           setStatus("error");
           return;
         }
@@ -173,11 +168,12 @@ export default function ImportCallbackPage() {
           router.push("/dashboard");
         }, 1000);
       } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'complete-tradovate-oauth',
-          route: '/api/v1/tradovate/oauth/callback',
-        })
+        logger.error({
+          error: error instanceof Error ? error.message : "Unknown error",
+          stack: error instanceof Error ? error.stack : undefined,
+          errorType: typeof error,
+          errorString: String(error),
+        }, "OAuth callback error:");
 
         let errorMessage = "Unknown error occurred";
         if (error instanceof Error) {

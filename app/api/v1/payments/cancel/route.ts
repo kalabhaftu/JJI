@@ -1,25 +1,20 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
+import { logger } from '@/lib/logger'
 import { revalidateTag } from 'next/cache'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { recordAuditEvent } from '@/lib/audit-logger'
-import { getClientIp } from '@/lib/security/client-ip'
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'payment')
-  if (limited) return limited
+  const rl = await applyRateLimit(request, apiLimiter)
+  if (rl) return rl
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
     const subscription = await db.query.Subscription.findFirst({
@@ -27,54 +22,31 @@ export async function POST(request: NextRequest) {
     })
 
     if (!subscription) {
-      return createErrorResponse('No subscription found', 404, undefined, 'NOT_FOUND', requestId)
+      return NextResponse.json({ success: false, error: 'No subscription found' }, { status: 404 })
     }
 
     if (subscription.status === 'cancelled') {
-      return createSuccessResponse(
-        { alreadyCancelled: true },
-        'Subscription already cancelled',
-        undefined,
-        requestId,
-      )
+      return NextResponse.json({ success: true, message: 'Subscription already cancelled' })
     }
 
-    await db.transaction(async (tx) => {
-      await tx.update(schema.Subscription).set({
-        status: 'cancelled',
-        cancelledAt: new Date(),
-      }).where(eq(schema.Subscription.id, subscription.id))
-      await recordAuditEvent({
-        userId: identity.internalUserId,
-        action: 'SUBSCRIPTION_CANCELLED',
-        entityType: 'Subscription',
-        entityId: subscription.id,
-        source: 'api',
-        requestId,
-        ipAddress: getClientIp(request.headers),
-        beforeData: { status: subscription.status },
-        afterData: { status: 'cancelled' },
-      }, tx as never)
-    })
+    await (await db.update(schema.Subscription).set({
+      status: 'cancelled',
+      cancelledAt: new Date(),
+    }).where(eq(schema.Subscription.id, subscription.id)).returning())[0]
 
     revalidateTag(`notifications-${identity.internalUserId}`)
     revalidateTag(`accounts-${identity.internalUserId}`)
     revalidateTag(`user-data-${identity.internalUserId}`)
 
-    return createSuccessResponse(
-      { cancelled: true },
-      'Subscription cancelled successfully',
-      undefined,
-      requestId,
-    )
+    return NextResponse.json({
+      success: true,
+      message: 'Subscription cancelled successfully',
+    })
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'cancel-subscription', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse(
-      'Failed to cancel subscription',
-      500,
-      undefined,
-      'SUBSCRIPTION_CANCEL_FAILED',
-      requestId,
+    logger.error({ error, context: 'Payment Cancel' }, 'Cancel payment failed')
+    return NextResponse.json(
+      { success: false, error: 'Failed to cancel subscription' },
+      { status: 500 }
     )
   }
 }

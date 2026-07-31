@@ -5,20 +5,14 @@
 
 import crypto from 'crypto'
 import logger from "@/lib/logger"
-import { reportError } from '@/lib/observability/report-error'
 
 const API_BASE_URL = process.env.NOWPAYMENTS_API_BASE_URL || 'https://api.nowpayments.io/v1'
 const API_KEY = process.env.NOWPAYMENTS_API_KEY || ''
 const IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || ''
 
 function providerError(action: string, status: number) {
-  const error = new Error(`Unable to ${action}. Please try again.`)
-  reportError(error, {
-    surface: 'server',
-    operation: 'nowpayments-provider-request',
-    tags: { provider: 'nowpayments', action, status },
-  })
-  return error
+  logger.error({ status }, `NOWPayments ${action} failed`)
+  return new Error(`Unable to ${action}. Please try again.`)
 }
 
 function getHeaders(): Record<string, string> {
@@ -190,11 +184,7 @@ export function verifyIpnSignature(payload: Record<string, unknown>, signature: 
       Buffer.from(normalizedSignature, 'hex')
     )
   } catch (error) {
-    reportError(error, {
-      surface: 'server',
-      operation: 'verify-nowpayments-ipn-signature',
-      tags: { provider: 'nowpayments' },
-    })
+    logger.error(error, '[NOWPayments] IPN signature verification error')
     return false
   }
 }

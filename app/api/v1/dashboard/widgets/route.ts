@@ -1,4 +1,5 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { GET as getTrades } from '@/app/api/v1/trades/route'
 import {
   calculateDayOfWeekPerformance,
@@ -13,32 +14,27 @@ import {
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { calculateBalanceInfo } from '@/lib/utils/balance-calculator'
 import { normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { getRuntimePnlDisplayMode } from '@/server/user-settings'
 import { eq, inArray } from 'drizzle-orm'
 import { withCache, getUserCacheVersion } from '@/lib/cache/helpers'
 import { CacheKeys, CacheTTL } from '@/lib/cache/keys'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
   const type = request.nextUrl.searchParams.get('type')
   
   if (!type) {
-    return createErrorResponse('Missing widget type', 400, undefined, 'VALIDATION_ERROR', requestId)
+    return NextResponse.json({ error: 'Missing widget type' }, { status: 400 })
   }
 
   const identity = await getResolvedUserIdentitySafe()
   const internalUserId = identity?.internalUserId
 
   if (!internalUserId) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   // Define unique parameters for cache key with user versioning
@@ -60,8 +56,8 @@ export async function GET(request: NextRequest) {
         throw new Error('Failed to fetch trades')
       }
 
-      const payload = await tradesResponse.json()
-      const trades = payload.data?.trades || []
+      const data = await tradesResponse.json()
+      const trades = data.trades || []
 
       // Route to the appropriate math function
       let result
@@ -123,13 +119,7 @@ export async function GET(request: NextRequest) {
               })
             }
           } catch (error) {
-            reportError(error, {
-              surface: 'api',
-              operation: 'load-widget-account-transactions',
-              route: request.nextUrl.pathname,
-              requestId,
-              userId: internalUserId,
-            })
+            Sentry.captureException(error, { extra: { route: '/api/v1/dashboard/widgets' } })
             transactions = []
           }
           let pnlDisplayMode = 'net'
@@ -146,8 +136,8 @@ export async function GET(request: NextRequest) {
   )
 
   if (!cachedResult) {
-     return createErrorResponse('Failed to generate widget data', 500, undefined, 'SERVER_ERROR', requestId)
+     return NextResponse.json({ error: 'Failed to generate widget data' }, { status: 500 })
   }
 
-  return createSuccessResponse(cachedResult, undefined, undefined, requestId)
+  return NextResponse.json(cachedResult)
 }

@@ -55,7 +55,7 @@ export const TRADE_SELECT = {
   selectedNews: true, newsTraded: true, biasTimeframe: true, narrativeTimeframe: true,
   entryTimeframe: true, structureTimeframe: true, orderType: true, chartLinks: true,
   chartLinksList: true, tradeIdentityKey: true, userId: true, mae: true, mfe: true,
-  setup: true, entryTime: true, exitTime: true, symbol: true, isMissedTrade: true,
+  setup: true, entryTime: true, exitTime: true, symbol: true,
 } as const
 
 export function needsTradeAnalytics(filters: TradeQueryFilters) {

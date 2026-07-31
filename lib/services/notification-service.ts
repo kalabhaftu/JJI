@@ -1,7 +1,7 @@
 'use server'
 
 import { db } from '@/lib/db/client'
-import { reportError } from '@/lib/observability/report-error'
+import * as Sentry from '@sentry/nextjs'
 import * as schema from '@/lib/db/schema'
 import { eq, and, count } from 'drizzle-orm'
 import { revalidateTag } from 'next/cache'
@@ -185,19 +185,11 @@ export async function createRiskAlert(
                     to: user.email,
                     subject: `Prop Firm Rule Breach Detected: ${metadata.accountName}`,
                     html: `<p>Your prop firm account <strong>${escapeHtml(metadata.accountName)}</strong> has breached the ${escapeHtml(breachTypeStr)}.</p>
-                           <p>Current: $${metadata.used.toFixed(2)} / Limit: $${metadata.limit.toFixed(2)} (${currentPercentage.toFixed(1)}%)</p>`,
-                    idempotencyKey: `risk-breach/${phaseAccountId}/${riskType}`,
-                    operation: 'send-risk-breach-email',
-                    entityId: phaseAccountId,
+                           <p>Current: $${metadata.used.toFixed(2)} / Limit: $${metadata.limit.toFixed(2)} (${currentPercentage.toFixed(1)}%)</p>`
                 })
             }
          } catch (error) {
-           reportError(error, {
-             surface: 'background-job',
-             operation: 'send-risk-breach-email',
-             userId,
-             entityId: phaseAccountId,
-           })
+           Sentry.captureException(error, { extra: { route: 'lib/services/notification-service', phase: 'send-email' } })
            /* Notification still persists when email delivery is unavailable. */
          }
     }

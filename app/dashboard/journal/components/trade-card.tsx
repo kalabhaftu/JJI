@@ -5,13 +5,7 @@ import { motion } from 'framer-motion'
 import type { TradeType as Trade } from '@/lib/db/schema';
 
 import { ArrowUpRight, ArrowDownRight, CalendarDays, Clock, Target, DollarSign, MoreVertical, Eye, Pencil, Trash2 as Trash, AlertCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import {
-  classifyTrade,
-  formatCurrency,
-  formatQuantity,
-  formatTradeData,
-} from '@/lib/trading/trade-formatting'
+import { cn, formatCurrency, formatQuantity, formatTradeData, classifyTrade } from '@/lib/utils'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -205,21 +199,15 @@ export function TradeCard({
           </div>
 
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            {(trade as any).isMissedTrade ? (
-              <Badge variant="secondary" className="text-xs font-medium px-2 bg-purple-500/10 text-purple-500 border-purple-500/20">
-                GHOST
-              </Badge>
-            ) : (
-              <Badge
-                variant={getStatusVariant(netPnl)}
-                className={cn(
-                  "text-xs font-medium px-2",
-                  isWin ? "bg-long/10 text-long border-long/20" : isLoss ? "bg-short/10 text-short border-short/20" : "bg-muted/10 text-muted-foreground border-border"
-                )}
-              >
-                {isWin ? 'WIN' : isLoss ? 'LOSS' : 'BE'}
-              </Badge>
-            )}
+            <Badge
+              variant={getStatusVariant(netPnl)}
+              className={cn(
+                "text-xs font-medium px-2",
+                isWin ? "bg-long/10 text-long border-long/20" : isLoss ? "bg-short/10 text-short border-short/20" : "bg-muted/10 text-muted-foreground border-border"
+              )}
+            >
+              {isWin ? 'WIN' : isLoss ? 'LOSS' : 'BE'}
+            </Badge>
             {(trade as any).tradingModel && (
               <Badge variant="secondary" className="text-[10px] whitespace-nowrap hidden sm:inline-flex px-1.5">
                 {(trade as any).tradingModel}
@@ -286,20 +274,12 @@ export function TradeCard({
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground mb-1">P&L</p>
             <div className="flex items-center gap-1">
-              {(trade as any).isMissedTrade ? (
-                <div className="h-3 w-3 rounded-full border border-purple-500 flex-shrink-0" />
-              ) : isWin ? (
-                <ArrowUpRight className="h-3 w-3 text-long flex-shrink-0" />
-              ) : isLoss ? (
-                <ArrowDownRight className="h-3 w-3 text-short flex-shrink-0" />
-              ) : (
-                <div className="h-3 w-3 rounded-full border border-muted-foreground flex-shrink-0" />
-              )}
+              {isWin ? <ArrowUpRight className="h-3 w-3 text-long flex-shrink-0" /> : isLoss ? <ArrowDownRight className="h-3 w-3 text-short flex-shrink-0" /> : <div className="h-3 w-3 rounded-full border border-muted-foreground flex-shrink-0" />}
               <p className={cn(
                 "font-semibold truncate",
-                (trade as any).isMissedTrade ? 'text-purple-500' : isWin ? 'text-long' : isLoss ? 'text-short' : 'text-muted-foreground'
+                isWin ? 'text-long' : isLoss ? 'text-short' : 'text-muted-foreground'
               )}>
-                {(trade as any).isMissedTrade ? '-' : formatCurrency(displayPnl)}
+                {formatCurrency(displayPnl)}
               </p>
             </div>
           </div>

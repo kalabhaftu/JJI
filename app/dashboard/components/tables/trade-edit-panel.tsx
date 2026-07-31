@@ -33,11 +33,7 @@ import { z } from 'zod'
 import { TradeNewsTab } from './components/trade-news-tab'
 import { TradeNotesTab } from './components/trade-notes-tab'
 import { TradeStrategyTab } from './components/trade-strategy-tab'
-import { cn } from '@/lib/utils'
-import {
-  classifyTrade,
-  formatCurrency,
-} from '@/lib/trading/trade-formatting'
+import { classifyTrade, cn, formatCurrency } from '@/lib/utils'
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { parseTradePreviewImageValue } from '@/lib/trade-preview-image'
 import {

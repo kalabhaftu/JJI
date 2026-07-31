@@ -1,66 +1,53 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { getResolvedUserIdentity } from '@/server/user-identity'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { isJournalEmotion } from '@/lib/journal-emotions'
 import { getDailyJournalEntry, normalizeJournalDate } from '@/server/daily-journal'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
-    const identity = await getResolvedUserIdentitySafe()
-    if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
-    }
+    const { internalUserId } = await getResolvedUserIdentity()
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
     const accountId = searchParams.get('accountId')
 
     if (!date) {
-      return createErrorResponse('Date is required', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json({ error: 'Date is required' }, { status: 400 })
     }
 
-    const journal = await getDailyJournalEntry(identity.internalUserId, date, accountId)
+    const journal = await getDailyJournalEntry(internalUserId, date, accountId)
 
-    return createSuccessResponse({ journal }, undefined, undefined, requestId)
-  } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'get-daily-journal',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to fetch journal entry', 500, undefined, 'JOURNAL_READ_FAILED', requestId)
+    return NextResponse.json({ journal })
+  } catch (error: any) {
+    logger.error({ error: error?.message, context: 'api' }, 'GET /api/v1/journal/daily')
+    if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    return NextResponse.json({ error: 'Failed to fetch journal entry' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
-    const identity = await getResolvedUserIdentitySafe()
-    if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
-    }
-    const internalUserId = identity.internalUserId
+    const { internalUserId } = await getResolvedUserIdentity()
     const body = await request.json()
     const { date, note, emotion, accountId } = body
 
     if (!date || note === undefined) {
-      return createErrorResponse('Date and note are required', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json({ error: 'Date and note are required' }, { status: 400 })
     }
 
     if (emotion !== undefined && emotion !== null && !isJournalEmotion(emotion)) {
-      return createErrorResponse('Invalid emotion value', 400, undefined, 'VALIDATION_ERROR', requestId)
+      return NextResponse.json({ error: 'Invalid emotion value' }, { status: 400 })
     }
 
     let validAccountId: string | null = null
@@ -75,13 +62,7 @@ export async function POST(request: NextRequest) {
     const existing = await getDailyJournalEntry(internalUserId, normalizedDate, validAccountId)
 
     if (existing) {
-      return createErrorResponse(
-        'Journal entry already exists for this date',
-        409,
-        undefined,
-        'CONFLICT',
-        requestId,
-      )
+      return NextResponse.json({ error: 'Journal entry already exists for this date' }, { status: 409 })
     }
 
     const journal = (await db.insert(schema.DailyNote).values({
@@ -94,14 +75,12 @@ export async function POST(request: NextRequest) {
       accountId: validAccountId,
     }).returning())[0]
 
-    return createSuccessResponse({ journal }, undefined, undefined, requestId, { status: 201 })
-  } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'create-daily-journal',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
-    return createErrorResponse('Failed to create journal entry', 500, undefined, 'JOURNAL_CREATE_FAILED', requestId)
+    return NextResponse.json({ journal }, { status: 201 })
+  } catch (error: any) {
+    logger.error({ error: error?.message, context: 'api' }, 'POST /api/v1/journal/daily')
+    if (error.message?.includes('not authenticated') || error.message?.includes('Unauthorized')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    return NextResponse.json({ error: 'Failed to create journal entry' }, { status: 500 })
   }
 }

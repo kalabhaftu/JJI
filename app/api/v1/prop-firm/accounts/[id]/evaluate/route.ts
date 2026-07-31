@@ -1,110 +1,163 @@
-import { NextRequest } from 'next/server'
-
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { db } from '@/lib/db/client'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
-import { enqueuePhaseEvaluation } from '@/server/phase-evaluation-events'
+import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
+import { db } from '@/lib/db/client'
+import { and } from 'drizzle-orm'
+import { enqueuePhaseEvaluation } from '@/server/phase-evaluation-events'
 
 interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-async function resolveActivePhase(masterAccountId: string, userId: string) {
-  const masterAccount = await db.query.MasterAccount.findFirst({
-    where: (table, operators) => operators.and(
-      operators.eq(table.id, masterAccountId),
-      operators.eq(table.userId, userId),
-      operators.ne(table.status, 'failed'),
-    ),
-    with: {
-      PhaseAccount: {
-        where: (table, operators) => operators.eq(table.status, 'active'),
-        orderBy: (table, operators) => [operators.asc(table.phaseNumber)],
-        limit: 1,
-      },
-    },
-  })
-  return {
-    masterAccount,
-    activePhase: masterAccount?.PhaseAccount[0] ?? null,
-  }
-}
-
-async function queueOwnedEvaluation(
-  request: NextRequest,
-  params: RouteParams['params'],
-  source: string,
-) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'sensitive')
-  if (limited) return limited
+export async function POST(request: NextRequest, { params }: RouteParams) {
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
 
   try {
     const identity = await getResolvedUserIdentitySafe()
     if (!identity) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
-    }
-    const { id: masterAccountId } = await params
-    const { masterAccount, activePhase } = await resolveActivePhase(
-      masterAccountId,
-      identity.internalUserId,
-    )
-    if (!masterAccount) {
-      return createErrorResponse(
-        'Master account not found',
-        404,
-        undefined,
-        'NOT_FOUND',
-        requestId,
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
       )
     }
+    const internalUserId = identity.internalUserId
+
+    const { id: masterAccountId } = await params
+    // ID is pure masterAccountId (UUID), not composite
+
+    // Verify the master account belongs to the user
+    const masterAccount = await db.query.MasterAccount.findFirst({
+      where: (table, { eq, ne }) => and(
+        eq(table.id, masterAccountId),
+        eq(table.userId, internalUserId),
+        ne(table.status, 'failed')
+      ),
+      with: {
+        PhaseAccount: {
+          where: (table, { eq }) => eq(table.status, 'active'),
+          orderBy: (table, { asc }) => [asc(table.phaseNumber)],
+          limit: 1
+        }
+      }
+    })
+
+    if (!masterAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Master account not found or unauthorized' },
+        { status: 404 }
+      )
+    }
+
+    const activePhase = masterAccount.PhaseAccount[0]
     if (!activePhase) {
-      return createErrorResponse(
-        'No active phase found',
-        409,
-        undefined,
-        'NO_ACTIVE_PHASE',
-        requestId,
+      return NextResponse.json(
+        { success: false, error: 'No active phase found' },
+        { status: 400 }
       )
     }
 
     await enqueuePhaseEvaluation({
-      source,
+      source: 'manual-api',
       masterAccountId,
       phaseAccountId: activePhase.id,
-      requestId,
     })
-    return createSuccessResponse({
-      masterAccountId,
-      phaseAccountId: activePhase.id,
-      phaseNumber: activePhase.phaseNumber,
-      evaluation: null,
-      queued: true,
-    }, undefined, undefined, requestId)
-  } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'queue-phase-evaluation',
-      route: request.nextUrl.pathname,
-      requestId,
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        masterAccountId,
+        phaseAccountId: activePhase.id,
+        phaseNumber: activePhase.phaseNumber,
+        evaluation: null,
+        queued: true,
+      }
     })
-    return createErrorResponse(
-      'Failed to queue phase evaluation',
-      500,
-      undefined,
-      'PHASE_EVALUATION_QUEUE_FAILED',
-      requestId,
+
+  } catch (error: any) {
+    logger.error({ error: error?.message, context: 'api' }, 'POST /api/v1/prop-firm/accounts/[id]/evaluate')
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to evaluate phase'
+      },
+      { status: 500 }
     )
   }
 }
 
-export async function POST(request: NextRequest, { params }: RouteParams) {
-  return queueOwnedEvaluation(request, params, 'manual-api')
-}
-
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  return queueOwnedEvaluation(request, params, 'manual-status-api')
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
+
+  try {
+    const identity = await getResolvedUserIdentitySafe()
+    if (!identity) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    const internalUserId = identity.internalUserId
+
+    const { id: masterAccountId } = await params
+    // ID is pure masterAccountId (UUID), not composite
+
+    // Get the current evaluation status without triggering updates
+    const masterAccount = await db.query.MasterAccount.findFirst({
+      where: (table, { eq }) => and(
+        eq(table.id, masterAccountId),
+        eq(table.userId, internalUserId)
+      ),
+      with: {
+        PhaseAccount: {
+          where: (table, { eq }) => eq(table.status, 'active'),
+          orderBy: (table, { asc }) => [asc(table.phaseNumber)],
+          limit: 1
+        }
+      }
+    })
+
+    if (!masterAccount) {
+      return NextResponse.json(
+        { success: false, error: 'Master account not found' },
+        { status: 404 }
+      )
+    }
+
+    const activePhase = masterAccount.PhaseAccount[0]
+    if (!activePhase) {
+      return NextResponse.json(
+        { success: false, error: 'No active phase found' },
+        { status: 400 }
+      )
+    }
+
+    await enqueuePhaseEvaluation({
+      source: 'manual-status-api',
+      masterAccountId,
+      phaseAccountId: activePhase.id,
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        masterAccountId,
+        phaseAccountId: activePhase.id,
+        phaseNumber: activePhase.phaseNumber,
+        evaluation: null,
+        queued: true,
+      }
+    })
+
+  } catch (error) {
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to get evaluation status'
+      },
+      { status: 500 }
+    )
+  }
 }

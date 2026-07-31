@@ -9,7 +9,6 @@ import { useData } from '@/context/data-provider'
 import { useTradesStore } from '@/store/trades-store'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { useUserStore } from '@/store/user-store'
-import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -71,7 +70,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { cn } from "@/lib/utils"
 import { calculateAccountBalances } from "@/lib/utils/balance-calculator"
-import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
+import { groupTradesByExecution } from "@/lib/utils"
 import { useLiveAccountTransactions } from '@/hooks/use-live-account-transactions'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { AccountsPageSkeleton } from "./components/accounts-page-skeleton"
@@ -160,7 +159,6 @@ type FilterStatus = 'all' | 'failed' | 'archived'
 export default function AccountsPage() {
   const router = useRouter()
   const { refreshAllData, isDemoMode } = useData()
-  const { demoRouteHref } = usePublicSurfaceRouting()
   const { user } = useAuth()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const userStore = useUserStore(state => state.user)
@@ -299,13 +297,14 @@ export default function AccountsPage() {
   }, [refetchAccounts, refreshAllData])
 
   const handleViewAccount = useCallback((account: Account) => {
+    const baseRoute = isDemoMode ? '/demo' : '/dashboard'
     if (account.accountType === 'prop-firm') {
       const masterAccountId = account.currentPhaseDetails?.masterAccountId || account.id
-      router.push(demoRouteHref(`/dashboard/prop-firm/accounts/${masterAccountId}`, Boolean(isDemoMode)))
+      router.push(`${baseRoute}/prop-firm/accounts/${masterAccountId}`)
     } else {
-      router.push(demoRouteHref(`/dashboard/accounts/${account.id}`, Boolean(isDemoMode)))
+      router.push(`${baseRoute}/accounts/${account.id}`)
     }
-  }, [demoRouteHref, router, isDemoMode])
+  }, [router, isDemoMode])
 
   const handleEditAccount = useCallback((account: Account) => {
     setEditingAccount(account)

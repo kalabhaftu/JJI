@@ -1,11 +1,17 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react'
-import type {
-  DashboardTemplate,
-  WidgetLayout,
-} from '@/lib/dashboard/template-types'
-import { apiRequest } from '@/lib/api/client'
+import {
+  getUserTemplates,
+  getActiveTemplate,
+  createTemplate as createTemplateAction,
+  deleteTemplate as deleteTemplateAction,
+  switchTemplate as switchTemplateAction,
+  updateTemplateLayout as updateTemplateLayoutAction,
+  type DashboardTemplate,
+  type WidgetLayout
+} from '@/server/dashboard-templates'
+import { ensureDefaultTemplate } from '@/server/seed-default-template'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import { toast } from 'sonner'
 import { useData } from '@/context/data-provider'
@@ -32,11 +38,6 @@ type TemplateBootstrapCache = {
   templates: DashboardTemplate[]
   activeTemplate: DashboardTemplate | null
 } | null
-
-interface TemplateBootstrapPayload {
-  templates: DashboardTemplate[]
-  activeTemplate: DashboardTemplate
-}
 
 let templateBootstrapCache: TemplateBootstrapCache = null
 let templateBootstrapInFlight: Promise<TemplateBootstrapCache> | null = null
@@ -100,9 +101,35 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
         }
       }
 
-      templateBootstrapInFlight = apiRequest<TemplateBootstrapPayload>(
-        '/api/v1/dashboard/templates',
-      ).then((response) => response.data)
+      templateBootstrapInFlight = (async () => {
+        const allTemplates = await getUserTemplates()
+        const active = await getActiveTemplate()
+
+        if (allTemplates.length > 0 && active) {
+          return {
+            templates: allTemplates,
+            activeTemplate: active,
+          }
+        }
+
+        // No templates yet - create default for new users
+        await ensureDefaultTemplate()
+
+        const newTemplates = await getUserTemplates()
+        const newActive = await getActiveTemplate()
+
+        if (newTemplates.length > 0 && newActive) {
+          return {
+            templates: newTemplates,
+            activeTemplate: newActive,
+          }
+        }
+
+        return {
+          templates: [],
+          activeTemplate: buildFallbackTemplate(),
+        }
+      })()
 
       const result = await templateBootstrapInFlight
       templateBootstrapCache = result
@@ -161,12 +188,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       return newTemplate
     }
     try {
-      const response = await apiRequest<DashboardTemplate>('/api/v1/dashboard/templates', {
-        method: 'POST',
-        body: JSON.stringify({ name }),
-      })
-      if (!response.data) throw new Error('Template creation returned no template')
-      const newTemplate = response.data
+      const newTemplate = await createTemplateAction(name)
       setTemplates(prev => [...prev, newTemplate])
       templateBootstrapCache = null
       setTimeout(() => toast.success(`Template "${name}" created successfully`), 0)
@@ -189,9 +211,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       return
     }
     try {
-      await apiRequest(`/api/v1/dashboard/templates/${templateId}`, {
-        method: 'DELETE',
-      })
+      await deleteTemplateAction(templateId)
       setTemplates(prev => prev.filter(t => t.id !== templateId))
       templateBootstrapCache = null
 
@@ -222,15 +242,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       return updated
     }
     try {
-      const response = await apiRequest<DashboardTemplate>(
-        `/api/v1/dashboard/templates/${templateId}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ operation: 'switch' }),
-        },
-      )
-      if (!response.data) throw new Error('Template switch returned no template')
-      const updated = response.data
+      const updated = await switchTemplateAction(templateId)
       setActiveTemplate(updated)
       setTemplates(prev => prev.map(t => ({
         ...t,
@@ -261,15 +273,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       return updated
     }
     try {
-      const response = await apiRequest<DashboardTemplate>(
-        `/api/v1/dashboard/templates/${templateId}`,
-        {
-          method: 'PATCH',
-          body: JSON.stringify({ operation: 'update-layout', layout }),
-        },
-      )
-      if (!response.data) throw new Error('Template update returned no template')
-      const updated = response.data
+      const updated = await updateTemplateLayoutAction(templateId, layout)
       setTemplates(prev => prev.map(t => t.id === templateId ? updated : t))
       if (activeTemplate?.id === templateId) {
         setActiveTemplate(updated)
@@ -304,3 +308,5 @@ export function useTemplates() {
   }
   return context
 }
+
+

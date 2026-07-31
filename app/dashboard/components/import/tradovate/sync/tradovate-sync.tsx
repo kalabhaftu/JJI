@@ -1,7 +1,8 @@
 'use client'
 
+import { TradovateCredentialsManager } from './tradovate-credentials-manager'
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Construction } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 
 export function TradovateSync({ onBack }: { onBack?: () => void }) {
   return (
@@ -21,19 +22,11 @@ export function TradovateSync({ onBack }: { onBack?: () => void }) {
         <div className="flex flex-col space-y-1">
           <h2 className="text-lg font-semibold">Tradovate Auto Sync</h2>
           <p className="text-sm text-muted-foreground">
-            Direct broker sync
+            Connect your Tradovate account to automatically synchronize your trades daily.
           </p>
         </div>
       </div>
-      <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-dashed border-amber-500/40 bg-amber-500/5 p-8 text-center">
-        <Construction className="h-10 w-10 text-amber-500" />
-        <div className="space-y-1">
-          <p className="text-sm font-semibold text-amber-500">Under Development</p>
-          <p className="text-sm text-muted-foreground max-w-xs">
-            Tradovate live sync is not yet available. Use CSV import or TradingView webhooks in the meantime.
-          </p>
-        </div>
-      </div>
+      <TradovateCredentialsManager />
     </div>
   )
 }

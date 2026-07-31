@@ -3,15 +3,26 @@
  * GET /api/prop-firm-templates - Get all prop firm rule templates
  */
 
-import { NextRequest } from 'next/server'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { NextRequest, NextResponse } from 'next/server'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import propFirmTemplates from '@/lib/data/prop-firm-templates.json'
-import { createSuccessResponse } from '@/lib/api-response'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'public-read')
-  if (limited) return limited
-  return createSuccessResponse(propFirmTemplates, undefined, undefined, requestId)
+  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  if (rateLimitRes) return rateLimitRes
+
+  try {
+    return NextResponse.json({
+      success: true,
+      data: propFirmTemplates
+    })
+  } catch (error) {
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Failed to fetch prop firm templates' 
+      },
+      { status: 500 }
+    )
+  }
 }

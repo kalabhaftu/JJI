@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
-import { formatCurrency } from '@/lib/trading/trade-formatting'
+import { formatCurrency } from '@/lib/utils'
 
 interface MonthlyReturnsMatrixProps {
   equityCurve: Array<{ date: string; equity: number; netPnL: number }>

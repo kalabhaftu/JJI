@@ -17,9 +17,9 @@ export default function CookiesPage() {
         </section>
 
         <section className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-          <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-4">Optional operational telemetry</h2>
+          <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-4">No advertising cookies</h2>
           <p>
-            JJI does not use advertising cookies, session replay, or behavioral analytics. If you allow operational telemetry in the storage notice, JJI stores a consent cookie and sends only crash reports and sampled performance diagnostics to help operate and secure the service.
+            JJI does not use advertising cookies. Production monitoring or error reporting may collect technical diagnostics when configured, but those tools are used to operate and secure the service rather than to sell ads.
           </p>
         </section>
 

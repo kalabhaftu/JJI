@@ -18,12 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, LayoutGrid, Calendar as CalendarIcon, MousePointerClick, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-import { formatCurrency } from '@/lib/trading/trade-formatting'
-import {
-  groupTradesByExecution,
-  type GroupedTrade,
-} from '@/lib/trading/trade-grouping'
+import { cn, formatCurrency, groupTradesByExecution, type GroupedTrade } from '@/lib/utils'
 import type { TradeType as Trade } from '@/lib/db/schema';
 
 import { getTradePnlByMode, getPnlDisplayLabel, normalizePnlDisplayMode } from '@/lib/metrics/pnl'

@@ -26,7 +26,10 @@ import {
   PartyPopper
 } from "lucide-react"
 import { toast } from "sonner"
-import { apiRequest } from '@/lib/api/client'
+import {
+  handleFundedApprovalAction,
+  handleFundedDeclineAction
+} from "@/server/notifications"
 import type { NotificationRow } from '@/lib/db/schema/users';
 
 import { clearAccountsCache } from '@/hooks/use-accounts'
@@ -94,14 +97,10 @@ export function FundedApprovalDialog({
     try {
       setIsSubmitting(true)
 
-      await apiRequest('/api/v1/notifications/funded-decision', {
-        method: 'POST',
-        body: JSON.stringify({
-          decision: 'approved',
-          notificationId: notification.id,
-          masterAccountId: notificationData.masterAccountId,
-          fundedAccountId: fundedAccountId.trim(),
-        }),
+      await handleFundedApprovalAction({
+        notificationId: notification.id,
+        masterAccountId: notificationData.masterAccountId,
+        fundedAccountId: fundedAccountId.trim()
       })
 
       toast.success('Congratulations!', {
@@ -150,14 +149,10 @@ export function FundedApprovalDialog({
     try {
       setIsSubmitting(true)
 
-      await apiRequest('/api/v1/notifications/funded-decision', {
-        method: 'POST',
-        body: JSON.stringify({
-          decision: 'declined',
-          notificationId: notification.id,
-          masterAccountId: notificationData.masterAccountId,
-          reason,
-        }),
+      await handleFundedDeclineAction({
+        notificationId: notification.id,
+        masterAccountId: notificationData.masterAccountId,
+        reason
       })
 
       toast.info('Account marked as declined', {
@@ -339,3 +334,4 @@ export function FundedApprovalDialog({
     </Dialog>
   )
 }
+

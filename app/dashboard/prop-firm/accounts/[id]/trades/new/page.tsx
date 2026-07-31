@@ -53,7 +53,7 @@ export default function NewTradePage() {
       if (data.success) {
         setAccount(data.data.account)
       } else {
-        throw new Error(data.error?.message || 'Failed to fetch account details')
+        throw new Error(data.error || 'Failed to fetch account details')
       }
     } catch (error) {
       toast.error('Failed to fetch account details', {

@@ -41,7 +41,6 @@ import {
 import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Logo } from '@/components/logo'
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/user-avatar'
-import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 
 export default function Navbar() {
   const storeUser = useUserStore(state => state.supabaseUser)
@@ -57,7 +56,6 @@ export default function Navbar() {
 
   const { isMobile, isDemoMode } = useData()
   const { forceClearAuth } = useAuth()
-  const { demoRouteHref } = usePublicSurfaceRouting()
 
   useKeyboardShortcuts()
 
@@ -82,9 +80,9 @@ export default function Navbar() {
 
   return (
     <nav
-      className="navbar-slide-in sticky top-0 z-20 flex w-full items-center border-b border-sidebar-border/60 bg-sidebar/95 text-foreground backdrop-blur-md lg:bg-sidebar/80"
+      className="navbar-slide-in sticky top-0 z-40 flex w-full items-center border-b border-sidebar-border/60 dark:border-sidebar-border/40 bg-sidebar lg:bg-sidebar/80 text-foreground lg:backdrop-blur-md"
     >
-      <div className="flex h-11 w-full items-center justify-between px-3 sm:px-4">
+      <div className="flex items-center justify-between w-full px-4 h-12">
         {/* Left: Sidebar mobile trigger & logo */}
         <div className="flex items-center gap-3">
           <SidebarTrigger className="lg:hidden w-8 h-8" />
@@ -214,7 +212,7 @@ export default function Navbar() {
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={isDemoMode ? demoRouteHref('/dashboard/settings', true) : '/dashboard/settings'}
+                  href={isDemoMode ? "/demo/settings" : "/dashboard/settings"}
                   className="cursor-pointer"
                   onClick={() => setProfileMenuOpen(false)}
                 >

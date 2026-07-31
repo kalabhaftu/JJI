@@ -1,12 +1,9 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { z } from 'zod'
-import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 const createInsightSchema = z.object({
   title: z.string().trim().min(1).max(200),
@@ -15,13 +12,12 @@ const createInsightSchema = z.object({
 }).strict()
 
 export async function GET(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'authenticated-read')
-  if (limited) return limited
+  const rl = await applyRateLimit(request, apiLimiter)
+  if (rl) return rl
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userId = identity.internalUserId
 
@@ -31,21 +27,19 @@ export async function GET(request: NextRequest) {
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     })
 
-    return createSuccessResponse(insights, undefined, undefined, requestId)
+    return NextResponse.json({ success: true, data: insights })
   } catch (error) {
-    reportError(error, { surface: 'api', operation: 'list-ai-insights', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to fetch insights', 500, undefined, 'AI_INSIGHTS_READ_FAILED', requestId)
+    return NextResponse.json({ error: 'Failed to fetch insights' }, { status: 500 })
   }
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'ai')
-  if (limited) return limited
+  const rl = await applyRateLimit(request, apiLimiter)
+  if (rl) return rl
 
   const identity = await getResolvedUserIdentitySafe()
   if (!identity) {
-    return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
   const userId = identity.internalUserId
 
@@ -59,12 +53,9 @@ export async function POST(request: NextRequest) {
       category: category || 'insight',
     }).returning())[0]
 
-    return createSuccessResponse(insight, undefined, undefined, requestId, { status: 201 })
+    return NextResponse.json({ success: true, data: insight })
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return createErrorResponse('Invalid insight', 400, error.flatten(), 'VALIDATION_ERROR', requestId)
-    }
-    reportError(error, { surface: 'api', operation: 'save-ai-insight', route: request.nextUrl.pathname, requestId })
-    return createErrorResponse('Failed to save insight', 500, undefined, 'AI_INSIGHT_SAVE_FAILED', requestId)
+    if (error instanceof z.ZodError) return NextResponse.json({ error: 'Invalid insight' }, { status: 400 })
+    return NextResponse.json({ error: 'Failed to save insight' }, { status: 500 })
   }
 }

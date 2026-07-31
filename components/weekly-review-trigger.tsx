@@ -1,10 +1,9 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { format, startOfWeek, subWeeks } from 'date-fns'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
-import { reportError } from '@/lib/observability/report-error'
 
 /**
  * Invisible component that triggers weekly AI review generation.
@@ -25,7 +24,7 @@ export function WeeklyReviewTrigger() {
   const internalUser = useUserStore(state => state.user)
 
   useEffect(() => {
-    const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+    const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
     if (isDemo || !supabaseUser?.id || !internalUser?.id || internalUser?.id === 'demo-user') return
     if (checkedRef.current) return
     checkedRef.current = true
@@ -93,11 +92,7 @@ export function WeeklyReviewTrigger() {
         }
         scheduleRetry()
       } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'trigger-weekly-review',
-          route: '/api/v1/weekly-review',
-        })
+        Sentry.captureException(error, { extra: { route: 'components/weekly-review-trigger' } })
         scheduleRetry()
       }
     }

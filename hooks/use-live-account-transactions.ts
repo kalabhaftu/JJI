@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
 
 interface Transaction {
   id: string
@@ -13,7 +12,7 @@ interface Transaction {
 
 export function useLiveAccountTransactions() {
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -43,7 +42,7 @@ export function useLiveAccountTransactions() {
         const result = await response.json()
 
         if (!result.success) {
-          throw new Error(result.error?.message || 'Failed to fetch transactions')
+          throw new Error(result.error || 'Failed to fetch transactions')
         }
 
         setTransactions(result.data || [])
@@ -59,3 +58,4 @@ export function useLiveAccountTransactions() {
 
   return { transactions, isLoading, error }
 }
+

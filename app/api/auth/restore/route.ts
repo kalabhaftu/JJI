@@ -1,11 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server"
+import * as Sentry from '@sentry/nextjs'
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { z } from "zod"
 
 import { ensureUserInDatabase } from "@/server/auth"
-import { applyApiRoutePolicy } from '@/lib/api/route-policy'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
+import { logger } from '@/lib/logger';
 
 const restoreSessionSchema = z.object({
   accessToken: z.string().trim().min(1).max(8192),
@@ -19,9 +18,6 @@ type SupabaseCookie = {
 }
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'auth')
-  if (limited) return limited
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -33,6 +29,9 @@ export async function POST(request: NextRequest) {
   const parsed = restoreSessionSchema.safeParse(body)
 
   if (!parsed.success) {
+    if (process.env.NODE_ENV !== "production") {
+      logger.error("Session restore schema validation failed: " + JSON.stringify(parsed.error.format()) + " Body received: " + JSON.stringify(body))
+    }
     return NextResponse.json({ authenticated: false, error: "invalid_tokens" }, { status: 400 })
   }
 
@@ -68,12 +67,7 @@ export async function POST(request: NextRequest) {
    try {
      await ensureUserInDatabase(data.user, "en")
    } catch (error) {
-     reportError(error, {
-       surface: 'api',
-       operation: 'restore-profile-sync',
-       route: request.nextUrl.pathname,
-       requestId,
-     })
+     Sentry.captureException(error, { extra: { route: '/api/auth/restore' } })
      // Auth restoration should not fail because the profile sync is temporarily unavailable.
    }
 

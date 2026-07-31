@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge"
 import { Clock } from 'lucide-react'
 import { useRithmicSyncContext } from '@/context/rithmic-sync-context'
 import { logger } from '@/lib/logger';
-import { reportError } from '@/lib/observability/report-error'
 
 interface SyncCountdownProps {
   lastSyncTime: string
@@ -37,11 +36,7 @@ export function SyncCountdown({ lastSyncTime, isAutoSyncing, credentialId }: Syn
           logger.info('Countdown reached Ready state, triggering immediate sync check for credential: ' + credentialId)
 
           performSyncForCredential(credentialId).catch(error => {
-            reportError(error, {
-              surface: 'client',
-              operation: 'trigger-scheduled-rithmic-sync',
-              entityId: credentialId,
-            })
+            logger.error('Error triggering immediate sync: ' + (error instanceof Error ? error.message : String(error)))
           })
         }
         return

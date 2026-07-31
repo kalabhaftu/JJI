@@ -2,8 +2,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
-import { apiRequest } from '@/lib/api/client'
 
 export interface TradeTag {
   id: string
@@ -14,7 +12,7 @@ export interface TradeTag {
 export function useTags() {
   const queryClient = useQueryClient()
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   const { data: tags = [], isLoading, error } = useQuery<TradeTag[]>({
     queryKey: ['tags', isDemo],
@@ -28,8 +26,10 @@ export function useTags() {
           { id: 'tag-5', name: 'Session Start', color: '#8b5cf6' }
         ]
       }
-      const response = await apiRequest<TradeTag[]>('/api/v1/tags')
-      return response.data || []
+      const response = await fetch('/api/v1/tags')
+      if (!response.ok) throw new Error('Failed to fetch tags')
+      const data = await response.json()
+      return data.tags || []
     },
     staleTime: 60 * 1000,
     gcTime: 5 * 60 * 1000,
@@ -41,13 +41,18 @@ export function useTags() {
       queryClient.setQueryData<TradeTag[]>(['tags', isDemo], (old) => [...(old || []), newTag])
       return newTag
     }
-    const response = await apiRequest<TradeTag>('/api/v1/tags', {
+    const response = await fetch('/api/v1/tags', {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: name.trim(), color }),
     })
-    if (!response.data) throw new Error('Failed to create tag')
-    queryClient.setQueryData<TradeTag[]>(['tags', isDemo], (old) => [...(old || []), response.data!])
-    return response.data
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error || 'Failed to create tag')
+    }
+    const data = await response.json()
+    queryClient.setQueryData<TradeTag[]>(['tags', isDemo], (old) => [...(old || []), data.tag])
+    return data.tag
   }
 
   const updateTag = async (id: string, name: string, color: string): Promise<TradeTag> => {
@@ -58,15 +63,20 @@ export function useTags() {
       )
       return updatedTag
     }
-    const response = await apiRequest<TradeTag>(`/api/v1/tags/${id}`, {
+    const response = await fetch(`/api/v1/tags/${id}`, {
       method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: name.trim(), color }),
     })
-    if (!response.data) throw new Error('Failed to update tag')
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.error || 'Failed to update tag')
+    }
+    const data = await response.json()
     queryClient.setQueryData<TradeTag[]>(['tags', isDemo], (old) =>
-      (old || []).map((t) => (t.id === id ? response.data! : t))
+      (old || []).map((t) => (t.id === id ? data.tag : t))
     )
-    return response.data
+    return data.tag
   }
 
   const deleteTag = async (id: string): Promise<void> => {
@@ -76,7 +86,8 @@ export function useTags() {
       )
       return
     }
-    await apiRequest(`/api/v1/tags/${id}`, { method: 'DELETE' })
+    const response = await fetch(`/api/v1/tags/${id}`, { method: 'DELETE' })
+    if (!response.ok) throw new Error('Failed to delete tag')
     queryClient.setQueryData<TradeTag[]>(['tags', isDemo], (old) =>
       (old || []).filter((t) => t.id !== id)
     )

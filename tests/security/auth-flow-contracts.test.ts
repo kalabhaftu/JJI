@@ -11,7 +11,7 @@ describe('authentication flow contracts', () => {
   it('routes the landing CTA through the session launcher', () => {
     const landing = source('app/home-page-client.tsx')
 
-    expect(landing).toContain("const primaryHref = mainAppLaunchHref('/dashboard')")
+    expect(landing).toContain("const primaryHref = '/app-launch?next=/dashboard'")
     expect(landing).not.toContain("const primaryHref = isAuthenticated ? '/dashboard' : '/login'")
   })
 

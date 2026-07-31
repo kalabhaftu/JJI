@@ -3,7 +3,6 @@
 import { useState, useCallback, type ComponentType } from "react"
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import { cn } from "@/lib/utils"
-import { apiRequest } from '@/lib/api/client'
 import { PageHeader } from "@/components/ui/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -28,7 +27,6 @@ import {
 import { toast } from "sonner"
 import { Target, Plus, Trash2, CheckCircle2, TrendingUp, Trophy, DollarSign, Flame, BarChart2, TrendingDown, Star, Pencil } from "lucide-react"
 import { GoalsPageSkeleton } from "./components/goals-page-skeleton"
-import { isDemoSurface } from "@/lib/public-surface-routing"
 
 type GoalMetric = "pnl" | "winRate" | "trades" | "streak" | "drawdown" | "custom"
 type GoalPeriod = "daily" | "weekly" | "monthly" | "all-time"
@@ -67,30 +65,34 @@ const METRIC_ICONS: Record<GoalMetric, ComponentType<{ className?: string }>> = 
 }
 
 async function fetchGoals(): Promise<{ goals: Goal[] }> {
-  const response = await apiRequest<Goal[]>('/api/v1/goals')
-  return { goals: response.data ?? [] }
+  const res = await fetch('/api/v1/goals')
+  if (!res.ok) throw new Error('Failed to fetch goals')
+  return res.json()
 }
 
 async function createGoal(data: Partial<Goal>): Promise<{ goal: Goal }> {
-  const response = await apiRequest<Goal>('/api/v1/goals', {
+  const res = await fetch('/api/v1/goals', {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!response.data) throw new Error('Failed to create goal')
-  return { goal: response.data }
+  if (!res.ok) throw new Error('Failed to create goal')
+  return res.json()
 }
 
 async function updateGoal(id: string, data: Partial<Goal>): Promise<{ goal: Goal }> {
-  const response = await apiRequest<Goal>(`/api/v1/goals/${id}`, {
+  const res = await fetch(`/api/v1/goals/${id}`, {
     method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   })
-  if (!response.data) throw new Error('Failed to update goal')
-  return { goal: response.data }
+  if (!res.ok) throw new Error('Failed to update goal')
+  return res.json()
 }
 
 async function deleteGoal(id: string): Promise<void> {
-  await apiRequest(`/api/v1/goals/${id}`, { method: 'DELETE' })
+  const res = await fetch(`/api/v1/goals/${id}`, { method: 'DELETE' })
+  if (!res.ok) throw new Error('Failed to delete goal')
 }
 
 function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: string) => void; onEdit?: (goal: Goal) => void }) {
@@ -183,7 +185,7 @@ import { useUserStore } from "@/store/user-store"
 export function GoalsPageClient() {
   const qc = useQueryClient()
   const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const isDemo = typeof window !== 'undefined' && window.location.pathname.startsWith('/demo')
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [form, setForm] = useState({

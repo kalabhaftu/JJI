@@ -1,5 +1,4 @@
 import crypto from 'crypto';
-import { reportError } from '@/lib/observability/report-error'
 
 const ALGORITHM = 'aes-256-gcm';
 const IV_LENGTH = 16;
@@ -32,10 +31,7 @@ export function encrypt(text: string | null | undefined): string | null {
     
     return `${iv.toString('hex')}:${authTag}:${encrypted}`;
   } catch (error) {
-    reportError(error, {
-      surface: 'server',
-      operation: 'encrypt-provider-credential',
-    })
+    console.error('Encryption failed:', error);
     return text; // Fallback to raw string if crypto fails (e.g., edge runtimes)
   }
 }
@@ -60,10 +56,7 @@ export function decrypt(hash: string | null | undefined): string | null {
     
     return decrypted;
   } catch (err) {
-    reportError(err, {
-      surface: 'server',
-      operation: 'decrypt-provider-credential',
-    })
+    console.error('Decryption failed, returning potentially legacy string');
     return hash; 
   }
 }

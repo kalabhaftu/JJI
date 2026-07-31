@@ -19,16 +19,8 @@ import { AppBanner } from "@/components/app-banner";
 import { OfflineIndicator } from "@/components/offline-indicator";
 import { AuthenticatedProviders } from "@/components/authenticated-providers";
 
-import type { Metadata } from "next";
-
 export const dynamic = 'force-dynamic'
 
-export const metadata: Metadata = {
-  robots: {
-    index: false,
-    follow: false,
-  },
-}
 export default async function RootLayout({ children }: { children: ReactNode }) {
   const initialBootstrapData = await getInitBootstrapData()
   const siteUiSettings = await getSiteUiSettings()

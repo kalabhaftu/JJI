@@ -12,14 +12,14 @@ export default function TechStackDocsPage() {
         <ul>
           <li><strong>Framework:</strong> Next.js 15.5.21 with App Router</li>
           <li><strong>Language:</strong> TypeScript 5</li>
-          <li><strong>Styling:</strong> Tailwind CSS 4 with PostCSS and shadcn/ui primitives backed by Radix UI</li>
+          <li><strong>Styling:</strong> Tailwind CSS 3 with local New York-style shadcn/ui primitives backed by Radix UI</li>
           <li><strong>Animations:</strong> Framer Motion</li>
           <li><strong>Charts:</strong> Recharts and lightweight-charts by TradingView</li>
-          <li><strong>Rich Text:</strong> Lexical editor framework</li>
+          <li><strong>Rich Text:</strong> Lexical editor by Meta</li>
           <li><strong>Forms:</strong> react-hook-form + Zod validation</li>
           <li><strong>Drag &amp; Drop:</strong> react-grid-layout</li>
           <li><strong>Tables:</strong> @tanstack/react-table</li>
-          <li><strong>Client Data:</strong> TanStack Query for server state, Zustand for local state</li>
+          <li><strong>Client data:</strong> TanStack Query for server state, Zustand for local state</li>
           <li><strong>Icons:</strong> Lucide React</li>
         </ul>
       </DocsSection>
@@ -40,14 +40,16 @@ export default function TechStackDocsPage() {
       <DocsSection title="Backend & infrastructure">
         <ul>
           <li><strong>Database:</strong> PostgreSQL via Supabase</li>
-          <li><strong>ORM &amp; Migrations:</strong> Drizzle ORM + drizzle-kit</li>
-          <li><strong>Background Jobs:</strong> Inngest background queueing (async import processing, anchor resets, storage cleanup, breach checks)</li>
+          <li><strong>ORM:</strong> Drizzle ORM</li>
           <li><strong>Authentication:</strong> Supabase Auth (magic link, OAuth)</li>
-          <li><strong>Caching &amp; Rate Limiting:</strong> Upstash Redis + @upstash/ratelimit</li>
-          <li><strong>AI Engine:</strong> Vercel AI SDK (@ai-sdk/openai), xAI Grok (grok-4-1-fast-reasoning), OpenAI</li>
-          <li><strong>Payments:</strong> NOWPayments (crypto) with automated reconciliation cron</li>
-          <li><strong>Error Tracking:</strong> Sentry (@sentry/nextjs)</li>
+          <li><strong>State (Client):</strong> Zustand</li>
+          <li><strong>State (Server):</strong> TanStack Query</li>
+          <li><strong>AI:</strong> AI SDK (Vercel), OpenAI, xAI</li>
+          <li><strong>Payments:</strong> NOWPayments (crypto)</li>
+          <li><strong>Error Tracking:</strong> Sentry</li>
+          <li><strong>Caching and rate limits:</strong> Upstash Redis</li>
           <li><strong>Deployment:</strong> Vercel with GitHub Actions CI</li>
+          <li><strong>Real-time:</strong> Supabase Realtime</li>
         </ul>
       </DocsSection>
     </DocsPage>

@@ -6,16 +6,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 import { verifyIpnSignature, type IpnPayload } from '@/lib/services/nowpayments-service'
 import { handleIpnWebhook } from '@/lib/services/subscription-service'
 import { logger } from '@/lib/logger'
-import { reportError } from '@/lib/observability/report-error'
-import { resolveRequestId } from '@/lib/observability/request-id'
 
 const MAX_WEBHOOK_BODY_BYTES = 256 * 1024
 
 export async function POST(request: NextRequest) {
-  const requestId = resolveRequestId(request.headers)
   try {
     const signature = request.headers.get('x-nowpayments-sig') || ''
     const rawBody = await request.text()
@@ -27,7 +25,8 @@ export async function POST(request: NextRequest) {
     let payload: IpnPayload
     try {
       payload = JSON.parse(rawBody)
-    } catch {
+    } catch (error) {
+      Sentry.captureException(error, { extra: { route: '/api/v1/payments/webhook' } })
       logger.warn('Invalid NOWPayments webhook JSON')
       return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 })
     }
@@ -47,12 +46,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: status < 400, ...result }, { status })
   } catch (error) {
-    reportError(error, {
-      surface: 'api',
-      operation: 'process-payment-webhook',
-      route: request.nextUrl.pathname,
-      requestId,
-    })
+    logger.error('NOWPayments webhook processing failed' + ' : ' + error)
     return NextResponse.json({ success: false, error: 'Internal processing error' }, { status: 500 })
   }
 }

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { logger } from '@/lib/logger'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { deletePublicStorageUrls } from '@/server/storage-admin'
 
 // GET - Fetch all backtests for user
-async function getBacktests(request: NextRequest) {
+export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -31,7 +31,6 @@ async function getBacktests(request: NextRequest) {
 
     return NextResponse.json({ backtests }, { status: 200 })
   } catch (error) {
-    reportApiHandlerError(request, error, 'list-backtests')
     return NextResponse.json(
       { error: 'Failed to fetch backtests' },
       { status: 500 }
@@ -40,7 +39,7 @@ async function getBacktests(request: NextRequest) {
 }
 
 // POST - Create new backtest
-async function createBacktest(request: NextRequest) {
+export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -117,7 +116,6 @@ async function createBacktest(request: NextRequest) {
 
     return NextResponse.json({ backtest }, { status: 201 })
   } catch (error) {
-    reportApiHandlerError(request, error, 'create-backtest')
     return NextResponse.json(
       { error: 'Failed to create backtest' },
       { status: 500 }
@@ -126,7 +124,7 @@ async function createBacktest(request: NextRequest) {
 }
 
 // PUT - Update backtest
-async function updateBacktest(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -183,7 +181,6 @@ async function updateBacktest(request: NextRequest) {
 
     return NextResponse.json({ backtest }, { status: 200 })
   } catch (error) {
-    reportApiHandlerError(request, error, 'update-backtest')
     return NextResponse.json(
       { error: 'Failed to update backtest' },
       { status: 500 }
@@ -192,7 +189,7 @@ async function updateBacktest(request: NextRequest) {
 }
 
 // DELETE - Delete backtest
-async function deleteBacktest(request: NextRequest) {
+export async function DELETE(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
 
@@ -247,7 +244,7 @@ async function deleteBacktest(request: NextRequest) {
       try {
         await deletePublicStorageUrls(imageUrls)
       } catch (error) {
-        reportApiHandlerError(request, error, 'delete-backtest-storage')
+        logger.error('Storage deletion failed for backtest: ' + (error instanceof Error ? error.message : String(error)))
       }
     }
 
@@ -259,15 +256,9 @@ async function deleteBacktest(request: NextRequest) {
 
     return NextResponse.json({ success: true }, { status: 200 })
   } catch (error) {
-    reportApiHandlerError(request, error, 'delete-backtest')
     return NextResponse.json(
       { error: 'Failed to delete backtest' },
       { status: 500 }
     )
   }
 }
-
-export const GET = withCanonicalApiResponse(getBacktests)
-export const POST = withCanonicalApiResponse(createBacktest)
-export const PUT = withCanonicalApiResponse(updateBacktest)
-export const DELETE = withCanonicalApiResponse(deleteBacktest)

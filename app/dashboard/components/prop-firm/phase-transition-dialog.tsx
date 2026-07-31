@@ -30,8 +30,7 @@ import {
   Loader2,
   Sparkles
 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { formatPercent } from '@/lib/trading/trade-formatting'
+import { cn, formatPercent } from "@/lib/utils"
 
 interface PhaseTransitionDialogProps {
   isOpen: boolean
@@ -111,7 +110,7 @@ export function PhaseTransitionDialog({
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to transition phase')
+        throw new Error(result.error || 'Failed to transition phase')
       }
 
       toast.success("Phase Transition Successful", {

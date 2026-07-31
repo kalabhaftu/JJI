@@ -1,10 +1,10 @@
 'use client'
 
 import React, { Component, type ReactNode } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { Card, CardContent } from '@/components/ui/card'
 import { AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { reportError } from '@/lib/observability/report-error'
 
 interface WidgetErrorBoundaryProps {
   children: ReactNode
@@ -28,9 +28,8 @@ export class WidgetErrorBoundary extends Component<WidgetErrorBoundaryProps, Wid
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    reportError(error, {
-      surface: 'client',
-      operation: 'render-dashboard-widget',
+    Sentry.captureException(error, {
+      tags: { surface: 'dashboard-widget' },
       extra: {
         widgetId: this.props.widgetId,
         widgetTitle: this.props.title,

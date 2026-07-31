@@ -14,9 +14,6 @@ import {
 } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
-import { FilterBar, FilterBarGroup } from '@/components/godui/filter-bar'
-import { SegmentedControl } from '@/components/godui/segmented-control'
-import { Combobox } from '@/components/godui/combobox'
 import { Button } from '@/components/ui/button'
 import {
   Select,
@@ -79,20 +76,54 @@ export function ReportFilters({
 
   return (
     <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced}>
-      <div className="mb-8">
-        <FilterBar>
-          <FilterBarGroup className="min-w-[180px] sm:max-w-[210px]">
-            <Wallet className="size-3.5 shrink-0 text-muted-foreground" />
-            <Combobox options={accounts.map((account) => ({ value: account.id, label: account.name }))} value={selectedAccountId || 'all'} onValueChange={(value) => onAccountChange(value === 'all' ? null : value)} placeholder="All Accounts" searchPlaceholder="Search accounts…" className="flex-1" />
-          </FilterBarGroup>
+      <div className="mb-8 overflow-hidden rounded-[28px] border border-border/22 bg-card/35 no-export">
+        <div className="flex flex-wrap items-center gap-2.5 px-4 py-4">
+          <FilterRail className="min-w-[180px] sm:max-w-[210px]">
+            <Select
+              value={selectedAccountId || 'all'}
+              onValueChange={(value) => onAccountChange(value === 'all' ? null : value)}
+            >
+              <SelectTrigger className="h-10 border-0 bg-transparent px-0 text-[11px] font-bold uppercase tracking-wider shadow-none hover:bg-transparent focus:ring-0">
+                <div className="flex min-w-0 items-center gap-2">
+                  <Wallet className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <SelectValue placeholder="All Accounts" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all" className="text-[11px] font-bold uppercase">All Accounts</SelectItem>
+                {accounts.map((account) => (
+                  <SelectItem key={account.id} value={account.id} className="text-[11px] font-bold uppercase">
+                    {account.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </FilterRail>
 
           <div className="hidden h-8 w-px bg-border/12 lg:block" />
 
-          <SegmentedControl items={['7D', '30D', '90D', 'YTD', 'ALL'].map((preset) => ({ value: preset, label: preset }))} value={activePreset} onValueChange={onPresetSelect} />
+          <div className="flex items-center gap-1 rounded-xl border border-border/12 bg-background/30 p-1">
+            {['7D', '30D', '90D', 'YTD', 'ALL'].map((preset) => (
+              <Button
+                key={preset}
+                variant={activePreset === preset ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => onPresetSelect(preset)}
+                className={cn(
+                  'h-8 rounded-lg px-3 text-[10px] font-black tracking-widest transition-all',
+                  activePreset === preset
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:bg-muted/40'
+                )}
+              >
+                {preset}
+              </Button>
+            ))}
+          </div>
 
           <div className="hidden h-8 w-px bg-border/12 lg:block" />
 
-          <FilterBarGroup className="min-w-[210px] sm:max-w-[260px]">
+          <FilterRail className="min-w-[210px] sm:max-w-[260px]">
             <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -131,7 +162,7 @@ export function ReportFilters({
                 />
               </PopoverContent>
             </Popover>
-          </FilterBarGroup>
+          </FilterRail>
 
           <div className="ml-auto" />
 
@@ -154,9 +185,9 @@ export function ReportFilters({
               </span>
             )}
           </Button>
-        </FilterBar>
+        </div>
 
-        <CollapsibleContent className="overflow-hidden border-b border-border/20 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
+        <CollapsibleContent className="overflow-hidden border-t border-border/14 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
           <div className="grid gap-px bg-border/12 lg:grid-cols-5">
             <FilterSelect
               icon={<Hash className="h-3 w-3" />}
@@ -205,6 +236,20 @@ export function ReportFilters({
         </CollapsibleContent>
       </div>
     </Collapsible>
+  )
+}
+
+function FilterRail({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('rounded-xl border border-border/12 bg-background/28 px-3', className)}>
+      {children}
+    </div>
   )
 }
 

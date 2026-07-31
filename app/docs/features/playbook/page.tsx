@@ -1,36 +1,49 @@
 import { BookCopy, ListChecks, Tags, Target } from 'lucide-react'
-import { DocsPage, DocsSection, DocsCallout } from '@/components/docs/docs-page'
+import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function PlaybookDocsPage() {
   return (
     <DocsPage
       badge="Feature Guide"
-      title="Playbook & Ghost Setups"
-      description="Track the setups you missed, log trade attributes, and build a playbook of what works."
+      title="Playbook & Models"
+      description="The playbook is your structured library of trading setups, models, and rules. Connect trade history to repeatable strategies so you can measure what actually works."
     >
-      <DocsSection title="Ghost Setups (Missed Trades)">
-        <p>A major part of trading is logging the trades you didn't take. Ghost Setups allow you to record these missed opportunities:</p>
+      <DocsSection title="What the playbook does">
+        <p>The playbook lets you define:</p>
         <ul>
-          <li><strong>How to log:</strong> Use the Manual Trade Entry form and check the "Missed Trade (Ghost Setup)" box.</li>
-          <li><strong>Tracking metrics:</strong> Ghost setups let you log entry, exit, MAE, MFE, and P&L just like a real trade.</li>
-          <li><strong>Visibility:</strong> They appear in your trade table with a distinct "GHOST" badge.</li>
-          <li><strong>Analytics:</strong> By default, Ghost Setups are excluded from your main dashboard P&L, but you can filter to view them and see how much you left on the table.</li>
+          <li><strong>Setups</strong> - Named trading setups with defined entry criteria, targets, and risk rules</li>
+          <li><strong>Models</strong> - Strategy templates that group multiple setups</li>
+          <li><strong>Rules</strong> - Specific conditions for entry, target, confirmation, confluence, and exit</li>
+          <li><strong>Tags</strong> - Label system that connects playbook entries to trade records</li>
         </ul>
       </DocsSection>
 
-      <DocsSection title="Tagging and Trade Types">
-        <p>You can categorize your trades to build your playbook over time:</p>
+      <DocsSection title="Creating a setup">
+        <ol>
+          <li>Open <strong>Playbook</strong> from the sidebar</li>
+          <li>Click <strong>New Setup</strong></li>
+          <li>Name the setup (e.g., "Morning Breakout", "Trend Continuation")</li>
+          <li>Define entry rules: what conditions must be met</li>
+          <li>Define target rules: where to take profit</li>
+          <li>Define risk rules: stop loss placement and position sizing</li>
+          <li>Add confluence factors that strengthen the setup</li>
+          <li>Save the setup</li>
+        </ol>
+      </DocsSection>
+
+      <DocsSection title="Using setups in trade review">
+        <p>When reviewing trades in the trade table or journal, you can assign a setup and model to each trade. This lets you:</p>
         <ul>
-          <li><strong>Trade Type</strong> - Define the overarching strategy (e.g., Breakout, Reversal, Trend Continuation).</li>
-          <li><strong>Bias</strong> - Log your market bias at the time of entry (Long, Short, Neutral).</li>
-          <li><strong>Emotional State</strong> - Track your mindset (Confident, FOMO, Revenge).</li>
-          <li><strong>Comments</strong> - Provide a deep dive note into why the trade matched your playbook rules.</li>
+          <li>Filter trades by setup to see which strategies perform best</li>
+          <li>Compare win rates and P&amp;L across different setups</li>
+          <li>Identify which setups need refinement or retirement</li>
+          <li>Track execution quality - did you follow the rules?</li>
         </ul>
       </DocsSection>
 
-      <DocsCallout title="Workflow Tip" tone="info">
-        The strongest playbook workflow: define your setups → trade them live (or log them as Ghost Setups) → review performance in the dashboard filtering by Trade Type → refine the setup rules.
-      </DocsCallout>
+      <DocsSection title="Review workflow">
+        <p>The strongest playbook workflow: backtest an idea → formalise it as a setup → trade it live with tagging → review performance in reports → refine the setup rules.</p>
+      </DocsSection>
     </DocsPage>
   )
 }

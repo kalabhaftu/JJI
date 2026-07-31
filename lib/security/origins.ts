@@ -1,4 +1,4 @@
-import { DEMO_ORIGIN, DOCS_ORIGIN } from '@/lib/public-surface-routing'
+import * as Sentry from '@sentry/nextjs'
 
 const PRODUCTION_ORIGIN = 'https://www.justjournalit.site'
 const PREVIEW_ORIGIN = 'https://justjournalit.vercel.app'
@@ -13,6 +13,7 @@ function normalizeOrigin(value: string | undefined | null): string | null {
     const url = new URL(input)
     return url.origin
   } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'normalizeOrigin' } })
     return null
   }
 }
@@ -38,8 +39,6 @@ function getCanonicalOrigin() {
 export function getAllowedOrigins() {
   const origins = new Set<string>([
     PRODUCTION_ORIGIN,
-    DOCS_ORIGIN,
-    DEMO_ORIGIN,
     PREVIEW_ORIGIN,
     ...splitOrigins(process.env.NEXT_PUBLIC_ALLOWED_ORIGINS),
     ...splitOrigins(process.env.ALLOWED_ORIGINS),
@@ -64,6 +63,7 @@ function isLocalOrigin(origin: string) {
     const url = new URL(origin)
     return LOCALHOST_HOSTS.has(url.hostname)
   } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'isLocalhostOrigin' } })
     return false
   }
 }
@@ -103,6 +103,7 @@ export function assertProductionUrl(name: string, value: string | undefined | nu
   try {
     url = new URL(value.startsWith('http') ? value : `https://${value}`)
   } catch (error) {
+    Sentry.captureException(error, { extra: { route: 'lib/security/origins', phase: 'validateOrigin' } })
     return `${name} must be a valid URL`
   }
 

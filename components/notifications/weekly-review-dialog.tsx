@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 import { format } from 'date-fns'
 import {
   Dialog,
@@ -27,7 +28,6 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { dashboardModalShell } from '@/components/ui/dashboard-modal-shell'
-import { reportError } from '@/lib/observability/report-error'
 
 interface WeeklyAIReview {
   id: string
@@ -109,11 +109,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
           setReviews([])
         }
       } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'load-weekly-reviews',
-          route: '/api/v1/weekly-review',
-        })
+        Sentry.captureException(error, { extra: { route: 'components/notifications/weekly-review-dialog' } })
         setReviews([])
       } finally {
         setIsLoading(false)

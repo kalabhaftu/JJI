@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   BookOpen,
@@ -21,7 +21,6 @@ import {
 
 import { useTheme } from '@/context/theme-provider'
 import { useData } from '@/context/data-provider'
-import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { useQuickAddStore } from '@/store/quick-add-store'
 
 interface DashboardShellAction {
@@ -43,12 +42,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
   const router = useRouter()
   const { theme, toggleTheme, setTheme } = useTheme()
   const { refreshTrades, isDemoMode } = useData()
-  const { demoRouteHref } = usePublicSurfaceRouting()
   const openQuickAdd = useQuickAddStore((state) => state.openQuickAdd)
-  const routeHref = useCallback(
-    (href: string) => demoRouteHref(href, Boolean(isDemoMode)),
-    [demoRouteHref, isDemoMode]
-  )
 
   return useMemo(
     () => [
@@ -61,7 +55,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Dashboard',
             description: 'Go to the main dashboard',
             icon: SquaresFour,
-            perform: () => router.push(routeHref('/dashboard')),
+            perform: () => router.push(isDemoMode ? '/demo' : '/dashboard'),
             keywords: ['home', 'main', 'widgets'],
           },
           {
@@ -69,7 +63,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Reports',
             description: 'Open performance reports',
             icon: ChartBar,
-            perform: () => router.push(routeHref('/dashboard/reports')),
+            perform: () => router.push(isDemoMode ? '/demo/reports' : '/dashboard/reports'),
             keywords: ['stats', 'analytics', 'performance'],
           },
           {
@@ -77,7 +71,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Journal',
             description: 'Open your trading journal',
             icon: BookOpen,
-            perform: () => router.push(routeHref('/dashboard/journal')),
+            perform: () => router.push(isDemoMode ? '/demo/journal' : '/dashboard/journal'),
             keywords: ['notes', 'log', 'review'],
           },
           {
@@ -85,7 +79,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Accounts',
             description: 'Manage live and prop-firm accounts',
             icon: Users,
-            perform: () => router.push(routeHref('/dashboard/accounts')),
+            perform: () => router.push(isDemoMode ? '/demo/accounts' : '/dashboard/accounts'),
             keywords: ['broker', 'prop firm'],
           },
           {
@@ -93,7 +87,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Trades',
             description: 'Open the trade table',
             icon: Table,
-            perform: () => router.push(routeHref('/dashboard/table')),
+            perform: () => router.push(isDemoMode ? '/demo/table' : '/dashboard/table'),
             keywords: ['history', 'list', 'executions'],
           },
           {
@@ -101,7 +95,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Playbook',
             description: 'Open your setups and strategy rules',
             icon: FileText,
-            perform: () => router.push(routeHref('/dashboard/playbook')),
+            perform: () => router.push(isDemoMode ? '/demo/playbook' : '/dashboard/playbook'),
             keywords: ['strategies', 'setups', 'rules'],
           },
           {
@@ -109,7 +103,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Backtesting',
             description: 'Review and log backtests',
             icon: Flask,
-            perform: () => router.push(routeHref('/dashboard/backtesting')),
+            perform: () => router.push(isDemoMode ? '/demo/backtesting' : '/dashboard/backtesting'),
             keywords: ['test', 'simulate', 'paper'],
           },
           {
@@ -117,7 +111,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Settings',
             description: 'Open app settings',
             icon: SettingsIcon,
-            perform: () => router.push(routeHref('/dashboard/settings')),
+            perform: () => router.push(isDemoMode ? '/demo/settings' : '/dashboard/settings'),
             keywords: ['preferences', 'config', 'options'],
           },
           {
@@ -125,7 +119,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Calendar View',
             description: 'Jump to the dashboard calendar',
             icon: CalendarBlank,
-            perform: () => router.push(routeHref('/dashboard')),
+            perform: () => router.push(isDemoMode ? '/demo' : '/dashboard'),
             keywords: ['dates', 'pnl', 'monthly'],
           },
         ],
@@ -183,6 +177,6 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
         ],
       },
     ],
-    [openQuickAdd, refreshTrades, router, routeHref, setTheme, theme, toggleTheme]
+    [openQuickAdd, refreshTrades, router, setTheme, theme, toggleTheme, isDemoMode]
   )
 }

@@ -127,7 +127,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
       const result = await response.json()
 
       if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to create account')
+        throw new Error(result.error || 'Failed to create account')
       }
 
       toast.success("Account created!", {
@@ -382,3 +382,4 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
     </>
   )
 }
+

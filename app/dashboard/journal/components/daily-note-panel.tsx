@@ -106,11 +106,10 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
       try {
         const res = await fetch(`/api/v1/journal/daily?date=${dateStr}`)
         const data = await res.json()
-        const journal = data.data?.journal
-        if (journal) {
-          setNote(journal)
-          setNoteContent(journal.note || '')
-          setSelectedEmotion(journal.emotion || null)
+        if (data.journal) {
+          setNote(data.journal)
+          setNoteContent(data.journal.note || '')
+          setSelectedEmotion(data.journal.emotion || null)
         } else {
           setNote(null)
           setNoteContent('')
@@ -140,7 +139,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         })
         if (!res.ok) throw new Error('Failed to update')
         const data = await res.json()
-        setNote(data.data?.journal)
+        setNote(data.journal)
         queryClient.invalidateQueries({ queryKey: ['journal-data'] })
         toast.success('Daily note updated')
       } else {
@@ -152,10 +151,10 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         })
         if (!res.ok) {
           const err = await res.json()
-          throw new Error(err.error?.message || 'Failed to create')
+          throw new Error(err.error || 'Failed to create')
         }
         const data = await res.json()
-        setNote(data.data?.journal)
+        setNote(data.journal)
         queryClient.invalidateQueries({ queryKey: ['journal-data'] })
         toast.success('Daily note saved')
       }

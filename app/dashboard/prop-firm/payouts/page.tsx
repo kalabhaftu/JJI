@@ -61,7 +61,7 @@ export default function PayoutsPage() {
         )
         setPayouts(allPayouts)
       } else {
-        throw new Error(data.error?.message || 'Failed to fetch payouts')
+        throw new Error(data.error || 'Failed to fetch payouts')
       }
     } catch (error) {
       toast.error('Failed to fetch payouts', {

@@ -46,9 +46,8 @@ import { useRithmicSyncContext } from '@/context/rithmic-sync-context'
 import { getAllRithmicData } from '@/lib/rithmic-storage'
 import { toast } from 'sonner'
 import { useEffect, useRef, useState } from 'react'
-import { reportError } from '@/lib/observability/report-error'
+import { logger } from '@/lib/logger';
 import { MOBILE_SYNC_EVENT } from '@/lib/navigation/mobile-nav'
-import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 
 const coreNavItems = [
   { id: 'widgets', label: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
@@ -67,7 +66,6 @@ const toolItems = [
 export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSettingsPayload }) {
   const pathname = usePathname()
   const { refreshTrades, isDemoMode } = useData()
-  const { demoAwarePathname, demoRouteHref, docsHref, exitDemoHref } = usePublicSurfaceRouting()
   const { state, toggleSidebar, isOverlay, setOpenMobile } = useSidebar()
   
   const tradovateSyncContext = useTradovateSyncContext()
@@ -143,10 +141,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
         })
       }
     } catch (err) {
-      reportError(err, {
-        surface: 'client',
-        operation: 'run-manual-broker-sync',
-      })
+      logger.error("Error during manual sync: " + err)
       await refreshTrades()
       toast.error("Manual sync failed to complete")
     } finally {
@@ -165,8 +160,10 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
   const isCollapsed = state === 'collapsed' && !isOverlay
 
   const getDemoAdjustedHref = (href: string): any => {
-    if (href.startsWith('/docs')) return docsHref(href)
-    return demoRouteHref(href, Boolean(isDemoMode))
+    if (isDemoMode) {
+      return href.replace('/dashboard', '/demo')
+    }
+    return href
   }
 
   const utilityItems = [
@@ -182,8 +179,8 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
   ]
 
   const getActiveId = () => {
-    const p = demoAwarePathname(pathname || '', Boolean(isDemoMode))
-    const isDemo = Boolean(isDemoMode)
+    const p = pathname || ''
+    const isDemo = p.startsWith('/demo')
     const base = isDemo ? '/demo' : '/dashboard'
 
     if (p === base) return 'widgets'
@@ -229,7 +226,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                 tooltip="Dashboard Home"
               >
                 <Link
-                  href={demoRouteHref('/dashboard', Boolean(isDemoMode))}
+                  href={isDemoMode ? "/demo" : "/dashboard"}
                   onClick={handleMobileClose}
                   className={cn('flex w-full items-center', isCollapsed ? 'justify-center' : 'gap-3')}
                 >
@@ -392,7 +389,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                   onClick={() => {
                     localStorage.removeItem('settings-cache');
                     localStorage.removeItem('active-accounts');
-                    window.location.href = exitDemoHref;
+                    window.location.href = '/';
                   }}
                   tooltip="Exit Demo"
                   className={cn(

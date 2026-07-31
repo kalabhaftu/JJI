@@ -1,4 +1,4 @@
-import { formatCurrency } from '@/lib/trading/trade-formatting'
+import { formatCurrency } from '@/lib/utils'
 
 function formatMoney(value: number | null | undefined) {
   return formatCurrency(Number(value || 0))

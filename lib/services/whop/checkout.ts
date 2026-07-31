@@ -53,6 +53,10 @@ export async function createWhopCheckoutLink(
   url.searchParams.set('d2c', '1')
   url.searchParams.set('metadata[jji_user_id]', internalUserId)
   url.searchParams.set('metadata[jji_reference_id]', referenceId)
+  
+  // Try to force Whop to redirect back to the app on success
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
+  url.searchParams.set('success_url', `${appUrl}/dashboard?payment=success`)
 
   return {
     checkoutUrl: url.toString(),

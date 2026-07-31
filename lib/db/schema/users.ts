@@ -51,6 +51,10 @@ export const User = pgTable('User', {
   etpToken: text('etpToken'),
   thorToken: text('thorToken'),
   fcmToken: text('fcmToken'),
+  isBanned: boolean('isBanned').default(false),
+  bannedAt: timestamp('bannedAt', { withTimezone: true, mode: 'date' }),
+  bannedUntil: timestamp('bannedUntil', { withTimezone: true, mode: 'date' }),
+  banReason: text('banReason'),
 });
 
 export type UserType = typeof User.$inferSelect;

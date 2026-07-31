@@ -43,7 +43,6 @@ export function AddBacktestDialog({ isOpen, onClose, onAdd }: AddBacktestDialogP
       return
     }
 
-    // Reset state and close
     if (!openState) {
       setIsDirty(false)
     }

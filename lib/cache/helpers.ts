@@ -1,12 +1,6 @@
 import { redis } from './client'
 import logger from '../logger'
 
-/**
- * Generic cache wrapper.
- * - On cache hit: returns cached value immediately
- * - On cache miss: runs fn(), stores result, returns it
- * - On Redis error: logs warning, runs fn() directly (fail open)
- */
 export async function withCache<T>(
   key: string,
   ttl: number,
@@ -39,10 +33,7 @@ export async function withCache<T>(
   return result
 }
 
-/**
- * Delete one or more cache keys.
- * Fails silently - a cache invalidation failure is not fatal.
- */
+// Fails silently - a cache invalidation failure is not fatal.
 export async function invalidateCache(...keys: string[]): Promise<void> {
   if (keys.length === 0) return
   try {
@@ -53,10 +44,7 @@ export async function invalidateCache(...keys: string[]): Promise<void> {
   }
 }
 
-/**
- * Get current user cache version for atomic cache invalidation.
- * Defaults to 1 if missing or on error.
- */
+// Defaults to 1 if missing or on error.
 export async function getUserCacheVersion(userId: string): Promise<number> {
   try {
     const { CacheKeys } = await import('./keys')
@@ -65,7 +53,6 @@ export async function getUserCacheVersion(userId: string): Promise<number> {
     if (typeof ver === 'number' && ver > 0) {
       return ver
     }
-    // Initialize version to 1 if not set
     await redis.set(verKey, 1)
     return 1
   } catch (err) {
@@ -74,15 +61,10 @@ export async function getUserCacheVersion(userId: string): Promise<number> {
   }
 }
 
-/**
- * Bump user cache version.
- * Atomically invalidates all versioned user cache keys in 1 fast Redis command.
- */
 export async function bumpUserCacheVersion(userId: string): Promise<number> {
   try {
     const { CacheKeys } = await import('./keys')
     const verKey = CacheKeys.userVersion(userId)
-    // Upstash Redis incr command increments numeric key atomically
     const newVer = await redis.incr(verKey)
     logger.debug({ userId, newVer }, 'cache:user-version-bumped')
     return typeof newVer === 'number' ? newVer : 1
@@ -92,19 +74,13 @@ export async function bumpUserCacheVersion(userId: string): Promise<number> {
   }
 }
 
-/**
- * Invalidate all cache keys for a given account & user.
- * Call this after any trade mutation (import, edit, delete).
- */
 export async function invalidateAccountCache(
   userId: string,
   accountId: string,
 ): Promise<void> {
   const { CacheKeys } = await import('./keys')
-  // Bump version to instantly invalidate all versioned queries for this user
   await bumpUserCacheVersion(userId)
 
-  // Also delete explicit non-versioned legacy keys
   await invalidateCache(
     CacheKeys.accountMetrics(accountId),
     CacheKeys.tradeStats(accountId),
@@ -113,9 +89,6 @@ export async function invalidateAccountCache(
   )
 }
 
-/**
- * Invalidate all caches for a user (account list, metrics, trade lists, etc.)
- */
 export async function invalidateUserCache(userId: string): Promise<void> {
   const { CacheKeys } = await import('./keys')
   await bumpUserCacheVersion(userId)

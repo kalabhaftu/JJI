@@ -38,7 +38,6 @@ import { Loader2, User, AlertCircle, CheckCircle2, Building2, DollarSign } from 
 import { toast } from "sonner"
 import { clearAccountsCache } from "@/hooks/use-accounts"
 
-// Popular brokers
 const POPULAR_BROKERS = [
   'Exness',
   'FBS',

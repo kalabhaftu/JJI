@@ -37,7 +37,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Define unique parameters for cache key with user versioning
   const userVersion = await getUserCacheVersion(internalUserId)
   const queryParams = request.nextUrl.searchParams.toString()
   const cacheKey = CacheKeys.widgetData(internalUserId, type, queryParams, userVersion)
@@ -59,7 +58,6 @@ export async function GET(request: NextRequest) {
       const data = await tradesResponse.json()
       const trades = data.trades || []
 
-      // Route to the appropriate math function
       let result
       switch (type) {
         case 'dayOfWeekPerformance':

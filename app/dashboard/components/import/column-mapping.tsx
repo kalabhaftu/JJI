@@ -12,7 +12,6 @@ import { mappingSchema } from '@/app/api/v1/ai/mappings/schema'
 import { cn } from '@/lib/utils'
 import { z } from 'zod'
 
-// Temporary translation function
 const useTranslations = () => {
   const t = (key: string) => key
   return { t }
@@ -66,10 +65,8 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
       
       setMappings(prev => {
         const newMappings = { ...prev };
-        // For each destination column in the object
         if (object) {
           Object.entries(object).forEach(([destinationColumn, header]) => {
-            // If this header exists in our CSV and isn't already mapped
             if (header && headers.includes(header) && !Object.values(prev).includes(destinationColumn)) {
               newMappings[header] = destinationColumn;
             }

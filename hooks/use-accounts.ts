@@ -101,7 +101,6 @@ export function useAccounts(options: UseAccountsOptions = {}) {
     await mutate()
   }, [mutate])
 
-  // Real-time patching function (Part of Phase 3/4)
   const updateAccountInCache = useCallback((accountId: string, partialData: Partial<UnifiedAccount>) => {
     if (!data) return
     const updatedAccounts = accounts.map((acc: UnifiedAccount) => 

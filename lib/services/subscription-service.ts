@@ -1,7 +1,3 @@
-/**
- * Subscription Service
- * Core business logic for managing subscriptions, payments, promos, and free access.
- */
 
 import logger from '@/lib/logger'
 import * as Sentry from '@sentry/nextjs'
@@ -78,7 +74,6 @@ function validateIpnPayload(paymentRecord: any, payload: IpnPayload) {
   return null
 }
 
-
 export interface AccessResult {
   hasAccess: boolean
   status: SubscriptionStatus | 'no_subscription' | 'admin'
@@ -97,14 +92,12 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
   })
 
   if (!subscription) {
-    // Check if there's a free access invite for this user
     const user = await db.query.User.findFirst({ where: eq(User.id, userId), columns: { email: true } })
     if (user) {
       const freeAccess = await db.query.FreeAccessInvite.findFirst({
         where: eq(FreeAccessInvite.email, user.email!),
       })
       if (freeAccess?.isActive) {
-        // Auto-create subscription record for free access
         const [sub] = await db.insert(Subscription).values({
             userId,
             status: freeAccess.type === 'lifetime' ? 'free_access' : 'invited_free',
@@ -136,7 +129,6 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
       return { hasAccess: false, status: 'expired', subscription: updated, reason: 'Free access revoked' }
     }
 
-    // Check if free access has expired
     if (
       (subscription.status === 'invited_free' || subscription.status === 'free_access') &&
       subscription.currentPeriodEnd &&
@@ -150,12 +142,10 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
     return { hasAccess: true, status: subscription.status as string, subscription }
   }
 
-  // Handle active "waiting" payments that might be expired
   if (subscription.status === 'unpaid' || subscription.status === 'past_due') {
     await expireAbandonedPayments(userId)
   }
 
-  // past_due: within grace period, still allow access
   if (subscription.status === 'past_due') {
     const graceCutoff = subscription.currentPeriodEnd
       ? new Date(subscription.currentPeriodEnd.getTime() + GRACE_DAYS * 86400000)
@@ -163,7 +153,6 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
     if (graceCutoff && new Date() <= graceCutoff) {
       return { hasAccess: true, status: 'past_due', subscription, reason: 'Grace period' }
     }
-    // Past grace period
     await db.update(Subscription)
         .set({ status: 'expired' })
         .where(eq(Subscription.id, subscription.id))
@@ -226,7 +215,6 @@ export async function createSubscriptionInvoice(
   let promoCodeRecord = null
   let discountAmount = 0
 
-  // Apply promo code if provided
   if (options?.promoCode) {
     const promo = await validateAndGetPromo(options.promoCode, userId, options.context || 'signup')
     if (promo) {
@@ -238,7 +226,6 @@ export async function createSubscriptionInvoice(
       } else if (promo.type === 'free_months') {
         discountAmount = finalAmount // First month free
       } else if (promo.type === 'lifetime_free') {
-        // Grant lifetime free access
         await db.update(Subscription)
           .set({ status: 'promo_active', promoCodeId: promo.id })
           .where(eq(Subscription.id, subscription.id))
@@ -249,7 +236,6 @@ export async function createSubscriptionInvoice(
     }
   }
 
-  // If amount is 0 after discount, activate directly
   if (finalAmount <= 0) {
     const now = new Date()
     const freeMonths = promoCodeRecord?.type === 'free_months' ? Math.max(1, Math.floor(promoCodeRecord.value)) : 1
@@ -267,7 +253,6 @@ export async function createSubscriptionInvoice(
     return { subscription, invoiceUrl: null, paymentRecordId: null, freeAccess: true }
   }
 
-  // Create NOWPayments invoice
   const periodStart = new Date()
   const periodEnd = new Date(periodStart.getTime() + 30 * 86400000)
   const orderId = `sub_${subscription.id}_${Date.now()}`
@@ -288,7 +273,6 @@ export async function createSubscriptionInvoice(
     order_description: `JJI Pro - Monthly Subscription`,
   })
 
-  // Create payment record
   const [paymentRecord] = await db.insert(PaymentRecord).values({
       userId,
       subscriptionId: subscription.id,
@@ -320,7 +304,6 @@ export async function handleIpnWebhook(payload: IpnPayload) {
 
   logger.info({ payment_id, payment_status, order_id }, '[Subscription] IPN received')
 
-  // Find the payment record by invoice ID or order_id
   const lookupClauses = [
     invoice_id ? eq(PaymentRecord.providerInvoiceId, String(invoice_id)) : null,
     payment_id ? eq(PaymentRecord.providerPaymentId, String(payment_id)) : null,
@@ -346,13 +329,11 @@ export async function handleIpnWebhook(payload: IpnPayload) {
     return { processed: false, reason: validationError, status: 400 }
   }
 
-  // Idempotency: skip if already in terminal state
   if (paymentRecord.providerStatus === 'finished' && payment_status !== 'refunded') {
     logger.info({ paymentId: paymentRecord.id }, '[Subscription] Payment already finished, skipping')
     return { processed: true, reason: 'Already processed' }
   }
 
-  // Update payment record
   const updateData: any = {
     providerStatus: payment_status,
     providerPaymentId: String(payment_id),
@@ -372,7 +353,6 @@ export async function handleIpnWebhook(payload: IpnPayload) {
     .set(updateData)
     .where(eq(PaymentRecord.id, paymentRecord.id))
 
-  // Update subscription status based on payment outcome
   if (isSuccessStatus(payment_status)) {
     await db.update(Subscription)
       .set({
@@ -383,7 +363,6 @@ export async function handleIpnWebhook(payload: IpnPayload) {
       })
       .where(eq(Subscription.id, paymentRecord.subscriptionId))
 
-    // Create success notification
     await createPaymentNotification(
       paymentRecord.userId,
       'PAYMENT_RECEIVED',
@@ -473,8 +452,6 @@ async function reconcilePaymentRecord(paymentRecordId: string, userId?: string) 
   }) as any
 }
 
-// Promo Codes
-
 async function validateAndGetPromo(code: string, userId: string, context: 'signup' | 'renewal' = 'signup') {
   const promo = await db.query.PromoCode.findFirst({ where: eq(PromoCode.code, code.toUpperCase()) })
   if (!promo || !promo.isActive) return null
@@ -484,7 +461,6 @@ async function validateAndGetPromo(code: string, userId: string, context: 'signu
   if (promo.applicability === 'signup_only' && context !== 'signup') return null
   if (promo.applicability === 'renewal_only' && context !== 'renewal') return null
 
-  // Check if user already redeemed
   const existing = await db.query.PromoRedemption.findFirst({
     where: and(eq(PromoRedemption.promoCodeId, promo.id), eq(PromoRedemption.userId, userId)),
   })
@@ -530,8 +506,6 @@ function getDiscountDescription(promo: { type: string; value: number }) {
   }
 }
 
-// Free Access Management (Admin)
-
 async function grantFreeAccess(params: {
   email: string
   type: 'lifetime' | 'until_date' | 'one_time_signup'
@@ -563,7 +537,6 @@ async function grantFreeAccess(params: {
     invite = updated
   }
 
-  // If user already exists, auto-activate their subscription
   const user = await db.query.User.findFirst({ where: eq(User.email, params.email) })
   if (user) {
     let userSub = await db.query.Subscription.findFirst({ where: eq(Subscription.userId, user.id) })
@@ -620,11 +593,6 @@ async function revokeFreeAccess(email: string) {
   return invite
 }
 
-// Cron: Subscription Checks
-
-/**
- * Reconcile pending payment records with provider status and mirror expiry after the provider window.
- */
 async function expireAbandonedPayments(userId?: string) {
   const pendingPayments = await db.query.PaymentRecord.findMany({
     where: and(
@@ -656,7 +624,6 @@ export async function runSubscriptionChecks() {
   const now = new Date()
   const results = { notified: 0, expired: 0, abandonedCleaned: 0, errors: [] as string[] }
 
-  // 1. Clean up abandoned payments first
   try {
     const cleanup = await expireAbandonedPayments()
     results.abandonedCleaned = cleanup.expired
@@ -664,7 +631,6 @@ export async function runSubscriptionChecks() {
     results.errors.push(`Abandoned Cleanup: ${err instanceof Error ? err.message : 'unknown error'}`)
   }
 
-  // Find active subscriptions with upcoming due dates (processed in batches of 100)
   const BATCH_SIZE = 100
   let cursorId: string | undefined = undefined
   let hasMore = true
@@ -711,7 +677,6 @@ export async function runSubscriptionChecks() {
             'Your subscription payment is due today. Please renew to keep your access.')
           results.notified++
         } else if (daysUntilDue < 0 && daysUntilDue >= -GRACE_DAYS) {
-          // Within grace period
           if (sub.status !== 'past_due') {
             await db.update(Subscription).set({ status: 'past_due' }).where(eq(Subscription.id, sub.id))
           }
@@ -719,7 +684,6 @@ export async function runSubscriptionChecks() {
             `Your payment is overdue. You have ${GRACE_DAYS + daysUntilDue} day(s) left before access is suspended.`)
           results.notified++
         } else if (daysUntilDue < -GRACE_DAYS) {
-          // Past grace period - expire
           await db.update(Subscription).set({ status: 'expired' }).where(eq(Subscription.id, sub.id))
           await createPaymentNotification(sub.userId, 'SUBSCRIPTION_EXPIRED', 'Subscription Expired',
             'Your subscription has expired. Please renew to regain access.')
@@ -737,8 +701,6 @@ export async function runSubscriptionChecks() {
 export async function reconcilePendingPayments(params?: { userId?: string }) {
   return expireAbandonedPayments(params?.userId)
 }
-
-// Notification Helper
 
 function revalidateSubscriptionAccess(userId: string) {
   revalidateTag(`notifications-${userId}`)

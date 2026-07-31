@@ -26,10 +26,6 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-/**
- * Helper function to determine if a phase number represents the funded stage
- * based on the evaluation type.
- */
 function isFundedPhase(evaluationType: string, phaseNumber: number): boolean {
   return isFundedPhaseForEvaluation(evaluationType, phaseNumber)
 }
@@ -86,9 +82,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const resetTimezone = normalizeTimeZone(searchParams.get('resetTimezone'))
     // ID is pure masterAccountId (UUID), not composite
 
-    // PERFORMANCE OPTIMIZATION: Use parallel queries and database aggregations
     const [masterAccount, phases, allPhaseTrades, breakEvenThreshold] = await Promise.all([
-      // 1. Get master account basic info (no nested relations)
       db.query.MasterAccount.findFirst({
         where: (table, { eq, and }) => and(
           eq(table.id, masterAccountId),
@@ -107,7 +101,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         }
       }),
 
-      // 2. Get phases with 10 most recent trades and breach records using nested include
       db.query.PhaseAccount.findMany({
         where: (table, { eq }) => eq(table.masterAccountId, masterAccountId),
         with: {
@@ -131,7 +124,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         orderBy: (table, { asc }) => [asc(table.phaseNumber)]
       }),
 
-      // 3. Get all phase trades once, then build grouped execution stats consistently
       db.query.Trade.findMany({
         where: (table, { exists, eq }) => exists(
           db.select({ id: schema.PhaseAccount.id })
@@ -155,7 +147,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         { status: 404 }
       )
     }
-    // Get the current active phase
     const currentPhase = phases.find(
       (phase: typeof phases[number]) => phase.phaseNumber === masterAccount.currentPhase
     )
@@ -188,7 +179,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const tradableCount = winningTrades + losingTrades
     const winRate = tradableCount > 0 ? (winningTrades / tradableCount) * 100 : 0
 
-    // Calculate current phase statistics - PHASE SPECIFIC!
     const currentPhaseTradeCount = currentPhase
       ? (groupedCounts.groupedCountByPhaseAccountId.get(currentPhase.id) || 0)
       : 0
@@ -201,7 +191,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       0
     )
 
-    // Determine next action based on phase status
     let nextAction = 'continue_trading'
     if (!currentPhase?.phaseId) {
       nextAction = 'set_phase_id'
@@ -211,7 +200,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       nextAction = 'failed'
     }
 
-    // Calculate drawdown data for the hook
     const drawdownData = {
       dailyDrawdownRemaining: 0,
       maxDrawdownRemaining: 0,
@@ -226,7 +214,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const currentBalance = masterAccount.accountSize + currentPhaseNetPnL
     const currentEquity = currentBalance
 
-    // Calculate drawdown based on current phase rules
     if (currentPhase) {
       // Calculate highest equity (high-water mark) - track peak balance
       // IMPORTANT: Use only CURRENT PHASE trades, not all phases!
@@ -234,7 +221,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       let highWaterMark = masterAccount.accountSize
       let runningBalance = masterAccount.accountSize
 
-      // Calculate high-water mark from CURRENT PHASE grouped trades in order
       // Grouped trades ensure partial closes are counted as single trades
       for (const trade of currentPhaseGroupedTrades as Array<{ pnl: number }>) {
         runningBalance += Number(trade.pnl || 0)
@@ -244,7 +230,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       drawdownData.highestEquity = highWaterMark
       drawdownData.currentEquity = currentEquity
 
-      // Get daily start balance from daily anchor (fallback to account size)
       const todayAnchor = await db.query.DailyAnchor.findFirst({
         where: (table, { eq, and, gte }) => and(
           eq(table.phaseAccountId, currentPhase.id),
@@ -256,23 +241,19 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       const dailyStartBalance = todayAnchor?.anchorEquity || masterAccount.accountSize
       drawdownData.dailyStartBalance = dailyStartBalance
 
-      // Daily drawdown calculation (from daily start balance)
       const dailyDrawdownLimit = currentPhase.dailyDrawdownPercent > 0
         ? (masterAccount.accountSize * currentPhase.dailyDrawdownPercent) / 100
         : 0
       const dailyDrawdownUsed = Math.max(0, dailyStartBalance - currentEquity)
       drawdownData.dailyDrawdownRemaining = Math.max(0, dailyDrawdownLimit - dailyDrawdownUsed)
 
-      // Max drawdown calculation (static vs trailing)
       let maxDrawdownBase: number
       let maxDrawdownLimit: number
 
       if (currentPhase.maxDrawdownType === 'trailing') {
-        // Trailing: Base on high-water mark
         maxDrawdownBase = highWaterMark
         maxDrawdownLimit = highWaterMark * (currentPhase.maxDrawdownPercent / 100)
       } else {
-        // Static: Base on starting balance
         maxDrawdownBase = masterAccount.accountSize
         maxDrawdownLimit = masterAccount.accountSize * (currentPhase.maxDrawdownPercent / 100)
       }
@@ -346,7 +327,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       })
     }
 
-    // Format account data as expected by the hook
     const accountData = {
       id: masterAccount.id,
       accountName: masterAccount.accountName,
@@ -578,7 +558,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Update the account
     const updatedAccount = (await db.update(schema.MasterAccount).set(updateData).where(and(
       eq(schema.MasterAccount.id, masterAccountId),
       eq(schema.MasterAccount.userId, internalUserId),
@@ -654,9 +633,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Delete all associated data in a transaction
     await db.transaction(async (tx) => {
-      // Get all phase IDs for this master account
       const phaseIds = existingAccount.PhaseAccount.map(
         (phase: (typeof existingAccount.PhaseAccount)[number]) => phase.id
       )
@@ -679,12 +656,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
         await tx.delete(schema.Payout).where(inArray(schema.Payout.phaseAccountId, phaseIds))
       }
 
-      // Delete all phase accounts
       if (phaseIds.length > 0) {
         await tx.delete(schema.PhaseAccount).where(eq(schema.PhaseAccount.masterAccountId, masterAccountId))
       }
 
-      // Finally delete the master account
       await tx.delete(schema.MasterAccount).where(and(
         eq(schema.MasterAccount.id, masterAccountId),
         eq(schema.MasterAccount.userId, internalUserId),

@@ -82,7 +82,6 @@ export default function UniversalProcessor({
   const [isUsingAI, setIsUsingAI] = useState(false)
   const [aiProcessingState, setAiProcessingState] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle')
 
-  // AI fallback processing
   const processWithAI = useCallback(async () => {
     if (csvData.length === 0) return
     
@@ -113,7 +112,6 @@ export default function UniversalProcessor({
         fullText += decoder.decode(value, { stream: true })
       }
 
-      // Parse the streamed JSON response
       const jsonMatch = fullText.match(/\[[\s\S]*\]/)
       if (jsonMatch) {
         const trades = JSON.parse(jsonMatch[0])
@@ -179,9 +177,7 @@ export default function UniversalProcessor({
     
     setProcessingResult(result)
     
-    // Auto-trigger AI if universal processing failed or found no trades
     if (!result.success || result.trades.length === 0) {
-      // Don't auto-trigger if we already tried AI
       if (!isUsingAI && csvData.length > 0) {
         toast.info('Auto-detection unsuccessful. Switching to AI processing...')
         processWithAI()

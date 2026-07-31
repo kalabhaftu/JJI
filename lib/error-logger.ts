@@ -47,9 +47,6 @@ export async function logError(input: SentryErrorInput): Promise<void> {
   }
 }
 
-/**
- * Log a server/API error with request context.
- */
 export async function logServerError(
   error: unknown,
   context: {

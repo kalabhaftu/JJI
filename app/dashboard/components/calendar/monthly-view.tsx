@@ -86,19 +86,14 @@ const DayCell = memo(function DayCell({
         // No trades - uses theme tokens so it works in any color scheme
         !hasTrades && isCurrentMonth && "bg-muted/30 dark:bg-[#0c0e12]/40 border-border/40 dark:border-border/20 hover:border-border/60 dark:hover:border-border/40",
 
-        // Profit - green tint via CSS token
         hasTrades && isProfit && "bg-long/10 border-long/20 hover:bg-long/20 hover:border-long/30 dark:bg-long/20 dark:border-long/35 dark:hover:bg-long/30 dark:hover:border-long/50",
 
-        // Loss - red tint via CSS token
         hasTrades && isLoss && "bg-short/10 border-short/20 hover:bg-short/20 hover:border-short/30 dark:bg-short/20 dark:border-short/35 dark:hover:bg-short/30 dark:hover:border-short/50",
 
-        // Breakeven - neutral muted tint
         hasTrades && isBreakEven && "bg-muted/40 border border-muted/50 text-foreground hover:bg-muted/50",
 
-        // Not current month
         !isCurrentMonth && "opacity-20 pointer-events-none",
         
-        // Today styling - applies to both mini and advanced calendar
         isTodayDate && isCurrentMonth && "ring-1 ring-primary ring-offset-0",
       )}
     >
@@ -329,7 +324,6 @@ export default function MonthlyView({
   const timezone = useUserStore((state) => state.timezone)
   const isCompactAdvancedCalendar = useMediaQuery('(max-width: 1439px)')
   const shouldUseWeekdayOnlyLayout = hideWeekends || (!isMiniCalendar && isCompactAdvancedCalendar)
-  // Sunday-start weeks
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 })
     const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 })
@@ -355,7 +349,6 @@ export default function MonthlyView({
     return weeksArray
   }, [currentDate, shouldUseWeekdayOnlyLayout])
 
-  // Start/End date bounds for journals
   const startBound = useMemo(() => startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 }), [currentDate])
   const endBound = useMemo(() => endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 }), [currentDate])
   const { journals } = useJournalData(startBound, endBound, null)
@@ -429,7 +422,6 @@ export default function MonthlyView({
               </div>
             </div>
           ) : (
-            /* Title on mobile view */
             <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1">
               Weekly Performance
             </div>

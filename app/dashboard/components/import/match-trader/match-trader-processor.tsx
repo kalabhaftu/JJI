@@ -37,7 +37,6 @@ const MatchTraderProcessor = ({
 
       const trades: TradeType[] = []
 
-      // Create case-insensitive header lookup helper
       const findHeaderIndex = (possibleNames: string[]) => {
         const normalizedHeaders = headers.map(h => h.toLowerCase().trim())
         for (const name of possibleNames) {
@@ -47,7 +46,6 @@ const MatchTraderProcessor = ({
         return -1
       }
 
-      // Parse date in multiple formats (ISO and DD/MM/YYYY)
       const parseDate = (dateStr: string): Date => {
         if (!dateStr) return new Date()
         
@@ -61,7 +59,6 @@ const MatchTraderProcessor = ({
         const ddmmyyyyMatch = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/)
         if (ddmmyyyyMatch) {
           const [, day, month, year, hour, minute, second] = ddmmyyyyMatch
-          // Create UTC date from components
           return new Date(Date.UTC(
             parseInt(year!), 
             parseInt(month!) - 1, // Month is 0-indexed
@@ -72,7 +69,6 @@ const MatchTraderProcessor = ({
           ))
         }
         
-        // Fallback to direct parsing
         return new Date(dateStr)
       }
 
@@ -94,7 +90,6 @@ const MatchTraderProcessor = ({
 
       for (const row of csvData) {
 
-        // Get values from row
         const entryDateStr = openTimeIdx !== -1 ? row[openTimeIdx] : null
         const closeDateStr = closeTimeIdx !== -1 ? row[closeTimeIdx] : null
         
@@ -102,16 +97,13 @@ const MatchTraderProcessor = ({
           continue // Skip invalid rows (not return null!)
         }
 
-        // Parse dates using smart parser
         const entryDate = parseDate(entryDateStr)
         const closeDate = parseDate(closeDateStr)
 
-        // Validate dates
         if (isNaN(entryDate.getTime()) || isNaN(closeDate.getTime())) {
           continue
         }
 
-        // Calculate time in position in seconds
         const timeInPosition = Math.round((closeDate.getTime() - entryDate.getTime()) / 1000)
 
         // Parse prices and handle potential string/number conversion
@@ -128,7 +120,6 @@ const MatchTraderProcessor = ({
         const stopLoss = stopLossRaw && parseFloat(stopLossRaw) !== 0 ? stopLossRaw : null
         const takeProfit = takeProfitRaw && parseFloat(takeProfitRaw) !== 0 ? takeProfitRaw : null
 
-        // Get instrument and side
         const instrument = symbolIdx !== -1 ? (row[symbolIdx] ?? '') : ''
         const side = sideIdx !== -1 ? (row[sideIdx] ?? '') : ''
         const tradeId = idIdx !== -1 ? (row[idIdx] ?? '') : ''
@@ -157,7 +148,6 @@ const MatchTraderProcessor = ({
           tradingModel: null,
           groupId: null,
           tags: null,
-          // Prisma optional fields
           symbol: null,
           entryTime: entryDate, // CRITICAL FIX: Set actual entry time
           exitTime: closeDate, // CRITICAL FIX: Set actual exit time for historical breach detection
@@ -176,7 +166,6 @@ const MatchTraderProcessor = ({
     processData()
   }, [csvData, headers, setProcessedTrades, accountNumber, user, supabaseUser])
 
-  // Show processing message when initially processing
   if (isProcessing) {
     return (
       <div className="flex items-center justify-center h-full">

@@ -134,7 +134,6 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
         throw new Error('Invalid response format: missing account or drawdown data')
       }
 
-      // Check for status changes and show notifications
       if (previousAccountRef.current && previousAccountRef.current.status !== accountData.status) {
         if (accountData.status === 'failed') {
           toast.error("Account Failed", {
@@ -147,7 +146,6 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
         }
       }
 
-      // Check for breach alerts
       if (drawdownData?.isBreached && (!previousDrawdownRef.current?.isBreached)) {
         toast.error("Drawdown Breach Alert!", {
           description: `Account ${accountData.accountName || accountData.number} has breached ${drawdownData.breachType?.replace('_', ' ')} limits.`,
@@ -176,21 +174,18 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
     await fetchAccountData(true)
   }, [fetchAccountData])
 
-  // Subscribe to realtime changes for MasterAccount, PhaseAccount, and Trade
   useDatabaseRealtime({
     userId: user?.id,
     enabled: enabled && !!accountId && !!user?.id,
     onAccountChange: (change) => {
       if (!accountId) return
       
-      // Handle MasterAccount changes
       if (change.table === 'MasterAccount') {
         const changedAccountId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
         if (changedAccountId === accountId) {
           fetchAccountData(false)
         }
       }
-      // Handle PhaseAccount changes
       else if (change.table === 'PhaseAccount') {
         const phaseMasterAccountId = (change.newRecord?.masterAccountId || change.oldRecord?.masterAccountId) as string | undefined
         if (phaseMasterAccountId === accountId) {
@@ -202,7 +197,6 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
     onTradeChange: (change) => {
       if (!accountId || !account) return
       
-      // Check if trade belongs to this account's phases
       const tradePhaseAccountId = (change.newRecord?.phaseAccountId || change.oldRecord?.phaseAccountId) as string | undefined
       if (tradePhaseAccountId) {
         const accountPhaseIds = account.phases.map(p => p.id)

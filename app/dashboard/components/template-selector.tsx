@@ -40,7 +40,6 @@ export function TemplateSelector() {
   const [nameDialogMode, setNameDialogMode] = useState<'create' | 'clone'>('create')
   const [templateName, setTemplateName] = useState('')
 
-  // Delete confirmation dialog state
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
 
   const handleSwitch = async (templateId: string) => {

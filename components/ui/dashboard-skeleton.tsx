@@ -3,11 +3,6 @@ import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent } from "@/components/ui/card"
 
-/**
- * Unified skeleton system - uses the same Skeleton component as
- * Accounts / Data / Journal pages for 1:1 visual parity.
- */
-
 function KpiSkeleton() {
   return (
     <Card className="border-border/24 bg-card/76">
@@ -260,7 +255,6 @@ export function TemplateAwareDashboardSkeleton({
   )
 }
 
-/** Generic page skeleton - header + content block */
 function PageSkeleton() {
   return (
     <div className="min-h-screen bg-background p-6">
@@ -278,7 +272,6 @@ function PageSkeleton() {
   )
 }
 
-/** Compact skeleton for small components (sidebar items, lists) */
 function CompactSkeleton({ rows = 3 }: { rows?: number }) {
   return (
     <div className="space-y-2">
@@ -296,7 +289,6 @@ function CompactSkeleton({ rows = 3 }: { rows?: number }) {
   )
 }
 
-/** Table page skeleton */
 function TableSkeleton() {
   return (
     <div className="space-y-4">
@@ -309,7 +301,6 @@ function TableSkeleton() {
   )
 }
 
-/** Reports page skeleton */
 function ReportsSkeleton() {
   return (
     <div className="space-y-4">

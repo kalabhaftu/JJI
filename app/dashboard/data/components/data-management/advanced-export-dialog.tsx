@@ -35,7 +35,6 @@ export function AdvancedExportDialog() {
   const [isOpen, setIsOpen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
-  // Selection states
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
   const [selectAllAccounts, setSelectAllAccounts] = useState(true)
@@ -52,7 +51,6 @@ export function AdvancedExportDialog() {
     [exportOptionsResponse?.data?.instruments]
   )
 
-  // Get unique accounts
   const accountsList = useMemo(() => {
     if (!allAccounts || optionsLoading) return []
     return allAccounts.map((account: ExportOptionAccount) => ({
@@ -67,7 +65,6 @@ export function AdvancedExportDialog() {
     return allInstruments
   }, [allInstruments])
 
-  // Initialize selections when lists load
   useEffect(() => {
     if (accountsList.length > 0 && selectedAccounts.length === 0 && selectAllAccounts) {
       setSelectedAccounts(accountsList.map(a => a.id))
@@ -149,7 +146,6 @@ export function AdvancedExportDialog() {
         throw new Error(error.error || 'Export failed')
       }
 
-      // Download the file
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -166,7 +162,6 @@ export function AdvancedExportDialog() {
       })
       setIsOpen(false)
     } catch (error) {
-      // Error shown via toast below
       toast.error('Export Failed', {
         id: 'export',
         description: 'Could not generate backup. Please try again.'

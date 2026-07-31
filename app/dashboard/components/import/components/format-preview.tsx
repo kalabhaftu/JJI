@@ -73,10 +73,8 @@ export function FormatPreview({
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const hasStartedRef = useRef(false);
 
-  // Transform headers using mappings
   const transformedHeaders = useMemo(() => transformHeaders(headers, mappings), [headers, mappings]);
 
-  // Calculate valid trades only when initialTrades changes
   const validTrades = useMemo(() =>
     initialTrades.filter(row => row.length > 0 && row[0] !== ""),
     [initialTrades]
@@ -104,12 +102,10 @@ export function FormatPreview({
     }
   });
 
-  // Update parent loading state
   useEffect(() => {
     setIsLoading(isProcessing);
   }, [isProcessing, setIsLoading]);
 
-  // Process trades when object updates
   useEffect(() => {
     if (object) {
       const newTrades = object.filter((trade): trade is NonNullable<typeof trade> => trade !== undefined) as any[];
@@ -123,12 +119,10 @@ export function FormatPreview({
       if (uniqueTrades.length > 0) {
         setProcessedTrades([...processedTrades, ...uniqueTrades]);
       }
-      // Auto-scroll after processing
       setTimeout(scrollToBottom, 100);
     }
   }, [object, processedTrades, setProcessedTrades]);
 
-  // Auto-process next batch when current batch completes
   useEffect(() => {
     if (!isProcessing && hasStartedRef.current && currentBatch < totalBatches - 1 && processedTrades.length > 0) {
       const expectedProcessed = (currentBatch + 1) * batchSize;
@@ -139,7 +133,6 @@ export function FormatPreview({
         const nextBatchEnd = (nextBatch + 1) * batchSize;
         const nextBatchRows = validTrades.slice(nextBatchStart, nextBatchEnd);
 
-        // Auto-advance to next batch
         const timer = setTimeout(() => {
           setCurrentBatch(nextBatch);
           submit({

@@ -20,7 +20,6 @@ const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 const isWinningTrade = (pnl: number, threshold: number) => classifyOutcome(pnl, threshold) === 'win'
 const isLosingTrade = (pnl: number, threshold: number) => classifyOutcome(pnl, threshold) === 'loss'
 
-// Generate an aggregated map of daily PnL and trade counts
 function getDailyAggregations(
   trades: Partial<TradeType>[],
   breakEvenThreshold: number = DEFAULT_BREAK_EVEN_THRESHOLD
@@ -471,8 +470,6 @@ export function calculatePerformanceScoreResult(
 
   return { chartData: radarData, overallScore: scoreResult.overallScore, hasData: true }
 }
-
-
 
 export function calculateTradingOverviewKpis(
   trades: Partial<TradeType>[],

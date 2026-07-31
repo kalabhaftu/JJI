@@ -23,7 +23,6 @@ const requestSchema = z.object({
 }).strict();
 
 export async function POST(req: NextRequest) {
-  // Apply rate limiting
   const rateLimitResult = await applyRateLimit(req, aiLimiter);
   if (rateLimitResult) return rateLimitResult;
 

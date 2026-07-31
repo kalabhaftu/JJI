@@ -19,13 +19,9 @@ interface FetchError {
 }
 
 export interface FetchOptions extends RequestInit {
-  /** Request timeout in milliseconds */
   timeout?: number
-  /** Number of retry attempts for transient failures */
   retries?: number
-  /** Whether to retry on failure */
   shouldRetry?: boolean
-  /** Custom retry condition */
   retryCondition?: (error: FetchError, attempt: number) => boolean
 }
 
@@ -62,23 +58,6 @@ function getRetryDelay(attempt: number): number {
   return RETRY_BASE_DELAY * Math.pow(RETRY_MULTIPLIER, attempt - 1)
 }
 
-/**
- * Fetch with automatic timeout, retry, and error handling
- * 
- * @param url - URL to fetch
- * @param options - Fetch options with additional configurations
- * @returns Promise with structured result
- * 
- * @example
- * ```typescript
- * const { data, error } = await fetchWithError<User[]>('/api/users')
- * if (error) {
- *   logger.error('Failed to fetch:', error.message)
- *   return
- * }
- * // data is User[]
- * ```
- */
 export async function fetchWithError<T = unknown>(
   url: string,
   options: FetchOptions = {}
@@ -97,7 +76,6 @@ export async function fetchWithError<T = unknown>(
   while (attempt <= (shouldRetry ? retries : 0)) {
     attempt++
     
-    // Create abort controller for timeout
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
@@ -113,7 +91,6 @@ export async function fetchWithError<T = unknown>(
 
       clearTimeout(timeoutId)
 
-      // Parse response
       let data: T | null = null
       const contentType = response.headers.get('content-type')
       
@@ -122,12 +99,10 @@ export async function fetchWithError<T = unknown>(
           data = await response.json()
         } catch (error) {
           Sentry.captureException(error, { extra: { route: 'lib/utils/fetch-with-error', phase: 'parseJSON' } })
-          // Response is not valid JSON
           data = null
         }
       }
 
-      // Check if response is ok
       if (!response.ok) {
         const error = createFetchError(
           (data as any)?.error || (data as any)?.message || `Request failed with status ${response.status}`,
@@ -138,7 +113,6 @@ export async function fetchWithError<T = unknown>(
           }
         )
 
-        // Check if we should retry
         const shouldRetryThis = retryCondition 
           ? retryCondition(error, attempt)
           : (shouldRetry && error.isRetryable && attempt <= retries)
@@ -157,7 +131,6 @@ export async function fetchWithError<T = unknown>(
         }
       }
 
-      // Success
       return {
         data,
         error: null,
@@ -168,7 +141,6 @@ export async function fetchWithError<T = unknown>(
     } catch (err) {
       clearTimeout(timeoutId)
 
-      // Handle abort (timeout)
       if (err instanceof Error && err.name === 'AbortError') {
         const error = createFetchError(
           'Request timed out',
@@ -190,7 +162,6 @@ export async function fetchWithError<T = unknown>(
         }
       }
 
-      // Handle network errors
       const error = createFetchError(
         err instanceof Error ? err.message : 'Network error',
         'NETWORK_ERROR',
@@ -216,7 +187,6 @@ export async function fetchWithError<T = unknown>(
     }
   }
 
-  // All retries exhausted
   return {
     data: null,
     error: lastError || createFetchError('Request failed after retries', 'MAX_RETRIES'),

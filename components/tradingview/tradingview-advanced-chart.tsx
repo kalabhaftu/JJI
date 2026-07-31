@@ -22,7 +22,6 @@ interface TradingViewAdvancedChartProps {
   className?: string
 }
 
-// TradingView Charting Library types
 declare global {
   interface Window {
     TradingView: {
@@ -42,7 +41,6 @@ export function TradingViewAdvancedChart({
   const [error, setError] = useState<string | null>(null)
   const { resolvedTheme } = useTheme()
 
-  // Initialize the TradingView Chart using iframe approach
   const initializeChart = useCallback(() => {
     if (!containerRef.current) {
       setError('Chart container not available')
@@ -56,7 +54,6 @@ export function TradingViewAdvancedChart({
 
       containerRef.current.innerHTML = ''
 
-      // Create iframe-based TradingView widget
       const iframe = document.createElement('iframe')
       iframe.width = '100%'
       iframe.height = '100%'
@@ -66,7 +63,6 @@ export function TradingViewAdvancedChart({
       iframe.style.margin = '0'
       iframe.style.padding = '0'
 
-      // Build TradingView embed URL with basic configuration
       const baseUrl = 'https://www.tradingview.com/widgetembed/'
       const params = new URLSearchParams({
         frameElementId: 'tradingview_advanced_chart',
@@ -119,9 +115,7 @@ export function TradingViewAdvancedChart({
     }
   }, [tradeData, resolvedTheme])
 
-  // Initialize the TradingView Chart using iframe
   useEffect(() => {
-    // Capture current container ref for cleanup
     const container = containerRef.current
     
     const timer = setTimeout(() => {

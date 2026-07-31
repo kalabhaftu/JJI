@@ -37,7 +37,6 @@ type PnlFilter = 'all' | 'wins' | 'losses'
 
 import useSWR from 'swr'
 
-// Custom fetcher for Data Management
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export default function TradeTable() {
@@ -66,7 +65,6 @@ export default function TradeTable() {
   const [selectAll, setSelectAll] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // URL-based view/edit panel state
   const activeView = searchParams.get('view') as 'details' | 'edit' | null
   const activeTradeId = searchParams.get('tradeId')
   const selectedTradeForView = useMemo(() => {
@@ -82,7 +80,6 @@ export default function TradeTable() {
     router.replace('/dashboard/data?tab=trades')
   }, [router])
 
-  // Modern Filters
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const [sideFilter, setSideFilter] = useState<SideFilter>('all')
@@ -90,7 +87,6 @@ export default function TradeTable() {
   const [instrumentSearchOpen, setInstrumentSearchOpen] = useState(false)
   const [accountSearchOpen, setAccountSearchOpen] = useState(false)
 
-  // Get unique instruments and accounts for filter options
   const availableInstruments = useMemo<string[]>(() => {
     return Array.from(new Set(formattedTrades.map((t: ExtendedTrade) => t.instrument).filter(Boolean)))
   }, [formattedTrades])
@@ -108,7 +104,6 @@ export default function TradeTable() {
     // we'll treat the current page of trades as the source of truth for display.
     let list = [...formattedTrades]
 
-    // Apply client-side filters
     if (selectedInstruments.length > 0) {
       list = list.filter(trade => selectedInstruments.includes(trade.instrument))
     }
@@ -161,7 +156,6 @@ export default function TradeTable() {
     let loadingToastId: string | number | null = null
 
     try {
-      // Show loading toast and store the ID
       loadingToastId = toast.info("Deleting Trades", {
         description: `Deleting ${ids.length} trade(s)...`,
         duration: Infinity
@@ -169,24 +163,20 @@ export default function TradeTable() {
 
       await deleteTradesByIdsAction(ids)
 
-      // Refresh trades data
       refetchTrades()
 
       // CRITICAL: Force router refresh to update UI everywhere
       router.refresh()
 
-      // Dismiss loading toast before showing success
       if (loadingToastId) {
         toast.dismiss(loadingToastId)
       }
 
-      // Show success toast
       toast.success("Trades Deleted", {
         description: `Successfully deleted ${ids.length} trade(s).`,
       })
     } catch (error) {
 
-      // Dismiss loading toast before showing error
       if (loadingToastId) {
         toast.dismiss(loadingToastId)
       }
@@ -234,7 +224,6 @@ export default function TradeTable() {
     if (!selectedTradeForEdit) return
 
     try {
-      // Update the trade with new data via direct action
       await updateTradeAction(selectedTradeForEdit.id, updatedTrade)
       refetchTrades()
       router.refresh()

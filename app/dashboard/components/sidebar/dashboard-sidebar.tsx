@@ -91,7 +91,6 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
       )
     }
     
-    // DxFeed
     if (dxfeedSyncContext && dxfeedSyncContext.accounts.length > 0) {
       syncPromises.push(
         dxfeedSyncContext.performSyncForAllAccounts()

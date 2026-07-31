@@ -84,7 +84,6 @@ export default function AccountDetailPage() {
     enabled: !!accountId
   })
 
-  // Fetch complete data
   const fetchCompleteData = useCallback(async () => {
     setIsLoadingData(true)
     setDataError(null)
@@ -118,7 +117,6 @@ export default function AccountDetailPage() {
     }
   }, [realtimeError, router])
 
-  // Initial data fetch
   useEffect(() => {
     if (realtimeAccount && accountId && !hasFetchedDataRef.current) {
       hasFetchedDataRef.current = true
@@ -126,12 +124,10 @@ export default function AccountDetailPage() {
     }
   }, [realtimeAccount, accountId, fetchCompleteData])
 
-  // Subscribe to realtime changes for trades and payouts
   useDatabaseRealtime({
     userId: user?.id,
     enabled: !!accountId && !!user?.id,
     onTradeChange: (change) => {
-      // Refresh trades when trade changes for this account's phases
       if (realtimeAccount) {
         const tradePhaseAccountId = (change.newRecord?.phaseAccountId || change.oldRecord?.phaseAccountId) as string | undefined
         if (tradePhaseAccountId) {
@@ -143,7 +139,6 @@ export default function AccountDetailPage() {
       }
     },
     onAccountChange: (change) => {
-      // Refresh payouts when PhaseAccount or MasterAccount changes
       if (change.table === 'PhaseAccount' || change.table === 'MasterAccount') {
         const changedId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
         if (change.table === 'MasterAccount' && changedId === accountId) {
@@ -158,7 +153,6 @@ export default function AccountDetailPage() {
     }
   })
 
-  // Sync realtime data
   useEffect(() => {
     if (realtimeAccount) {
       const isFunded = isFundedPhase(realtimeAccount.evaluationType, realtimeAccount.currentPhase?.phaseNumber)
@@ -245,7 +239,6 @@ export default function AccountDetailPage() {
     }
   }, [phaseSummaries])
 
-  // Computed values
   const stats = useMemo(() => {
     if (phaseSummaries.size > 0) {
       const values = Array.from(phaseSummaries.values())
@@ -301,12 +294,10 @@ export default function AccountDetailPage() {
     }
   }
 
-  // Loading state
   if (isLoading || (!accountData && !realtimeError)) {
     return <DetailPageSkeleton />
   }
 
-  // Error states
   if (realtimeError) {
     if (realtimeError.includes('404') || realtimeError.includes('not found')) {
       return (

@@ -49,7 +49,6 @@ export function CommissionAnalysis({ trades }: CommissionAnalysisProps) {
     const commissionPct = totalGrossPnl !== 0 ? (totalCommission / Math.abs(totalGrossPnl)) * 100 : 0
     const avgPerTrade = trades.length > 0 ? totalCommission / trades.length : 0
 
-    // Top instruments by commission
     const topInstruments = Object.entries(byInstrument)
       .map(([name, data]) => ({
         name,

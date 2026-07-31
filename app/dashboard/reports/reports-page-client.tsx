@@ -92,7 +92,6 @@ interface ReportsPageClientProps {
     initialPropFirmData?: PropFirmSummaryDTO | null
 }
 
-// Session Block for session metrics tab
 function SessionBlock({
     name,
     range,
@@ -169,7 +168,6 @@ export default function ReportsPageClient({
     const user = useUserStore(state => state.user)
     const pnlDisplayMode = normalizePnlDisplayMode(user?.pnlDisplayMode)
 
-    // Filter State
     const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: subDays(new Date(), 90),
@@ -179,7 +177,6 @@ export default function ReportsPageClient({
     const [isExporting, setIsExporting] = useState(false)
     const [activePreset, setActivePreset] = useState<string>('90D')
 
-    // Advanced Filters State
     const [advancedFilters, setAdvancedFilters] = useState({
         symbol: 'all',
         session: 'all',
@@ -204,7 +201,6 @@ export default function ReportsPageClient({
         ...(initialReportKey !== undefined && { initialDataKey: initialReportKey })
     })
 
-    // Extract server-computed data
     const tradingActivity = reportData?.tradingActivity ?? null
     const psychMetrics = reportData?.psychMetrics ?? null
     const sessionPerformance = reportData?.sessionPerformance ?? null
@@ -242,7 +238,6 @@ export default function ReportsPageClient({
         }
     }
 
-    // Export metrics as CSV spreadsheet
     const handleExportCSV = useCallback(() => {
         if (!tradingActivity || !psychMetrics) {
             toast.error('No metrics to export')
@@ -252,7 +247,6 @@ export default function ReportsPageClient({
         setIsExporting(true)
         try {
             const rows: [string, string | number][] = [
-                // Performance
                 ['--- PERFORMANCE ---', ''],
                 ['Net P&L', psychMetrics.totalNetPnL],
                 ['Win Rate (%)', tradingActivity.winRate],
@@ -264,7 +258,6 @@ export default function ReportsPageClient({
                 ['Recovery Factor', psychMetrics.recoveryFactor],
                 ['R:R Efficiency', psychMetrics.rrEfficiency],
                 ['Consistency Score (%)', psychMetrics.consistencyScore],
-                // Trading Activity
                 ['', ''],
                 ['--- TRADING ACTIVITY ---', ''],
                 ['Total Trades', tradingActivity.totalTrades],
@@ -275,7 +268,6 @@ export default function ReportsPageClient({
                 ['Avg Win ($)', psychMetrics.avgWin],
                 ['Avg Loss ($)', psychMetrics.avgLoss],
                 ['Avg Holding Time', psychMetrics.avgHoldingTime],
-                // Best / Worst
                 ['', ''],
                 ['--- BEST & WORST ---', ''],
                 ['Most Traded Day', tradingActivity.mostTradedDay || '-'],
@@ -302,14 +294,12 @@ export default function ReportsPageClient({
             URL.revokeObjectURL(url)
             toast.success('Metrics exported successfully!')
         } catch (err) {
-            // Error shown via toast
             toast.error('Failed to export metrics')
         } finally {
             setIsExporting(false)
         }
     }, [tradingActivity, psychMetrics])
 
-    // Screenshot page snapshot
     const handlePageSnapshot = useCallback(async () => {
         const element = document.getElementById('report-content')
         if (!element) return
@@ -352,7 +342,6 @@ export default function ReportsPageClient({
                 toast.success('Page snapshot saved!')
             }, 'image/png')
         } catch (err) {
-            // Error shown via toast
             toast.error('Failed to capture snapshot')
         } finally {
             setIsExporting(false)
@@ -390,11 +379,9 @@ export default function ReportsPageClient({
             const responseData = await res.json()
             const reportData = responseData.data || {}
             
-            // Copy to clipboard
             await navigator.clipboard.writeText(reportData.url || `${window.location.origin}/reports/shared/${reportData.slug}`)
             toast.success('Shareable link copied to clipboard!')
         } catch (error) {
-            // Error shown via toast
             toast.error('Failed to create shareable link.')
         } finally {
             setIsExporting(false)

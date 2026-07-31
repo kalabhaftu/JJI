@@ -81,7 +81,6 @@ export default function AccountSettingsPage() {
   const [activeTab, setActiveTab] = useState('general')
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   
-  // Form state
   const [formData, setFormData] = useState({
     name: '',
     notes: '',
@@ -90,7 +89,6 @@ export default function AccountSettingsPage() {
 
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = useCallback(async () => {
     try {
       setIsLoading(true)
@@ -106,7 +104,6 @@ export default function AccountSettingsPage() {
         setAccount(accountData)
         setPhases(data.data.phases || [])
         
-        // Initialize form data
         setFormData({
           name: accountData.name || '',
           notes: accountData.notes || '',
@@ -124,7 +121,6 @@ export default function AccountSettingsPage() {
     }
   }, [accountId])
 
-  // Load account on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()

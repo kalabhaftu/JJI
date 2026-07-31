@@ -40,7 +40,6 @@ export default function NewTradePage() {
 
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = useCallback(async () => {
     try {
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
@@ -64,7 +63,6 @@ export default function NewTradePage() {
     }
   }, [accountId])
 
-  // Load account on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()

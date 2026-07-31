@@ -1,7 +1,3 @@
-/**
- * Centralized upload service for handling media uploads
- * Fixes inconsistent bucket handling and provides robust fallbacks
- */
 
 import { createClient } from '@/lib/supabase'
 import * as Sentry from '@sentry/nextjs'
@@ -71,7 +67,6 @@ class MediaUploadService {
       }
     }
 
-    // Minimum size check (avoid empty files)
     if (file.size < 100) {
       return {
         valid: false,
@@ -89,13 +84,9 @@ class MediaUploadService {
     return { valid: true }
   }
 
-  /**
-   * Validate file content by checking magic bytes (file signature)
-   * This prevents malicious files disguised with wrong extensions
-   */
+  // Prevents malicious files disguised with wrong extensions
   private async validateMagicBytes(file: File): Promise<{ valid: boolean; error?: string }> {
     try {
-      // Read first 12 bytes (enough for all image signatures)
       const arrayBuffer = await file.slice(0, 12).arrayBuffer()
       const bytes = new Uint8Array(arrayBuffer)
 
@@ -134,8 +125,6 @@ class MediaUploadService {
       const timestamp = Date.now()
       const randomId = Math.random().toString(36).substr(2, 6)
       
-      // Format: originalname_timestamp_randomid.ext
-      // This preserves the original name while ensuring uniqueness
       const fileName = `${nameWithoutExt}_${timestamp}_${randomId}.${fileExtension}`
 
       const filePath = buildTradeImagePath({

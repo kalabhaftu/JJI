@@ -27,7 +27,6 @@ function getReferenceValues(account: any, data: any) {
     ? highWaterMark - (highWaterMark * (Number(phase.maxDrawdownPercent || 0) / 100))
     : accountSize - maxLossLimit
 
-  // Current balance = last growth point or accountSize
   const growthPoints = data.growth || []
   const lastPoint = growthPoints[growthPoints.length - 1]
   const currentBalance = lastPoint ? Number(lastPoint.balance) : accountSize
@@ -98,7 +97,6 @@ function getYAxisConfig(chartData: any[], refs: ReturnType<typeof getReferenceVa
 
   const tickSet = new Set<number>(keyRefs)
 
-  // Find a nice step size
   const rawStep = range / 6
   let step = 10
   if (rawStep > 5000) step = 5000

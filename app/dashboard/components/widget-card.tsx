@@ -46,7 +46,6 @@ function getWidgetDescription(title: string): string | null {
 
 interface WidgetCardProps {
   children: React.ReactNode
-  /** Widget title shown in the header */
   title?: string
   headerRight?: React.ReactNode
   /** Whether this is a KPI card (compact, no border-radius padding) */
@@ -136,7 +135,6 @@ export function WidgetCard({
     )
   }
 
-  /* ── DESKTOP: full glass/shadow rendering ──────────────────────── */
   if (isKpi) {
     return (
       <div
@@ -235,10 +233,6 @@ export function ChartTooltip({ active, payload, label }: any) {
   )
 }
 
-/**
- * Standard chart color constants matching reports page.
- * CSS var strings for stylesheet usage.
- */
 export const CHART_COLORS = {
   bullish: 'hsl(var(--chart-bullish))',
   bearish: 'hsl(var(--chart-bearish))',

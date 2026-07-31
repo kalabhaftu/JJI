@@ -80,7 +80,6 @@ export function EditBacktestDialog({
 
   const watchedModel = watch('model')
 
-  // Initialize form with backtest data and cleanup state
   useEffect(() => {
     if (backtest && isOpen) {
       reset({
@@ -96,7 +95,6 @@ export function EditBacktestDialog({
       setFullscreenImage(null)
     }
 
-    // Cleanup when dialog closes
     if (!isOpen) {
       setFullscreenImage(null)
     }
@@ -181,7 +179,6 @@ export function EditBacktestDialog({
       }
     }
 
-    // Normal close
     onClose()
     reset()
     setFullscreenImage(null)

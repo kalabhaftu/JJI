@@ -256,11 +256,9 @@ async function getTradesAction(userId: string | null = null, options?: {
       })) as any
     } catch (error) {
       if (error instanceof Error) {
-        // Handle table doesn't exist error
         if (error.message.includes('does not exist')) {
           return []
         }
-        // Handle database connection errors
         if (error.message.includes("Can't reach database server") ||
           error.message.includes('P1001') ||
           error.message.includes('connection') ||
@@ -268,13 +266,10 @@ async function getTradesAction(userId: string | null = null, options?: {
           return []
         }
       }
-      // Unexpected error occurred
       return []
     }
 
   } catch (error) {
-    // Error in getTradesAction
-    // Return empty array if there's any error
     return []
   }
 }

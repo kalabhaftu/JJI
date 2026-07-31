@@ -5,17 +5,6 @@ import * as Sentry from '@sentry/nextjs'
 import { format, startOfWeek, subWeeks } from 'date-fns'
 import { useUserStore } from '@/store/user-store'
 
-/**
- * Invisible component that triggers weekly AI review generation.
- * Runs once per session on weekends/Mondays. No UI render.
- *
- * Flow:
- * 1. Wait for an authenticated user
- * 2. Check sessionStorage using a user/week specific key
- * 3. Check if today is Saturday, Sunday, or Monday
- * 4. Check if user has autoGenerateInsights enabled
- * 5. Call POST /api/v1/weekly-review (idempotent)
- */
 export function WeeklyReviewTrigger() {
   const checkedRef = useRef(false)
   const retryCountRef = useRef(0)

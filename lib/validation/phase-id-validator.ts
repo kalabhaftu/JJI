@@ -1,7 +1,3 @@
-/**
- * Internal Phase ID Validation System
- * Prevents duplicate phase IDs within a user's active accounts
- */
 
 import { db } from '@/lib/db/client'
 import { PhaseAccount } from '@/lib/db/schema'
@@ -17,10 +13,7 @@ export interface PhaseIdValidationResult {
   }
 }
 
-/**
- * Validates that a phase ID is not already in use by the user's active phases
- * This prevents accidental linking of trades to wrong accounts
- */
+// Prevents accidental linking of trades to wrong accounts
 export async function validatePhaseId(
   userId: string,
   phaseId: string,
@@ -29,7 +22,6 @@ export async function validatePhaseId(
   
 
   try {
-    // Trim and normalize the phase ID
     const normalizedPhaseId = phaseId.trim()
     
     if (!normalizedPhaseId) {
@@ -39,7 +31,6 @@ export async function validatePhaseId(
       }
     }
 
-    // Check for existing phase accounts with this ID
     const existingPhaseAccountsRaw = await db.query.PhaseAccount.findMany({
       where: and(
         eq(PhaseAccount.phaseId, normalizedPhaseId),
@@ -76,7 +67,6 @@ export async function validatePhaseId(
       }
     }
 
-
     return {
       isValid: true
     }
@@ -90,9 +80,6 @@ export async function validatePhaseId(
   }
 }
 
-/**
- * Validates multiple phase IDs at once (for account creation with multiple phases)
- */
 async function validateMultiplePhaseIds(
   userId: string,
   phaseIds: { phaseNumber: number; phaseId: string }[],
@@ -101,7 +88,6 @@ async function validateMultiplePhaseIds(
   
   const results: { [key: number]: PhaseIdValidationResult } = {}
   
-  // Check for duplicates within the provided IDs
   const providedIds = new Set<string>()
   const duplicatesWithinSet = new Set<string>()
   
@@ -113,11 +99,9 @@ async function validateMultiplePhaseIds(
     providedIds.add(normalizedId)
   }
   
-  // Validate each phase ID
   for (const { phaseNumber, phaseId } of phaseIds) {
     const normalizedId = phaseId.trim()
     
-    // Check for duplicates within the provided set first
     if (duplicatesWithinSet.has(normalizedId)) {
       results[phaseNumber] = {
         isValid: false,
@@ -126,7 +110,6 @@ async function validateMultiplePhaseIds(
       continue
     }
     
-    // Validate against database
     results[phaseNumber] = await validatePhaseId(userId, normalizedId, excludeAccountId)
   }
   

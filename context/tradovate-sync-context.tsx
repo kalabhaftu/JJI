@@ -8,23 +8,18 @@ import { DEFAULT_INCLUDED_FEE_TYPES } from '@/app/dashboard/components/import/tr
 import logger from '@/lib/logger'
 
 interface TradovateSyncContextType {
-  // Core sync management
   performSyncForAccount: (accountId: string) => Promise<{ success: boolean; message: string } | undefined>
   performSyncForAllAccounts: () => Promise<void>
   
-  // State management
   isAutoSyncing: boolean
   
-  // Account management
   accounts: SynchronizationType[]
   loadAccounts: () => Promise<void>
   deleteAccount: (accountId: string) => Promise<void>
   
-  // Per-account fee config (stored in DB)
   getIncludedFeeTypesForAccount: (accountId: string) => Record<string, boolean>
   updateIncludedFeeTypesForAccount: (accountId: string, includedFeeTypes: Record<string, boolean>) => Promise<{ success: boolean; error?: string }>
   
-  // Auto-sync functionality
   syncInterval: number
   setSyncInterval: (interval: number) => void
   enableAutoSync: boolean
@@ -50,7 +45,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
   const { refreshTrades } = useData()
 
-  // Normalize dates and fee config returned from API
   const normalizeSynchronization = useCallback(
     (sync: any): SynchronizationType => ({
       ...sync,
@@ -64,7 +58,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     []
   )
 
-  // Load accounts from API
   const loadAccounts = useCallback(async () => {
     if (disabled) {
       setAccounts([])
@@ -120,7 +113,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     })
   }, [disabled])
 
-  // Perform sync for a specific account
   const performSyncForAccount = useCallback(async (accountId: string) => {
     if (disabled) {
       return { success: false, message: 'Tradovate sync is disabled in demo mode' }
@@ -163,13 +155,11 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
           throw new Error(errorMsg)
         }
 
-        // Track progress
         const savedCount = payload.savedCount || 0
         const ordersCount = payload.ordersCount || 0
 
         logger.debug({ accountId, savedCount, ordersCount }, 'Tradovate sync complete')
 
-        // Show success message
         let successMessage: string
         if (savedCount > 0) {
           successMessage = `Sync complete: ${savedCount} trades saved, ${ordersCount} orders processed for account ${accountId}.`
@@ -179,7 +169,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
           successMessage = `Sync complete: No orders found for account ${accountId}.`
         }
 
-        // Refresh the accounts list to update last sync time
         await loadAccounts()
         await refreshTrades()
 
@@ -202,7 +191,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
   }, [accounts, disabled, refreshTrades, loadAccounts])
 
-  // Perform sync for all accounts
   const performSyncForAllAccounts = useCallback(async () => {
     if (disabled) return
     if (isAutoSyncing) {
@@ -220,7 +208,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       // Sync accounts sequentially to avoid overwhelming the API
       for (const account of validAccounts) {
         await performSyncForAccount(account.accountId)
-        // Small delay between accounts
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
 
@@ -231,7 +218,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
   }, [disabled, isAutoSyncing, accounts, performSyncForAccount])
 
-  // Auto-sync checking
   const checkAndPerformSyncs = useCallback(async () => {
     if (disabled) return
     if (!enableAutoSync || isAutoSyncing) return
@@ -239,9 +225,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     try {
       const now = Date.now()
       
-      // Check each account's last sync time
       for (const account of accounts) {
-        // If we don't have a token, skip this account
         if (!account.token) continue
 
         const lastSyncTime = new Date(account.lastSyncedAt).getTime()
@@ -257,7 +241,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
   }, [disabled, enableAutoSync, isAutoSyncing, accounts, syncInterval, performSyncForAccount]);
 
-  // Auto-sync checking interval
   useEffect(() => {
     if (!enableAutoSync) return
 
@@ -267,36 +250,29 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       checkAndPerformSyncs()
     }, intervalMs)
 
-    // Cleanup on unmount
     return () => {
       clearInterval(intervalId)
     }
   }, [enableAutoSync, checkAndPerformSyncs])
 
-  // Load accounts on mount
   useEffect(() => {
     loadAccounts()
   }, [loadAccounts])
 
   return (
     <TradovateSyncContext.Provider value={{
-      // Core sync management
       performSyncForAccount,
       performSyncForAllAccounts,
       
-      // State management
       isAutoSyncing,
       
-      // Account management
       accounts,
       loadAccounts,
       deleteAccount,
       
-      // Per-account fee config
       getIncludedFeeTypesForAccount,
       updateIncludedFeeTypesForAccount,
       
-      // Auto-sync functionality
       syncInterval,
       setSyncInterval,
       enableAutoSync,

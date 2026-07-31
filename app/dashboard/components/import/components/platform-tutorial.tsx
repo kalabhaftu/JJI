@@ -15,24 +15,20 @@ interface PlatformTutorialProps {
 export function PlatformTutorial({ selectedPlatform, setIsOpen }: PlatformTutorialProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
 
-  // Reset and handle video when platform changes
   useEffect(() => {
     const video = videoRef.current
     if (!video) return
 
-    // Reset video state
     video.pause()
     video.currentTime = 0
 
     if (selectedPlatform?.videoUrl) {
-      // Load and play the new video
       video.load()
       const playVideo = () => {
         video.play().catch((error) => {
         })
       }
 
-      // Play video when it's ready
       if (video.readyState >= 2) {
         playVideo()
       } else {

@@ -1,7 +1,3 @@
-/**
- * NOWPayments API Client
- * Server-only service for creating invoices and verifying IPN callbacks.
- */
 
 import crypto from 'crypto'
 import logger from "@/lib/logger"

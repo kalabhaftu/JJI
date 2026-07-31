@@ -97,7 +97,6 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
     return () => setIsMounted(false)
   }, [])
 
-  // Fetch existing note for this date
   useEffect(() => {
     if (!date) return
 
@@ -131,7 +130,6 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
 
     try {
       if (note) {
-        // Update existing
         const res = await fetch(`/api/v1/journal/daily/${note.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -143,7 +141,6 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         queryClient.invalidateQueries({ queryKey: ['journal-data'] })
         toast.success('Daily note updated')
       } else {
-        // Create new
         const res = await fetch('/api/v1/journal/daily', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

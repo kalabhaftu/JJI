@@ -2,7 +2,7 @@ import { invalidateAccountCache, bumpUserCacheVersion } from './helpers'
 import { db } from '../db/client'
 
 export async function invalidateTradesCache(userId: string, accountId?: string | null) {
-  // Always bump user cache version so all versioned trade lists and analytics are invalidated immediately
+  // Version bump invalidates all versioned trade lists and analytics immediately
   await bumpUserCacheVersion(userId)
 
   if (accountId) {
@@ -10,7 +10,6 @@ export async function invalidateTradesCache(userId: string, accountId?: string |
     return
   }
 
-  // If no account ID is provided, invalidate all accounts for the user
   const accounts = await db.query.Account.findMany({
     where: (table, { eq }) => eq(table.userId, userId),
     columns: { id: true }

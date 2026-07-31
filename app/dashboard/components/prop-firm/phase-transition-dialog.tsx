@@ -64,10 +64,6 @@ export function PhaseTransitionDialog({
   const [isTransitioning, setIsTransitioning] = useState(false)
   const router = useRouter()
 
-  /**
-   * Helper function to determine if a phase number represents the funded stage
-   * based on the evaluation type.
-   */
   const isFundedPhase = (phaseNumber: number): boolean => {
     switch (evaluationType) {
       case 'Two Step':
@@ -125,7 +121,6 @@ export function PhaseTransitionDialog({
 
       // Wait a bit before refreshing to allow dialog to close
       setTimeout(() => {
-        // Call success callback to refresh data
         onSuccess?.()
       }, 500)
 

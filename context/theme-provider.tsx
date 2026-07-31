@@ -109,29 +109,24 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setMounted(true)
 
-    // Restore theme from localStorage as immediate source
     const savedTheme = localStorage.getItem('theme')
     const resolved = isTheme(savedTheme) ? savedTheme : 'dark'
     setThemeState(resolved)
     applyTheme(resolved)
 
-    // Restore accent pack from localStorage as immediate source
     const savedAccent = localStorage.getItem('accentPack')
     const resolvedAccent = isAccentPack(savedAccent) ? savedAccent : 'classic'
     setAccentPackState(resolvedAccent)
     applyAccentClass(resolvedAccent)
 
-    // Restore widget style from localStorage
     const savedWidget = localStorage.getItem('widgetStyle')
     const resolvedWidget = isWidgetStyle(savedWidget) ? savedWidget : 'default'
     setWidgetStyleState(resolvedWidget)
 
-    // Restore chart style from localStorage
     const savedChart = localStorage.getItem('chartStyle')
     const resolvedChart = isChartStyle(savedChart) ? savedChart : 'smooth'
     setChartStyleState(resolvedChart)
 
-    // Listen for system preference changes when in system mode
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     const handler = () => {
       const current = localStorage.getItem('theme') as Theme | null
@@ -141,7 +136,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return () => mq.removeEventListener('change', handler)
   }, [applyTheme])
 
-  // Sync with user profile when it loads from DB
   useEffect(() => {
     if (mounted && user) {
       if (user.theme) {

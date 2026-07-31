@@ -24,18 +24,15 @@ interface ProcessingStats {
 }
 
 interface RithmicSyncState {
-  // Sync settings
   syncInterval: SyncInterval
   setSyncInterval: (interval: SyncInterval) => void
 
-  // Message handling
   lastMessage: any
   messageHistory: any[]
   setLastMessage: (message: any) => void
   addMessageToHistory: (message: any) => void
   clearMessageHistory: () => void
 
-  // Progress tracking
   accountsProgress: Record<string, AccountProgress>
   currentAccount: string | null
   processingStats: ProcessingStats
@@ -45,17 +42,14 @@ interface RithmicSyncState {
   setProcessingStats: (stats: ProcessingStats) => void
   resetProcessingState: () => void
 
-  // Account management
   selectedAccounts: string[]
   availableAccounts: { account_id: string; fcm_id: string }[]
   setSelectedAccounts: (accounts: string[]) => void
   setAvailableAccounts: (accounts: { account_id: string; fcm_id: string }[]) => void
 
-  // State management
   step: 'credentials' | 'select-accounts' | 'processing'
   setStep: (step: 'credentials' | 'select-accounts' | 'processing') => void
 
-  // Auto-sync functionality
   isAutoSyncing: boolean
   setIsAutoSyncing: (syncing: boolean) => void
 }
@@ -63,11 +57,9 @@ interface RithmicSyncState {
 export const useRithmicSyncStore = create<RithmicSyncState>()(
   persist(
     (set, get) => ({
-      // Sync settings
       syncInterval: 60, // Default to 60 minutes
       setSyncInterval: (interval) => set({ syncInterval: interval }),
 
-      // Message handling
       lastMessage: null,
       messageHistory: [],
       setLastMessage: (message) => set({ lastMessage: message }),
@@ -76,7 +68,6 @@ export const useRithmicSyncStore = create<RithmicSyncState>()(
       })),
       clearMessageHistory: () => set({ messageHistory: [] }),
 
-      // Progress tracking
       accountsProgress: {},
       currentAccount: null,
       processingStats: {
@@ -106,17 +97,14 @@ export const useRithmicSyncStore = create<RithmicSyncState>()(
         currentAccount: null
       }),
 
-      // Account management
       selectedAccounts: [],
       availableAccounts: [],
       setSelectedAccounts: (accounts) => set({ selectedAccounts: accounts }),
       setAvailableAccounts: (accounts) => set({ availableAccounts: accounts }),
 
-      // State management
       step: 'credentials',
       setStep: (step) => set({ step }),
 
-      // Auto-sync functionality
       isAutoSyncing: false,
       setIsAutoSyncing: (syncing) => set({ isAutoSyncing: syncing }),
     }),

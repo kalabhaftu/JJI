@@ -96,7 +96,6 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
       out.height = totalH
       const ctx = out.getContext('2d')!
 
-      // Combined card height including logo bar
       const combinedCardH = cardH + Math.round(logoBarHeight * scale)
       
       if (withGradient && selectedGradient) {
@@ -108,7 +107,6 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
         ctx.shadowOffsetY = 12 * scale
         const r = 16 * scale
         clipCalendarCardSurface(ctx, padding, padding, cardW, combinedCardH, r, resolvedBg)
-        // Draw the card content
         ctx.drawImage(cardCanvas, padding, padding)
         ctx.restore()
       } else {
@@ -123,12 +121,10 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
       const barY = (withGradient ? padding : 0) + cardH
       const logoYPos = barY + Math.round((logoBarHeight / 2) * scale)
       
-      // Draw actual logo image at the calendar marker size.
       const logoSize = Math.round(20 * scale)
       const logoX = totalW / 2 - Math.round(35 * scale)
       ctx.drawImage(logoImg, logoX, logoYPos - logoSize / 2, logoSize, logoSize)
       
-      // Draw text - LARGER font
       const fontSize = Math.round(14 * scale)
       ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Inter", sans-serif`
       ctx.fillStyle = 'rgba(255,255,255,0.5)'

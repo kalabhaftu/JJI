@@ -17,7 +17,6 @@ export function SidebarLayout({ children, siteUiSettings }: SidebarLayoutProps) 
   const pathname = usePathname()
   const setIsLoading = useUserStore(state => state.setIsLoading)
 
-  // Reset loading state on route change
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoading(false)

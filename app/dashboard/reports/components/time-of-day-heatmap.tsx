@@ -20,7 +20,6 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
   const { grid, maxAbsPnl, activeHours } = useMemo(() => {
     if (!trades || trades.length === 0) return { grid: {}, maxAbsPnl: 0, activeHours: new Set<number>() }
 
-    // Build grid: day -> hour -> { pnl, trades, wins }
     const grid: Record<string, Record<number, { pnl: number; trades: number; wins: number }>> = {}
     const activeHours = new Set<number>()
     let maxAbs = 0
@@ -53,7 +52,6 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
       if (pnl > 0) cell.wins++
     })
 
-    // Find max absolute PnL for color scaling
     Object.values(grid).forEach(hours => {
       Object.values(hours).forEach(cell => {
         if (Math.abs(cell.pnl) > maxAbs) maxAbs = Math.abs(cell.pnl)
@@ -63,7 +61,6 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
     return { grid, maxAbsPnl: maxAbs, activeHours }
   }, [trades])
 
-  // Filter to only hours that have activity (±2 hours buffer)
   const filteredHours = useMemo(() => {
     if (activeHours.size === 0) return []
     const sorted = Array.from(activeHours).sort((a, b) => a - b)

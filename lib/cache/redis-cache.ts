@@ -1,19 +1,7 @@
-/**
- * Redis/Upstash Caching Layer
- * 
- * Provides high-performance caching for frequently accessed data
- * Uses the shared Upstash Redis client.
- * 
- * Usage:
- * 1. Set up Upstash Redis
- * 2. Add environment variables: UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
- * 3. Use cache functions in API routes
- */
 
 import { isRedisConfigured, redis } from './client'
 import logger from '../logger'
 
-// Cache key prefixes for organization
 export const CachePrefix = {
   DASHBOARD_STATS: 'dashboard:stats:',
   USER_DATA: 'user:data:',
@@ -24,7 +12,6 @@ export const CachePrefix = {
   AI_CONTEXT: 'ai:context:',
 } as const
 
-// Cache TTLs (Time To Live) in seconds
 export const CacheTTL = {
   SHORT: 60,        // 1 minute
   MEDIUM: 300,      // 5 minutes
@@ -33,9 +20,6 @@ export const CacheTTL = {
   EXTRA_LONG: 86400, // 24 hours
 } as const
 
-/**
- * Get data from cache
- */
 export async function getFromCache<T>(key: string): Promise<T | null> {
   try {
     if (!isRedisAvailable()) {
@@ -50,9 +34,6 @@ export async function getFromCache<T>(key: string): Promise<T | null> {
   }
 }
 
-/**
- * Set data in cache with TTL
- */
 export async function setInCache<T>(
   key: string,
   value: T,
@@ -71,9 +52,6 @@ export async function setInCache<T>(
   }
 }
 
-/**
- * Check if Redis is available
- */
 export function isRedisAvailable(): boolean {
   return isRedisConfigured()
 }

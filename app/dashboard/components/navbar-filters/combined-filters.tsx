@@ -106,16 +106,13 @@ export function CombinedFilters({
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setIsOpen = onOpenChange || setInternalOpen
 
-  // Instrument filter state
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Date filter state
   const [startDate, setStartDate] = useState<Date | null>(dateRange?.from || null)
   const [endDate, setEndDate] = useState<Date | null>(dateRange?.to || null)
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
 
-  // Initialize from context
   useEffect(() => {
     setSelectedInstruments(instruments || [])
   }, [instruments])
@@ -130,14 +127,12 @@ export function CombinedFilters({
     }
   }, [dateRange])
 
-  // Reset to menu when popover closes
   useEffect(() => {
     if (!isOpen) {
       setCurrentView('menu')
     }
   }, [isOpen])
 
-  // Get all unique instruments from trades
   const availableInstruments = useMemo(() => {
     const instrumentSet = new Set<string>()
     if (formattedTrades && Array.isArray(formattedTrades)) {
@@ -149,7 +144,6 @@ export function CombinedFilters({
     return Array.from(instrumentSet).sort()
   }, [formattedTrades])
 
-  // Count trades per instrument
   const instrumentCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     if (formattedTrades && Array.isArray(formattedTrades)) {
@@ -163,14 +157,12 @@ export function CombinedFilters({
     return counts
   }, [formattedTrades])
 
-  // Filter instruments by search
   const filteredInstruments = useMemo(() => {
     if (!searchQuery) return availableInstruments
     const query = searchQuery.toLowerCase()
     return availableInstruments.filter(inst => inst.toLowerCase().includes(query))
   }, [availableInstruments, searchQuery])
 
-  // Instrument filter handlers
   const handleToggleInstrument = (instrument: string) => {
     setSelectedInstruments(prev =>
       prev.includes(instrument)
@@ -208,7 +200,6 @@ export function CombinedFilters({
     onSave?.()
   }
 
-  // Date filter handlers
   const handlePresetClick = (preset: typeof DATE_PRESETS[0]) => {
     const range = preset.getValue()
     setStartDate(range.from || null)

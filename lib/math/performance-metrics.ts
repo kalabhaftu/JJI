@@ -1,12 +1,5 @@
-/**
- * Standardized Performance Metrics Utility
- * Single source of truth for all mathematical models.
- */
 
-/**
- * Calculates the R-Multiple using the Pure Price Method.
- * Formula: (Exit - Entry) / (Entry - SL) for Longs
- */
+// R-Multiple (Pure Price Method): (Exit - Entry) / (Entry - SL) for longs
 function toNumber(value: number | string | null | undefined): number {
   if (typeof value === 'string') return parseFloat(value)
   return Number(value || 0)
@@ -140,10 +133,6 @@ export function calculateTradeRMultiple(trade: RMultipleTradeLike): number {
   return calculateRMultiple(side, entry, weightedExit / totalQuantity, effectiveStop)
 }
 
-/**
- * Calculates R-Squared (Coefficient of Determination) for an equity curve.
- * Used for the Consistency Score.
- */
 export function calculateRSquared(data: number[]): number {
   if (data.length < 2) return 0
   
@@ -165,9 +154,6 @@ export function calculateRSquared(data: number[]): number {
   return Math.max(0, Math.min(100, r * r * 100))
 }
 
-/**
- * Calculates peak-to-trough Drawdown.
- */
 export function calculatePeakToTroughDrawdown(pnls: number[]): { maxDrawdown: number, peak: number } {
   let peak = 0
   let maxDrawdown = 0
@@ -183,10 +169,6 @@ export function calculatePeakToTroughDrawdown(pnls: number[]): { maxDrawdown: nu
   return { maxDrawdown, peak }
 }
 
-/**
- * Calculates Expectancy.
- * Formula: (WinRate * AvgWin) - (LossRate * Abs(AvgLoss))
- */
 export function calculateExpectancy(
   winRate: number, 
   avgWin: number, 
@@ -197,28 +179,17 @@ export function calculateExpectancy(
   return (winProb * avgWin) - (lossProb * Math.abs(avgLoss))
 }
 
-/**
- * Calculates Profit Factor.
- */
 export function calculateProfitFactor(grossWin: number, grossLoss: number): number {
   const absLoss = Math.abs(grossLoss)
   if (absLoss === 0) return grossWin > 0 ? 5 : 0
   return grossWin / absLoss
 }
 
-/**
- * Calculates Recovery Factor.
- */
 export function calculateRecoveryFactor(netProfit: number, maxDrawdown: number): number {
   if (maxDrawdown === 0) return netProfit > 0 ? 5 : 0
   return netProfit / maxDrawdown
 }
 
-/**
- * Calculates Sharpe Ratio.
- * Uses daily returns. Risk-free rate assumed 0.
- * Formula: mean(returns) / stddev(returns) * sqrt(252)
- */
 export function calculateSharpeRatio(dailyReturns: number[]): number {
   if (dailyReturns.length < 2) return 0
   const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length
@@ -228,11 +199,6 @@ export function calculateSharpeRatio(dailyReturns: number[]): number {
   return parseFloat(((mean / stdDev) * Math.sqrt(252)).toFixed(2))
 }
 
-/**
- * Calculates Sortino Ratio.
- * Penalises downside deviation only (negative returns).
- * Formula: mean(returns) / downside_deviation * sqrt(252)
- */
 export function calculateSortinoRatio(dailyReturns: number[]): number {
   if (dailyReturns.length < 2) return 0
   const mean = dailyReturns.reduce((a, b) => a + b, 0) / dailyReturns.length
@@ -244,18 +210,11 @@ export function calculateSortinoRatio(dailyReturns: number[]): number {
   return parseFloat(((mean / downsideDev) * Math.sqrt(252)).toFixed(2))
 }
 
-/**
- * Calculates Calmar Ratio.
- * Formula: net profit / max drawdown
- */
 export function calculateCalmarRatio(netProfit: number, maxDrawdown: number): number {
   if (maxDrawdown === 0) return netProfit > 0 ? 5 : 0
   return parseFloat((netProfit / maxDrawdown).toFixed(2))
 }
 
-/**
- * Build an array of daily P&L returns from trades.
- */
 export function buildDailyReturns(
   trades: Array<{ entryDate?: string | Date | null; pnl?: number | null }>
 ): number[] {

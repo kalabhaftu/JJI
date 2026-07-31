@@ -80,7 +80,6 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
 
-  // Initialize form when model changes or modal opens
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && model) {
@@ -102,7 +101,6 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
     }
   }, [isOpen, model, mode])
 
-  // Track changes
   useEffect(() => {
     if (!isOpen) return
 

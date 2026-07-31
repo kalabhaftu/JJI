@@ -40,7 +40,6 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
         setError(null)
 
         try {
-            // Fetch Real Data
             const { data, error: fetchError } = await getMarketData(
                 trade.instrument,
                 '5m',
@@ -67,7 +66,6 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
                 }
             })
 
-            // Create Chart
             if (chartRef.current) {
                 chartRef.current.remove();
                 chartRef.current = null;
@@ -176,7 +174,6 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
         const runInit = async () => {
             if (!chartContainerRef.current) return;
 
-            // Cleanup existing chart if any
             if (chartRef.current) {
                 chartRef.current.remove();
                 chartRef.current = null;
@@ -187,7 +184,6 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
 
         runInit();
 
-        // Robust ResizeObserver that handles exact container dimensions
         const resizeObserver = new ResizeObserver((entries) => {
             if (!isMounted || !entries[0]?.contentRect || !chartRef.current) return
             const { width, height } = entries[0].contentRect

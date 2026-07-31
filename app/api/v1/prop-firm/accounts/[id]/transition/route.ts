@@ -15,15 +15,10 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-// Validation schema for phase transition
 const PhaseTransitionSchema = z.object({
   nextPhaseId: z.string().min(1, 'Next phase ID is required')
 })
 
-/**
- * Helper function to determine if a phase number represents the funded stage
- * based on the evaluation type.
- */
 function isFundedPhase(evaluationType: string, phaseNumber: number): boolean {
   return isFundedPhaseForEvaluation(evaluationType, phaseNumber)
 }
@@ -82,10 +77,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Determine the next phase number
     const nextPhaseNumber = masterAccount.currentPhase + 1
     
-    // Find the next phase
     const nextPhase = masterAccount.PhaseAccount.find(
       (phase: (typeof masterAccount.PhaseAccount)[number]) =>
         phase.phaseNumber === nextPhaseNumber
@@ -98,7 +91,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Perform the transition in a transaction
     const result = await db.transaction(async (tx) => {
       // Mark the current phase as passed (not archived)
       await tx.update(schema.PhaseAccount)
@@ -109,7 +101,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         ))
         .returning()
 
-      // Activate the next phase and set its phaseId
       const updatedNextPhase = (await tx.update(schema.PhaseAccount)
         .set({ status: 'active', phaseId: nextPhaseId, startDate: new Date() })
         .where(and(
@@ -118,10 +109,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         ))
         .returning())[0]
 
-      // Determine if the next phase is the funded phase based on evaluation type
       const isTransitioningToFunded = isFundedPhase(masterAccount.evaluationType, nextPhaseNumber)
 
-      // Update the master account's current phase and status
       const updatedMasterAccount = (await tx.update(schema.MasterAccount)
         .set({
           currentPhase: nextPhaseNumber,
@@ -141,7 +130,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       }
     })
 
-    // Determine display name for the next phase
     const nextPhaseName = isFundedPhase(masterAccount.evaluationType, nextPhaseNumber)
       ? 'Funded'
       : `Phase ${nextPhaseNumber}`

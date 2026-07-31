@@ -1,22 +1,13 @@
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
-/**
- * Anchor Service
- * Handles creation of daily equity snapshots (anchors) for drawdown tracking.
- */
 
-/**
- * Create daily anchor for a specific phase account
- */
 export async function createDailyAnchor(phaseAccountId: string, timezone: string, forceDate?: Date) {
   const today = forceDate || new Date()
   
-  // Get the date at midnight in the user's timezone
   const dateString = today.toLocaleDateString('en-CA', { timeZone: timezone }) // YYYY-MM-DD format
   const anchorDate = new Date(dateString + 'T00:00:00.000Z')
 
-  // Check if anchor already exists for today
   const existingAnchor = await db.query.DailyAnchor.findFirst({
     where: and(
       eq(schema.DailyAnchor.phaseAccountId, phaseAccountId),
@@ -28,7 +19,6 @@ export async function createDailyAnchor(phaseAccountId: string, timezone: string
     return { created: false, reason: 'already_exists', anchor: existingAnchor }
   }
 
-  // Get phase account with trades before the anchor date (start of day)
   const phaseAccount = await db.query.PhaseAccount.findFirst({
     where: eq(schema.PhaseAccount.id, phaseAccountId),
     with: {
@@ -47,7 +37,6 @@ export async function createDailyAnchor(phaseAccountId: string, timezone: string
     return { created: false, reason: 'phase_not_found' }
   }
 
-  // Calculate current equity for anchor
   const totalPnL = phaseAccount.Trade.reduce(
     (sum: number, trade: { pnl: number }) =>
       sum + Number(trade.pnl || 0),
@@ -55,7 +44,6 @@ export async function createDailyAnchor(phaseAccountId: string, timezone: string
   )
   const anchorEquity = (phaseAccount.accountSize || phaseAccount.MasterAccount.accountSize) + totalPnL
 
-  // Create the anchor
   const [anchor] = await db.insert(schema.DailyAnchor).values({
     id: crypto.randomUUID(),
     phaseAccountId,
@@ -78,9 +66,6 @@ export async function createDailyAnchor(phaseAccountId: string, timezone: string
   return { created: true, anchor }
 }
 
-/**
- * Bulk create daily anchors for all active phase accounts
- */
 export async function createAllDailyAnchors() {
   const results = {
     totalPhases: 0,
@@ -90,7 +75,6 @@ export async function createAllDailyAnchors() {
   }
 
   try {
-    // Get all active phase accounts
     const activePhases = await db.query.PhaseAccount.findMany({
       where: eq(schema.PhaseAccount.status, 'active'),
       with: {
@@ -111,7 +95,6 @@ export async function createAllDailyAnchors() {
 
     results.totalPhases = activePhases.length
 
-    // Create anchors for each active phase
     for (const phase of activePhases) {
       try {
         const timezone = phase.MasterAccount.User.settings?.timezone || 'UTC'

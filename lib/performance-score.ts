@@ -8,18 +8,8 @@ import {
   calculateExpectancy 
 } from '@/lib/math/performance-metrics'
 
-/**
- * Performance Score Calculation
- * Comprehensive trading performance scoring system
- * 
- * Combines 6 key trading metrics with specific weights:
- * - Recovery Factor: 10%
- * - Trade Win %: 15%
- * - Average Win/Loss: 20%
- * - Profit Factor: 25%
- * - Max Drawdown: 20%
- * - Consistency Score: 10%
- */
+// Weighted scoring: Recovery Factor 10%, Win % 15%, Avg Win/Loss 20%,
+// Profit Factor 25%, Max Drawdown 20%, Consistency 10%.
 
 export interface PerformanceScoreMetrics {
   avgWinLoss: number
@@ -50,15 +40,6 @@ export interface PerformanceScoreResult {
   }
 }
 
-/**
- * Calculate Average Win/Loss Ratio Score
- * Scoring formula for average win/loss ratio
- * REALISTIC thresholds for actual traders:
- * - 1.0-1.2: Breakeven to slight edge (30-40 points)
- * - 1.2-1.5: Decent edge (40-60 points)
- * - 1.5-2.0: Good edge (60-80 points)
- * - 2.0+: Excellent edge (80-100 points)
- */
 function calculateAvgWinLossScore(avgWinLoss: number): number {
   if (avgWinLoss >= 3.0) return 100
   if (avgWinLoss >= 2.5) return 95 + ((avgWinLoss - 2.5) / 0.5) * 5
@@ -71,14 +52,6 @@ function calculateAvgWinLossScore(avgWinLoss: number): number {
   return Math.max(0, avgWinLoss * 15) // Below 0.8 scales to zero
 }
 
-/**
- * Calculate Trade Win Percentage Score
- * REALISTIC thresholds - Win rate alone doesn't determine profitability
- * - 30-40%: Acceptable if R:R is good (30-50 points)
- * - 40-50%: Good (50-70 points)
- * - 50-60%: Very good (70-90 points)
- * - 60%+: Excellent (90-100 points)
- */
 function calculateTradeWinPercentageScore(
   tradeWinPercentage: number,
   topThreshold: number = 70 // More realistic top threshold
@@ -92,25 +65,11 @@ function calculateTradeWinPercentageScore(
   return Math.max(0, (tradeWinPercentage / 20) * 15)
 }
 
-/**
- * Calculate Maximum Drawdown Score
- * Formula: 100 - ((Max Drawdown / Peak P&L) × 100)
- * Lower drawdown = better score
- */
+// 100 - ((Max Drawdown / Peak P&L) × 100); lower drawdown scores higher
 function calculateMaxDrawdownScore(maxDrawdownPercent: number): number {
   return Math.max(0, 100 - maxDrawdownPercent)
 }
 
-/**
- * Calculate Profit Factor Score
- * Scoring formula for profit factor
- * REALISTIC thresholds - Profit Factor is the KING metric:
- * - 1.0: Breakeven (0 points) - not profitable
- * - 1.0-1.2: Barely profitable (30-50 points)
- * - 1.2-1.5: Decent profitability (50-70 points)
- * - 1.5-2.0: Good profitability (70-85 points)
- * - 2.0+: Excellent profitability (85-100 points)
- */
 function calculateProfitFactorScore(profitFactor: number): number {
   if (profitFactor >= 3.0) return 100
   if (profitFactor >= 2.5) return 95 + ((profitFactor - 2.5) / 0.5) * 5
@@ -125,15 +84,6 @@ function calculateProfitFactorScore(profitFactor: number): number {
   return Math.max(0, profitFactor * 15) // Below 0.9 scales to zero
 }
 
-/**
- * Calculate Recovery Factor Score
- * Scoring formula for recovery factor (Net Profit / Max Drawdown)
- * REALISTIC thresholds:
- * - 0.5-1.0: Weak recovery (20-40 points)
- * - 1.0-2.0: Decent recovery (40-70 points)
- * - 2.0-3.0: Good recovery (70-90 points)
- * - 3.0+: Excellent recovery (90-100 points)
- */
 function calculateRecoveryFactorScore(recoveryFactor: number): number {
   if (recoveryFactor >= 5.0) return 100
   if (recoveryFactor >= 4.0) return 95 + ((recoveryFactor - 4.0) / 1.0) * 5
@@ -147,15 +97,6 @@ function calculateRecoveryFactorScore(recoveryFactor: number): number {
   return 0
 }
 
-/**
- * Consistency Score (Input Value)
- * Now calculated via R-Squared in calculateMetricsFromTrades
- */
-
-/**
- * Calculate Complete Performance Score
- * Weighted combination of all metrics
- */
 export function calculatePerformanceScore(metrics: PerformanceScoreMetrics): PerformanceScoreResult {
   const avgWinLossScore = calculateAvgWinLossScore(metrics.avgWinLoss)
   const tradeWinPercentageScore = calculateTradeWinPercentageScore(metrics.tradeWinPercentage)
@@ -164,7 +105,6 @@ export function calculatePerformanceScore(metrics: PerformanceScoreMetrics): Per
   const recoveryFactorScore = calculateRecoveryFactorScore(metrics.recoveryFactor)
   const consistencyScoreValue = metrics.consistencyScore // Already calculated
 
-  // Weighted scores
   const weights = {
     recoveryFactor: 0.10,      // 10%
     tradeWinPercentage: 0.15,  // 15%
@@ -197,9 +137,6 @@ export function calculatePerformanceScore(metrics: PerformanceScoreMetrics): Per
   }
 }
 
-/**
- * Calculate metrics from trade data
- */
 export interface Trade {
   pnl: number
   commission?: number

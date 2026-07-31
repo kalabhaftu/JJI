@@ -10,9 +10,6 @@ interface FileWithPreview extends File {
 }
 
 type UseSupabaseUploadOptions = {
-  /**
-   * Name of bucket to upload files to in your Supabase project
-   */
   bucketName: string
   /**
    * Folder to upload files to in the specified bucket within your Supabase project.
@@ -28,13 +25,7 @@ type UseSupabaseUploadOptions = {
    * Defaults to allowing uploading of all MIME types.
    */
   allowedMimeTypes?: string[]
-  /**
-   * Maximum upload size of each file allowed in bytes. (e.g 1000 bytes = 1 KB)
-   */
   maxFileSize?: number
-  /**
-   * Maximum number of files allowed per upload.
-   */
   maxFiles?: number
   /**
    * The number of seconds the asset is cached in the browser and in the Supabase CDN.
@@ -165,7 +156,6 @@ const useSupabaseUpload = (options: UseSupabaseUploadOptions) => {
       setErrors([])
     }
 
-    // If the number of files doesn't exceed the maxFiles parameter, remove the error 'Too many files' from each file
     if (files.length <= maxFiles) {
       let changed = false
       const newFiles = files.map((file) => {

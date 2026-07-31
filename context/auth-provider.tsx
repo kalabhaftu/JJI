@@ -46,7 +46,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetUser = useUserStore(state => state.resetUser)
   const user = useUserStore(state => state.user)
   
-  // Auto-cleanup stale caches when app loads or user changes
   useAutoCacheCleanup({
     ...(user?.id && { userId: user.id }),
     enabled: true
@@ -199,7 +198,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Clear Supabase auth tokens (they start with 'sb-')
     clearBrowserAuthStorage()
 
-    // Notify service worker to clear cached API data
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' })
     }
@@ -243,7 +241,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error
         setSession(session)
 
-        // Synchronize with user store
         if (session?.user) {
           setSupabaseUser(session.user)
           if (shouldSyncSessionForPath(pathname)) {
@@ -284,7 +281,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event: any, session: any) => {
         setSession(session)
 
-        // Synchronize with user store
         if (session?.user) {
           setSupabaseUser(session.user)
           if (shouldSyncSessionForPath(pathname)) {

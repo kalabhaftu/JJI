@@ -1,83 +1,52 @@
-/**
- * Widget Dimensions Configuration
- * 
- * Fixed widget sizing system.
- * All widgets maintain consistent dimensions for professional layout.
- */
-
 import { WidgetSize } from '../types/dashboard'
 
 export interface WidgetDimensions {
-  /**
-   * Grid column span (out of 12 columns)
-   */
   colSpan: number
   
   minWidth: string
   
   height: string
   
-  /**
-   * Aspect ratio (optional, for responsive scaling)
-   */
   aspectRatio?: string
 }
 
-/**
- * Fixed widget dimensions for the dashboard layout.
- * 
- * Grid System: 12 columns
- * Gap: 1rem (16px)
- * 
- * Sizes are designed to be:
- * - Wider than previous fractional system
- * - Consistent across breakpoints
- * - Professional and spacious
- */
 export const WIDGET_DIMENSIONS: Record<WidgetSize, WidgetDimensions> = {
-  // KPI widgets - Always in a row of 5
   'kpi': {
     colSpan: 12,  // Full width on mobile, managed by grid on desktop
     minWidth: '280px',
     height: '140px',
   },
   
-  // Tiny widgets - Rarely used
   'tiny': {
     colSpan: 3,
     minWidth: '280px',
     height: '180px',
   },
   
-  // Small widgets - 4 columns (1/3 width)
   'small': {
     colSpan: 4,
     minWidth: '420px',
     height: '580px',
   },
 
-  // Small-long widgets - 4 columns, taller
   'small-long': {
     colSpan: 4,
     minWidth: '520px',
     height: '360px',
   },
 
-  // Medium widgets - 6 columns (1/2 width)
   'medium': {
     colSpan: 6,
     minWidth: '620px',
     height: '580px',
   },
 
-  // Large widgets - 8 columns (2/3 width)
   'large': {
     colSpan: 8,
     minWidth: '780px',
     height: '580px',
   },
   
-  // Extra-large widgets - 12 columns (full width)
   'extra-large': {
     colSpan: 12,
     minWidth: '100%',
@@ -85,24 +54,15 @@ export const WIDGET_DIMENSIONS: Record<WidgetSize, WidgetDimensions> = {
   },
 }
 
-/**
- * Get Tailwind grid column class for a widget size
- */
 function getGridColClass(size: WidgetSize): string {
   const span = WIDGET_DIMENSIONS[size].colSpan
   return `col-span-12 md:col-span-${span}`
 }
 
-/**
- * Get Tailwind height class for a widget size
- */
 function getWidgetHeightClass(size: WidgetSize): string {
   return `h-widget-${size}`
 }
 
-/**
- * Get inline styles for a widget (use sparingly, prefer Tailwind)
- */
 function getWidgetStyles(size: WidgetSize): React.CSSProperties {
   const dims = WIDGET_DIMENSIONS[size]
   return {
@@ -112,10 +72,6 @@ function getWidgetStyles(size: WidgetSize): React.CSSProperties {
   }
 }
 
-/**
- * Widget grouping configuration
- * Defines how widgets should be visually grouped
- */
 const WIDGET_GROUPS = {
   kpi: {
     name: 'Key Performance Indicators',
@@ -150,14 +106,8 @@ const CARD_PADDING: Record<WidgetSize, string> = {
   'extra-large': 'p-6',
 }
 
-/**
- * Standard card header height (consistent across all widgets)
- */
 const CARD_HEADER_HEIGHT = '56px'
 
-/**
- * Get responsive grid configuration for dashboard
- */
 function getDashboardGridConfig() {
   return {
     container: 'max-w-[1920px] mx-auto',
@@ -188,7 +138,6 @@ export const WIDGET_GRID_DEFAULTS: Record<string, WidgetGridDefault> = {
   profitFactor:      { defaultW: 1, defaultH: 1, minW: 1, minH: 1 },
   avgWinLoss:        { defaultW: 1, defaultH: 1, minW: 1, minH: 1 },
 
-  // Charts - 4 cols wide, 4 rows tall (320px)
   netDailyPnL:              { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
   dailyCumulativePnL:       { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
   accountBalanceChart:      { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
@@ -199,7 +148,6 @@ export const WIDGET_GRID_DEFAULTS: Record<string, WidgetGridDefault> = {
   pnlByStrategy:            { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
   winRateByStrategy:        { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
 
-  // Session analysis
   sessionAnalysis:        { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
 
   // Tables - 5 rows = ~400px which fits 10 trade rows without scroll by default
@@ -209,7 +157,6 @@ export const WIDGET_GRID_DEFAULTS: Record<string, WidgetGridDefault> = {
   calendarAdvanced: { defaultW: 12, defaultH: 6, minW: 4, minH: 5 },
   calendarMini:     { defaultW: 8, defaultH: 8, minW: 4, minH: 6 },
 
-  // New charts
   equityCurve:            { defaultW: 8, defaultH: 4, minW: 4, minH: 3 },
   outcomeDistribution:    { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
   dayOfWeekPerformance:   { defaultW: 6, defaultH: 4, minW: 3, minH: 3 },
@@ -223,6 +170,5 @@ export const WIDGET_GRID_DEFAULTS: Record<string, WidgetGridDefault> = {
   timeOfDayPerformance:   { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
   disciplineAnalytics:    { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
 
-  // Fallback default
   default: { defaultW: 4, defaultH: 4, minW: 3, minH: 3 },
 }

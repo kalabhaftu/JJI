@@ -75,7 +75,6 @@ export async function getActiveTemplate(): Promise<DashboardTemplate | null> {
 
     if (!template) return null
 
-    // If it's the default template, always return the canonical default layout
     if (template.isDefault) {
       return JSON.parse(JSON.stringify({
         ...template,
@@ -208,7 +207,6 @@ export async function deleteTemplate(id: string): Promise<void> {
       throw new Error('Cannot delete default template')
     }
 
-    // If deleting active template, make default active
     if (template.isActive) {
       await safeDbOperation(() =>
         db.update(schema.DashboardTemplate).set({ isActive: true }).where(and(eq(schema.DashboardTemplate.userId, userId), eq(schema.DashboardTemplate.isDefault, true)))

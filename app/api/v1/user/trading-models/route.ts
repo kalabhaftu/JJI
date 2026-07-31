@@ -64,7 +64,6 @@ function buildTradeFilterWhere(params: URLSearchParams) {
   return conditions.length > 0 ? and(...conditions) : undefined
 }
 
-// GET - List all trading models for user
 export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -93,7 +92,6 @@ export async function GET(request: NextRequest) {
       getRuntimeBreakEvenThreshold(userId)
     ])
 
-    // Parse rules from JSON to array and calculate stats
     const formattedModels = models.map((model: (typeof models)[number]) => {
       const trades = model.Trade || []
       const tradeCount = trades.length
@@ -104,7 +102,6 @@ export async function GET(request: NextRequest) {
           ? model.rules
           : []
 
-      // Initialize rule adherence map
       const ruleAdherence: Record<string, { followed: number; total: number }> = {}
       modelRules.forEach((rule: any) => {
         const text = typeof rule === 'string' ? rule : rule.text
@@ -129,7 +126,6 @@ export async function GET(request: NextRequest) {
           breakEvenCount++
         }
 
-        // Track rule adherence
         const selectedRules = Array.isArray(trade.selectedRules) ? trade.selectedRules : []
         modelRules.forEach((rule: any) => {
           const text = typeof rule === 'string' ? rule : rule.text
@@ -143,7 +139,6 @@ export async function GET(request: NextRequest) {
       // Calculate win rate (excluding break-even from denominator)
       const winRate = calculateWinRate(winCount, lossCount)
 
-      // Overall adherence rate
       let totalMet = 0
       let totalPossible = 0
       Object.values(ruleAdherence).forEach(stat => {
@@ -181,7 +176,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new trading model
 export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes

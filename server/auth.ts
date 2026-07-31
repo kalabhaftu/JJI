@@ -25,7 +25,6 @@ import { logActivity } from '@/lib/activity-logger'
 import { extractUserSettingsWriteData } from '@/lib/user-settings'
 import { emailOtpLimiter, consumeRateLimitKey, getEmailRateLimitKey } from '@/lib/rate-limiter'
 import { getSafeRedirectPath } from '@/lib/security/redirects'
-// Removed locales import - using plain English strings
 
 function isLocalDevelopment() {
   const isVercel = process.env.VERCEL === '1'
@@ -540,7 +539,6 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
 
       logActivity({ userId: newUser.id, action: 'USER_SIGNUP', entity: 'Auth' })
 
-      // Create default dashboard template for new user (non-blocking)
       try {
         const { ensureDefaultTemplate } = await import('./seed-default-template')
         await ensureDefaultTemplate()
@@ -597,7 +595,6 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       }
     }
 
-    // For authentication-related errors, sign out the user
     if (error instanceof Error && (
       error.message.includes('User not authenticated') ||
       error.message.includes('Invalid authentication') ||
@@ -642,9 +639,7 @@ export async function verifyOtp(email: string, token: string, type: 'email' | 's
 
     if (data?.user) {
       const verifiedUser = data.user
-      // After successful OTP verification, ensure user exists in database (if DB is available)
       try {
-        // Check if user already exists in our database with this email
         const existingUser = await safeDbOperation(
           () => db.query.User.findFirst({
             where: (table, { eq }) => eq(table.email, email)
@@ -777,16 +772,12 @@ async function getUserEmail(): Promise<string> {
   }
 }
 
-/**
- * Get user ID safely - returns null for unauthenticated users instead of throwing
- * Use this in server actions that should handle unauthenticated users gracefully
- */
 export async function getUserIdSafe(): Promise<string | null> {
   try {
     return await getUserId()
   } catch (error) {
     if (error instanceof Error && error.message.includes("not authenticated")) {
-      return null // Return null for unauthenticated users instead of throwing
+      return null
     }
     throw error // Re-throw other errors (like service unavailable)
   }
@@ -843,7 +834,6 @@ export async function getUserIdentities() {
     throw new Error('User not authenticated')
   }
 
-  // Get user's identities using the proper method
   const { data: identities, error: identitiesError } = await supabase.auth.getUserIdentities()
 
   if (identitiesError) {

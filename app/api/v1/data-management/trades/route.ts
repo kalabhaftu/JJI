@@ -22,8 +22,6 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '50')
     const offset = (page - 1) * limit
 
-    // Fetch trades for this user without any specific account/status filters
-    // This is for the Data Management "everything" view
     const [trades, totalResult] = await Promise.all([
       db.query.Trade.findMany({
         where: (table, { and, or, eq, isNull, not, inArray }) => and(

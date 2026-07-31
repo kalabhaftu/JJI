@@ -7,7 +7,6 @@ import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { and, eq } from 'drizzle-orm'
 
-// Validation schema
 const ValidateTradeSchema = z.object({
   accountNumber: z.string().min(1, 'Account number is required')
 })
@@ -29,7 +28,6 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { accountNumber } = ValidateTradeSchema.parse(body)
 
-    // First, check if this is a phase account (prop firm)
     const [phaseResult] = await db
       .select({ phaseAccount: schema.PhaseAccount })
       .from(schema.PhaseAccount)
@@ -46,7 +44,6 @@ export async function POST(request: NextRequest) {
     const phaseAccount = phaseResult?.phaseAccount
 
     if (phaseAccount) {
-      // This is a prop firm account - validate phase ID
       if (!phaseAccount.phaseId) {
         return NextResponse.json(
           { 
@@ -57,7 +54,6 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Phase ID is set - validation passed
       return NextResponse.json({
         success: true,
         data: {
@@ -68,7 +64,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Not a prop firm account - check if it's a regular account
     const regularAccount = await db.query.Account.findFirst({
       where: (table, { and, eq }) => and(
         eq(table.number, accountNumber),
@@ -77,7 +72,6 @@ export async function POST(request: NextRequest) {
     })
 
     if (regularAccount) {
-      // Regular account - no validation needed
       return NextResponse.json({
         success: true,
         data: {
@@ -87,7 +81,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Account not found
     return NextResponse.json(
       { 
         success: false, 

@@ -35,7 +35,6 @@ import { AI_DATA_CONSENT_VERSION } from '@/lib/user-settings'
 export default function AIChatWorkspace() {
   const { accounts, isDemoMode } = useData()
   
-  // State variables
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('chats')
   const [chats, setChats] = useState<ChatSession[]>([])
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
@@ -43,7 +42,6 @@ export default function AIChatWorkspace() {
   const [savedInsights, setSavedInsights] = useState<SavedInsight[]>([])
   const [weeklyAIReviews, setWeeklyAIReviews] = useState<WeeklyReview[]>([])
   
-  // Context Selection States
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const [selectedDateRange, setSelectedDateRange] = useState<string>('last-30-days')
   const [customFromDate, setCustomFromDate] = useState<string>('')
@@ -52,7 +50,6 @@ export default function AIChatWorkspace() {
     'trades', 'journals', 'performance', 'statistics'
   ])
   
-  // Chatting State
   const [isSending, setIsSending] = useState(false)
   const [streamingText, setStreamingText] = useState('')
   const [isRenameMode, setIsRenameMode] = useState(false)
@@ -66,15 +63,12 @@ export default function AIChatWorkspace() {
   const [isSavingConsent, setIsSavingConsent] = useState(false)
   const [pendingPrompt, setPendingPrompt] = useState<{ prompt: string; sources?: string[] } | null>(null)
   
-  // Sidebar collapsed state
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileWorkspaceOpen, setMobileWorkspaceOpen] = useState(false)
   
-  // Delete confirmation state
   const [deleteChatId, setDeleteChatId] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   
-  // Full-screen analysis dialog
   const [selectedReview, setSelectedReview] = useState<WeeklyReview | null>(null)
   const [selectedReviewIndex, setSelectedReviewIndex] = useState<number | null>(null)
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
@@ -82,7 +76,6 @@ export default function AIChatWorkspace() {
   const chatEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  // Auto Scroll Chat
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
@@ -133,7 +126,6 @@ export default function AIChatWorkspace() {
       setSavedInsights(demoInsights)
       setIsLoadingChats(false)
     } else {
-      // Fetch user chats, insights, and reviews
       loadWorkspaceData()
     }
   }, [isDemoMode])
@@ -177,7 +169,6 @@ export default function AIChatWorkspace() {
         ))
       }
       
-      // Also fetch weekly reviews
       const reviewsRes = await fetch('/api/v1/weekly-review')
       let loadedReviews: any[] = []
       if (reviewsRes.ok) {
@@ -205,14 +196,12 @@ export default function AIChatWorkspace() {
     }
   }
 
-  // Pre-populate account selector when accounts are loaded
   useEffect(() => {
     if (accounts && accounts.length > 0 && selectedAccounts.length === 0) {
       setSelectedAccounts([accounts[0]!.id])
     }
   }, [accounts, selectedAccounts.length])
 
-  // Fetch Messages for Selected Chat
   const handleChatSelect = async (chatId: string) => {
     setSelectedChatId(chatId)
     setIsLoadingMessages(true)
@@ -283,7 +272,6 @@ Emotional states directly correlate with performance. Operating under stress or 
     }
   }
 
-  // Create Chat and Send Message
   const handleStartChat = async (customPrompt?: string, sourceOverride?: string[], consentConfirmed = false) => {
     if (isSending) return
     const promptToSend = customPrompt || ''
@@ -301,7 +289,6 @@ Emotional states directly correlate with performance. Operating under stress or 
     setIsSending(true)
 
     if (isDemoMode) {
-      // Simulate Demo Streaming Response
       const newChat: ChatSession = {
         id: `demo-${Date.now()}`,
         title: promptToSend.slice(0, 30) + '...',
@@ -369,7 +356,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
 
     try {
-      // 1. Create chat if none selected
       let chatId = selectedChatId
       if (!chatId) {
         const response = await fetch('/api/v1/ai/chats', {
@@ -399,7 +385,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
         setSelectedChatId(chatId)
       }
 
-      // Add user message locally first
       const userMsg: ChatMessage = {
         id: `local-u-${Date.now()}`,
         role: 'user',
@@ -408,7 +393,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
       }
       setMessages(prev => [...prev, userMsg])
 
-      // 2. Stream AI message response
       const response = await fetch(`/api/v1/ai/chats/${chatId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -430,7 +414,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
         return
       }
 
-      // Read SSE stream
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
       let assistantResponse = ''
@@ -467,7 +450,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
       setStreamingText('')
       
-      // Update chat title if it was a new chat
       await fetch('/api/v1/ai/chats')
         .then(res => res.json())
         .then(payload => {
@@ -481,7 +463,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
   }
 
-  // Manage Chat Actions
   const handleTogglePin = async (chat: ChatSession) => {
     if (isDemoMode) {
       setChats(prev => prev.map(c => c.id === chat.id ? { ...c, isPinned: !c.isPinned } : c))
@@ -530,7 +511,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
   }
 
-  // Delete with confirmation
   const handleRequestDelete = (chatId: string) => {
     setDeleteChatId(chatId)
     setIsDeleteDialogOpen(true)
@@ -597,7 +577,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
   }
 
-  // Saved Insights Actions
   const handleSaveInsight = async (msg: ChatMessage) => {
     if (isDemoMode) {
       const newInsight: SavedInsight = {
@@ -669,10 +648,8 @@ With an active workspace, the assistant analyzes your actual trading records. He
     )
   }
 
-  // Get Suggested Follow Ups based on messages length and context
   const getFollowUps = () => {
     if (messages.length === 0) return []
-    // Look at last user message content to suggest category
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
     const content = lastUserMsg?.content.toLowerCase() || ''
     

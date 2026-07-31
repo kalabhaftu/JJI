@@ -76,8 +76,6 @@ export async function getMarketData(
     // (?:[._][a-zA-Z0-9]+)? -> Optional suffix starting with . or _
     // [a-z]*$ -> Optional trailing lowercase letters directly attached
 
-    // Simple heuristic: If it ends with lowercase letters, strip them.
-    // E.g. XAUUSDm -> XAUUSD
     if (/[A-Z]+[a-z]+$/.test(symbol)) {
         symbol = symbol.replace(/[a-z]+$/, '');
     }
@@ -92,7 +90,6 @@ export async function getMarketData(
     const endStr = endDate ? endDate.toISOString().split('T')[0] : 'now'
     const requestKey = `${symbol}:${startStr}:${endStr}:${interval}`
 
-    // JOIN CONCURRENT REQUESTS
     if (inFlightRequests.has(requestKey) && !forceRefresh) {
         return inFlightRequests.get(requestKey)!
     }
@@ -111,7 +108,6 @@ export async function getMarketData(
                 }
             }
 
-            // Map common symbols to Yahoo Finance tickers
             let querySymbol = symbol.toUpperCase()
 
             if (YAHOO_FINANCE_SYMBOL_MAP[querySymbol]) {
@@ -126,11 +122,9 @@ export async function getMarketData(
             else if (querySymbol === 'BTC') querySymbol = 'BTC-USD'
             else if (querySymbol === 'ETH') querySymbol = 'ETH-USD'
 
-            // TIMEFRAME LIMITS & FALLBACKS
             const now = new Date()
             const diffDays = (now.getTime() - (startDate?.getTime() || now.getTime())) / (1000 * 60 * 60 * 24)
 
-            // Dynamic intervals based on user requested list and Yahoo limits
             let intervalsToTry: string[] = []
 
             if (diffDays <= 7) {
@@ -144,12 +138,10 @@ export async function getMarketData(
                 intervalsToTry = ['1d']
             }
 
-            // Ensure requested interval is first if valid
             if (intervalsToTry.includes(interval) && intervalsToTry[0] !== interval) {
                 intervalsToTry = [interval, ...intervalsToTry.filter(i => i !== interval)]
             }
 
-            // Cache lookup (base key for symbol/date range)
             const baseCacheKey = `${CachePrefix.MARKET_DATA}${querySymbol}:${startStr}:${endStr}`
             try {
                 const cachedData = await getCached<CandleData[]>(baseCacheKey)
@@ -178,7 +170,6 @@ export async function getMarketData(
                     try {
                         result = await yahooFinance.chart(querySymbol, queryOptions);
                     } catch (libError: any) {
-                        // If rate limited by lib, try manual fetch with spoofed headers
                         if (libError.message?.toLowerCase().includes('429') || libError.message?.toLowerCase().includes('too many requests')) {
                             logger.warn(`[LIB_RATE_LIMIT] Switching to manual fetch for ${querySymbol} at ${queryInterval}...`);
                             result = await fetchMarketDataManual(querySymbol, queryOptions);
@@ -241,7 +232,6 @@ export async function getMarketData(
             logger.error('Yahoo Finance API Error:', e)
             return { data: [], error: e.message || 'Failed to fetch market data' }
         } finally {
-            // Clean up in-flight request after completion
             inFlightRequests.delete(requestKey)
         }
     })()

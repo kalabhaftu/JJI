@@ -2,7 +2,6 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as NotificationService from '@/lib/services/notification-service'
 import type { NotificationType, NotificationPriority } from '@/lib/db/schema/users'
 
-// Mock db client
 const mockReturning = vi.fn()
 const mockWhere = vi.fn(() => { const p = Promise.resolve({ count: 3 }); p.returning = mockReturning; return p; })
 const mockSet = vi.fn(() => ({ where: mockWhere }))
@@ -23,7 +22,6 @@ vi.mock('@/lib/db/client', () => ({
     }
 }))
 
-// Mock Next.js cache
 vi.mock('next/cache', () => ({
     revalidateTag: vi.fn()
 }))

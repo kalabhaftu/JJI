@@ -120,7 +120,6 @@ function isAccountFunded(account: Account): boolean {
   return isFundedPhase(evaluationType, phaseNumber)
 }
 
-// Get status display name (Active, Failed, Passed)
 function getStatusDisplayName(status?: string): string {
   if (!status) return 'Active'
   switch (status) {
@@ -206,7 +205,6 @@ export default function AccountsPage() {
 
   const [showLeaderboard, setShowLeaderboard] = useState(false)
 
-  // Dialog states
   const [createLiveDialogOpen, setCreateLiveDialogOpen] = useState(false)
   const [createPropFirmDialogOpen, setCreatePropFirmDialogOpen] = useState(false)
   const [editLiveDialogOpen, setEditLiveDialogOpen] = useState(false)
@@ -216,7 +214,6 @@ export default function AccountsPage() {
   const [deletingAccount, setDeletingAccount] = useState<Account | null>(null)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
-  // Keyboard shortcut for search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -231,7 +228,6 @@ export default function AccountsPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [searchQuery])
 
-  // URL param filter on mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const filterParam = urlParams.get('filter')
@@ -262,7 +258,6 @@ export default function AccountsPage() {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      // Clear caches first
       clearAccountsCache()
       // Use refetchAccounts which reloads all data including accounts from the server
       // This is the proper way to refresh - it calls loadData() which fetches fresh data
@@ -277,7 +272,6 @@ export default function AccountsPage() {
 
   const handleAccountCreated = useCallback(() => {
     clearAccountsCache()
-    // Use refetchAccounts to reload all data - Zustand will automatically trigger re-render
     refetchAccounts()
     refreshAllData()
     setCreateLiveDialogOpen(false)
@@ -287,7 +281,6 @@ export default function AccountsPage() {
 
   const handleAccountUpdated = useCallback(() => {
     clearAccountsCache()
-    // Use refetchAccounts to reload all data - Zustand will automatically trigger re-render
     refetchAccounts()
     refreshAllData()
     setEditLiveDialogOpen(false)
@@ -689,7 +682,6 @@ export default function AccountsPage() {
   )
 }
 
-// Stat Card Component
 function StatCard({
   label,
   value,
@@ -746,7 +738,6 @@ function StatCard({
   )
 }
 
-// Account Card Component
 function AccountCard({
   account,
   allAccounts,
@@ -995,7 +986,6 @@ function AccountCard({
   )
 }
 
-// Account Leaderboard Component
 function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
   const sorted = [...accounts].sort((a, b) => (b.pnl || 0) - (a.pnl || 0))
   const maxPnl = accounts.reduce((max, a) => Math.max(max, Math.abs(a.pnl || 0)), 1)
@@ -1065,7 +1055,6 @@ function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
   )
 }
 
-// Empty State Component
 function EmptyState({
   hasAccounts,
   searchQuery,

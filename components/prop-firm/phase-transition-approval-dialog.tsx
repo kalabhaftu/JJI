@@ -45,9 +45,6 @@ interface NotificationData {
   evaluationType?: string
 }
 
-/**
- * Helper function to determine if a phase number represents the funded stage
- */
 function isFundedPhase(evaluationType: string | undefined, phaseNumber: number): boolean {
   return isFundedPhaseForEvaluation(evaluationType || '', phaseNumber)
 }
@@ -138,7 +135,6 @@ export function PhaseTransitionApprovalDialog({
 
       await refreshTrades()
 
-      // Call onComplete callback - state is already reset, so callback sees clean state
       onComplete()
 
       // Force full page refresh after a small delay to allow modal to close

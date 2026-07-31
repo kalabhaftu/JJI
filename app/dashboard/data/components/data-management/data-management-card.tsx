@@ -91,7 +91,6 @@ function getPhaseDisplayLabel(evaluationType: string | undefined, phaseNumber: n
   return `Phase ${phaseNumber}`
 }
 
-// Custom fetcher for Data Management
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export function DataManagementCard() {
@@ -128,7 +127,6 @@ export function DataManagementCard() {
     allAccounts.forEach((account: any) => {
       const accountName = account.name
 
-      // Use tradeCount directly from account (comes from server)
       const tradeCount = account.tradeCount || 0
 
       if (!grouped[accountName]) {
@@ -157,7 +155,6 @@ export function DataManagementCard() {
       grouped[accountName].totalTrades += tradeCount
     })
 
-    // Sort phases within each group by phase number
     Object.values(grouped).forEach(group => {
       group.phases.sort((a, b) => (a.currentPhase || 0) - (b.currentPhase || 0))
     })
@@ -165,7 +162,6 @@ export function DataManagementCard() {
     return Object.values(grouped)
   }, [allAccounts, accountsLoading])
 
-  // Flat list for selection and deletion operations
   const accountsWithTrades = useMemo(() => {
     if (!allAccounts || accountsLoading) return []
 
@@ -247,7 +243,6 @@ export function DataManagementCard() {
     } catch (error) {
       setError(error instanceof Error ? error : new Error('Failed to delete accounts'))
 
-      // Dismiss loading toast before showing error
       if (loadingToastId) {
         toast.dismiss(loadingToastId)
       }

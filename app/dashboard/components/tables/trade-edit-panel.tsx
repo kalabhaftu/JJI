@@ -157,7 +157,6 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
 
   const watchedValues = watch()
 
-  // Initialize form when trade loads
   useEffect(() => {
     if (!trade || isSubmitting) return
     const initializationKey = `${trade.id}:${tradingModelsKey}`
@@ -323,7 +322,6 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
     }
   }
 
-  // Trade header info
   const tradeData = trade as any
   const threshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
   const netPnL = getTradeNetPnl(trade)

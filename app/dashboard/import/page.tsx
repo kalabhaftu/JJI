@@ -86,7 +86,6 @@ export default function ImportCallbackPage() {
           return;
         }
 
-        // Verify state matches what we stored
         const storedOAuthState =
           tradovateStore.oauthState ??
           (typeof sessionStorage !== "undefined"
@@ -115,7 +114,6 @@ export default function ImportCallbackPage() {
           return;
         }
 
-        // Exchange code for tokens and save token in database
         const result = await handleTradovateCallback(code, state);
 
         // Defensive programming: ensure result is an object
@@ -133,7 +131,6 @@ export default function ImportCallbackPage() {
           return;
         }
 
-        // Validate all required fields exist and are strings
         if (!result.accessToken || !result.refreshToken || !result.expiresAt) {
           logger.error({
             hasAccessToken: !!result.accessToken,
@@ -163,7 +160,6 @@ export default function ImportCallbackPage() {
         logger.info("OAuth flow completed successfully");
         setStatus("success");
 
-        // Redirect back to dashboard after a short delay
         setTimeout(() => {
           router.push("/dashboard");
         }, 1000);

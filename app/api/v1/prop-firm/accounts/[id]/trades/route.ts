@@ -17,7 +17,6 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-// Validation schema for adding a trade
 const AddTradeSchema = z.object({
   accountNumber: z.string(),
   quantity: z.number(),
@@ -54,7 +53,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const body = await request.json()
     const tradeData = AddTradeSchema.parse(body)
 
-    // Get the master account with its phases
     const masterAccount = await db.query.MasterAccount.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, masterAccountId), eq(table.userId, internalUserId)),
       with: {
@@ -85,7 +83,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
     
-    // Don't allow adding trades to failed or archived phases
     if (currentPhase.status === 'failed' || currentPhase.status === 'archived') {
       return NextResponse.json(
         { 
@@ -96,7 +93,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Check if the phase account has a phaseId set
     if (!currentPhase.phaseId) {
       return NextResponse.json(
         { 
@@ -107,7 +103,6 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Create the trade
     const tradePayload = buildTradePersistenceData({
       id: crypto.randomUUID(),
       ...tradeData,
@@ -208,7 +203,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // FIXED: Filter phases based on query parameter
     let phasesToInclude = masterAccount.PhaseAccount
     
     if (phaseFilter === 'current') {
@@ -218,12 +212,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           phase.phaseNumber === masterAccount.currentPhase
       )
     } else if (phaseFilter === 'archived') {
-      // Only show trades from archived phases
       phasesToInclude = masterAccount.PhaseAccount.filter(
         (phase: (typeof masterAccount.PhaseAccount)[number]) => phase.status === 'archived'
       )
     } else if (phaseFilter !== 'all') {
-      // Specific phase number requested
       const requestedPhaseNumber = parseInt(phaseFilter)
       if (!isNaN(requestedPhaseNumber)) {
         phasesToInclude = masterAccount.PhaseAccount.filter(
@@ -232,7 +224,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         )
       }
     }
-    // else: phaseFilter === 'all', use all phases
 
     // Flatten then group trades from filtered phases so every UI "trade" means a grouped execution
     const rawTrades = phasesToInclude.flatMap((phase: (typeof masterAccount.PhaseAccount)[number]) =>

@@ -31,10 +31,8 @@ let browserQueryClient: QueryClient | undefined
 
 function getQueryClient() {
   if (typeof window === 'undefined') {
-    // Server: always create a new QueryClient
     return makeQueryClient()
   }
-  // Browser: reuse the same QueryClient
   if (!browserQueryClient) {
     browserQueryClient = makeQueryClient()
   }

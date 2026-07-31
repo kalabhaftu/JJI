@@ -9,7 +9,6 @@ export const dynamic = 'force-dynamic'
 export default function PropFirmAccountsPage() {
   const router = useRouter()
   
-  // Redirect to the main accounts page with prop-firm filter
   useEffect(() => {
     router.push('/dashboard/accounts?filter=prop-firm')
   }, [router])

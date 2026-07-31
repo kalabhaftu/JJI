@@ -1,8 +1,3 @@
-/**
- * Subscription Guard
- * Server-side access check for protected routes (dashboard, etc.)
- * Used in server components / layouts to gate access.
- */
 
 import { getUserAccessStatus } from './subscription-service'
 import { db } from '@/lib/db/client'
@@ -15,14 +10,9 @@ export interface SubscriptionGuardResult {
   message?: string
 }
 
-/**
- * Check if a user has active subscription access.
- * Returns access status and redirect info for unauthorized users.
- */
 export async function checkSubscriptionAccess(
   userId: string
 ): Promise<SubscriptionGuardResult> {
-  // Get user role
   const user = await db.query.User.findFirst({
     where: eq(schema.User.id, userId),
     columns: { role: true },
@@ -43,7 +33,6 @@ export async function checkSubscriptionAccess(
     return { hasAccess: true, status: access.status }
   }
 
-  // Determine redirect based on status
   let redirectTo = '/subscribe'
   let message = 'Please subscribe to access the dashboard.'
 

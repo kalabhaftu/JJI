@@ -17,7 +17,6 @@ const xai = createOpenAI({
   baseURL: process.env.XAI_BASE_URL || 'https://api.x.ai/v1',
 });
 
-// Comprehensive header name variations for intelligent matching hints
 const FIELD_HINTS = {
   instrument: ['symbol', 'ticker', 'asset', 'pair', 'contract', 'market', 'product', 'security', 'name', 'underlying', 'sym', 'instr', 'currency pair'],
   entryId: ['id', 'trade id', 'order id', 'ticket', 'position id', 'deal', 'execution id', 'ref', 'reference', 'trade number', 'order number', 'ticket number'],

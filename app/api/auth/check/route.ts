@@ -1,20 +1,12 @@
-/**
- * Authentication check API for middleware
- * GET /api/auth/check - Check if user is authenticated
- *
- * OPTIMIZED: Removed expensive database calls and simplified auth check
- * This route should only be used as a fallback, not primary auth method
- */
-
+// This route should only be used as a fallback, not primary auth method
 import { NextRequest, NextResponse } from 'next/server'
 import * as Sentry from '@sentry/nextjs'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
 export async function GET(request: NextRequest) {
-  // Set a very short timeout since this is just a fallback check
   const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 500) // 500ms timeout
+  const timeoutId = setTimeout(() => controller.abort(), 500)
 
   try {
     const cookieStore = await cookies()
@@ -50,14 +42,12 @@ export async function GET(request: NextRequest) {
       }
     )
 
-    // Simple auth check without expensive operations
     const authPromise = supabase.auth.getUser()
     const { data: { user }, error } = await authPromise
 
     clearTimeout(timeoutId)
 
     if (error) {
-      // Only log non-timeout errors
       if (!error.message.includes('AbortError') && !error.message.includes('timeout')) {
       }
       return NextResponse.json(
@@ -73,7 +63,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Minimal response
     return NextResponse.json(
       {
         authenticated: true,

@@ -656,7 +656,6 @@ export function TradeTableReview() {
   const handleBulkTag = React.useCallback(async (tagId: string) => {
     if (selectedTrades.length === 0) return
     try {
-      // For each selected trade, add the tag (append to existing tags)
       await appendTagsToTrades(selectedTrades, [tagId])
       tableRef.current?.resetRowSelection()
       setSelectedTrades([])

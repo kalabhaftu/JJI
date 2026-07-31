@@ -405,7 +405,6 @@ export async function getAccountsAction(options?: { includeArchived?: boolean })
     const userId = await getInternalUserIdSafe()
     const { includeArchived = false } = options || {}
 
-    // If user is not authenticated, return empty array instead of throwing error
     if (!userId) {
       return []
     }
@@ -507,8 +506,6 @@ export async function getAccountsAction(options?: { includeArchived?: boolean })
                 const hasFailedPhase = masterAccount.PhaseAccount.some((p: any) => p.status === 'failed')
             const isMasterAccountFailed = masterAccount.status === 'failed'
 
-            // Get all phaseIds for this master account (for aggregation when failed)
-            // Only calculate aggregation if there's a failed phase (for accounts page display)
               masterAccount.PhaseAccount.forEach((phase: any) => {
               if (phase.status === 'pending') return
 
@@ -554,7 +551,6 @@ export async function getAccountsAction(options?: { includeArchived?: boolean })
           // If a master account has no phases, it won't be shown (correct behavior)
         })
 
-        // Combine both account types and ensure strict serialization
         return JSON.parse(JSON.stringify([...transformedAccounts, ...transformedMasterAccounts]))
       }
     )
@@ -605,7 +601,6 @@ export async function savePayoutAction(payout: {
     }
 
     // CRITICAL BUSINESS RULE: Only funded accounts can request payouts
-    // Check if this is the funded phase based on evaluation type
     if (!isFundedPhase(masterAccount.evaluationType, phaseAccount.phaseNumber)) {
       const currentPhaseName = getPhaseDisplayName(masterAccount.evaluationType, phaseAccount.phaseNumber)
       throw new Error(`Payouts can only be requested for Funded accounts. This account is currently in ${currentPhaseName}.`)
@@ -895,7 +890,6 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
       }
 
 
-      // Send notification for successful import
       await NotificationService.send({
         userId,
         type: 'IMPORT_STATUS',
@@ -917,7 +911,6 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
         accountName: masterAccount.accountName
       }
     } else {
-      // Regular account - batch update
       const regularAccount = await db.query.Account.findFirst({
         where: (table, { and, eq }) => and(eq(table.id, accountId), eq(table.userId, userId))
       })
@@ -926,7 +919,6 @@ export async function linkTradesToCurrentPhase(accountId: string, trades: any[])
         throw new Error(`Account not found (ID: ${accountId}). Please create the account first.`)
       }
 
-      // Create trades with account linking
       const tradesToCreate = trades.map(trade => buildTradePersistenceData({
         id: trade.id || crypto.randomUUID(),
         ...trade,
@@ -989,7 +981,6 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
       }
     })
 
-    // STEP 1: PRE-TRANSACTION VALIDATION (OUTSIDE TRANSACTION - FASTER)
     // Determine if this is a prop firm or regular account BEFORE duplicate check
     const phaseAccount = await db.query.PhaseAccount.findFirst({
       where: (table, { eq }) => eq(table.id, accountId),
@@ -1053,8 +1044,6 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
       accountName = regularAccount.name || accountId
     }
 
-    // STEP 2: DUPLICATE DETECTION (SCOPED TO SPECIFIC ACCOUNT)
-    // Check for duplicates WITHIN the specific account being imported to
     const candidateIdentityKeys = cleanedData
       .map((trade) => buildTradeIdentityKey({
         ...trade,
@@ -1101,7 +1090,6 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
       }
     }
 
-    // STEP 3: OPTIMIZED BATCH PROCESSING
     // Use larger batch sizes and avoid transaction overhead for simple inserts
     const BATCH_SIZE = 1000 // Increased from 500 for better throughput
     const totalBatches = Math.ceil(newTrades.length / BATCH_SIZE)
@@ -1110,7 +1098,6 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
     const allTradesToCreate = newTrades.map(trade => {
       const cleanTrade: any = {}
 
-      // Only include non-null fields
       for (const key of Object.keys(trade)) {
         const value = (trade as any)[key]
         if (value !== null && value !== undefined) {
@@ -1118,7 +1105,6 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
         }
       }
 
-      // Add linking fields
       cleanTrade.phaseAccountId = isPropFirm ? phaseAccountId : null
       cleanTrade.accountId = isPropFirm ? null : regularAccountId
 
@@ -1184,10 +1170,7 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
 
     await invalidateUserCaches(userId)
 
-    // STEP 4: ACCOUNT DATE ADJUSTMENT CHECK
-    // Only check if trades were actually created
     if (totalCreated > 0) {
-      // Find the earliest entryDate among the NEW trades
       const validEntryDates = newTrades
         .map(t => t.entryDate)
         .filter(d => d && !isNaN(new Date(d).getTime()))
@@ -1198,7 +1181,6 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
         // Set to start of day as per user request
         earliestTradeDate.setHours(0, 0, 0, 0)
 
-        // Get account creation date
         let accountCreatedAt: Date | null = null
         if (isPropFirm && masterAccountId) {
           const ma = await db.query.MasterAccount.findFirst({
@@ -1236,7 +1218,6 @@ export async function saveAndLinkTrades(accountId: string, trades: any[]) {
               ))
             }
 
-            // Informational notification
             await NotificationService.send({
               userId,
               type: 'SYSTEM',
@@ -1360,7 +1341,6 @@ async function getAccountHistory(accountId: string) {
   try {
     const userId = await getInternalUserId()
 
-    // Verify account ownership
     const account = await db.query.Account.findFirst({
       where: (table, { and, eq }) => and(eq(table.id, accountId), eq(table.userId, userId)),
       columns: { id: true, name: true }
@@ -1496,7 +1476,6 @@ async function failAccount(accountId: string, currentPhase: any, breachDetails: 
     })
 
     if (masterAccount && currentPhase) {
-      // Update the phase status to failed and master account status
       await db.transaction(async (tx) => {
         await tx.update(schema.PhaseAccount).set({ status: 'failed', endDate: new Date() }).where(and(
           eq(schema.PhaseAccount.id, currentPhase.id),

@@ -45,12 +45,10 @@ export default function WidgetLibraryDialog({
       .catch(() => setCatalog({}))
   }, [open])
 
-  // Get list of widget types already in use
   const usedWidgetTypes = useMemo(() => {
     return new Set(currentLayout.map(w => w.type))
   }, [currentLayout])
 
-  // Filter widgets by search query and exclude KPI-only widgets from general library
   const filteredWidgets = useMemo(() => {
     const query = searchQuery.toLowerCase()
     return Object.entries(WIDGET_REGISTRY).filter(([type, config]) => {
@@ -72,7 +70,6 @@ export default function WidgetLibraryDialog({
     })
   }, [searchQuery, catalog])
 
-  // Group by category
   const widgetsByCategory = useMemo(() => {
     const grouped: Record<string, Array<[string, typeof WIDGET_REGISTRY[keyof typeof WIDGET_REGISTRY]]>> = {}
 
@@ -93,7 +90,6 @@ export default function WidgetLibraryDialog({
   }
 
   const formatWidgetName = (type: string) => {
-    // Convert camelCase to Title Case
     return type
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, str => str.toUpperCase())

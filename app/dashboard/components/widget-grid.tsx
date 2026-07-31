@@ -56,7 +56,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   const [showKpiSelector, setShowKpiSelector] = useState(false)
   const { width: containerWidth, containerRef: gridContainerRef, mounted: gridMounted } = useGridContainerWidth(isMobile)
 
-  // Use current layout if in edit mode, otherwise use active template
   const layout = useMemo(
     () => (isEditMode && currentLayout ? currentLayout : activeTemplate?.layout ?? []),
     [isEditMode, currentLayout, activeTemplate?.layout]
@@ -66,7 +65,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     return layout.some(w => w.type.startsWith('propFirm'))
   }, [layout])
 
-  // Track initial mount and load state for active prop-firm challenge
   const propFirmAccount = useDashboardPropFirmAccount()
   const activePropFirmId = propFirmAccount.selectedMasterAccountId
   const activePropFirmCacheKey = getPropFirmCacheKey(activePropFirmId, propFirmAccount.resetTimezone)
@@ -100,14 +98,12 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   // Ref to prevent layout save loops
   const isInternalUpdate = useRef(false)
 
-  // Clear targetSlot when dialogs close
   useEffect(() => {
     if (!showWidgetLibrary && !showKpiSelector) {
       setTargetSlot(null)
     }
   }, [showWidgetLibrary, showKpiSelector])
 
-  // Separate KPI widgets from other widgets
   const kpiWidgets = useMemo(() => {
     return layout
       .filter(isKpiRowWidget)
@@ -115,14 +111,12 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
       .slice(0, 5)
   }, [layout])
 
-  // Fill KPI slots (always 5)
   const kpiLayout = useMemo(() => {
     return Array(5).fill(null).map((_, index) => {
       return kpiWidgets.find(w => w.x === index) || null
     }) as (WidgetLayout | null)[]
   }, [kpiWidgets])
 
-  // Non-KPI widgets - these go in the react-grid-layout
   const gridWidgets = useMemo(() => {
     return layout.filter(w => !isKpiRowWidget(w))
   }, [layout])
@@ -132,11 +126,9 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     [layout, isEditMode]
   )
 
-  // Handle layout change from react-grid-layout
   const handleLayoutChange = useCallback((newLayout: any[], allLayouts: Record<string, any[]>) => {
     if (!isEditMode || isInternalUpdate.current) return
 
-    // Get the current breakpoint layout
     const updatedGridWidgets: WidgetLayout[] = newLayout.map(item => {
       const original = gridWidgets.find(w => w.i === item.i)
       return {
@@ -150,19 +142,16 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
       }
     })
 
-    // Combine with KPI widgets
     const fullLayout = [...kpiWidgets, ...updatedGridWidgets]
     updateLayout(fullLayout)
   }, [isEditMode, gridWidgets, kpiWidgets, updateLayout])
 
-  // Handle widget removal
   const handleRemoveWidget = useCallback((widgetId: string) => {
     if (!currentLayout) return
     const updatedLayout = currentLayout.filter(w => w.i !== widgetId)
     updateLayout(updatedLayout)
   }, [currentLayout, updateLayout])
 
-  // Handle add widget
   const handleAddWidget = useCallback((slotInfo?: { slotIndex?: number; x?: number; y?: number }) => {
     setTargetSlot(slotInfo || null)
     if (slotInfo?.slotIndex !== undefined && slotInfo.slotIndex < 5) {
@@ -172,7 +161,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     }
   }, [])
 
-  // Handle widget insertion from library
   const handleInsertWidget = useCallback((widgetType: string) => {
     if (!currentLayout) return
 
@@ -193,7 +181,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
       x = slotToUse.x
       y = slotToUse.y
     } else {
-      // Place at the bottom
       const maxY = currentLayout.reduce((max, widget) => {
         if (isKpiRowWidget(widget)) return max
         return Math.max(max, widget.y + widget.h)
@@ -221,7 +208,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     }, 0)
   }, [currentLayout, targetSlot, updateLayout])
 
-  // Handle KPI widget selection
   const handleSelectKpiWidget = useCallback((widgetType: string) => {
     handleInsertWidget(widgetType)
   }, [handleInsertWidget])
@@ -245,7 +231,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     return <EmptyAccountState />
   }
 
-  // Whether the grid has finished its initial width measurement
   const gridReady = isMobile ? true : (gridMounted && containerWidth > 0)
   const shouldShowTemplateSkeleton = !hasMountedOnce && (isLoading || !activeTemplate || !gridReady || isPropFirmLoading)
   const skeletonLayout = layout.length > 0

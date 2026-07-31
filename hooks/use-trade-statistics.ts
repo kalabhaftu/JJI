@@ -32,13 +32,11 @@ export function useTradeStatistics() {
     totalPayouts: toNumber((statistics as any)?.totalPayouts, 0),
   }), [statistics])
 
-  // Group trades by execution for advanced display calculations (if needed by components)
   const groupedTrades = useMemo(
     () => groupTradesByExecution(formattedTrades) as any[],
     [formattedTrades]
   )
 
-  // Derive additional stats from server-computed statistics
   const derivedStats = useMemo(() => {
     const {
       nbWin,
@@ -57,7 +55,6 @@ export function useTradeStatistics() {
     const lossRate = Number(nbTrades || 0) > 0 ? Math.round((Number(nbLoss || 0) / Number(nbTrades || 0)) * 1000) / 10 : 0
     const beRate = Number(nbTrades || 0) > 0 ? Math.round((Number(nbBe || 0) / Number(nbTrades || 0)) * 1000) / 10 : 0
 
-    // Server stats safely cast
     const stats = normalizedStatistics as any
     
     return {

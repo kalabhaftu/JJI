@@ -7,7 +7,6 @@ import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
 import { deletePublicStorageUrls } from '@/server/storage-admin'
 
-// GET - Fetch all backtests for user
 export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -23,7 +22,6 @@ export async function GET(request: NextRequest) {
 
     const internalUserId = identity.internalUserId
 
-    // Fetch all backtests for user
     const backtests = await db.query.BacktestTrade.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       orderBy: (table, { desc }) => [desc(table.dateExecuted)]
@@ -38,7 +36,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new backtest
 export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -74,7 +71,6 @@ export async function POST(request: NextRequest) {
       backtestDate
     } = body
 
-    // Validate required fields
     if (!pair || !direction || !outcome || !session || !model) {
       return NextResponse.json(
         { error: 'Missing required fields' },
@@ -82,7 +78,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create backtest
     const backtest = (await db.insert(schema.BacktestTrade).values({
       id: crypto.randomUUID(),
       updatedAt: new Date(),
@@ -123,7 +118,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PUT - Update backtest
 export async function PUT(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -154,7 +148,6 @@ export async function PUT(request: NextRequest) {
       )
     }
 
-    // Update backtest
     const updateData: any = {
       updatedAt: new Date()
     }
@@ -188,7 +181,6 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// DELETE - Delete backtest
 export async function DELETE(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -207,7 +199,6 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Backtest ID required' }, { status: 400 })
     }
 
-    // 1. Fetch backtest to get image URLs
     const backtestTrade = await db.query.BacktestTrade.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, id), eq(table.userId, internalUserId)),
       columns: {
@@ -228,7 +219,6 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    // 2. Collect image URLs
     const imageUrls = [
       backtestTrade.imageOne,
       backtestTrade.imageTwo,
@@ -239,7 +229,6 @@ export async function DELETE(request: NextRequest) {
       backtestTrade.cardPreviewImage
     ].filter((url): url is string => !!url)
 
-    // 3. Delete from storage
     if (imageUrls.length > 0) {
       try {
         await deletePublicStorageUrls(imageUrls)
@@ -248,7 +237,6 @@ export async function DELETE(request: NextRequest) {
       }
     }
 
-    // 4. Delete from database
     await db.delete(schema.BacktestTrade).where(and(
       eq(schema.BacktestTrade.id, id),
       eq(schema.BacktestTrade.userId, internalUserId),

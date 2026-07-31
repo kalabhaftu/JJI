@@ -105,7 +105,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Calculate last week's window (Mon–Sun)
     let requestBody: z.infer<typeof weeklyReviewRequestSchema>
     try {
       const rawBody = await request.text()
@@ -130,7 +129,6 @@ export async function POST(request: NextRequest) {
       lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 })
     }
     
-    // Normalize to start and end of day
     lastWeekStart.setHours(0, 0, 0, 0)
     lastWeekEnd.setHours(23, 59, 59, 999)
     reviewWeekStart = lastWeekStart
@@ -188,7 +186,6 @@ export async function POST(request: NextRequest) {
     const getNetPnl = (trade: any) => Number(trade.pnl || 0)
     const getOutcome = (trade: any) => classifyOutcome(getNetPnl(trade), breakEvenThreshold)
 
-    // Compute stats
     const wins = trades.filter(t => getOutcome(t) === 'win')
     const losses = trades.filter(t => getOutcome(t) === 'loss')
     const totalPnl = trades.reduce((s, t) => s + getNetPnl(t), 0)
@@ -199,7 +196,6 @@ export async function POST(request: NextRequest) {
     const avgWin = wins.length > 0 ? grossProfit / wins.length : 0
     const avgLoss = losses.length > 0 ? grossLoss / losses.length : 0
 
-    // P&L by day
     const pnlByDay: Record<string, { pnl: number; trades: number }> = {}
     trades.forEach(t => {
       const day = format(new Date(t.entryDate), 'EEEE')
@@ -212,7 +208,6 @@ export async function POST(request: NextRequest) {
     const bestDay = dayEntries[0] || null
     const worstDay = dayEntries[dayEntries.length - 1] || null
 
-    // P&L by instrument
     const pnlByInstrument: Record<string, { pnl: number; trades: number; wins: number }> = {}
     trades.forEach(t => {
       if (!pnlByInstrument[t.instrument]) pnlByInstrument[t.instrument] = { pnl: 0, trades: 0, wins: 0 }
@@ -221,14 +216,12 @@ export async function POST(request: NextRequest) {
       if (getOutcome(t) === 'win') pnlByInstrument[t.instrument]!.wins++
     })
 
-    // Streak analysis
     let maxWinStreak = 0, maxLossStreak = 0, curW = 0, curL = 0
     trades.forEach(t => {
       if (getOutcome(t) === 'win') { curW++; curL = 0; maxWinStreak = Math.max(maxWinStreak, curW) }
       else if (getOutcome(t) === 'loss') { curL++; curW = 0; maxLossStreak = Math.max(maxLossStreak, curL) }
     })
 
-    // Trades per day
     const tradingDays = new Set(trades.map(t => format(new Date(t.entryDate), 'yyyy-MM-dd'))).size
     const avgTradesPerDay = tradingDays > 0 ? trades.length / tradingDays : 0
 
@@ -253,7 +246,6 @@ export async function POST(request: NextRequest) {
         .map(([name, d]) => ({ name, pnl: Math.round(d.pnl * 100) / 100, trades: d.trades, winRate: d.trades > 0 ? Math.round((d.wins / d.trades) * 1000) / 10 : 0 })),
     }
 
-    // Build stats summary for the AI prompt
     const instrumentSummary = Object.entries(pnlByInstrument)
       .sort((a, b) => b[1].pnl - a[1].pnl)
       .map(([name, d]) => `${name}: ${d.trades} trades, $${d.pnl.toFixed(2)}, ${d.trades > 0 ? ((d.wins / d.trades) * 100).toFixed(0) : 0}% WR`)
@@ -263,7 +255,6 @@ export async function POST(request: NextRequest) {
       .map(([day, d]) => `${day}: ${d.trades} trades, $${d.pnl.toFixed(2)}`)
       .join('\n')
 
-    // Call AI
     const baseUrl = process.env.XAI_BASE_URL || 'https://api.x.ai/v1'
     const model = process.env.XAI_MODEL || 'grok-4-1-fast-reasoning'
 

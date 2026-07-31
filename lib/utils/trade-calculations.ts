@@ -1,6 +1,3 @@
-/**
- * Trade calculation utilities
- */
 
 export interface PnLCalculationParams {
   entryPrice: string | number
@@ -10,9 +7,6 @@ export interface PnLCalculationParams {
   commission?: number
 }
 
-/**
- * Calculate P&L for a trade
- */
 export function calculatePnL({
   entryPrice,
   closePrice,
@@ -33,9 +27,6 @@ export function calculatePnL({
   return pnl
 }
 
-/**
- * Calculate trade duration between entry and close times
- */
 export function calculateDuration(
   entryDate: string,
   entryTime: string,

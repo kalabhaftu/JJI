@@ -35,13 +35,11 @@ export async function GET(request: NextRequest) {
     const typeFilter = searchParams.get('type') || 'all'
     const search = searchParams.get('search')?.toLowerCase() || ''
 
-    // 1. Fetch live accounts
     const liveAccounts = await db.query.Account.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     })
 
-    // 2. Fetch prop firm accounts
     const propFirmAccounts = await db.query.MasterAccount.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       with: { PhaseAccount: { orderBy: (table, { asc }) => [asc(table.phaseNumber)] } }
@@ -51,7 +49,6 @@ export async function GET(request: NextRequest) {
       return isFundedPhaseForEvaluation(evaluationType, phaseNumber)
     }
 
-    // 3. Normalize to UnifiedAccount schema
     const unified: any[] = []
 
     liveAccounts.forEach(acc => {
@@ -105,10 +102,8 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 4. Apply Filters (Server-side simulation)
     const filtered = unified.filter(acc => {
       if (statusFilter === 'all_inclusive') {
-         // Type filter
          if (typeFilter !== 'all' && acc.accountType !== typeFilter) return false
          
          if (search) {
@@ -140,7 +135,6 @@ export async function GET(request: NextRequest) {
          }
       }
 
-      // Type filter
       if (typeFilter !== 'all' && acc.accountType !== typeFilter) return false
       
       if (search) {
@@ -156,7 +150,6 @@ export async function GET(request: NextRequest) {
       return true
     })
 
-    // 5. Paginate
     const total = filtered.length
     
     // Sort logic (Active funded -> active phase -> live -> failed) can be added here if needed
@@ -202,7 +195,6 @@ export async function GET(request: NextRequest) {
        // Ignore if not present
      }
     
-    // 7. Calculate true equity & grouped counts
     const finalAccounts = paginated.map(acc => {
       let calcTrades = []
       if (acc.accountType === 'prop-firm') {
@@ -223,7 +215,6 @@ export async function GET(request: NextRequest) {
       
       const pnl = calculatedEquity - (acc.startingBalance || 0)
       
-      // Grouping logic for clean grouped trade counts
       const groupedCount = calcTrades.length > 0 ? buildGroupedTradeCountSummary(calcTrades as any).groupedTradeCount : 0
       
       return {

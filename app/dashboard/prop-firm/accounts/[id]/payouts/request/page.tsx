@@ -47,13 +47,11 @@ export default function RequestPayoutPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Form state
   const [amount, setAmount] = useState('')
   const [notes, setNotes] = useState('')
 
   const accountId = params.id as string
 
-  // Fetch eligibility data
   useEffect(() => {
     if (!user) return
 
@@ -61,7 +59,6 @@ export default function RequestPayoutPage() {
       try {
         setIsLoading(true)
 
-        // Fetch account and eligibility in parallel
         const [accountRes, payoutsRes] = await Promise.all([
           fetch(`/api/v1/prop-firm/accounts/${accountId}`),
           fetch(`/api/v1/prop-firm/accounts/${accountId}/payouts`)
@@ -80,7 +77,6 @@ export default function RequestPayoutPage() {
 
         if (payoutsData.success && payoutsData.data.eligibility) {
           setEligibility(payoutsData.data.eligibility)
-          // Set suggested amount to profit split amount
           if (payoutsData.data.eligibility.profitSplitAmount > 0) {
             setAmount(payoutsData.data.eligibility.profitSplitAmount.toFixed(2))
           }

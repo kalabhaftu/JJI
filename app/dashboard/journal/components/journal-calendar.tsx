@@ -46,7 +46,6 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
   const handleNextMonth = () => setCurrentDate(prev => addMonths(prev, 1))
   const handleToday = () => setCurrentDate(new Date())
 
-  // Generate calendar days
   const calendarDays = useMemo(() => {
     const startDate = startOfWeek(monthStart, { weekStartsOn: 0 }) // Sunday start
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 })
@@ -56,7 +55,6 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
 
   const groupedTrades = useMemo(() => groupTradesByExecution(trades as Trade[]) as GroupedTrade[], [trades])
 
-  // Group canonical executions by date string (YYYY-MM-DD)
   const tradesByDate = useMemo(() => {
     const grouped = new Map<string, GroupedTrade[]>()
     groupedTrades.forEach(trade => {
@@ -69,13 +67,11 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
     return grouped
   }, [groupedTrades])
 
-  // Monthly stats
   const monthlyStats = useMemo(() => {
     let totalPnl = 0
     let wins = 0
     let total = 0
     
-    // Only count trades in the currently viewed month
     const currentMonthStr = format(currentDate, 'yyyy-MM')
     
     for (const [dateStr, dailyTrades] of tradesByDate.entries()) {

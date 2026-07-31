@@ -1,7 +1,3 @@
-/**
- * Integration tests for POST /api/v1/reports/stats
- * Requires authenticated request context (mocked in tests)
- */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 

@@ -192,11 +192,9 @@ export default function LiveAccountDetailPage() {
   const { formattedTrades } = useData()
   const storeAccounts = useUserStore(state => state.accounts)
 
-  // Fetch account data with calculated metrics
   const fetchAccountData = useCallback(async () => {
     try {
       setIsLoading(true)
-      // Fetch account details with calculated metrics from enhanced endpoint
       const response = await fetch(`/api/v1/accounts/${accountId}?t=${Date.now()}`, {
         cache: 'no-store'
       })
@@ -224,13 +222,11 @@ export default function LiveAccountDetailPage() {
     }
   }, [accountId, router])
 
-  // Listen to store updates for this account
   useEffect(() => {
     if (!storeAccounts || !accountId) return
 
     const storeAccount = storeAccounts.find(acc => acc.id === accountId)
     if (storeAccount && storeAccount.accountType === 'live') {
-      // Update account data from store
       setAccount(prev => {
         if (!prev) return null
         return {
@@ -245,19 +241,16 @@ export default function LiveAccountDetailPage() {
     }
   }, [storeAccounts, accountId])
 
-  // Subscribe to realtime changes for this account
   useDatabaseRealtime({
     userId: user?.id,
     enabled: !!user?.id && !!accountId,
     onAccountChange: (change) => {
       const changedAccountId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
       if (changedAccountId === accountId) {
-        // Refresh account data immediately
         fetchAccountData()
       }
     },
     onAnyChange: (change) => {
-      // Also refresh on trade changes that might affect account metrics
       if (change.table === 'Trade') {
         const tradeAccountNumber = (change.newRecord?.accountNumber || change.oldRecord?.accountNumber) as string | undefined
         if (account && tradeAccountNumber === account.number) {
@@ -472,7 +465,6 @@ export default function LiveAccountDetailPage() {
                       accountNumber={account.number}
                       currentBalance={account.currentEquity || 0}
                       onTransactionComplete={() => {
-                        // Refresh account data by incrementing refresh key
                         setRefreshKey(prev => prev + 1)
                       }}
                     >
@@ -487,7 +479,6 @@ export default function LiveAccountDetailPage() {
                       accountNumber={account.number}
                       currentBalance={account.currentEquity || 0}
                       onTransactionComplete={() => {
-                        // Refresh account data by incrementing refresh key
                         setRefreshKey(prev => prev + 1)
                       }}
                     >

@@ -22,10 +22,8 @@ export function shouldIgnoreError(message?: string, metadata?: unknown): boolean
 const originalError = pinoLogger.error.bind(pinoLogger) as (...args: any[]) => void
 
 pinoLogger.error = (...args: any[]) => {
-  // Call the original pino error
   originalError(...args)
 
-    // Forward to Sentry
     try {
       let messageStr = ''
       let errorObj: Error | null = null
@@ -67,14 +65,11 @@ pinoLogger.error = (...args: any[]) => {
         })
       }
     } catch (e) {
-      // Prevent recursive failures
       originalError({ err: e }, 'Failed to send error to Sentry')
     }
   }
 
 const logger = pinoLogger as pino.Logger
 
-// Named re-exports so both `import logger from '@/lib/logger'`
-// and `import { logger } from '@/lib/logger'` work seamlessly.
 export { logger }
 export default logger

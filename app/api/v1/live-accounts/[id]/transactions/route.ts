@@ -5,7 +5,6 @@ import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 
-// POST /api/live-accounts/[id]/transactions - Create deposit or withdrawal
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -27,7 +26,6 @@ export async function POST(
     const body = await request.json()
     const { type, amount, description } = body
 
-    // Validate input
     if (!type || amount === undefined || amount === null || amount === '') {
       return NextResponse.json(
         { success: false, error: 'Type and amount are required' },
@@ -50,7 +48,6 @@ export async function POST(
       )
     }
 
-    // Validate minimum amounts
     if (type === 'DEPOSIT' && numericAmount < 5) {
       return NextResponse.json(
         { success: false, error: 'Minimum deposit amount is $5' },
@@ -77,7 +74,6 @@ export async function POST(
       )
     }
 
-    // For withdrawals, check if account has sufficient balance
     if (type === 'WITHDRAWAL') {
       // Calculate current balance including trades and previous transactions
       const trades = await db.query.Trade.findMany({
@@ -107,7 +103,6 @@ export async function POST(
       }
     }
 
-    // Create transaction
     const transactionAmount = type === 'DEPOSIT' ? numericAmount : -numericAmount
 
     const transaction = (await db.insert(schema.LiveAccountTransaction).values({
@@ -132,7 +127,6 @@ export async function POST(
   }
 }
 
-// GET /api/live-accounts/[id]/transactions - Get transaction history
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -164,7 +158,6 @@ export async function GET(
       )
     }
 
-    // Get transactions
     const transactions = await db.query.LiveAccountTransaction.findMany({
       where: (table, { eq }) => eq(table.accountId, accountId),
       orderBy: (table, { desc }) => [desc(table.createdAt)]

@@ -6,7 +6,6 @@ import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 import { eq, and } from 'drizzle-orm'
 
-// PUT - Update a tag
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -61,7 +60,6 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete a tag
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -100,7 +98,6 @@ export async function DELETE(
       )).returning()
     }
 
-    // Delete the tag
     await db.delete(schema.TradeTag).where(and(
       eq(schema.TradeTag.id, id),
       eq(schema.TradeTag.userId, userId),

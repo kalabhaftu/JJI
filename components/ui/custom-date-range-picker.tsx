@@ -57,10 +57,8 @@ export function CustomDateRangePicker({
 
   const handleDayClick = (day: Date) => {
     if (!selected?.from || (selected.from && selected.to)) {
-      // Start new selection
       onSelect?.({ from: day, to: undefined })
     } else if (selected.from && !selected.to) {
-      // Complete the range
       if (isSameDay(day, selected.from)) {
         // Same day clicked, select just that day
         onSelect?.({ from: day, to: day })

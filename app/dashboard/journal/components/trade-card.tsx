@@ -71,20 +71,16 @@ export function TradeCard({
   const tradeTagIds = Array.isArray((trade as any).tags) ? (trade as any).tags : []
   const tradeTags = getTagsByIds(tradeTagIds)
 
-  // Get status variant based on PnL (matching account card patterns)
   const getStatusVariant = (pnl: number): "default" | "secondary" | "destructive" | "outline" => {
     if (pnl > threshold) return 'default' // WIN
     if (pnl < -threshold) return 'destructive' // LOSS
     return 'outline' // BREAK EVEN
   }
 
-  // Calculate R:R ratio and detect incomplete data
   const calculateRiskRewardRatio = (trade: Trade): { ratio: number; hasIncompleteData: boolean } => {
-    // Parse prices from strings
     const entryPrice = parseFloat(String(trade.entryPrice))
     const closePrice = parseFloat(String(trade.closePrice))
 
-    // Get stop loss and take profit from database fields
     const stopLossRaw = (trade as any).stopLoss || null
     const takeProfitRaw = (trade as any).takeProfit || null
 
@@ -97,7 +93,6 @@ export function TradeCard({
 
     const hasIncompleteData = !entryPrice || !closePrice || !stopLoss || !side
 
-    // Need all required fields for calculation
     if (hasIncompleteData) {
       // Fallback to TradeAnalytics if available
       const analyticsRR = (trade as any).tradeAnalytics?.riskRewardRatio

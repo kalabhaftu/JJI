@@ -35,7 +35,6 @@ function parseRateLimitMessage(detail: string) {
 }
 
 interface RithmicSyncContextType {
-  // Core connection management
   connect: (
     url: string,
     token: string,
@@ -46,17 +45,14 @@ interface RithmicSyncContextType {
   isConnected: boolean;
   connectionStatus: string;
 
-  // Message handling
   handleMessage: (message: any) => void;
 
-  // Auto-sync functionality
   performSyncForCredential: (
     credentialId: string
   ) => Promise<
     { success: boolean; rateLimited: boolean; message: string } | undefined
   >;
 
-  // Utilities
   calculateStartDate: (selectedAccounts: string[]) => string;
   authenticateAndGetAccounts: (credentials: RithmicCredentials) => Promise<
     | { success: false; rateLimited: boolean; message: string }
@@ -93,7 +89,6 @@ export function RithmicSyncContextProvider({
   const isLoading = useUserStore((state) => state.isLoading);
   const trades = useTradesStore((state) => state.trades);
 
-  // Use store for state management
   const {
     syncInterval,
     accountsProgress,
@@ -136,7 +131,6 @@ export function RithmicSyncContextProvider({
       switch (message.type) {
         case "log":
           if (message.level === "info") {
-            // Handle initial days count message
             if (
               message.message.includes("Processing") &&
               message.message.includes("days of history")
@@ -147,7 +141,6 @@ export function RithmicSyncContextProvider({
               if (match) {
                 const [, totalDays] = match;
 
-                // Look for the most recently added account that doesn't have totalDays set
                 const entries = Object.entries(accountsProgress);
                 const activeAccount = entries.find(
                   ([_, progress]) =>
@@ -173,7 +166,6 @@ export function RithmicSyncContextProvider({
                 }
               }
             }
-            // Handle day-by-day progress
             else if (message.message.includes("Processing date")) {
               // Support both old and new message formats
               const newFormatMatch = message.message.match(
@@ -197,7 +189,6 @@ export function RithmicSyncContextProvider({
               }
 
               if (accountId && currentDay && totalDays) {
-                // Calculate the actual days processed based on the current day number
                 const daysProcessed = Math.max(parseInt(currentDay) - 1, 0);
                 const currentProgress = accountsProgress[accountId] || {
                   processedDates: [],
@@ -214,7 +205,6 @@ export function RithmicSyncContextProvider({
                 });
               }
             }
-            // Handle completed dates
             else if (
               message.message.includes("Successfully processed orders for date")
             ) {
@@ -244,7 +234,6 @@ export function RithmicSyncContextProvider({
                 });
               }
             }
-            // Handle account initialization
             else if (message.message.includes("Successfully added account")) {
               const accountId = message.message.match(/account ([^"]+)/)?.[1];
               if (accountId) {
@@ -262,7 +251,6 @@ export function RithmicSyncContextProvider({
                 });
               }
             }
-            // Handle account start
             else if (
               message.message.includes("Starting processing for account")
             ) {
@@ -283,7 +271,6 @@ export function RithmicSyncContextProvider({
                 });
               }
             }
-            // Handle account completion
             else if (
               message.message.includes("Completed processing account") &&
               message.message.includes("collected")
@@ -368,7 +355,6 @@ export function RithmicSyncContextProvider({
               });
             }
 
-            // Update current account if not set
             if (!currentAccount) {
               setCurrentAccount(accountId);
             }
@@ -563,7 +549,6 @@ export function RithmicSyncContextProvider({
           ),
         ])) as Response;
 
-        // Handle rate limit error specifically
         if (response.status === 429) {
           const data = await response.json();
           const params = parseRateLimitMessage(data.detail);
@@ -582,7 +567,6 @@ export function RithmicSyncContextProvider({
         const data = await response.json();
         if (!data.success) throw new Error(data.message);
 
-        // If allAccounts is true, use all available accounts else use selected accounts (which exist in the data.accounts array)
         const accountsToSync = savedData.allAccounts
           ? data.accounts.map((acc: any) => acc.account_id)
           : savedData.selectedAccounts.filter((account: string) =>
@@ -592,7 +576,6 @@ export function RithmicSyncContextProvider({
         setAvailableAccounts(data.accounts);
         const wsUrl = getWebSocketUrl(data.websocket_url);
 
-        // Get most recent date for each account
         const mostRecentDates = accountsToSync
           .map((accountId: string) => {
             const accountTrades = trades.filter(
@@ -609,12 +592,10 @@ export function RithmicSyncContextProvider({
 
         let startDate: string;
 
-        // If no valid dates found, use 200 days ago as default
         if (mostRecentDates.length === 0) {
           const defaultDate = new Date(Date.now() - 200 * 24 * 60 * 60 * 1000);
           startDate = defaultDate.toISOString().slice(0, 10).replace(/-/g, "");
         } else {
-          // Find oldest of the most recent dates
           const oldestRecentDate = new Date(Math.min(...mostRecentDates));
           // Add 3 days buffer
           oldestRecentDate.setDate(oldestRecentDate.getDate() - 3);
@@ -633,7 +614,6 @@ export function RithmicSyncContextProvider({
           message: `Starting automatic background sync for ${savedData.name || savedData.credentials.username}`,
         });
 
-        // Update last sync time in the database
         // Call API route instead of server action
         const syncResponse = await fetch("/api/v1/rithmic/synchronizations", {
           method: "POST",
@@ -701,7 +681,6 @@ export function RithmicSyncContextProvider({
         }
       );
 
-      // Handle rate limit error specifically
       if (response.status === 429) {
         const data = await response.json();
         const params = parseRateLimitMessage(data.detail);
@@ -739,7 +718,6 @@ export function RithmicSyncContextProvider({
 
   const calculateStartDate = useCallback(
     (selectedAccounts: string[]): string => {
-      // Filter trades for selected accounts
       const accountTrades = trades.filter((trade) =>
         selectedAccounts.includes(trade.accountNumber)
       );
@@ -752,7 +730,6 @@ export function RithmicSyncContextProvider({
         return startDate;
       }
 
-      // Find the most recent trade date for each account
       const accountDates = selectedAccounts
         .map((accountId) => {
           const accountTrades = trades.filter(
@@ -765,7 +742,6 @@ export function RithmicSyncContextProvider({
         })
         .filter(Boolean) as number[];
 
-      // Get the oldest most recent date across all accounts
       const oldestRecentDate = new Date(Math.min(...accountDates));
 
       // Set to next day
@@ -852,19 +828,15 @@ export function RithmicSyncContextProvider({
         }),
         getWebSocketUrl,
       } : {
-        // Core connection management
         connect,
         disconnect,
         isConnected,
         connectionStatus,
 
-        // Message handling
         handleMessage,
 
-        // Auto-sync functionality
         performSyncForCredential,
 
-        // Utilities
         calculateStartDate,
         authenticateAndGetAccounts,
         getWebSocketUrl,

@@ -11,10 +11,6 @@ interface DeploymentCheckConfig {
   autoRefreshDelay?: number // in milliseconds
 }
 
-/**
- * Hook to detect new deployments and handle stale client issues
- * Checks build ID periodically and prompts user to refresh when a new deployment is detected
- */
 export function useDeploymentCheck({
   checkInterval = 5 * 60 * 1000, // 5 minutes default
   enabled = true,

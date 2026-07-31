@@ -217,7 +217,6 @@ export function WeeklyModal({
   const [imageLoadError, setImageLoadError] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
 
-  // Track the latest save request to prevent race conditions
   const saveRequestRef = useRef<number>(0)
   // Track the latest reviewData to avoid stale values in rapid changes
   const reviewDataRef = useRef<any>(null)
@@ -226,12 +225,10 @@ export function WeeklyModal({
     reviewDataRef.current = reviewData
   }, [reviewData])
 
-  // Generate organized path: userId/week-start-date (YYYY-MM-DD)
   const weekStartDate = selectedDate ? format(startOfWeek(selectedDate), 'yyyy-MM-dd') : ''
   const uploadOwnerId = supabaseUser?.id
   const uploadPath = uploadOwnerId ? `${uploadOwnerId}/${weekStartDate}` : ''
 
-  // Image upload setup - dedicated bucket for weekly calendars
   const { onUpload, files, setFiles, isSuccess: isUploadSuccess, loading: isUploading } = useSupabaseUpload({
     bucketName: 'weekly-calendars',
     path: uploadPath,
@@ -241,7 +238,6 @@ export function WeeklyModal({
   })
 
   useEffect(() => {
-    // Validate selectedDate before opening
     if (isOpen && selectedDate && selectedDate instanceof Date && !isNaN(selectedDate.getTime())) {
       const loadReview = async () => {
         setIsLoadingReview(true)
@@ -260,7 +256,6 @@ export function WeeklyModal({
     }
   }, [isOpen, selectedDate, onOpenChange])
 
-  // Aggregate weekly data
   const weeklyData = useMemo(() => {
     if (!selectedDate) return { trades: [], tradeNumber: 0, pnl: 0, longNumber: 0, shortNumber: 0, winRate: 0, avgWin: 0, avgLoss: 0, winningTrades: 0, losingTrades: 0 }
 
@@ -337,21 +332,18 @@ export function WeeklyModal({
     let grossLoss = 0
 
     weeklyData.trades.forEach((trade: any) => {
-      // Day Stats
       const day = format(new Date(trade.entryDate), 'EEEE')
       const netPnL = getTradeNetPnl(trade)
       if (!dayStats[day]) dayStats[day] = { pnl: 0, trades: 0 }
       dayStats[day].pnl += netPnL
       dayStats[day].trades += 1
 
-      // Pair Stats
       const pair = trade.instrument || 'Unknown'
       if (!pairStats[pair]) pairStats[pair] = { pnl: 0, trades: 0, wins: 0 }
       pairStats[pair].pnl += netPnL
       pairStats[pair].trades += 1
       if (classifyOutcome(netPnL, breakEvenThreshold) === 'win') pairStats[pair].wins += 1
 
-      // Session Stats (proper timezone handling)
       const session = getTradingSession(trade.entryDate)
       if (!sessionStats[session]) sessionStats[session] = { pnl: 0, trades: 0 }
       sessionStats[session].pnl += netPnL
@@ -384,14 +376,12 @@ export function WeeklyModal({
     }
   }, [weeklyData, breakEvenThreshold])
 
-  // Chart data for cumulative P&L
   const chartData = useMemo(() => {
     if (!selectedDate) return []
 
     const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 })
     const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 })
 
-    // Format week boundaries as YYYY-MM-DD strings for consistent comparison
     const weekStartStr = format(weekStart, 'yyyy-MM-dd')
     const weekEndStr = format(weekEnd, 'yyyy-MM-dd')
 
@@ -425,7 +415,6 @@ export function WeeklyModal({
     try {
       const loadingToast = toast.loading("Compressing image...")
 
-      // Compress image to WebP
       const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
@@ -436,12 +425,10 @@ export function WeeklyModal({
       const compressedFile = await imageCompression(file, options)
       const newFile = new File([compressedFile], `weekly-calendar-${Date.now()}.webp`, { type: 'image/webp' })
 
-      // Create preview URL from the compressed file
       const preview = URL.createObjectURL(compressedFile)
       setImagePreview(preview)
       setUploadedFile(newFile)
 
-      // Prepare file for upload hook
       const fileWithPreview = Object.assign(newFile, {
         preview: preview,
         errors: []
@@ -456,9 +443,7 @@ export function WeeklyModal({
     }
   }
 
-  // Handle Image Removal
   const handleRemoveImage = () => {
-    // Clear preview
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview)
       setImagePreview(null)
@@ -466,13 +451,11 @@ export function WeeklyModal({
     setUploadedFile(null)
     setFiles([])
 
-    // Clear the saved image from review data
     setReviewData({ ...reviewData, calendarImage: null })
     toast.info("Image removed")
   }
 
   const handleReplaceImage = () => {
-    // Clear current preview
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview)
       setImagePreview(null)
@@ -480,7 +463,6 @@ export function WeeklyModal({
     setUploadedFile(null)
     setFiles([])
 
-    // Trigger file input
     const fileInput = document.getElementById('weekly-calendar-upload') as HTMLInputElement
     if (fileInput) {
       fileInput.value = ''
@@ -488,7 +470,6 @@ export function WeeklyModal({
     }
   }
 
-  // Cleanup preview URL when modal closes or unmounts
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -497,7 +478,6 @@ export function WeeklyModal({
     }
   }, [imagePreview])
 
-  // Reset preview when modal closes
   useEffect(() => {
     if (!isOpen) {
       if (imagePreview) {
@@ -511,7 +491,6 @@ export function WeeklyModal({
     }
   }, [isOpen, imagePreview, setFiles])
 
-  // Safe Close Logic
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false)
   // Track the exact data state as confirmed by the server (initially or after save)
   const lastSavedReviewData = useRef<any>(null)
@@ -553,7 +532,6 @@ export function WeeklyModal({
     }
   }
 
-  // Update handleSave to update baseline
   const handleSave = async () => {
     if (!selectedDate) return
     setIsSaving(true)
@@ -561,14 +539,12 @@ export function WeeklyModal({
     try {
       let imageUrl = reviewData?.calendarImage
 
-      // Upload new image if exists
       if (uploadedFile && files.length > 0) {
         if (!uploadOwnerId) throw new Error('Upload session is not available')
         const uploadResult = await onUpload()
         if (uploadResult.errors.length > 0 || !uploadResult.successfulNames.includes(files[0]!.name)) {
           throw new Error(uploadResult.errors[0]?.message || 'Calendar image upload failed')
         }
-        // Construct public URL for weekly-calendars bucket with organized path
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
         if (supabaseUrl) {
           const objectPath = `${uploadOwnerId}/${weekStartDate}/${files[0]!.name}`
@@ -596,7 +572,6 @@ export function WeeklyModal({
 
         toast.success("Weekly review saved")
 
-        // Clear upload state after successful save
         if (imagePreview) {
           URL.revokeObjectURL(imagePreview)
           setImagePreview(null)
@@ -604,7 +579,6 @@ export function WeeklyModal({
         setUploadedFile(null)
         setFiles([])
 
-        // Close modal after successful save
         onOpenChange(false)
       } else {
         toast.error("Failed to save review")
@@ -880,7 +854,6 @@ export function WeeklyModal({
                       onValueChange={(val) => {
                         if (!selectedDate) return
 
-                        // Create updated review data object with new expectation
                         // This ensures we use the latest values, not stale closure values
                         const updatedReviewData = {
                           ...(reviewData || {}),
@@ -1259,7 +1232,6 @@ export function WeeklyModal({
             <AlertDialogAction
               onClick={() => {
                 setShowUnsavedAlert(false)
-                // Reset to baseline derived from lastSavedReviewData
                 if (lastSavedReviewData.current) {
                   setReviewData(JSON.parse(JSON.stringify(lastSavedReviewData.current)))
                 }

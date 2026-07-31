@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/alert-dialog"
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { toast } from "sonner"
-// UploadIcon removed
 import type { TradeType } from '@/lib/db/schema/trades';
 
 import { saveAndLinkTrades } from '@/server/accounts'
@@ -89,7 +88,6 @@ interface TradeImportJobResponse {
   meta?: TradeImportJobMeta
 }
 
-// Step icons mapping
 const stepIcons: Record<string, React.ReactNode> = {
   'select-import-type': <FileSpreadsheet className="h-3.5 w-3.5" />,
   'upload-file': <Upload className="h-3.5 w-3.5" />,
@@ -126,9 +124,7 @@ export default function ImportButton() {
   const [processedTrades, setProcessedTrades] = useState<TradeType[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [saveProgress, setSaveProgress] = useState<number>(0)
-  // uploadIconRef removed
 
-  // Phase transition state
   const [showPhaseTransitionDialog, setShowPhaseTransitionDialog] = useState(false)
   const [phaseTransitionData, setPhaseTransitionData] = useState<{
     masterAccountId: string
@@ -148,13 +144,11 @@ export default function ImportButton() {
   const supabaseUser = useUserStore(state => state.supabaseUser)
   const { refreshTrades } = useData()
 
-  // Get current platform config
   const platform = useMemo(() =>
     platforms.find(p => p.type === importType) || platforms.find(p => p.platformName === 'csv-ai'),
     [importType]
   )
 
-  // Get current step info
   const currentStep = useMemo(() =>
     platform?.steps.find(s => s.id === step),
     [platform, step]
@@ -280,7 +274,6 @@ export default function ImportButton() {
 
       setSaveProgress(70)
 
-      // Invalidate accounts cache
       const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
       invalidateAccountsCache('trades imported')
 
@@ -289,7 +282,6 @@ export default function ImportButton() {
       setIsOpen(false)
       resetImportState()
 
-      // Refresh data
       await refreshTrades()
 
       setSaveProgress(100)
@@ -422,13 +414,10 @@ export default function ImportButton() {
     const currentStepConfig = platform.steps.find(s => s.id === step)
     if (!currentStepConfig) return true
 
-    // File upload requires files
     if (currentStepConfig.component === FileUpload && csvData.length === 0) return true
 
-    // Account selection requires selection
     if (currentStepConfig.component === AccountSelection && !selectedAccountId) return true
 
-    // FormatPreview requires processed trades
     if (currentStepConfig.component === FormatPreview && processedTrades.length === 0) return true
 
     return false
@@ -472,7 +461,6 @@ export default function ImportButton() {
 
     const Component = currentStepConfig.component
 
-    // Show saving state
     if (isSaving) {
       return (
         <div className="flex flex-col items-center justify-center h-full gap-6 p-8 bg-background">

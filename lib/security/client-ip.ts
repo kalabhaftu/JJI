@@ -1,10 +1,7 @@
 import { isIP } from 'node:net'
 
-/**
- * Resolve the client address from proxy headers set by the deployment edge.
- * Production must remain behind the configured trusted proxy; direct origin
- * access would make forwarding headers caller-controlled.
- */
+// Production must remain behind the configured trusted proxy; direct origin
+// access would make forwarding headers caller-controlled.
 export function getClientIp(headers: Headers): string {
   const candidates = [
     headers.get('x-vercel-forwarded-for'),

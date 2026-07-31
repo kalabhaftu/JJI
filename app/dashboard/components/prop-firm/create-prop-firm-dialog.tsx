@@ -38,7 +38,6 @@ import { Loader2, Building2, AlertCircle, CheckCircle2, PenLine, Check, X } from
 import { toast } from "sonner"
 import { clearAccountsCache } from "@/hooks/use-accounts"
 
-// Schema for form validation
 const propFirmSchema = z.object({
   accountName: z.string().min(3, 'Account name must be at least 3 characters').max(50, 'Too long'),
   propFirmName: z.string().min(1, 'Please select a prop firm'),
@@ -46,7 +45,6 @@ const propFirmSchema = z.object({
   evaluationType: z.enum(['One Step', 'Two Step', 'Instant']),
   phase1AccountId: z.string().min(1, 'Phase 1 ID is required'),
 
-  // Phase 1 Rules
   phase1ProfitTargetPercent: z.number().min(0).max(100),
   phase1DailyDrawdownPercent: z.number().min(1).max(100),
   phase1MaxDrawdownPercent: z.number().min(1).max(100),
@@ -54,7 +52,6 @@ const propFirmSchema = z.object({
   phase1MinTradingDays: z.number().min(0),
   phase1TimeLimitDays: z.number().min(0).nullable(),
 
-  // Phase 2 Rules (conditional)
   phase2ProfitTargetPercent: z.number().min(0).max(100).optional(),
   phase2DailyDrawdownPercent: z.number().min(0).max(100).optional(),
   phase2MaxDrawdownPercent: z.number().min(0).max(100).optional(),
@@ -62,7 +59,6 @@ const propFirmSchema = z.object({
   phase2MinTradingDays: z.number().min(0).optional(),
   phase2TimeLimitDays: z.number().min(0).nullable().optional(),
 
-  // Funded Rules
   fundedDailyDrawdownPercent: z.number().min(1).max(100),
   fundedMaxDrawdownPercent: z.number().min(1).max(100),
   fundedMaxDrawdownType: z.enum(['static', 'trailing']),
@@ -126,7 +122,6 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
   const watchedFirm = watch('propFirmName')
   const watchedEvalType = watch('evaluationType')
 
-  // Load templates on mount
   useEffect(() => {
     fetch('/api/v1/prop-firm-templates')
       .then(res => res.json())
@@ -136,7 +131,6 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       .catch(() => toast.error('Failed to load templates'))
   }, [])
 
-  // Auto-fill when firm/program selected
   useEffect(() => {
     if (!watchedFirm || !watchedEvalType || !templates[watchedFirm]) return
 
@@ -145,7 +139,6 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
 
     const { phase1, phase2, funded } = program.phases
 
-    // Apply Phase 1
     if (phase1) {
       setValue('phase1ProfitTargetPercent', phase1.profitTargetPercent)
       setValue('phase1DailyDrawdownPercent', phase1.dailyDrawdownPercent)
@@ -155,7 +148,6 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       setValue('phase1TimeLimitDays', phase1.timeLimitDays || null)
     }
 
-    // Apply Phase 2 if exists
     if (phase2) {
       setValue('phase2ProfitTargetPercent', phase2.profitTargetPercent)
       setValue('phase2DailyDrawdownPercent', phase2.dailyDrawdownPercent)
@@ -165,7 +157,6 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       setValue('phase2TimeLimitDays', phase2.timeLimitDays || null)
     }
 
-    // Apply Funded
     if (funded) {
       setValue('fundedDailyDrawdownPercent', funded.dailyDrawdownPercent)
       setValue('fundedMaxDrawdownPercent', funded.maxDrawdownPercent)

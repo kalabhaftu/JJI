@@ -78,8 +78,6 @@ export interface PlatformConfig {
   }[]
 }
 
-// Platform-specific processing functions
-
 const processStandardCsv = (data: string[][]): ProcessedData => {
   if (data.length === 0) {
     throw new Error("The CSV file appears to be empty or invalid.")
@@ -93,7 +91,6 @@ const processMatchTraderCsv = (data: string[][]): ProcessedData => {
     throw new Error("The CSV file appears to be empty or invalid.")
   }
   
-  // Match Trader CSV has a known header format
   const expectedHeaders = ['ID', 'Symbol', 'Open time', 'Volume', 'Side', 'Close time', 'Open price', 'Close Price', 'Stop loss', 'Take profit', 'Swap', 'Commission', 'Profit', 'Reason']
   const headers = data[0]!.filter(header => header && header.trim() !== '')
   
@@ -115,10 +112,8 @@ const processExnessCsv = (data: string[][]): ProcessedData => {
     throw new Error("The CSV file appears to be empty or invalid.")
   }
   
-  // Exness CSV has a known header format
   const headers = data[0]!.filter(header => header && header.trim() !== '')
   
-  // Verify this is an Exness CSV by checking for key columns
   const hasRequiredHeaders = ['ticket', 'opening_time_utc', 'closing_time_utc', 'type', 'lots', 'symbol', 'opening_price', 'closing_price'].every(
     requiredHeader => headers.some(header => header.includes(requiredHeader))
   ) && headers.some(header => header.includes('profit'))

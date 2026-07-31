@@ -13,9 +13,8 @@ export default function SubscribeSuccessPage() {
   const [status, setStatus] = useState<'checking' | 'confirmed' | 'pending'>('checking')
 
   useEffect(() => {
-    // Poll our subscription status endpoint to see if the webhook has upgraded the account
     let attempts = 0
-    const maxAttempts = 15 // Wait up to ~75 seconds for webhook
+    const maxAttempts = 15
 
     async function checkStatus() {
       try {

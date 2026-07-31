@@ -25,9 +25,6 @@ interface LoadingSkeletonProps {
   className?: string
 }
 
-/**
- * Unified loading spinner component
- */
 function LoadingSpinner({ size = 'md', text, className }: LoadingSpinnerProps) {
   const sizeClasses = {
     sm: 'h-4 w-4',
@@ -53,9 +50,6 @@ function LoadingSpinner({ size = 'md', text, className }: LoadingSpinnerProps) {
   )
 }
 
-/**
- * Loading overlay for full screen or container loading
- */
 export function LoadingOverlay({ text = 'Loading...', position = 'absolute', className }: LoadingOverlayProps) {
   const positionClasses = {
     fixed: 'fixed inset-0',
@@ -76,9 +70,6 @@ export function LoadingOverlay({ text = 'Loading...', position = 'absolute', cla
   )
 }
 
-/**
- * Loading toast notification for bottom-right corner
- */
 export function LoadingToast({ text = 'Loading...', className }: { text?: string; className?: string }) {
   return (
     <div className={cn(
@@ -91,9 +82,6 @@ export function LoadingToast({ text = 'Loading...', className }: { text?: string
   )
 }
 
-/**
- * Skeleton loaders for different content types
- */
 function LoadingSkeleton({ variant = 'card', rows = 3, className }: LoadingSkeletonProps) {
   switch (variant) {
     case 'card':
@@ -186,9 +174,6 @@ function LoadingSkeleton({ variant = 'card', rows = 3, className }: LoadingSkele
   }
 }
 
-/**
- * Button loading state
- */
 function LoadingButton({
   children,
   loading = false,
@@ -214,9 +199,6 @@ function LoadingButton({
   )
 }
 
-/**
- * Page loading wrapper
- */
 function PageLoading({ text = 'Loading page...', className }: { text?: string; className?: string }) {
   return (
     <div className={cn('flex min-h-screen items-center justify-center', className)}>

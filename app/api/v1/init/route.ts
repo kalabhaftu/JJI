@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
   try {
     const payload = await getInitBootstrapData()
     
-    // Background Geo Logging
     if (payload.isAuthenticated && payload.user?.id) {
       const headerList = await headers()
       const countryCode = normalizeCountryCode(headerList.get('x-vercel-ip-country'))

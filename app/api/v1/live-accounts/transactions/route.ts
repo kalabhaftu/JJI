@@ -4,7 +4,6 @@ import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 
-// GET /api/live-accounts/transactions - Get all transactions for user's accounts
 export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -19,7 +18,6 @@ export async function GET(request: NextRequest) {
     }
     const userId = identity.internalUserId
 
-    // Get all transactions for user's accounts
     const transactions = await db.query.LiveAccountTransaction.findMany({
       where: (table, { eq }) => eq(table.userId, userId),
       orderBy: (table, { desc }) => [desc(table.createdAt)]

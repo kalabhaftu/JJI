@@ -1,9 +1,3 @@
-/**
- * Payout Management API
- * POST /api/prop-firm/payouts - Request a new payout
- * DELETE /api/prop-firm/payouts/[id] - Delete a pending payout
- */
-
 import { NextRequest, NextResponse } from 'next/server'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { savePayoutAction } from '@/server/accounts'

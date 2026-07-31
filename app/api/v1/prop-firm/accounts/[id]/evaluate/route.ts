@@ -104,7 +104,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const { id: masterAccountId } = await params
     // ID is pure masterAccountId (UUID), not composite
 
-    // Get the current evaluation status without triggering updates
     const masterAccount = await db.query.MasterAccount.findFirst({
       where: (table, { eq }) => and(
         eq(table.id, masterAccountId),

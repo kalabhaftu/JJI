@@ -51,10 +51,6 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
     })
   }
 
-  /**
-   * Helper function to determine if a phase number represents the funded stage
-   * based on the evaluation type.
-   */
   const isFundedPhase = (phaseNumber: number): boolean => {
     switch (evaluationType) {
       case 'Two Step':
@@ -89,7 +85,6 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
   const activePhase = phases.find(p => p.status === 'active')
   const failedPhases = phases.filter(p => p.status === 'failed')
 
-  // Calculate milestones
   const totalTrades = phases.reduce((sum, p) => sum + p.totalTrades, 0)
   const totalPnL = phases.reduce((sum, p) => sum + p.totalPnL, 0)
   const avgWinRate = phases.filter(p => p.totalTrades > 0).length > 0
@@ -99,12 +94,10 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
   // Find longest winning streak (simplified - phases with positive P&L)
   const profitablePhases = phases.filter(p => p.totalPnL > 0).length
   
-  // Calculate best phase by P&L
   const bestPhase = phases.reduce((best, phase) => 
     phase.totalPnL > (best?.totalPnL ?? -Infinity) ? phase : best
   , phases[0])
 
-  // Calculate worst drawdown (most negative P&L)
   const worstDrawdown = Math.min(...phases.map(p => p.totalPnL), 0)
   const phasesInDrawdown = phases.filter(p => p.totalPnL < 0).length
 

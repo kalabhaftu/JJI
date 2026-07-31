@@ -49,10 +49,8 @@ const ExnessProcessor = ({
         const entryDate = entryDateStr.endsWith('Z') ? new Date(entryDateStr) : new Date(entryDateStr + 'Z')
         const closeDate = closeDateStr.endsWith('Z') ? new Date(closeDateStr) : new Date(closeDateStr + 'Z')
 
-        // Calculate time in position in seconds
         const timeInPosition = Math.round((closeDate.getTime() - entryDate.getTime()) / 1000)
 
-        // Extract data from CSV
         const quantity = parseFloat(row[headers.indexOf('lots')] || '0') || 0
         const entryPrice = parseFloat(row[headers.indexOf('opening_price')] || '0') || 0
         const closePrice = parseFloat(row[headers.indexOf('closing_price')] || '0') || 0
@@ -70,13 +68,11 @@ const ExnessProcessor = ({
         const stopLoss = stopLossRaw && parseFloat(stopLossRaw) !== 0 ? stopLossRaw : null
         const takeProfit = takeProfitRaw && parseFloat(takeProfitRaw) !== 0 ? takeProfitRaw : null
 
-        // Get instrument and side
         const instrument = row[headers.indexOf('symbol')] || ''
         const side = row[headers.indexOf('type')] || ''
         const tradeId = row[headers.indexOf('ticket')] || ''
         const reason = row[headers.indexOf('close_reason')] || ''
         
-        // Convert side to uppercase and normalize
         const normalizedSide = side.toLowerCase() === 'buy' ? 'BUY' : 'SELL'
 
         const trade = {
@@ -102,7 +98,6 @@ const ExnessProcessor = ({
           tradingModel: null,
           groupId: null,
           tags: null,
-          // Prisma optional fields
           symbol: instrument, // Same as instrument for Exness
           entryTime: entryDate, // Set actual entry time
           exitTime: closeDate, // Set actual exit time for historical breach detection

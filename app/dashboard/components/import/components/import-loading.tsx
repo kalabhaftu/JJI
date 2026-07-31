@@ -74,7 +74,6 @@ export function ImportLoading() {
   const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    // Rotate quotes every 4 seconds
     const quoteInterval = setInterval(() => {
       setCurrentQuoteIndex((prev) => (prev + 1) % tradingQuotes.length)
     }, 4000)

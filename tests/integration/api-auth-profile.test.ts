@@ -37,7 +37,6 @@ vi.mock('@/lib/db/client', () => ({
     })
   }
 }))
-//
 
 
 vi.mock('@/lib/activity-logger', () => ({

@@ -30,7 +30,6 @@ async function getTradingModelId(context: TradingModelRouteContext) {
   return typeof params?.id === 'string' && params.id.trim() ? params.id : null
 }
 
-// PATCH - Update trading model
 export async function PATCH(
   request: NextRequest,
   context: TradingModelRouteContext
@@ -63,7 +62,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Model not found' }, { status: 404 })
     }
 
-    // If name is being changed, check for duplicates
     if (validated.name && validated.name !== existing.name) {
       const duplicate = await db.query.TradingModel.findFirst({
         where: and(eq(schema.TradingModel.userId, userId), eq(schema.TradingModel.name, validated.name!)),
@@ -102,7 +100,6 @@ export async function PATCH(
   }
 }
 
-// DELETE - Delete trading model
 export async function DELETE(
   request: NextRequest,
   context: TradingModelRouteContext

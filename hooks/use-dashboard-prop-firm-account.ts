@@ -81,7 +81,6 @@ function isSelectableOrBlownAccount(account: DashboardPropFirmAccountOption) {
 }
 
 function getPreferredAccount(accounts: DashboardPropFirmAccountOption[]) {
-  // Prefer the first active account, fallback to first in list
   return accounts.find(isTrulyActive) ?? accounts[0] ?? null
 }
 

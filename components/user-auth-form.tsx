@@ -80,7 +80,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         },
     })
 
-    // Track verification attempts
     const [isVerifying, setIsVerifying] = React.useState(false)
     const [failedAttempts, setFailedAttempts] = React.useState(0)
     const [isRateLimited, setIsRateLimited] = React.useState(false)
@@ -125,7 +124,6 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         }
     }, [form, otpForm, router, nextUrl, isVerifying, isLoading, isRateLimited])
 
-    // Auto-verify on 6 digits
     React.useEffect(() => {
         const subscription = otpForm.watch((value, { name }) => {
             if (name !== 'otp') return

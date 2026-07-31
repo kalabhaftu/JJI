@@ -104,10 +104,6 @@ async function deleteNotificationAction(notificationId: string) {
   }
 }
 
-/**
- * Handle funded approval action from user
- * User clicks "Firm Approved" → Create funded phase with account ID
- */
 export async function handleFundedApprovalAction(data: {
   notificationId: string
   masterAccountId: string
@@ -142,8 +138,6 @@ export async function handleFundedApprovalAction(data: {
     const isInstantAccount = masterAccount.evaluationType === 'Instant'
 
     if (isInstantAccount) {
-      // For Instant accounts, the pending_approval phase IS the funded phase
-      // Just update it directly with the new account ID and activate it
       await tx.update(schema.PhaseAccount).set({
         phaseId: data.fundedAccountId,
         status: 'active'
@@ -178,7 +172,6 @@ export async function handleFundedApprovalAction(data: {
       updatedAt: new Date()
     }).where(eq(schema.Notification.id, data.notificationId))
 
-    // Create approval notification
     await tx.insert(schema.Notification).values({
       userId,
       type: 'FUNDED_APPROVED',
@@ -197,10 +190,6 @@ export async function handleFundedApprovalAction(data: {
   revalidateTag(`accounts-${userId}`)
 }
 
-/**
- * Handle funded decline action from user
- * User clicks "Firm Declined" → Mark account as failed with reason
- */
 export async function handleFundedDeclineAction(data: {
   notificationId: string
   masterAccountId: string

@@ -8,7 +8,6 @@ import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { listDailyJournalEntries } from '@/server/daily-journal'
 
-// GET - Generate AI analysis of journals and trades
 export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -32,7 +31,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Fetch journals in date range
     const journals = await listDailyJournalEntries(internalUserId, {
       startDate,
       endDate,
@@ -40,7 +38,6 @@ export async function GET(request: NextRequest) {
       sortOrder: 'asc',
     })
 
-    // Fetch trades in date range
     const tradesWhereStart = startDate.includes('T') ? startDate : `${startDate}T00:00:00.000Z`
     const tradesWhereEnd = endDate.includes('T') ? endDate : `${endDate}T23:59:59.999Z`
 
@@ -97,7 +94,6 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Fetch funded/active accounts status (MasterAccounts for prop firms)
     const propFirmAccounts = await db.query.MasterAccount.findMany({
       where: (table, { eq, and }) => and(eq(table.userId, internalUserId), eq(table.isArchived, false)),
       columns: {
@@ -109,19 +105,16 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Fetch user's tags for context
     const userTags = await db.query.TradeTag.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       columns: { id: true, name: true }
     })
 
-    // Fetch user's trading models for context
     const tradingModels = await db.query.TradingModel.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       columns: { id: true, name: true }
     })
 
-    // Fetch weekly reviews for context
     const weeklyReviews = await db.query.WeeklyReview.findMany({
       where: (table, { eq, and, gte, lte }) => and(
         eq(table.userId, internalUserId),
@@ -137,7 +130,6 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Generate AI analysis
     const analysis = await generateAnalysis(
       journals,
       trades,
@@ -182,7 +174,6 @@ async function generateAnalysis(
     return 0
   }
 
-  // Prepare data for AI
   const journalSummary = journals.map(j => ({
     date: j.date,
     emotion: j.emotion,
@@ -190,14 +181,12 @@ async function generateAnalysis(
     account: j.Account?.name || 'All Accounts'
   }))
 
-  // Format prop firm account status for AI
   const accountStatusSummary = propFirmAccounts.length > 0
     ? propFirmAccounts.map(acc =>
       `- ${acc.accountName} (${acc.propFirmName}): Status=${acc.status}, Phase=${acc.currentPhase}, Size=$${acc.accountSize}`
     ).join('\n')
     : 'No funded prop firm accounts found'
 
-  // Extract trade notes for analysis
   const tradeNotes = analyzedTrades
     .filter(t => t.comment && t.comment.trim().length > 0)
     .map(t => ({
@@ -220,7 +209,6 @@ async function generateAnalysis(
     tradesWithNotes: tradeNotes.length
   }
 
-  // Calculate profit factor
   const grossProfit = analyzedTrades
     .filter(t => getOutcome(t) === 'win')
     .reduce((sum, t) => sum + getNetPnl(t), 0)
@@ -231,11 +219,9 @@ async function generateAnalysis(
   )
   const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0
 
-  // Calculate average win/loss
   const avgWin = tradeStats.winningTrades > 0 ? grossProfit / tradeStats.winningTrades : 0
   const avgLoss = tradeStats.losingTrades > 0 ? grossLoss / tradeStats.losingTrades : 0
 
-  // P&L by instrument
   const pnlByInstrument: Record<string, { trades: number, pnl: number, wins: number }> = {}
   analyzedTrades.forEach(t => {
     const netPnL = getNetPnl(t)
@@ -248,12 +234,10 @@ async function generateAnalysis(
     if (getOutcome(t) === 'win') pnlByInstrument[inst]!.wins++
   })
 
-  // Sort instruments by P&L
   const topInstruments = Object.entries(pnlByInstrument)
     .sort((a, b) => b[1].pnl - a[1].pnl)
     .slice(0, 5)
 
-  // P&L by strategy (trading model)
   const pnlByStrategy: Record<string, { trades: number, pnl: number, wins: number }> = {}
   analyzedTrades.forEach(t => {
     const strategy = (t as any).TradingModel?.name || 'No Strategy'
@@ -266,7 +250,6 @@ async function generateAnalysis(
     if (getOutcome(t) === 'win') pnlByStrategy[strategy]!.wins++
   })
 
-  // P&L by weekday
   const pnlByWeekday: Record<string, { trades: number, pnl: number }> = {
     Sunday: { trades: 0, pnl: 0 },
     Monday: { trades: 0, pnl: 0 },
@@ -283,7 +266,6 @@ async function generateAnalysis(
     pnlByWeekday[dayOfWeek]!.pnl += netPnL
   })
 
-  // P&L by hour of day
   const pnlByHour: Record<number, { trades: number, pnl: number }> = {}
   analyzedTrades.forEach(t => {
     const hour = new Date(t.entryDate).getHours()
@@ -295,12 +277,10 @@ async function generateAnalysis(
     pnlByHour[hour]!.pnl += netPnL
   })
 
-  // Find best/worst hours
   const hourEntries = Object.entries(pnlByHour).map(([hour, data]) => ({ hour: parseInt(hour), ...data }))
   const bestHours = hourEntries.filter(h => h.trades >= 3).sort((a, b) => b.pnl - a.pnl).slice(0, 3)
   const worstHours = hourEntries.filter(h => h.trades >= 3).sort((a, b) => a.pnl - b.pnl).slice(0, 3)
 
-  // Count emotions
   const emotionCounts: Record<string, number> = {}
   journals.forEach(j => {
     if (j.emotion) {
@@ -327,7 +307,6 @@ async function generateAnalysis(
     }
   })
 
-  // Market Bias Analysis
   const biasPerformance: Record<string, { trades: number, pnl: number, wins: number, alignedWithSide: number }> = {
     BULLISH: { trades: 0, pnl: 0, wins: 0, alignedWithSide: 0 },
     BEARISH: { trades: 0, pnl: 0, wins: 0, alignedWithSide: 0 },
@@ -357,7 +336,6 @@ async function generateAnalysis(
 
   const biasAlignment = tradesWithBias > 0 ? (tradesAlignedWithBias / tradesWithBias) * 100 : 0
 
-  // News Trading Analysis
   const newsTradesStats = {
     totalNewsDays: analyzedTrades.filter(t => t.newsDay).length,
     tradedDuringNews: analyzedTrades.filter(t => t.newsDay && t.newsTraded).length,
@@ -379,7 +357,6 @@ async function generateAnalysis(
   const noNewsDayLosses = analyzedTrades.filter(t => !t.newsDay && getOutcome(t) === 'loss').length
   const noNewsDayWinRate = newsTradesStats.noNewsTraded > 0 ? (noNewsDayWins / newsTradesStats.noNewsTraded) * 100 : 0
 
-  // Extract specific news events that were traded
   const newsEventsTrade: Record<string, { trades: number, pnl: number, wins: number, tradedDuring: number }> = {}
   analyzedTrades.forEach(t => {
     if (t.newsDay && t.selectedNews) {
@@ -397,7 +374,6 @@ async function generateAnalysis(
     }
   })
 
-  // Timeframe Analysis
   const timeframeStats: Record<string, { trades: number, pnl: number, wins: number }> = {
     '1m': { trades: 0, pnl: 0, wins: 0 },
     '5m': { trades: 0, pnl: 0, wins: 0 },
@@ -437,7 +413,6 @@ async function generateAnalysis(
     .filter(([_, data]) => data.trades > 0)
     .sort((a, b) => b[1].pnl - a[1].pnl)
 
-  // Order Type Analysis
   const orderTypeStats: Record<string, { trades: number, pnl: number, wins: number }> = {
     'market': { trades: 0, pnl: 0, wins: 0 },
     'limit': { trades: 0, pnl: 0, wins: 0 },
@@ -461,7 +436,6 @@ async function generateAnalysis(
     .filter(([_, data]) => data.trades > 0)
     .sort((a, b) => b[1].pnl - a[1].pnl)
 
-  // Session Analysis
   const { getTradingSession } = await import('@/lib/time-utils')
   const sessionStats: Record<string, { trades: number, pnl: number, wins: number }> = {}
 

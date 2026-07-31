@@ -40,7 +40,6 @@ export function useJournal(params: UseJournalParams) {
   queryParams.append('pageLimit', limit.toString())
   queryParams.append('pageOffset', ((page - 1) * limit).toString())
   
-  // Search
   if (normalizedTradeDate) {
     queryParams.append('tradeDate', normalizedTradeDate)
   } else if (exactDateMatch && exactDateMatch[1]) {
@@ -49,7 +48,6 @@ export function useJournal(params: UseJournalParams) {
     queryParams.append('search', normalizedSearch)
   }
   
-  // Win/Loss
   if (filterBy === 'wins') {
     queryParams.append('outcome', 'win')
   } else if (filterBy === 'losses') {
@@ -58,19 +56,16 @@ export function useJournal(params: UseJournalParams) {
     queryParams.append('outcome', 'breakeven')
   }
 
-  // Buy/Sell
   if (filterBy === 'buys') {
     queryParams.append('side', 'BUY')
   } else if (filterBy === 'sells') {
     queryParams.append('side', 'SELL')
   }
 
-  // Tags
   if (selectedTagIds.length > 0) {
     queryParams.append('tags', selectedTagIds.join(','))
   }
 
-  // Global Accounts Filter
   if (accountNumbers.length > 0) {
     queryParams.append('accounts', accountNumbers.join(','))
   }

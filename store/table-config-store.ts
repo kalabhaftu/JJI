@@ -23,7 +23,6 @@ interface TableConfig {
 
 interface TableConfigState {
   tables: Record<string, TableConfig>
-  // Actions
   setTableConfig: (tableId: string, config: Partial<TableConfig>) => void
   updateColumnVisibility: (tableId: string, columnId: string, visible: boolean) => void
   updateColumnVisibilityState: (tableId: string, visibility: VisibilityState) => void
@@ -39,7 +38,6 @@ interface TableConfigState {
   migrateOldColumns: () => void
 }
 
-// Default configuration for trade table
 // Must match actual columns in trade-table-review.tsx
 const defaultTradeTableConfig: TableConfig = {
   id: 'trade-table',
@@ -73,23 +71,18 @@ export const useTableConfigStore = create<TableConfigState>()(
         'trade-table': defaultTradeTableConfig,
       },
 
-      // Migration function to handle old column references and sync with current table structure
       migrateOldColumns: () => {
         const state = get()
         const tradeTable = state.tables['trade-table']
         
         if (tradeTable) {
-          // List of columns that no longer exist in the table
           const removedColumns = ['ticks', 'points', 'ticksAndPoints', 'entryDate', 'entryTime', 'closeDate', 'image', 'tags']
-          // List of valid column IDs from the current table
           const validColumnIds = ['select', 'expand', 'accounts', 'tradeDate', 'instrument', 'direction', 'entryPrice', 'closePrice', 'timeInPosition', 'pnl', 'commission', 'quantity', 'actions']
           
-          // Check if any old columns exist
           const hasOldColumns = tradeTable.columns.some(col => removedColumns.includes(col.id))
           const hasMissingColumns = !validColumnIds.every(id => tradeTable.columns.some(col => col.id === id))
           
           if (hasOldColumns || hasMissingColumns) {
-            // Reset to default config to ensure consistency
             set({
               tables: {
                 ...state.tables,

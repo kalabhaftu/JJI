@@ -29,7 +29,6 @@ export class ImageCompressor {
     preserveMetadata: false,
   }
 
-  // Compress a single image file
   static async compressImage(
     file: File, 
     options: CompressionOptions = {}
@@ -38,12 +37,10 @@ export class ImageCompressor {
     const mergedOptions = { ...this.DEFAULT_OPTIONS, ...options }
     
     try {
-      // Validate file type
       if (!this.isValidImageType(file)) {
         throw new Error('Invalid file type. Only JPEG, PNG, and WebP are supported.')
       }
 
-      // Prepare compression options for the library
       const compressionOptions = {
         maxSizeMB: mergedOptions.maxSizeMB!,
         maxWidthOrHeight: mergedOptions.maxWidthOrHeight!,
@@ -53,7 +50,6 @@ export class ImageCompressor {
         exifOrientation: 1, // Reset orientation
       }
 
-      // Compress the image
       const compressedFile = await imageCompression(file, compressionOptions)
       
       const processingTime = performance.now() - startTime
@@ -71,7 +67,6 @@ export class ImageCompressor {
     }
   }
 
-  // Compress multiple images
   static async compressMultipleImages(
     files: File[],
     options: CompressionOptions = {}
@@ -80,7 +75,6 @@ export class ImageCompressor {
     return Promise.all(promises)
   }
 
-  // Progressive compression - try different quality levels
   static async progressiveCompress(
     file: File,
     targetSizeMB: number = 1
@@ -98,14 +92,12 @@ export class ImageCompressor {
       }
     }
     
-    // If all quality levels fail, return the last result
     return this.compressImage(file, {
       maxSizeMB: targetSizeMB,
       quality: 0.3,
     })
   }
 
-  // Compress for different use cases
   static async compressForThumbnail(file: File): Promise<CompressionResult> {
     return this.compressImage(file, {
       maxSizeMB: 0.1, // 100KB max
@@ -133,13 +125,11 @@ export class ImageCompressor {
     })
   }
 
-  // Validate image file type
   private static isValidImageType(file: File): boolean {
     const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     return validTypes.includes(file.type.toLowerCase())
   }
 
-  // Get image dimensions without compression
   static async getImageDimensions(file: File): Promise<{ width: number; height: number }> {
     return new Promise((resolve, reject) => {
       const img = new Image()
@@ -159,7 +149,6 @@ export class ImageCompressor {
     })
   }
 
-  // Format file size for display
   static formatFileSize(bytes: number): string {
     if (bytes === 0) return '0 Bytes'
     
@@ -170,7 +159,6 @@ export class ImageCompressor {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  // Calculate compression savings
   static calculateSavings(originalSize: number, compressedSize: number): {
     percentSaved: number
     bytesReduced: number
@@ -187,7 +175,6 @@ export class ImageCompressor {
   }
 }
 
-// React hook for image compression
 import { useState, useCallback } from 'react'
 
 interface UseImageCompressionReturn {
@@ -245,7 +232,6 @@ function useImageCompression(): UseImageCompressionReturn {
   }
 }
 
-// Batch compression utility
 class BatchImageProcessor {
   private queue: Array<{
     file: File
@@ -257,7 +243,6 @@ class BatchImageProcessor {
   private isProcessing = false
   private readonly maxConcurrent = 3
 
-  // Add image to compression queue
   async addToQueue(file: File, options?: CompressionOptions): Promise<CompressionResult> {
     return new Promise((resolve, reject) => {
       this.queue.push({
@@ -271,7 +256,6 @@ class BatchImageProcessor {
     })
   }
 
-  // Process queue with concurrency control
   private async processQueue() {
     if (this.isProcessing || this.queue.length === 0) return
     
@@ -295,7 +279,6 @@ class BatchImageProcessor {
     this.isProcessing = false
   }
 
-  // Get queue status
   getQueueStatus(): { pending: number; isProcessing: boolean } {
     return {
       pending: this.queue.length,
@@ -303,7 +286,6 @@ class BatchImageProcessor {
     }
   }
 
-  // Clear queue
   clearQueue() {
     this.queue.forEach(({ reject }) => {
       reject(new Error('Queue cleared'))

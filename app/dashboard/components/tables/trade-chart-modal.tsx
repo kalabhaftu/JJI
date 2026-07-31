@@ -27,7 +27,6 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
   const modalKey = React.useMemo(() => {
     return trade ? `${trade.id}_${trade.entryDate}_${trade.closeDate}` : 'empty'
   }, [trade])
-  // Validate required trade data
   if (!trade || !trade.entryDate || !trade.closeDate || !trade.entryPrice || !trade.closePrice) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -43,12 +42,10 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
     )
   }
 
-  // Extract and validate trade information for the chart
   const symbol = trade.instrument || trade.symbol || 'UNKNOWN'
   const entryTime = new Date(trade.entryDate)
   const exitTime = new Date(trade.closeDate)
 
-  // Validate dates
   if (isNaN(entryTime.getTime()) || isNaN(exitTime.getTime())) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -67,7 +64,6 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
   const entryPrice = parseFloat(String(trade.entryPrice))
   const exitPrice = parseFloat(String(trade.closePrice))
 
-  // Validate prices
   if (isNaN(entryPrice) || isNaN(exitPrice)) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -85,7 +81,6 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
 
   const side = trade.side?.toUpperCase() || 'LONG'
 
-  // Calculate appropriate timeframe for the chart
   const timeDiff = exitTime.getTime() - entryTime.getTime()
 
   // Handle edge case where entry is after exit

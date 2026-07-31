@@ -9,7 +9,6 @@ export interface ExtendedTrade extends Omit<Trade, 'chartLinks'> {
     selectedRules: string[] | null;
     chartLinks: string[];
     marketBias: MarketBias | null;
-    // Add other specific overrides if necessary
 }
 
 export type MarketBias = 'BULLISH' | 'BEARISH' | 'UNDECIDED'

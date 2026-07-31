@@ -14,7 +14,6 @@ export function MonthlyReturnsMatrix({ equityCurve }: MonthlyReturnsMatrixProps)
   const { matrix, years, maxAbsPnl } = useMemo(() => {
     if (!equityCurve || equityCurve.length === 0) return { matrix: {}, years: [], maxAbsPnl: 0 }
 
-    // Group PnL by year-month
     const monthlyPnl: Record<string, Record<number, number>> = {}
 
     equityCurve.forEach(point => {
@@ -28,7 +27,6 @@ export function MonthlyReturnsMatrix({ equityCurve }: MonthlyReturnsMatrixProps)
       monthlyPnl[year][month] += point.netPnL || 0
     })
 
-    // Calculate yearly totals
     const matrix: Record<string, { months: Record<number, number>; total: number }> = {}
     let maxAbs = 0
 

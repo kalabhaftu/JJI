@@ -77,7 +77,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const targetCheckInterval = useRef<NodeJS.Timeout | null>(null)
   const targetTimeout = useRef<NodeJS.Timeout | null>(null)
 
-  // Track the created demo account during the onboarding tour
   const initialAccountIds = useRef<string[]>([])
   const [createdAccountId, setCreatedAccountId] = useState<string | null>(null)
   const [createdAccountType, setCreatedAccountType] = useState<'live' | 'prop-firm' | null>(null)
@@ -559,7 +558,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const currentSteps = activeTour ? tours[activeTour] : []
   const currentStep = activeTour && currentSteps[stepIndex] ? currentSteps[stepIndex] : null
 
-  // Fetch onboarding status from Zustand store / User data
   useEffect(() => {
     if (storeUser) {
       const dbStatus = (storeUser as any).onboardingStatus
@@ -577,7 +575,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [storeUser])
 
-  // Action methods
   const startTour = useCallback((tourId: TourId) => {
     setActiveTour(tourId)
     setStepIndex(0)
@@ -589,7 +586,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [accounts])
 
-  // Automatically trigger onboarding for new users on main dashboard page
   useEffect(() => {
     if (
       onboardingStatus &&
@@ -605,7 +601,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [onboardingStatus, activeTour, pathname, paused, startTour])
 
-  // Save onboarding status to DB
   const saveOnboardingStatus = useCallback(async (updatedStatus: Partial<OnboardingStatus>) => {
     if (!storeUser) return
 
@@ -642,7 +637,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       settings: 'settings_tour_completed',
     }
 
-    // Clean up created demo account on skip
     if (activeTour === 'onboarding' && createdAccountId) {
       try {
         const endpoint = createdAccountType === 'prop-firm'
@@ -672,7 +666,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       settings: 'settings_tour_completed',
     }
 
-    // Clean up created demo account on complete
     if (activeTour === 'onboarding' && createdAccountId) {
       const toastId = toast.loading('Completing onboarding and cleaning up demo portfolio...')
       try {
@@ -740,7 +733,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCreatedAccountId(id)
         setCreatedAccountType(type)
         
-        // Auto-advance if we are on the submit-account step
         if (currentStep?.id === 'submit-account') {
           nextStep()
         }
@@ -761,7 +753,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setCreatedAccountId(newAcc.id)
         setCreatedAccountType(newAcc.accountType || 'live')
         
-        // Auto-advance if we are on the submit-account step
         if (currentStep?.id === 'submit-account') {
           nextStep()
         }
@@ -769,7 +760,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [accounts, activeTour, createdAccountId, currentStep, nextStep])
 
-  // Trigger sample CSV download automatically on the csv-download step
   useEffect(() => {
     if (activeTour === 'onboarding' && currentStep?.id === 'csv-download') {
       const timer = setTimeout(() => {
@@ -802,7 +792,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }
 
-  // Handle route and target visibility checks for the active step
   useEffect(() => {
     if (!activeTour || !currentStep || paused) {
       setIsTargetVisible(false)
@@ -810,14 +799,12 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return
     }
 
-    // Check if we need to route to a different page
     if (currentStep.route && pathname !== currentStep.route) {
       setIsLoadingTarget(true)
       router.push(currentStep.route as any)
       return
     }
 
-    // Check if the step is desktop-only and we are on mobile
     if (currentStep.desktopOnly && isMobile) {
       nextStep()
       return
@@ -833,7 +820,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsTargetVisible(false)
     setIsLoadingTarget(true)
 
-    // Clear previous check timers
     if (targetCheckInterval.current) clearInterval(targetCheckInterval.current)
     if (targetTimeout.current) clearTimeout(targetTimeout.current)
 
@@ -887,7 +873,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (actionFired) return
       const target = e.target as Element | null
       if (target) {
-        // Match target itself or closest ancestor matching the selector
         const matched = target.closest(actionTarget)
         if (matched) {
           handleAction()

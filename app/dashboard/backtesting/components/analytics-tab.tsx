@@ -19,7 +19,6 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
     const total = backtests.length
     const winRate = total > 0 ? (wins / total) * 100 : 0
 
-    // By Model - with safe P&L calculation
     const byModel = backtests.reduce((acc, b) => {
       const model = b.customModel || b.model
       if (!acc[model]) {
@@ -32,7 +31,6 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       return acc
     }, {} as Record<string, { total: number; wins: number; losses: number; totalPnl: number }>)
 
-    // By Session - with safe P&L calculation
     const bySession = backtests.reduce((acc, b) => {
       if (!acc[b.session]) {
         acc[b.session] = { total: 0, wins: 0, losses: 0, totalPnl: 0 }
@@ -44,7 +42,6 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       return acc
     }, {} as Record<string, { total: number; wins: number; losses: number; totalPnl: number }>)
 
-    // By Direction - with safe P&L calculation
     const byDirection = backtests.reduce((acc, b) => {
       if (!acc[b.direction]) {
         acc[b.direction] = { total: 0, wins: 0, losses: 0, totalPnl: 0 }
@@ -56,7 +53,6 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       return acc
     }, {} as Record<string, { total: number; wins: number; losses: number; totalPnl: number }>)
 
-    // By Pair - with safe P&L and R:R calculation
     const byPair = backtests.reduce((acc, b) => {
       if (!acc[b.pair]) {
         acc[b.pair] = { total: 0, wins: 0, losses: 0, totalPnl: 0, avgRR: 0, totalWinPips: 0, totalLossPips: 0 }
@@ -75,12 +71,10 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       return acc
     }, {} as Record<string, { total: number; wins: number; losses: number; totalPnl: number; avgRR: number; totalWinPips: number; totalLossPips: number }>)
 
-    // Calculate avg RR, avg win, and avg loss for each pair - safe division
     Object.keys(byPair).forEach(pair => {
       byPair[pair]!.avgRR = byPair[pair]!.total > 0 ? byPair[pair]!.avgRR / byPair[pair]!.total : 0
     })
 
-    // By Day of Week - with safe P&L calculation
     const byDayOfWeek = backtests.reduce((acc, b) => {
       const day = new Date(b.dateExecuted).toLocaleDateString('en-US', { weekday: 'long' })
       if (!acc[day]) {
@@ -93,7 +87,6 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       return acc
     }, {} as Record<string, { total: number; wins: number; losses: number; totalPnl: number }>)
 
-    // Model-Session breakdown - with safe P&L calculation
     const modelSessionBreakdown = backtests.reduce((acc, b) => {
       const model = b.customModel || b.model
       if (!acc[model]) acc[model] = {}
@@ -107,16 +100,13 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       return acc
     }, {} as Record<string, Record<string, { total: number; wins: number; losses: number; totalPnl: number }>>)
 
-    // Total Points/Pips - safe calculation
     const totalPips = backtests.reduce((sum, b) => sum + (b.pnl || 0), 0)
 
-    // Average R:R - only count valid R:R values
     const validRRs = backtests.filter(b => (b.riskRewardRatio || 0) > 0)
     const avgRR = validRRs.length > 0
       ? validRRs.reduce((sum, b) => sum + b.riskRewardRatio, 0) / validRRs.length
       : 0
 
-    // Winning trades analysis
     const winningTrades = backtests.filter(b => b.outcome === 'WIN')
     const totalWinningPips = winningTrades.reduce((sum, b) => sum + (b.pnl || 0), 0)
     const avgWin = wins > 0 ? totalWinningPips / wins : 0
@@ -124,7 +114,6 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       ? Math.max(...winningTrades.map(b => b.pnl || 0))
       : 0
 
-    // Losing trades analysis
     const losingTrades = backtests.filter(b => b.outcome === 'LOSS')
     const totalLosingPips = Math.abs(losingTrades.reduce((sum, b) => sum + (b.pnl || 0), 0))
     const avgLoss = losses > 0 ? totalLosingPips / losses : 0
@@ -132,14 +121,12 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       ? Math.abs(Math.min(...losingTrades.map(b => b.pnl || 0)))
       : 0
 
-    // Profit Factor - Total winning pips ÷ Total losing pips
     // If no losses: returns -1 as indicator for "Perfect"
     // If no wins: returns 0
     const profitFactor = totalLosingPips > 0
       ? totalWinningPips / totalLosingPips
       : (wins > 0 ? -1 : 0) // -1 = Perfect record (no losses)
 
-    // Expectancy - Average pips per trade
     const expectancy = total > 0 ? totalPips / total : 0
 
     return {

@@ -1,8 +1,3 @@
-/**
- * Prop Firm Templates API
- * GET /api/prop-firm-templates - Get all prop firm rule templates
- */
-
 import { NextRequest, NextResponse } from 'next/server'
 import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import propFirmTemplates from '@/lib/data/prop-firm-templates.json'

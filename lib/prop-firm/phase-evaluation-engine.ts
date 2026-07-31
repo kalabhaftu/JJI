@@ -1,8 +1,3 @@
-/**
- * Phase Evaluation Engine for New MasterAccount/PhaseAccount System
- * Implements failure-first priority and proper trailing drawdown logic
- */
-
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
@@ -49,24 +44,14 @@ export interface PhaseEvaluationResult {
 
 export class PhaseEvaluationEngine {
 
-  /**
-   * Enhanced logging for development mode
-   */
   private static log(message: string, data?: any) {
     if (process.env.NODE_ENV === 'development') {
     }
   }
 
   private static logError(message: string, error: any) {
-    // Error logged internally
   }
 
-  /**
-   * CRITICAL: Evaluate phase status with FAILURE-FIRST PRIORITY
-   * Always check for failure conditions before checking if profit target is met
-   * ENHANCED: Detailed logging in development mode
-   * FIXED: Now checks HISTORICAL daily drawdowns, not just today
-   */
   static async evaluatePhase(
     masterAccountId: string,
     phaseAccountId: string
@@ -74,7 +59,6 @@ export class PhaseEvaluationEngine {
 
     this.log(`Starting evaluation for masterAccountId: ${masterAccountId}, phaseAccountId: ${phaseAccountId}`)
 
-    // Get complete phase data
     const phaseAccount = await db.query.PhaseAccount.findFirst({
       where: eq(schema.PhaseAccount.id, phaseAccountId),
       with: {
@@ -148,8 +132,6 @@ export class PhaseEvaluationEngine {
     )
 
     if (historicalBreachCheck.isBreached) {
-      // Historical daily drawdown breach detected
-      // Create BreachRecord with descriptive notes
       try {
         await db.insert(schema.BreachRecord).values({
           id: crypto.randomUUID(),
@@ -223,14 +205,12 @@ export class PhaseEvaluationEngine {
     )
 
     if (historicalMaxDDCheck.isBreached) {
-      // Historical max drawdown breach detected
       this.log(`[EVAL] Historical MAX DRAWDOWN breach detected`, {
         lowestBalance: historicalMaxDDCheck.lowestBalance,
         minAllowed: historicalMaxDDCheck.minAllowedBalance,
         breachAmount: historicalMaxDDCheck.breachAmount
       })
 
-      // Create BreachRecord with descriptive notes
       try {
         await db.insert(schema.BreachRecord).values({
           id: crypto.randomUUID(),
@@ -294,7 +274,6 @@ export class PhaseEvaluationEngine {
       }
     }
 
-    // Get daily start balance from daily anchor system (for current day display)
     const dailyStartBalance = await this.getDailyStartBalance(
       phaseAccountId,
       timezone,
@@ -303,8 +282,6 @@ export class PhaseEvaluationEngine {
 
     this.log(`Daily start balance: ${dailyStartBalance}`)
 
-    // STEP 1: Calculate drawdown (FAILURE CHECK FIRST)
-    // Pass accountSize explicitly to avoid accessing masterAccount
     const drawdown = this.calculateDrawdown(
       phaseAccount,
       currentEquity,
@@ -322,7 +299,6 @@ export class PhaseEvaluationEngine {
       maxDrawdownLimit: drawdown.maxDrawdownLimit
     })
 
-    // STEP 2: Calculate progress
     const progress = this.calculateProgress(
       phaseAccount,
       currentPnL,
@@ -337,11 +313,9 @@ export class PhaseEvaluationEngine {
       minTradingDaysRequired: progress.minTradingDaysRequired
     })
 
-    // STEP 2.5: RISK ALERTS - Trigger notifications at 80% and 95% thresholds
     try {
       const userId = masterAccount.userId
 
-      // Daily loss alerts
       if (drawdown.dailyDrawdownPercent >= 80 && drawdown.dailyDrawdownPercent < 100 && !drawdown.isBreached) {
         await createRiskAlert(
           userId,
@@ -358,7 +332,6 @@ export class PhaseEvaluationEngine {
         this.log(`Risk alert sent: Daily loss at ${drawdown.dailyDrawdownPercent.toFixed(1)}%`)
       }
 
-      // Max drawdown alerts
       if (drawdown.maxDrawdownPercent >= 80 && drawdown.maxDrawdownPercent < 100 && !drawdown.isBreached) {
         await createRiskAlert(
           userId,
@@ -379,7 +352,6 @@ export class PhaseEvaluationEngine {
       this.logError('Failed to send risk notification', notificationError)
     }
 
-    // STEP 3: FAILURE-FIRST EVALUATION
     // If account is breached, it CANNOT pass regardless of profit target
     if (drawdown.isBreached) {
       this.log(`FAILURE-FIRST: Account breached - ${drawdown.breachType}`, {
@@ -417,7 +389,6 @@ export class PhaseEvaluationEngine {
       }
     }
 
-    // STEP 4: Check if profit target is met AND other requirements
     const canAdvance = progress.canPassPhase && progress.isEligibleForAdvancement
 
     this.log(`Final evaluation result`, {
@@ -437,10 +408,6 @@ export class PhaseEvaluationEngine {
     }
   }
 
-  /**
-   * CRITICAL METHOD: Check historical daily drawdowns for ALL trading days
-   * This catches breaches that happened on past dates when importing historical trades
-   */
   private static async checkHistoricalDailyDrawdowns(
     phaseAccount: any,
     trades: any[],
@@ -467,10 +434,8 @@ export class PhaseEvaluationEngine {
       }
     }
 
-    // Calculate daily drawdown limit
     const dailyDrawdownLimit = accountSize * (phaseAccount.dailyDrawdownPercent / 100)
 
-    // Group trades by day
     const tradesByDay = new Map<string, any[]>()
 
     this.log(`[EVAL] Grouping ${trades.length} trades by day...`)
@@ -494,18 +459,14 @@ export class PhaseEvaluationEngine {
       dailyDrawdownPercent: phaseAccount.dailyDrawdownPercent
     })
 
-    // Sort days chronologically
     const sortedDays = Array.from(tradesByDay.keys()).sort()
 
-    // Track running balance
     let runningBalance = accountSize
 
-    // Check each day
     for (const dayStr of sortedDays) {
       const dayTrades = tradesByDay.get(dayStr)!
       const dayStartBalance = runningBalance
 
-      // Calculate day's P&L
       let dayPnL = 0
       for (const trade of dayTrades) {
         // CRITICAL FIX: Use net P&L for daily drawdown calculations
@@ -531,7 +492,6 @@ export class PhaseEvaluationEngine {
       if (dayLoss > dailyDrawdownLimit) {
         const breachAmount = dayLoss - dailyDrawdownLimit
 
-        // Historical daily drawdown breach detected
         this.log(`[EVAL] Historical daily drawdown breach detected`, {
           breachAmount,
           tradesOnDay: dayTrades.length
@@ -549,11 +509,9 @@ export class PhaseEvaluationEngine {
         }
       }
 
-      // Update running balance for next day
       runningBalance = dayEndBalance
     }
 
-    // No breach detected
     return {
       isBreached: false,
       dayStartBalance: accountSize,
@@ -563,12 +521,8 @@ export class PhaseEvaluationEngine {
     }
   }
 
-  /**
-   * CRITICAL METHOD: Check historical MAX DRAWDOWN for ALL trades chronologically.
-   * This catches breaches where the balance dipped below the limit but recovered.
-   * For STATIC drawdown: check if balance ever went below (accountSize - maxDrawdownLimit)
-   * For TRAILING drawdown: check if balance ever went below (highWaterMark - maxDrawdownLimit)
-   */
+  // For STATIC drawdown: balance below (accountSize - maxDrawdownLimit).
+  // For TRAILING drawdown: balance below (highWaterMark - maxDrawdownLimit).
   private static checkHistoricalMaxDrawdown(
     trades: any[],
     accountSize: number,
@@ -600,7 +554,6 @@ export class PhaseEvaluationEngine {
     let highWaterMark = accountSize
     let breachTime: Date | undefined = undefined
 
-    // Sort trades by exitTime to process chronologically
     const sortedTrades = [...trades].sort((a, b) => {
       const aTime = a.exitTime ? new Date(a.exitTime).getTime() : 0
       const bTime = b.exitTime ? new Date(b.exitTime).getTime() : 0
@@ -611,19 +564,16 @@ export class PhaseEvaluationEngine {
       const netPnl = (trade.pnl || 0) + (trade.commission || 0)
       runningBalance += netPnl
 
-      // Update high-water mark for trailing drawdown
       if (runningBalance > highWaterMark) {
         highWaterMark = runningBalance
       }
 
-      // Track lowest point
       if (runningBalance < lowestBalance) {
         lowestBalance = runningBalance
         breachTime = trade.exitTime ? new Date(trade.exitTime) : new Date(trade.createdAt)
       }
     }
 
-    // Determine the drawdown base and limit
     let drawdownBase: number
     if (maxDrawdownType === 'trailing') {
       drawdownBase = highWaterMark
@@ -635,7 +585,6 @@ export class PhaseEvaluationEngine {
     const minAllowedBalance = drawdownBase - maxDrawdownLimit
     const maxDrawdownUsed = accountSize - lowestBalance
 
-    // Check if breach occurred
     if (lowestBalance < minAllowedBalance) {
       const breachAmount = minAllowedBalance - lowestBalance
 
@@ -667,10 +616,6 @@ export class PhaseEvaluationEngine {
     }
   }
 
-  /**
-   * Calculate comprehensive drawdown status with trailing/static logic
-   * CRITICAL FIX: Accept accountSize as parameter instead of accessing phaseAccount.masterAccount
-   */
   private static calculateDrawdown(
     phaseAccount: any,
     currentEquity: number,
@@ -684,7 +629,6 @@ export class PhaseEvaluationEngine {
     const dailyDrawdownRemaining = Math.max(0, dailyDrawdownLimit - dailyDrawdownUsed)
     const dailyDrawdownPercent = dailyStartBalance > 0 ? (dailyDrawdownUsed / dailyStartBalance) * 100 : 0
 
-    // Max drawdown calculation (static vs trailing)
     let maxDrawdownBase: number
     let maxDrawdownLimit: number
 
@@ -739,10 +683,6 @@ export class PhaseEvaluationEngine {
     }
   }
 
-  /**
-   * Calculate phase progression status
-   * CRITICAL FIX: Use MasterAccount (capital M) for Prisma relation
-   */
   private static calculateProgress(
     phaseAccount: any,
     currentPnL: number,
@@ -753,7 +693,6 @@ export class PhaseEvaluationEngine {
     const accountSize = phaseAccount.MasterAccount?.accountSize || phaseAccount.masterAccount?.accountSize || 0
 
     if (!accountSize || accountSize === 0) {
-      // Account size is 0 or undefined
     }
 
     const profitTargetAmount = accountSize * (phaseAccount.profitTargetPercent / 100)
@@ -768,7 +707,6 @@ export class PhaseEvaluationEngine {
       currentProgressPercent: profitTargetPercent.toFixed(2) + '%'
     })
 
-    // Calculate trading days (unique dates with trades)
     const tradingDates = new Set(
       trades.map(trade => {
         const date = trade.exitTime || trade.createdAt
@@ -778,13 +716,10 @@ export class PhaseEvaluationEngine {
     const tradingDaysCompleted = tradingDates.size
     const minTradingDaysRequired = phaseAccount.minTradingDays || 0
 
-    // Check if profit target is met
     const isProfitTargetMet = phaseAccount.profitTargetPercent === 0 || currentPnL >= profitTargetAmount
 
-    // Check if minimum trading days are met
     const areMinTradingDaysMet = tradingDaysCompleted >= minTradingDaysRequired
 
-    // Check time limit (if applicable)
     let isWithinTimeLimit = true
     let daysRemaining: number | undefined
 
@@ -820,22 +755,15 @@ export class PhaseEvaluationEngine {
     }
   }
 
-  /**
-   * Get daily start balance using Daily Anchor system with robust fallback logic
-   * ENHANCED: Creates anchor on-the-fly if missing (cron job failure recovery)
-   */
   private static async getDailyStartBalance(
     phaseAccountId: string,
     timezone: string,
     fallbackBalance: number
   ): Promise<number> {
 
-    // Get today's date in the account's timezone
     const today = this.getDateInTimezone(new Date(), timezone)
     const todayDate = new Date(today)
 
-
-    // STEP 1: Look for today's daily anchor
     const todayAnchor = await db.query.DailyAnchor.findFirst({
       where: and(
         eq(schema.DailyAnchor.phaseAccountId, phaseAccountId),
@@ -847,10 +775,7 @@ export class PhaseEvaluationEngine {
       return todayAnchor.anchorEquity
     }
 
-    // STEP 2: No anchor exists - ROBUST FALLBACK LOGIC
-
     try {
-      // Get phase account with all necessary data
       const phaseAccount = await db.query.PhaseAccount.findFirst({
         where: eq(schema.PhaseAccount.id, phaseAccountId),
         with: {
@@ -869,14 +794,12 @@ export class PhaseEvaluationEngine {
         return fallbackBalance
       }
 
-      // STEP 3: Calculate current equity for anchor using NET P&L
       const tradesPnL = phaseAccount.Trade.reduce((sum: number, trade: any) => {
         const netPnl = (trade.pnl || 0) + (trade.commission || 0)
         return sum + netPnl
       }, 0)
       const anchorEquity = phaseAccount.MasterAccount.accountSize + tradesPnL
 
-      // STEP 4: Try to create the missing anchor (atomic operation)
       const [newAnchor] = await db.insert(schema.DailyAnchor).values({
         id: crypto.randomUUID(),
         phaseAccountId,
@@ -884,19 +807,14 @@ export class PhaseEvaluationEngine {
         anchorEquity
       }).returning()
 
-
       return newAnchor ? newAnchor.anchorEquity : fallbackBalance
 
     } catch (error) {
-      // STEP 5: Ultimate fallback - use provided fallback balance
 
       return fallbackBalance
     }
   }
 
-  /**
-   * Get date string in specific timezone
-   */
   private static getDateInTimezone(date: Date, timezone: string): string {
     try {
       const options: Intl.DateTimeFormatOptions = {

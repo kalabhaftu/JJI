@@ -4,12 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WidgetErrorBoundary } from '@/components/error-boundary'
 import { cn } from '@/lib/utils'
 
-// Calendar components
 import CalendarPnl from '../components/calendar/calendar-widget'
 import MiniCalendarWrapper from '../components/calendar/mini-calendar-wrapper'
 import RecentTradesWidget from '../components/trades/recent-trades-widget'
 
-// KPI components
 import AccountBalancePnl from '../components/kpi/account-balance-pnl'
 import TradeWinRate from '../components/kpi/trade-win-rate'
 import DayWinRate from '../components/kpi/day-win-rate'
@@ -19,7 +17,6 @@ import AvgWinLoss from '../components/kpi/avg-win-loss'
 import SessionAnalysis from '../components/kpi/session-analysis'
 import StreakKpi from '../components/kpi/streak-kpi'
 
-// Chart components
 import NetDailyPnL from '../components/charts/net-daily-pnl'
 import WeekdayPnL from '../components/charts/weekday-pnl'
 import TradeDurationPerformance from '../components/charts/trade-duration-performance'

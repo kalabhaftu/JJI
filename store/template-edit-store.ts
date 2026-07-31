@@ -7,7 +7,6 @@ interface TemplateEditState {
   currentLayout: WidgetLayout[] | null
   originalLayout: WidgetLayout[] | null
   
-  // Actions
   enterEditMode: (layout: WidgetLayout[]) => void
   exitEditMode: () => void
   updateLayout: (layout: WidgetLayout[]) => void

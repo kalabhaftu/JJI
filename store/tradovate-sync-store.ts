@@ -25,11 +25,10 @@ interface TradovateOAuthState {
   accounts?: TradovateAccount[] | undefined
   lastSync?: string | undefined
   oauthState?: string | undefined // For OAuth flow security
-  environment: TradovateEnvironment // Add environment selection
+  environment: TradovateEnvironment
 }
 
 interface TradovateSyncStore extends TradovateOAuthState {
-  // Actions
   setAuthenticated: (authenticated: boolean) => void
   setTokens: (accessToken: string, refreshToken: string, expiresAt: string) => void
   setAccounts: (accounts: TradovateAccount[]) => void
@@ -48,7 +47,6 @@ interface TradovateSyncStore extends TradovateOAuthState {
 export const useTradovateSyncStore = create<TradovateSyncStore>()(
   persist(
     (set, get) => ({
-      // Initial state
       isAuthenticated: false,
       accessToken: undefined,
       refreshToken: undefined,
@@ -58,7 +56,6 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
       oauthState: undefined,
       environment: 'demo', // Default to demo for safety
 
-      // Actions
       setAuthenticated: (authenticated: boolean) => {
         set({ isAuthenticated: authenticated })
       },
@@ -155,7 +152,6 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
         }
       },
 
-      // Load tokens from sessionStorage
       loadFromSessionStorage: () => {
         const accessToken = sessionStorage.getItem('tradovate_access_token')
         const expiresAt = sessionStorage.getItem('tradovate_token_expiration')
@@ -176,7 +172,6 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
     {
       name: 'tradovate-sync-storage', // unique name for localStorage key
       partialize: (state) => ({
-        // Only persist these fields
         isAuthenticated: state.isAuthenticated,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,

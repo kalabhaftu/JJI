@@ -160,7 +160,6 @@ export function NotificationCenter() {
         setUnreadCount(result.data.unreadCount)
       }
     } catch (error) {
-      // Silent fail
     }
   }, [user?.id, isDemo])
 

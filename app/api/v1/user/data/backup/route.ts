@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     }
     const internalUserId = identity.internalUserId
 
-    // Fetch all user data in parallel
     const [
       user,
       accounts,
@@ -74,7 +73,6 @@ export async function GET(request: NextRequest) {
       })
     ])
 
-    // Build comprehensive backup object
     const backupData = {
       metadata: {
         backupVersion: '1.0',
@@ -197,7 +195,6 @@ export async function GET(request: NextRequest) {
       }))
     }
 
-    // Generate filename
     const timestamp = format(new Date(), 'yyyy-MM-dd_HHmmss')
     const filename = `jji-backup-${timestamp}.json`
 

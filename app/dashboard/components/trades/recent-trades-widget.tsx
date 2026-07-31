@@ -28,13 +28,11 @@ export default function RecentTradesWidget() {
     return groupTradesByExecution(formattedTrades)
   }, [formattedTrades, groupTradesByExecution])
 
-  // All trades sorted newest-first
   const allRecentTrades = React.useMemo(() => {
     return groupedTrades
       .sort((a: any, b: any) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime())
   }, [groupedTrades])
 
-  // Calculate how many rows can fit in the container
   useEffect(() => {
     const calculateVisibleRows = () => {
       if (containerRef.current) {
@@ -55,7 +53,6 @@ export default function RecentTradesWidget() {
     return () => resizeObserver.disconnect()
   }, [])
 
-  // Only show trades that fit in the current container height
   const recentTrades = React.useMemo(() => {
     return allRecentTrades.slice(0, visibleRowCount)
   }, [allRecentTrades, visibleRowCount])

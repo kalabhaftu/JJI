@@ -5,7 +5,6 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { isRedisConfigured, redis } from '@/lib/cache/client'
 import { getClientIp } from '@/lib/security/client-ip'
 
-// ─── Limiter config type ───
 export interface LimiterConfig {
   points: number
   duration: number
@@ -38,10 +37,8 @@ function rateLimitUnavailableResponse() {
   )
 }
 
-// ─── Ephemeral Cache (Memory Fallback for @upstash/ratelimit) ───
 const ephemeralCache = new Map()
 
-// ─── Upstash Limiter Instances ───
 const ratelimiterInstances = new Map<string, Ratelimit>()
 
 function getUpstashLimiter(config: LimiterConfig): Ratelimit {
@@ -60,7 +57,6 @@ function getUpstashLimiter(config: LimiterConfig): Ratelimit {
   return limiter
 }
 
-// ─── Exported limiter configs (drop-in compatible with existing imports) ───
 export const apiLimiter: LimiterConfig = { points: 100, duration: 60 }
 const authLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
 export const aiLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
@@ -76,10 +72,7 @@ export const publicLimiter: LimiterConfig = { points: 30, duration: 60 }
 export const errorReportLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
 export const emailOtpLimiter: LimiterConfig = { points: 3, duration: 3600, failClosed: true }
 
-/**
- * Get identifier for rate limiting.
- * Uses user ID if available, falls back to IP.
- */
+// Uses user ID if available, falls back to IP.
 async function getRateLimitIdentifier(req: NextRequest): Promise<string> {
   try {
     // Resolve the canonical internal identity only for authenticated requests.
@@ -126,12 +119,6 @@ export async function consumeRateLimitKey(
   }
 }
 
-/**
- * Apply rate limiting to a request.
- * Returns null if allowed, or a 429 response if rate limited.
- *
- * Uses @upstash/ratelimit for distributed rate limiting.
- */
 export async function applyRateLimit(
   req: NextRequest,
   limiter: LimiterConfig = apiLimiter
@@ -181,9 +168,6 @@ export async function applyRateLimit(
   }
 }
 
-/**
- * Wrapper for API route handlers with rate limiting.
- */
 function withRateLimit(
   handler: (req: NextRequest) => Promise<NextResponse>,
   limiter: LimiterConfig = apiLimiter

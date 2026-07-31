@@ -104,7 +104,6 @@ export function ImportDialog() { // Kept name for compatibility
         description: `Restored ${latestJob.importedCount || 0} trades. Skipped ${latestJob.skippedCount || 0} duplicates.`
       })
 
-      // Refresh data
       setTimeout(() => {
         refreshTrades()
         refetchAccounts()

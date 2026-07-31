@@ -1,7 +1,3 @@
-/**
- * API Response Types
- * Standardized response types for all API endpoints
- */
 
 export interface ApiResponse<T = unknown> {
   success: boolean
@@ -29,9 +25,6 @@ interface PaginatedResponse<T> extends ApiResponse<T[]> {
   }
 }
 
-/**
- * User Types
- */
 export interface User {
   id: string
   email: string
@@ -57,9 +50,6 @@ interface NotificationSettings {
   updates: boolean
 }
 
-/**
- * Trade Types
- */
 export interface Trade {
   id: string
   userId: string
@@ -98,9 +88,6 @@ interface TradeSessionData {
   volatility?: number
 }
 
-/**
- * Account Types
- */
 export interface Account {
   id: string
   userId: string
@@ -135,9 +122,6 @@ interface TradingHours {
   weekdays: number[] // 0-6, Sunday = 0
 }
 
-/**
- * Widget Types
- */
 interface WidgetData {
   id: string
   type: string
@@ -148,9 +132,6 @@ interface WidgetData {
   error?: string
 }
 
-/**
- * Chart Data Types
- */
 export interface ChartDataPoint {
   x: string | number | Date
   y: number
@@ -168,9 +149,6 @@ interface TimeSeriesDataPoint extends ChartDataPoint {
   close?: number
 }
 
-/**
- * Filter Types
- */
 interface DateFilter {
   start?: Date
   end?: Date
@@ -202,9 +180,6 @@ export interface TradeFilter extends DateFilter, AccountFilter, InstrumentFilter
   hasImages?: boolean
 }
 
-/**
- * Analysis Types
- */
 export interface PerformanceMetrics {
   totalTrades: number
   winningTrades: number
@@ -226,9 +201,6 @@ interface TimeBasedMetrics {
   monthOfYear: Record<string, PerformanceMetrics>
 }
 
-/**
- * Import Types
- */
 export interface ImportJob {
   id: string
   userId: string
@@ -255,9 +227,6 @@ interface ImportError {
   code?: string
 }
 
-/**
- * Event Types
- */
 interface SystemEvent {
   id: string
   type: EventType
@@ -279,9 +248,6 @@ type EventType =
   | 'import.completed'
   | 'import.failed'
 
-/**
- * WebSocket Types
- */
 interface WebSocketMessage<T = unknown> {
   type: string
   data: T
@@ -295,9 +261,6 @@ interface WebSocketError {
   reconnect?: boolean
 }
 
-/**
- * Form Types
- */
 export interface FormField {
   name: string
   label: string
@@ -320,18 +283,12 @@ interface SelectOption {
   disabled?: boolean
 }
 
-/**
- * Utility Types
- */
 type Nullable<T> = T | null
 export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
 }
 
-/**
- * Database Types
- */
 export interface DatabaseRecord {
   id: string
   createdAt: Date
@@ -342,9 +299,6 @@ interface SoftDeleteRecord extends DatabaseRecord {
   deletedAt?: Date
 }
 
-/**
- * File Upload Types
- */
 export interface FileUpload {
   file: File
   progress: number

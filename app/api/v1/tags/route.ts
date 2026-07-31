@@ -6,7 +6,6 @@ import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 import { CacheHeaders } from '@/lib/api-cache-headers'
 
-// GET - Fetch all tags for a user
 export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -34,7 +33,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create a new tag
 export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes

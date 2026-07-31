@@ -34,7 +34,6 @@ export function FileDropzone({
         ...dropzoneProps,
     })
 
-    // Mini variant (for grid cells, avatars, etc.)
     if (variant === 'mini') {
         return (
             <div
@@ -58,7 +57,6 @@ export function FileDropzone({
         )
     }
 
-    // Default variant (large upload area)
     return (
         <div className={cn("w-full space-y-2", className)}>
             <div

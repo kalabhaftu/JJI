@@ -108,7 +108,6 @@ export function EditPropFirmAccountDialog({
     }
   }, [formValues, isDirty, draftKey, open])
 
-  // Warn before closing with unsaved changes
   const handleClose = (forceClose = false) => {
     if (hasUnsavedChanges && isDirty && !forceClose) {
       setShowUnsavedWarning(true)

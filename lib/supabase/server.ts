@@ -20,9 +20,6 @@ export async function createClient() {
             )
           } catch (error) {
             Sentry.captureException(error, { extra: { route: 'lib/supabase/server', phase: 'cookieSet' } })
-            // The `setAll` method was called from a Server Component.
-            // This can be ignored if you have middleware refreshing
-            // user sessions.
           }
         },
       },

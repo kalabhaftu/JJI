@@ -1,12 +1,3 @@
-/**
- * Report Statistics API (v1)
- * 
- * POST /api/v1/reports/stats
- * 
- * Replaces all client-side report calculations with a single server endpoint.
- * Accepts filter parameters and returns pre-computed report DTOs.
- */
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentity } from '@/server/user-identity'
 import { calculateReportStatistics, type ReportStatsFilters } from '@/lib/statistics/report-statistics'

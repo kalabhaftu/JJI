@@ -16,7 +16,6 @@ import {
 } from '@/lib/user-settings'
 import { eq } from 'drizzle-orm'
 
-// GET /api/auth/profile - Get user profile information
 export async function GET() {
   try {
     const identity = await getResolvedUserIdentitySafe()
@@ -58,7 +57,6 @@ export async function GET() {
   }
 }
 
-// PATCH /api/auth/profile - Update user profile information
 export async function PATCH(request: NextRequest) {
   try {
     const identity = await getResolvedUserIdentitySafe()
@@ -87,7 +85,6 @@ export async function PATCH(request: NextRequest) {
       widgetStyle
     } = body
 
-    // Validate input - only check fields that are actually provided
     if (chartStyle !== undefined && chartStyle !== 'smooth' && chartStyle !== 'sharp') {
       return NextResponse.json(
         { error: 'Invalid chartStyle format' },
@@ -136,7 +133,6 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Build update data - only include fields that were sent
     const currentUser = await db.query.User.findFirst({
       where: (table, { eq }) => eq(table.id, internalUserId),
       with: {

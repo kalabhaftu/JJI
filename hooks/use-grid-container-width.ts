@@ -2,10 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-/**
- * Measures the dashboard canvas after layout transitions and keeps the grid
- * width in sync with responsive container changes.
- */
 export function useGridContainerWidth(isMobile = false) {
   const [width, setWidth] = useState(0)
   const [mounted, setMounted] = useState(false)

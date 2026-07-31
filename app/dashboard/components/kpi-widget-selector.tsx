@@ -31,11 +31,9 @@ export default function KpiWidgetSelector({
 }: KpiWidgetSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Get KPI-row-only widgets (widgets that can only be placed in row 0)
   const kpiWidgets = useMemo(() => {
     const query = searchQuery.toLowerCase()
     return Object.entries(WIDGET_REGISTRY).filter(([type, config]) => {
-      // Only KPI-row-only widgets (6 total: accountBalancePnl, tradeWinRate, dayWinRate, profitFactor, avgWinLoss, currentStreak)
       if (!config.kpiRowOnly) {
         return false
       }
@@ -46,7 +44,6 @@ export default function KpiWidgetSelector({
     })
   }, [searchQuery])
 
-  // Get list of widget types already in use in KPI slots
   const usedKpiTypes = useMemo(() => {
     return new Set(
       currentLayout
@@ -61,7 +58,6 @@ export default function KpiWidgetSelector({
   }
 
   const formatWidgetName = (type: string) => {
-    // Convert camelCase to Title Case
     return type
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, str => str.toUpperCase())

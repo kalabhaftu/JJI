@@ -21,7 +21,6 @@ export interface PromptBoxProps {
   disabled?: boolean;
 }
 
-// Extend Window for SpeechRecognition
 interface SpeechRecognitionEvent {
   resultIndex: number;
   results: SpeechRecognitionResultList;
@@ -95,10 +94,8 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       }
     };
 
-    // Voice Typing via Web Speech API
     const toggleRecording = () => {
       if (isRecording) {
-        // Stop recording
         if (recognitionRef.current) {
           recognitionRef.current.stop();
         }
@@ -106,7 +103,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
         return;
       }
 
-      // Start recording
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         toast.error('Voice typing is not supported in this browser. Please use Chrome or Edge.');
@@ -168,7 +164,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       setIsRecording(true);
     };
 
-    // Clean up on unmount
     React.useEffect(() => {
       return () => {
         if (recognitionRef.current) {

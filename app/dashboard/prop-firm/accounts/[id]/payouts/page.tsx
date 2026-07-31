@@ -76,7 +76,6 @@ export default function AccountPayoutsPage() {
 
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = async () => {
     try {
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
@@ -98,7 +97,6 @@ export default function AccountPayoutsPage() {
     }
   }
 
-  // Fetch payouts
   const fetchPayouts = async () => {
     try {
       setIsLoading(true)
@@ -123,7 +121,6 @@ export default function AccountPayoutsPage() {
     }
   }
 
-  // Load data on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()

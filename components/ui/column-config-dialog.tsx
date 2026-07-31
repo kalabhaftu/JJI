@@ -43,7 +43,6 @@ export function ColumnConfigDialog({ tableId, trigger }: ColumnConfigDialogProps
     updateColumnVisibility(tableId, columnId, visible)
   }
 
-  // Get the current visibility state from the store
   const currentVisibility = tableConfig?.columnVisibility || {}
 
   const handleReset = () => {

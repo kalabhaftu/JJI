@@ -19,7 +19,6 @@ export async function GET() {
   }
 
   try {
-    // Check DB
     await db.execute('SELECT 1')
     status.database = 'up'
   } catch (error) {

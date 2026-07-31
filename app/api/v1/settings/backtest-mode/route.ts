@@ -5,7 +5,6 @@ import { logger } from '@/lib/logger'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 
-// GET - Get backtest input mode preference
 export async function GET(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes
@@ -31,7 +30,6 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Update backtest input mode preference
 export async function POST(request: NextRequest) {
   const rateLimitRes = await applyRateLimit(request, apiLimiter)
   if (rateLimitRes) return rateLimitRes

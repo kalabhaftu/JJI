@@ -54,7 +54,6 @@ function MiniMonth({
     return { pnl, trades }
   }, [calendarData, monthDate, year])
 
-  // Sunday-start grid
   const gridDays = useMemo(() => {
     const monthStart = startOfMonth(monthDate)
     const monthEnd = endOfMonth(monthDate)
@@ -116,17 +115,14 @@ function MiniMonth({
                       "aspect-square w-full rounded-[3px] border flex items-center justify-center transition-all text-[8px] font-bold",
                       !isCurrentMonth && "opacity-0 pointer-events-none",
 
-                      // No trades
                       isCurrentMonth &&
                         !hasTrades &&
                         "bg-muted/30 dark:bg-[#0c0e12]/40 border-border/20 dark:border-transparent text-muted-foreground/40 dark:text-muted-foreground/20",
 
-                      // Profit - green
                       hasTrades &&
                         classifyOutcome(data.pnl, breakEvenThreshold) === 'win' &&
                         "bg-long/10 border-long/20 dark:bg-long/20 dark:border-long/35 text-long dark:text-slate-200",
 
-                      // Loss - red/orange
                       hasTrades &&
                         classifyOutcome(data.pnl, breakEvenThreshold) === 'loss' &&
                         "bg-short/10 border-short/20 dark:bg-short/20 dark:border-short/35 text-short dark:text-slate-200",

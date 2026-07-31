@@ -1,7 +1,3 @@
-/**
- * Standardized API Response Types
- * Personal use app - consistent error/success responses
- */
 
 import { NextResponse } from 'next/server'
 
@@ -21,9 +17,6 @@ export interface ApiErrorResponse {
 
 export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse
 
-/**
- * Create standardized success response
- */
 export function createSuccessResponse<T>(
   data?: T,
   message?: string,
@@ -37,9 +30,6 @@ export function createSuccessResponse<T>(
   })
 }
 
-/**
- * Create standardized error response
- */
 export function createErrorResponse(
   error: string,
   status: number = 500,
@@ -57,9 +47,6 @@ export function createErrorResponse(
   )
 }
 
-/**
- * Common error responses
- */
 const ErrorResponses = {
   unauthorized: () => createErrorResponse('Unauthorized', 401, 'Please log in to access this resource', 'UNAUTHORIZED'),
   forbidden: () => createErrorResponse('Forbidden', 403, 'You do not have permission to access this resource', 'FORBIDDEN'),

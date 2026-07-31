@@ -4,7 +4,6 @@ import { calculateMetricsFromTrades } from '@/lib/performance-score'
 import { classifyOutcome } from '@/lib/metrics/outcome'
 import type { TradeType as Trade } from '@/lib/db/schema/trades'
 
-// Helper to create mock trades
 function createMockTrade(overrides: Partial<Trade> = {}): Trade {
   // Generate unique entryId to prevent unwanted grouping
   const uniqueId = Math.random().toString(36).substring(7);
@@ -44,10 +43,10 @@ function createMockTrade(overrides: Partial<Trade> = {}): Trade {
 describe('Financial Calculations - Profit Factor', () => {
   it('should calculate profit factor correctly with wins and losses', () => {
     const trades = [
-      createMockTrade({ pnl: 200, commission: 0 }), // Win
-      createMockTrade({ pnl: 300, commission: 0 }), // Win
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
-      createMockTrade({ pnl: -50, commission: 0 }), // Loss
+      createMockTrade({ pnl: 200, commission: 0 }),
+      createMockTrade({ pnl: 300, commission: 0 }),
+      createMockTrade({ pnl: -100, commission: 0 }),
+      createMockTrade({ pnl: -50, commission: 0 }),
     ]
 
     // Gross profits: 500
@@ -97,10 +96,10 @@ describe('Financial Calculations - Profit Factor', () => {
 describe('Financial Calculations - Win Rate', () => {
   it('should calculate win rate correctly', () => {
     const trades = [
-      createMockTrade({ pnl: 100, commission: 0 }), // Win
-      createMockTrade({ pnl: 200, commission: 0 }), // Win
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
-      createMockTrade({ pnl: 50, commission: 0 }), // Win
+      createMockTrade({ pnl: 100, commission: 0 }),
+      createMockTrade({ pnl: 200, commission: 0 }),
+      createMockTrade({ pnl: -100, commission: 0 }),
+      createMockTrade({ pnl: 50, commission: 0 }),
     ]
 
     // 3 wins out of 4 trades = 75%
@@ -110,9 +109,9 @@ describe('Financial Calculations - Win Rate', () => {
 
   it('should exclude break-even trades from win rate calculation', () => {
     const trades = [
-      createMockTrade({ pnl: 100, commission: 0 }), // Win
+      createMockTrade({ pnl: 100, commission: 0 }),
       createMockTrade({ pnl: 0, commission: 0 }), // Break-even (excluded)
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
+      createMockTrade({ pnl: -100, commission: 0 }),
     ]
 
     // 1 win out of 2 tradable trades (excluding break-even) = 50%
@@ -158,10 +157,10 @@ describe('Financial Calculations - Win Rate', () => {
 describe('Financial Calculations - Average Win/Loss', () => {
   it('should calculate average win and average loss correctly', () => {
     const trades = [
-      createMockTrade({ pnl: 200, commission: 0 }), // Win
-      createMockTrade({ pnl: 400, commission: 0 }), // Win
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
-      createMockTrade({ pnl: -200, commission: 0 }), // Loss
+      createMockTrade({ pnl: 200, commission: 0 }),
+      createMockTrade({ pnl: 400, commission: 0 }),
+      createMockTrade({ pnl: -100, commission: 0 }),
+      createMockTrade({ pnl: -200, commission: 0 }),
     ]
 
     // Avg Win: (200 + 400) / 2 = 300
@@ -256,10 +255,8 @@ describe('Financial Calculations - Trade Grouping (Partial Closes)', () => {
 
     const grouped = groupTradesByExecution(trades)
     
-    // Should have 2 groups (E1 and E2)
     expect(grouped.length).toBe(2)
     
-    // E1 group should have combined PnL of 150
     const e1Group = grouped.find(g => g.entryId === 'E1')
     expect(e1Group?.pnl).toBe(150)
   })
@@ -268,7 +265,7 @@ describe('Financial Calculations - Trade Grouping (Partial Closes)', () => {
     const trades = [
       createMockTrade({ entryId: 'E1', pnl: 50, commission: 0 }), // Part 1
       createMockTrade({ entryId: 'E1', pnl: 100, commission: 0 }), // Part 2 (combined: +150 Win)
-      createMockTrade({ entryId: 'E2', pnl: -100, commission: 0 }), // Loss
+      createMockTrade({ entryId: 'E2', pnl: -100, commission: 0 }),
     ]
 
     // After grouping: 1 win (E1: 150), 1 loss (E2: -100)

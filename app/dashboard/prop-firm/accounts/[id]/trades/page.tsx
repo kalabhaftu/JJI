@@ -82,7 +82,6 @@ export default function AccountTradesPage() {
   })
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = async () => {
     try {
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
@@ -104,7 +103,6 @@ export default function AccountTradesPage() {
     }
   }
 
-  // Fetch trades with phase filter
   const fetchTrades = async (filter: string = phaseFilter) => {
     try {
       setIsLoading(true)
@@ -139,7 +137,6 @@ export default function AccountTradesPage() {
     }
   }
 
-  // Refetch when phase filter changes
   useEffect(() => {
     if (user && accountId) {
       fetchTrades(phaseFilter)
@@ -147,7 +144,6 @@ export default function AccountTradesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseFilter])
 
-  // Load data on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()

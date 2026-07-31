@@ -140,7 +140,6 @@ function CustomToast({
   )
 }
 
-/** Safe Toaster provider - renders the Sonner container with custom styling */
 export function SafeToaster() {
   const [mounted, setMounted] = useState(false)
   const pathname = usePathname()

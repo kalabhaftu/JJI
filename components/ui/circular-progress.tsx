@@ -35,7 +35,6 @@ export function CircularProgress({
   // For circle: full circle (360 degrees)
   const circumference = isGauge ? radius * Math.PI : radius * 2 * Math.PI
 
-  // For segmented gauge, calculate segment lengths
   const getSegmentedPaths = () => {
     if (!segments) return null
     const total = segments.wins + segments.breakeven + segments.losses
@@ -55,7 +54,6 @@ export function CircularProgress({
   const segmentData = getSegmentedPaths()
   const offset = circumference - (value / 100) * circumference
 
-  // Arc path for semi-circle (left to right)
   const arcPath = `M ${strokeWidth / 2} ${size / 2} A ${radius} ${radius} 0 0 1 ${size - strokeWidth / 2} ${size / 2}`
   const circlePath = `M ${size / 2} ${strokeWidth / 2} A ${radius} ${radius} 0 1 1 ${size / 2} ${size - strokeWidth / 2} A ${radius} ${radius} 0 1 1 ${size / 2} ${strokeWidth / 2}`
 
@@ -115,7 +113,6 @@ export function CircularProgress({
             />
           </>
         ) : (
-          /* Single color progress arc/circle */
           <path
             d={isGauge ? arcPath : circlePath}
             stroke={color}

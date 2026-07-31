@@ -30,20 +30,17 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
   const isLoss = backtest.outcome === 'LOSS'
   const hasPreviewImage = backtest.cardPreviewImage
 
-  // Format session display
   const formatSession = (session: string) => {
     return session.split('_').map(word => 
       word.charAt(0) + word.slice(1).toLowerCase()
     ).join(' ')
   }
 
-  // Format model display
   const formatModel = (model: string, customModel?: string) => {
     if (model === 'CUSTOM' && customModel) return customModel
     return model.replace(/_/g, ' ')
   }
 
-  // Get badge variant based on outcome
   const getOutcomeVariant = (): "default" | "secondary" | "destructive" | "outline" => {
     if (isWin) return 'default'
     if (isLoss) return 'destructive'

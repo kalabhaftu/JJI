@@ -21,7 +21,6 @@ type ArchiveStream = Omit<NodeJS.ReadWriteStream, 'on'> & {
   on(event: 'warning' | 'error', listener: (error: ArchiveError) => void): ArchiveStream
 }
 
-// Helper to sanitize and transform data
 const sanitizeUser = (data: any) => {
   const { id, userId, auth_user_id, ...rest } = data
   return numberValuesToString(rest)
@@ -29,7 +28,7 @@ const sanitizeUser = (data: any) => {
 
 // Convert bigints/decimals to string/number if needed (though simple objects usually fine)
 const numberValuesToString = (obj: any) => {
-  return obj // Assuming standard JSON safe
+  return obj
 }
 
 const exportFiltersSchema = z.object({
@@ -50,7 +49,6 @@ export async function POST(request: NextRequest) {
     }
     const internalUserId = identity.internalUserId
 
-    // Parse Filters
     let filters: z.infer<typeof exportFiltersSchema> = {}
     if (request.headers.get('content-type')?.includes('application/json')) {
       try {
@@ -86,7 +84,6 @@ export async function POST(request: NextRequest) {
       )
       .where(eq(schema.MasterAccount.userId, internalUserId))
 
-    // Fetch absolutely everything for this user
     const [
       dbUser,
       accounts,
@@ -273,7 +270,6 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Set up Archive Stream
     const stream = new PassThrough()
     // Archiver 8 is ESM-only, while its current DefinitelyTyped package still
     // describes the removed callable default export.
@@ -282,22 +278,18 @@ export async function POST(request: NextRequest) {
     }
     const archive = new archiverRuntime.ZipArchive({ zlib: { level: 9 } })
 
-    // Log archive warnings/errors
     archive.on('warning', (err) => {
       logger.warn('Archive warning: ' + (err instanceof Error ? err.message : String(err)))
     })
     archive.on('error', (err) => {
       logger.error('Archive error: ' + (err instanceof Error ? err.message : String(err)))
-      stream.destroy(err) // Kill the stream
+      stream.destroy(err)
     })
 
-    // Pipe archive to response stream
     archive.pipe(stream)
 
-    // Execute heavy lifting asynchronously
     const processArchive = async () => {
       try {
-        // 1. Add Manifest
         archive.append(JSON.stringify(manifest, null, 2), { name: 'data.json' })
 
         // 2. Fetch images only from this project's Supabase Storage origin.
@@ -325,7 +317,6 @@ export async function POST(request: NextRequest) {
             t.cardPreviewImage
         )
 
-        // Helper to process a single trade's images
         const processTradeImages = async (trade: any) => {
           const images = [
             { url: trade.imageOne, suffix: '1' },
@@ -347,14 +338,11 @@ export async function POST(request: NextRequest) {
           }
         }
 
-        // Chunk processing
         for (let i = 0; i < allTradesWithImages.length; i += CHUNK_SIZE) {
           const chunk = allTradesWithImages.slice(i, i + CHUNK_SIZE)
           await Promise.all(chunk.map(processTradeImages))
-          // Small delay to yield event loop if needed?
         }
 
-        // Process Backtest images
         const backtestsWithImages = backtestTrades.filter(
           (t: typeof backtestTrades[number]) =>
             t.imageOne ||

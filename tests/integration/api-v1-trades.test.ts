@@ -1,7 +1,3 @@
-/**
- * Integration tests for GET /api/v1/trades
- * Requires authenticated request context (mocked in tests)
- */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 

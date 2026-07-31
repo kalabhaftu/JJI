@@ -32,7 +32,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-// Type for the Supabase getUserIdentities response
 interface UserIdentity {
   id: string
   identity_id: string

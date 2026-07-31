@@ -5,7 +5,6 @@ import logger from '@/lib/logger';
 import { db } from '@/lib/db/client';
 import * as schema from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
-// Groups removed - no longer used
 
 import { getInternalUserIdSafe, getResolvedUserIdentitySafe } from './user-identity'
 import { Account } from '@/context/data-provider'

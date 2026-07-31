@@ -38,7 +38,6 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
   // Track previous accountNumbers to detect external changes
   const prevAccountNumbersRef = React.useRef<string[]>([])
 
-  // Memoized helper to sync from context into local selection
   const syncSelectedFromContext = useCallback(
     (currentNumbers: string[]) => {
       if (!accounts || accounts.length === 0) return
@@ -50,7 +49,6 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       if (matchingAccountIds.length > 0) {
         setSelectedAccounts(new Set(matchingAccountIds))
 
-        // Auto-expand parent groups for selected accounts
         const matchingAccounts = accounts.filter(acc => currentNumbers.includes(acc.id) || currentNumbers.includes(acc.number))
         const accountNames = new Set(matchingAccounts.map(acc => acc.name || acc.number))
         setExpandedAccounts(prev => new Set([...prev, ...accountNames]))
@@ -59,14 +57,12 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         // This can happen when account data is stale
         setSelectedAccounts(new Set())
       } else {
-        // accountNumbers was cleared - clear selection
         setSelectedAccounts(new Set())
       }
     },
     [accounts]
   )
 
-  // Sync selectedAccounts when accountNumbers context changes (including external updates)
   useEffect(() => {
     if (!accounts || accounts.length === 0) return
 
@@ -90,7 +86,6 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     return accounts.map((a) => ({ ...a }))
   }, [accounts])
 
-  // Group accounts by master account name (hierarchical structure)
   const groupedAccountsByName = useMemo(() => {
     if (!filteredAccountsList || filteredAccountsList.length === 0) {
       return {}
@@ -111,10 +106,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       }>
     }> = {}
 
-    // Group by account name
     filteredAccountsList.forEach(account => {
-      // For prop firm accounts, use the account name (which is the master account name)
-      // For regular accounts, use the account name directly
       const accountName = account.accountType === 'prop-firm' ? account.name : account.name
 
       if (!grouped[accountName]) {
@@ -140,7 +132,6 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     return grouped
   }, [filteredAccountsList])
 
-  // Filter accounts by search query
   const filteredGroupedAccounts = useMemo(() => {
     if (!searchQuery) return groupedAccountsByName
 
@@ -153,7 +144,6 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         return
       }
 
-      // Check if any phase matches
       const matchingPhases = accountData.phases.filter((phase: any) =>
         phase.number.toLowerCase().includes(query) ||
         phase.status.toLowerCase().includes(query) ||
@@ -171,17 +161,14 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     return filtered
   }, [groupedAccountsByName, searchQuery])
 
-  // Get only active accounts for default selection
   const activeAccounts = useMemo(() => {
     if (!filteredAccountsList) return []
     return filteredAccountsList.filter(account => account.status === 'active')
   }, [filteredAccountsList])
 
-  // Restore saved account selection from settings and auto-expand parent groups
   useEffect(() => {
     if (!accounts || accounts.length === 0) return
 
-    // If accountNumbers are already set from saved settings, find and expand parent groups
     if (accountNumbers.length > 0 && selectedAccounts.size === 0) {
       const matchingAccounts = accounts.filter(acc =>
         accountNumbers.includes(acc.number) ||
@@ -189,10 +176,8 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       )
 
       if (matchingAccounts.length > 0) {
-        // Set selected accounts
         setSelectedAccounts(new Set(matchingAccounts.map(acc => acc.id)))
 
-        // Auto-expand all parent groups for selected accounts
         const accountNames = new Set(matchingAccounts.map(acc => acc.name || acc.number))
         setExpandedAccounts(accountNames)
       }
@@ -210,19 +195,15 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       .map(accountId => accounts.find(acc => acc.id === accountId))
       .filter(Boolean) as any[]
 
-    // Group prop-firm accounts by masterAccountId (or name as fallback)
-    // Count live accounts individually
     const masterAccountSet = new Set<string>()
 
     selectedAccountObjects.forEach(acc => {
       const accountType = acc.accountType || (acc.propfirm ? 'prop-firm' : 'live')
 
       if (accountType === 'prop-firm') {
-        // For prop-firm: group by masterAccountId or name
         const masterId = acc.currentPhaseDetails?.masterAccountId || acc.name || acc.number
         masterAccountSet.add(masterId)
       } else {
-        // For live accounts: count each individually (use id as unique identifier)
         masterAccountSet.add(acc.id || acc.number)
       }
     })
@@ -241,7 +222,6 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
 
     setSelectedAccounts(newSelected)
 
-    // Auto-expand the parent group for the toggled account
     const accountData = accounts?.find(acc => acc.id === accountId)
     if (accountData && checked) {
       const accountName = accountData.name || accountData.number
@@ -279,12 +259,10 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     const phaseIds = accountData.phases.map(p => p.id)
     const newSelected = new Set(selectedAccounts)
 
-    // Add all phases of this account
     phaseIds.forEach(id => newSelected.add(id))
 
     setSelectedAccounts(newSelected)
 
-    // Ensure expanded
     setExpandedAccounts(prev => new Set([...prev, accountName]))
   }
 
@@ -301,7 +279,6 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
   }
 
   const handleSelectAll = () => {
-    // Select all phase accounts (not master accounts)
     const allIds = filteredAccountsList.map(acc => acc.id)
     setSelectedAccounts(new Set(allIds))
   }
@@ -320,12 +297,10 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
   }
 
   const handleActiveOnly = () => {
-    // Select only active accounts
     const activeIds = activeAccounts.map(acc => acc.id)
     setSelectedAccounts(new Set(activeIds))
   }
 
-  // Calculate display counts
   const totalAccounts = filteredAccountsList.length
 
   return (

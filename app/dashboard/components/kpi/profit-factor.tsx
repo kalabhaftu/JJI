@@ -25,7 +25,6 @@ const ProfitFactor = React.memo(function ProfitFactor({ size }: ProfitFactorProp
   const hasData = formattedTrades && formattedTrades.length > 0
 
   const { progressValue, color } = React.useMemo(() => {
-    // Convert profit factor to percentage for circular progress
     // Map 0-3.0 to 0-100% for better visualization
     const progress = isPrivacyMode ? 0 : Math.min((safeProfitFactor / 3.0) * 100, 100)
     const colorValue = isPrivacyMode

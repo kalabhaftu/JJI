@@ -38,10 +38,6 @@ class DatabaseRealtimeManager {
   private reconnectTimeout: NodeJS.Timeout | null = null
   private hasLoggedReconnectExhausted = false
   
-  /**
-   * Subscribe to database changes
-   * Returns an unsubscribe function
-   */
   subscribe(options: SubscriptionOptions): () => void {
     const { tables, userId, onChange, onStatusChange } = options
     
@@ -80,7 +76,6 @@ class DatabaseRealtimeManager {
         try {
           this.channel.unsubscribe()
         } catch (e) {
-          // Ignore unsubscribe errors
         }
         this.channel = null
       }
@@ -88,7 +83,6 @@ class DatabaseRealtimeManager {
       const channelName = `db-changes-${userId}-${Date.now()}`
       let channel = supabase.channel(channelName, {
         config: {
-          // Add presence configuration to prevent channel errors
           presence: {
             key: userId
           }
@@ -121,14 +115,12 @@ class DatabaseRealtimeManager {
             }
           )
         } catch (tableError) {
-          // Log but continue with other tables
           logger.warn(tableError instanceof Error ? tableError : new Error('Unknown error'), `[Realtime] Failed to subscribe to table ${table}:`)
         }
       }
       
       this.channel = channel
       
-      // Subscribe and handle connection status
       channel.subscribe((status: string, err?: Error) => {
         if (status === 'SUBSCRIBED') {
           this.isConnected = true
@@ -138,7 +130,6 @@ class DatabaseRealtimeManager {
         } else if (status === 'CHANNEL_ERROR') {
           this.isConnected = false
           this.notifyStatus('error')
-          // Only log if error details are available, and use logger.warn to avoid unhandled error
           if (err && err.message) {
             logger.warn({ err: new Error(err.message) }, '[Realtime] Channel error:')
           } else {
@@ -156,11 +147,9 @@ class DatabaseRealtimeManager {
       })
       
     } catch (error) {
-      // Use logger.warn to avoid unhandled error propagation
       const errorMessage = error instanceof Error ? error.message : 'Unknown connection error'
       logger.warn({ err: new Error(errorMessage) }, '[Realtime] Failed to connect:')
       this.notifyStatus('error')
-      // Schedule reconnect attempt
       this.scheduleReconnect(tables, userId)
     }
   }
@@ -233,9 +222,6 @@ class DatabaseRealtimeManager {
     }
   }
   
-/**
- * Check connection status and subscriber count
- */
   getStatus(): { isConnected: boolean; subscriberCount: number } {
     return {
       isConnected: this.isConnected,
@@ -243,9 +229,6 @@ class DatabaseRealtimeManager {
     }
   }
   
-/**
- * Force reconnect
- */
   reconnect() {
     if (this.userId) {
       this.disconnect()
@@ -257,18 +240,6 @@ class DatabaseRealtimeManager {
 
 const DatabaseRealtime = new DatabaseRealtimeManager()
 
-/**
- * React hook for database realtime subscriptions
- * 
- * @example
- * ```tsx
- * useDatabaseRealtime({
- *   userId: user.id,
- *   onTradeChange: () => refetchTrades(),
- *   onAccountChange: () => refetchAccounts(),
- * })
- * ```
- */
 export function useDatabaseRealtime(options: {
   userId: string | undefined
   enabled?: boolean

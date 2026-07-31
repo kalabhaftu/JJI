@@ -63,7 +63,6 @@ export function getAllRithmicData(): Record<string, RithmicCredentialSet> {
     const parsedData = JSON.parse(data)
     const validatedData: Record<string, RithmicCredentialSet> = {}
     
-    // Validate each credential set
     Object.entries(parsedData).forEach(([id, cred]) => {
       if (isValidCredentialSet(cred)) {
         validatedData[id] = cred
@@ -73,7 +72,6 @@ export function getAllRithmicData(): Record<string, RithmicCredentialSet> {
     return validatedData
   } catch (error) {
     logger.error({ event: 'system_error', error: error }, 'Failed to retrieve all Rithmic data:')
-    // If there's an error, clear the corrupted data
     localStorage.removeItem(STORAGE_KEY)
     return {}
   }
@@ -107,11 +105,8 @@ export function updateLastSyncTime(id: string): void {
   }
 }
 
-// Helper to generate a unique ID for new credential sets
-// Uses username as the ID since synchronizations use username as accountId
 export function generateCredentialId(username: string): string {
   if (!username) {
-    // Fallback for edge cases (should not happen in normal flow)
     return `cred_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
   }
   return username

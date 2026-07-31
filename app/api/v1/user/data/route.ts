@@ -21,7 +21,6 @@ export async function DELETE(request: NextRequest) {
     }
     const internalUserId = identity.internalUserId
 
-    // Verify confirmation in request body
     const body = await request.json().catch(() => ({}))
     if (body.confirmation !== 'DELETE ALL DATA') {
       return NextResponse.json(

@@ -53,7 +53,6 @@ export function DashboardClient() {
 
     updateNavbarHeight()
 
-    // Use ResizeObserver for navbar height changes
     const navbar = document.querySelector('nav.sticky')
     let resizeObserver: ResizeObserver | null = null
 
@@ -65,7 +64,6 @@ export function DashboardClient() {
       resizeObserver.observe(navbar)
     }
 
-    // Fallback window resize listener
     window.addEventListener('resize', updateNavbarHeight)
 
     return () => {

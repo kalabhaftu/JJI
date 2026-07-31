@@ -1,12 +1,6 @@
 import { NextResponse } from 'next/server'
 
-/**
- * API endpoint to return the current build ID
- * Used by deployment detection to identify when a new version is deployed
- */
 export async function GET() {
-  // Next.js generates a BUILD_ID file during build
-  // We can use a combination of deployment timestamp and a hash
   const buildId = process.env.NEXT_BUILD_ID || process.env.VERCEL_DEPLOYMENT_ID || 'local-dev'
   
   return NextResponse.json(

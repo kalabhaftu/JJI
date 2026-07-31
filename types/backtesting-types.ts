@@ -1,4 +1,3 @@
-// Backtesting specific types - independent from trading journal types
 
 export type BacktestDirection = 'BUY' | 'SELL'
 export type BacktestOutcome = 'WIN' | 'LOSS' | 'BREAKEVEN'
@@ -8,7 +7,6 @@ export type BacktestModel = 'ICT_2022' | 'MSNR' | 'TTFM' | 'PRICE_ACTION' | 'SUP
 export interface BacktestTrade {
   id: string
   
-  // Core trade data
   pair: string // e.g., EUR/USD, NAS100, GOLD
   direction: BacktestDirection
   outcome: BacktestOutcome
@@ -16,7 +14,6 @@ export interface BacktestTrade {
   model: BacktestModel
   customModel?: string // For custom models
   
-  // Risk/Reward and Performance
   riskRewardRatio: number // e.g., 1.5 for 1:1.5
   riskPoints: number // Distance from entry to stop loss in points/pips
   rewardPoints: number // Distance from entry to take profit/exit in points/pips
@@ -26,17 +23,14 @@ export interface BacktestTrade {
   exitPrice: number
   pnl: number // Profit or Loss amount
   
-  // Images
   images: string[] // Array of image URLs
   cardPreviewImage?: string
   
-  // Metadata
   notes?: string
   dateExecuted: Date
   createdAt: Date
   updatedAt: Date
   
-  // Additional fields
   tags?: string[]
   backtestDate?: Date // When the backtest was performed
 }

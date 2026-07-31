@@ -51,10 +51,8 @@ function useIsMobileDetection() {
     const mobileQuery = window.matchMedia('(max-width: 768px)');
     const checkMobile = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
 
-    // Check immediately
     checkMobile(mobileQuery);
 
-    // Add listener for changes
     mobileQuery.addEventListener('change', checkMobile);
     return () => mobileQuery.removeEventListener('change', checkMobile);
   }, []);
@@ -87,7 +85,6 @@ export const DataProvider: React.FC<{
 }> = ({ children, initialBootstrapData, isDemoMode = false }) => {
   const isMobile = useIsMobileDetection();
 
-  // Get store values
   const user = useUserStore(state => state.user);
   const setUser = useUserStore(state => state.setUser);
 
@@ -103,7 +100,6 @@ export const DataProvider: React.FC<{
   const isLoading = useUserStore(state => state.isLoading)
   const setIsLoading = useUserStore(state => state.setIsLoading)
 
-  // Remove unused states that caused dependency issues
 
   const { settings: accountFilterSettings, isLoading: isLoadingAccountFilterSettings, updateSettings: updateAccountFilterSettings } = useAccountFilterSettings()
 
@@ -128,7 +124,6 @@ export const DataProvider: React.FC<{
   const [isFirstConnection, setIsFirstConnection] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize account filter from saved settings (CLIENT-SIDE ONLY)
   const selectionInitializedRef = React.useRef(false)
   const lastSyncedSelectionRef = React.useRef<string>('')
 
@@ -139,7 +134,6 @@ export const DataProvider: React.FC<{
       return
     }
 
-    // ONLY load from saved settings - no auto-selection
     const savedSelection = accountFilterSettings?.selectedPhaseAccountIds || []
     const savedSignature = JSON.stringify(normalizeSelection(savedSelection))
 
@@ -157,12 +151,10 @@ export const DataProvider: React.FC<{
             })
           )
         } catch (error) {
-          // Ignore storage errors
         }
         return
       }
 
-      // Check localStorage cache as fallback
       let cachedSelection: string[] | null = null
       try {
         const cached = localStorage.getItem('settings-cache')
@@ -171,7 +163,6 @@ export const DataProvider: React.FC<{
           cachedSelection = settings.selectedPhaseAccountIds || null
         }
       } catch (error) {
-        // Ignore parsing errors
       }
 
       if (cachedSelection && cachedSelection.length > 0) {
@@ -204,7 +195,6 @@ export const DataProvider: React.FC<{
   const activeLoadPromiseRef = React.useRef<Promise<void> | null>(null)
   const hasLoadedDataRef = React.useRef(false)
 
-  // HYDRATE FROM SERVER BOOTSTRAP (targeted SSR path)
   useEffect(() => {
     if (isDemoMode) return
     
@@ -321,7 +311,6 @@ export const DataProvider: React.FC<{
         setUser(userData);
         setIsFirstConnection(userData?.isFirstConnection || false)
 
-        // Persist account filter settings
         if (userData?.accountFilterSettings) {
           try {
             const hasPendingChanges = localStorage.getItem('settings-pending')
@@ -411,7 +400,6 @@ export const DataProvider: React.FC<{
           throw error;
         }
 
-        // Handle authentication errors
         if (error instanceof Error && (
           error.message.includes('User not authenticated') ||
           error.message.includes('User not found') ||
@@ -422,7 +410,6 @@ export const DataProvider: React.FC<{
         
         // Silent fail to prevent unhandled promise rejections
         
-        // Set error state to inform user
         setError('Failed to load data. Please refresh the page.');
         setIsLoading(false);
       }
@@ -546,13 +533,11 @@ export const DataProvider: React.FC<{
   const formattedTrades = useMemo(() => serverTradeData?.trades ?? [], [serverTradeData?.trades]);
 
   const statistics = useMemo(() => {
-    // Use server-computed statistics when available
     if (serverMetricsData?.statistics) return serverMetricsData.statistics;
     return EMPTY_STATISTICS;
   }, [serverMetricsData?.statistics]);
 
   const calendarData = useMemo(() => {
-    // Use server-computed calendar data when available
     if (serverMetricsData?.calendarData) return serverMetricsData.calendarData;
     return EMPTY_CALENDAR_DATA;
   }, [serverMetricsData?.calendarData]);
@@ -585,11 +570,9 @@ export const DataProvider: React.FC<{
     await saveDashboardLayoutAction(layout)
     revalidateCache([`user-data-${user.id}`])
 
-    // Update localStorage to keep cache fresh for next visit
     try {
       localStorage.setItem(`dashboard-layout-${user.id}`, JSON.stringify(layout))
     } catch (error) {
-      // Ignore localStorage errors
     }
   }, [user?.id, setDashboardLayout])
 
@@ -619,41 +602,33 @@ export const DataProvider: React.FC<{
     pnlRange,
     setPnlRange,
 
-    // Time range related
     timeRange,
     setTimeRange,
 
-    // Weekday filter related
     weekdayFilter,
     setWeekdayFilter,
 
-    // Hour filter related
     hourFilter,
     setHourFilter,
 
-    // Statistics, calendar, and widget data
     statistics,
     calendarData,
     widgetData: serverMetricsData?.widgets ?? null,
 
-    // Accounts
     accounts,
 
-    // Mutations
 
     updateTrades,
     appendTagsToTrades,
     groupTrades,
     ungroupTrades,
 
-    // Accounts
     deleteAccount,
     saveAccount,
 
     deletePayout,
     savePayout,
 
-    // Dashboard layout
     saveDashboardLayout,
   };
 

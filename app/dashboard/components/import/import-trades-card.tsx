@@ -78,14 +78,12 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
     setIsSaving(true)
     
     try {
-      // Show processing indicator (auto-dismiss after 3 seconds)
       toast.info("Processing Trades", {
         description: "Checking for duplicates and saving trades...",
         duration: 3000,
       })
       let newTrades: TradeType[] = []
           newTrades = processedTrades.map(trade => {
-            // Clean up the trade object to remove undefined values
             const cleanTrade = Object.fromEntries(
               Object.entries(trade).filter(([_, value]) => value !== undefined)
             ) as Partial<TradeType>
@@ -95,7 +93,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
               accountNumber: cleanTrade.accountNumber || accountNumber || accountId,
               userId: currentUser.id,
               id: generateTradeHash({ ...cleanTrade, userId: currentUser.id }),
-              // Ensure required fields have default values
               instrument: cleanTrade.instrument || '',
               entryPrice: cleanTrade.entryPrice || '',
               closePrice: cleanTrade.closePrice || '',
@@ -113,7 +110,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
             } as TradeType
           })
      
-          // Filter out empty trades
           newTrades = newTrades.filter(trade => {
             return trade.accountNumber &&
               trade.instrument &&
@@ -218,7 +214,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
         return
       }
       
-      // Show appropriate success message based on the result
       const importedCount = result.linkedCount || 0
       
       if (importedCount === 0) {
@@ -228,7 +223,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
         })
         setIsSaving(false)
         
-        // Still reset and navigate back
         resetImportState()
         router.push(`/dashboard/prop-firm/accounts/${accountId}/trades`)
         return
@@ -237,13 +231,10 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
       // Reset the import process immediately for better UX
       resetImportState()
       
-      // Navigate back to trades list immediately
       router.push(`/dashboard/prop-firm/accounts/${accountId}/trades`)
       
-      // Update the trades in background
       refreshTrades()
       
-      // Check for account breaches after successful import
       try {
         const breachResult = await checkAccountBreaches(accountId)
         if (breachResult && typeof breachResult === 'object' && 'isFailed' in breachResult && breachResult.isFailed) {
@@ -255,7 +246,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
         // Don't fail the import if breach check fails
       }
 
-      // Check for phase progression after successful import
       try {
         const progressResult = await checkPhaseProgression(accountId)
         if (progressResult && typeof progressResult === 'object' && 'canProgress' in progressResult) {
@@ -269,7 +259,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
         // Don't fail the import if phase progression check fails
       }
 
-      // Show success message with phase information
       toast.success("Import Completed", {
         description: `Successfully imported ${importedCount} ${importedCount === 1 ? 'trade' : 'trades'}.`,
         duration: 5000,
@@ -277,7 +266,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
 
     } catch (error: any) {
       
-      // User-friendly error messages
       const errorMessage = error?.message || String(error)
       
       if (errorMessage.includes('Authentication')) {
@@ -434,7 +422,6 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
       )
     }
     
-    // Handle processor components - only if the current step component is the processor
     if (platform.processorComponent && Component === platform.processorComponent) {
       return (
         <platform.processorComponent
@@ -468,23 +455,18 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
     
     const platform = platforms.find(p => p.type === importType) || platforms.find(p => p.platformName === 'csv-ai')
     if (!platform) {
-      // Only disable if no import type is selected and we're not on the first step
       return step === 'select-import-type' && !importType
     }
 
     const currentStep = platform.steps.find(s => s.id === step)
     if (!currentStep) return true
 
-    // For import type selection, require a type to be selected
     if (currentStep.component === ImportTypeSelection && !importType) return true
     
-    // File upload step
     if (currentStep.component === FileUpload && csvData.length === 0) return true
     
-    // Account selection for platforms
     if (currentStep.component === AccountSelection && !accountNumber) return true
 
-    // FormatPreview step - require processed trades before saving
     if (currentStep.component === FormatPreview && processedTrades.length === 0) return true
 
     return false

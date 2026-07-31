@@ -321,7 +321,6 @@ export function GoalsPageClient() {
     onError: () => toast.error('Failed to delete goal'),
   })
 
-  // Edit state
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [editForm, setEditForm] = useState({
     title: '',

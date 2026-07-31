@@ -14,7 +14,6 @@ export function useMediaQuery(query: string): boolean {
       setMatches(e.matches)
     }
 
-    // Modern browsers
     if (media.addEventListener) {
       media.addEventListener('change', listener)
     } else {

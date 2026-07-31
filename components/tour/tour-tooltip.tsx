@@ -106,7 +106,6 @@ export const TourTooltip: React.FC = () => {
   useEffect(() => {
     if (!currentStep || paused) return
 
-    // Mobile fallback or centered step
     const isMobile = window.innerWidth < 768
     if (!coords || isMobile || currentStep.placement === 'center') {
       setPlacement('center')
@@ -137,7 +136,6 @@ export const TourTooltip: React.FC = () => {
       left = coords.left - tooltipWidth - padding
     }
 
-    // Keep inside viewport boundaries
     const margin = 16
     left = Math.max(margin, Math.min(left, window.innerWidth - tooltipWidth - margin))
     top = Math.max(margin, Math.min(top, document.documentElement.scrollHeight - tooltipHeight - margin))

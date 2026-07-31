@@ -1,7 +1,3 @@
-/**
- * Prop Firm Evaluation System Types
- * Types for account phases, drawdown tracking, and evaluation logic
- */
 
 import type { DatabaseRecord } from './api'
 
@@ -14,11 +10,7 @@ type DrawdownMode = 'static' | 'trailing'
 type EvaluationType = 'one_step' | 'two_step'
 export type BreachType = 'daily_drawdown' | 'max_drawdown'
 
-/**
- * Extended Account Types for Prop Firm Evaluation
- */
 export interface PropFirmAccount extends DatabaseRecord {
-  // Basic account info
   number: string
   name?: string
   propfirm: string
@@ -26,24 +18,20 @@ export interface PropFirmAccount extends DatabaseRecord {
   status: AccountStatus
   userId: string
   
-  // Drawdown configuration
   dailyDrawdownAmount?: number
   dailyDrawdownType: DrawdownType
   maxDrawdownAmount?: number
   maxDrawdownType: DrawdownType
   drawdownModeMax: DrawdownMode
   
-  // Evaluation Settings
   evaluationType: EvaluationType
   timezone: string
   dailyResetTime: string
   
-  // Config flags for business rules
   ddIncludeOpenPnl: boolean
   progressionIncludeOpenPnl: boolean
   allowManualPhaseOverride: boolean
   
-  // Funded account payout configuration
   profitSplitPercent?: number
   payoutCycleDays?: number
   minDaysToFirstPayout?: number
@@ -52,7 +40,6 @@ export interface PropFirmAccount extends DatabaseRecord {
   reduceBalanceByPayout: boolean
   fundedResetBalance?: number
 
-  // Relations
   phases?: PhaseAccount[]
   currentPhase?: PhaseAccount
   breaches?: Breach[]
@@ -68,7 +55,6 @@ export interface PhaseAccount {
   phaseId: string | null
   status: 'active' | 'passed' | 'failed' | 'archived'
 
-  // Rules
   profitTargetPercent: number
   dailyDrawdownPercent: number
   maxDrawdownPercent: number
@@ -77,7 +63,6 @@ export interface PhaseAccount {
   timeLimitDays: number | null
   consistencyRulePercent: number
 
-  // Payout config
   profitSplitPercent: number | null
   payoutCycleDays: number | null
 
@@ -85,11 +70,7 @@ export interface PhaseAccount {
   endDate: Date | null
 }
 
-/**
- * Enhanced Trade with Phase Attribution
- */
 export interface PropFirmTrade extends DatabaseRecord {
-  // Legacy fields for compatibility
   accountNumber: string
   quantity: number
   instrument: string
@@ -103,7 +84,6 @@ export interface PropFirmTrade extends DatabaseRecord {
   comment?: string
   userId: string
   
-  // New prop firm fields
   phaseId?: string
   accountId?: string
   symbol?: string
@@ -112,23 +92,17 @@ export interface PropFirmTrade extends DatabaseRecord {
   phaseAccountId?: string
   phaseAccount?: PhaseAccount
   
-  // Relations
   phase?: PhaseAccount
   account?: PropFirmAccount
 }
 
-/**
- * Enhanced Payout Management
- */
 interface PropFirmPayout extends DatabaseRecord {
   accountId: string
   accountNumber: string
   
-  // Legacy fields (migrated)
   amount: number // Will be mapped to amountRequested
   date: Date     // Will be mapped to requestedAt
   
-  // New payout fields
   amountRequested?: number
   amountPaid?: number
   requestedAt?: Date
@@ -136,13 +110,9 @@ interface PropFirmPayout extends DatabaseRecord {
   notes?: string
   status: string
   
-  // Relations
   account?: PropFirmAccount
 }
 
-/**
- * Drawdown Breach Tracking
- */
 export interface Breach extends DatabaseRecord {
   accountId: string
   phaseId?: string
@@ -153,27 +123,19 @@ export interface Breach extends DatabaseRecord {
   breachTime: Date
   description?: string
   
-  // Relations
   account?: PropFirmAccount
   phase?: PhaseAccount
 }
 
-/**
- * Daily Equity Anchors for Drawdown Calculation
- */
 export interface DailyAnchor extends DatabaseRecord {
   accountId: string
   date: Date
   anchorEquity: number
   computedAt: Date
   
-  // Relations
   account?: PropFirmAccount
 }
 
-/**
- * Equity Snapshots for Charts and Tracking
- */
 interface EquitySnapshot extends DatabaseRecord {
   accountId: string
   phaseId?: string
@@ -182,14 +144,10 @@ interface EquitySnapshot extends DatabaseRecord {
   balance: number
   openPnl: number
   
-  // Relations
   account?: PropFirmAccount
   phase?: PhaseAccount
 }
 
-/**
- * Account Phase Transitions Audit Trail
- */
 interface AccountTransition extends DatabaseRecord {
   accountId: string
   fromPhaseId?: string
@@ -201,15 +159,11 @@ interface AccountTransition extends DatabaseRecord {
   transitionTime: Date
   metadata: Record<string, any>
   
-  // Relations
   account?: PropFirmAccount
   fromPhase?: PhaseAccount
   toPhase?: PhaseAccount
 }
 
-/**
- * Business Logic Types
- */
 export interface DrawdownCalculation {
   dailyDrawdownRemaining: number
   maxDrawdownRemaining: number
@@ -243,9 +197,6 @@ interface PayoutEligibility {
   nextEligibleDate?: Date
 }
 
-/**
- * Dashboard Display Types
- */
 interface AccountDashboardData {
   account: PropFirmAccount
   currentPhase: PhaseAccount
@@ -272,9 +223,6 @@ interface AccountSummary {
   actions: string[] // Available actions: 'view', 'addTrade', 'requestPayout', 'reset'
 }
 
-/**
- * API Request/Response Types
- */
 interface CreateAccountRequest {
   number: string
   name?: string
@@ -339,9 +287,6 @@ interface AccountStatsResponse {
   currentStreak: number
 }
 
-/**
- * Filter Types for Queries
- */
 export interface AccountFilter {
   status?: AccountStatus[]
   phaseType?: PhaseType[]
@@ -365,9 +310,6 @@ export interface TradeFilter {
   }
 }
 
-/**
- * Background Job Types
- */
 interface DailyAnchorJob {
   accountId: string
   targetDate: Date
@@ -386,5 +328,4 @@ interface PayoutEligibilityJob {
   accountId: string
   checkDate: Date
 }
-
 

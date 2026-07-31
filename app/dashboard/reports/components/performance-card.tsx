@@ -57,7 +57,6 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
             clone.style.overflow = 'visible'
             document.body.appendChild(clone)
 
-            // Wait for layout
             await new Promise(r => setTimeout(r, 50))
 
             const canvas = await html2canvas(clone, {
@@ -86,7 +85,6 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                 toast.success('Performance card exported!')
             }, 'image/png')
         } catch (err) {
-            // Error shown via toast
             toast.error('Export failed. Please try again.')
         } finally {
             setIsExporting(false)

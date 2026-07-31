@@ -29,10 +29,10 @@ export interface WhopMembershipSnapshot {
   plan_id: string                     // plan_xxx
   product_id?: string | null          // prod_xxx
   user_id?: string | null             // Whop user ID
-  expires_at?: number | null          // Unix timestamp
+  expires_at?: number | string | null // Unix timestamp or ISO string
   cancel_at_period_end?: boolean
-  renewal_period_start?: number | null
-  renewal_period_end?: number | null
+  renewal_period_start?: number | string | null
+  renewal_period_end?: number | string | null
   metadata?: Record<string, unknown> | null
   quantity?: number
 }
@@ -114,13 +114,15 @@ export async function upsertWhopSubscription(
     membership.cancel_at_period_end ?? false,
   )
 
-  const periodStart = membership.renewal_period_start
-    ? new Date(membership.renewal_period_start * 1000)
-    : null
+  const parseWhopDate = (val: string | number | null | undefined): Date | null => {
+    if (!val) return null
+    if (typeof val === 'number') return new Date(val * 1000)
+    const d = new Date(val)
+    return isNaN(d.getTime()) ? null : d
+  }
 
-  const periodEnd = membership.expires_at
-    ? new Date(membership.expires_at * 1000)
-    : null
+  const periodStart = parseWhopDate(membership.renewal_period_start)
+  const periodEnd = parseWhopDate(membership.expires_at) ?? parseWhopDate(membership.renewal_period_end)
 
   const cancelledAt =
     (membership.status === 'canceled' || membership.status === 'cancelled')

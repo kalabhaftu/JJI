@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 const DOCS_HOST = 'docs.justjournalit.site'
+const DEMO_HOST = 'demo.justjournalit.site'
 
 export async function middleware(request: NextRequest) {
   const nonce = btoa(crypto.randomUUID())
@@ -29,6 +30,16 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     if (!url.pathname.startsWith('/docs')) {
       url.pathname = url.pathname === '/' ? '/docs' : `/docs${url.pathname}`
+    }
+    const rewriteResponse = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
+    rewriteResponse.headers.set('Content-Security-Policy', csp)
+    return rewriteResponse
+  }
+
+  if (host === DEMO_HOST) {
+    const url = request.nextUrl.clone()
+    if (!url.pathname.startsWith('/demo')) {
+      url.pathname = url.pathname === '/' ? '/demo' : `/demo${url.pathname}`
     }
     const rewriteResponse = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
     rewriteResponse.headers.set('Content-Security-Policy', csp)

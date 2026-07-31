@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Logo } from '@/components/logo'
+import { getDocsUrl } from '@/lib/urls'
 
 export function Footer() {
   return (
@@ -12,7 +13,7 @@ export function Footer() {
           </span>
         </div>
         <div className="flex flex-wrap items-center gap-6">
-          <Link href="/docs" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
+          <Link href={getDocsUrl()} className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">
             Docs
           </Link>
           <Link href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors font-medium">

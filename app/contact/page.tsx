@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { Mail, MessageSquare, BookOpen, Heart } from 'lucide-react'
 import { getSiteUiSettings } from '@/server/site-ui-settings'
 import { BRAND } from '@/lib/constants/brand'
+import { getDocsUrl } from '@/lib/urls'
 
 export const metadata = {
   title: `Contact | ${BRAND.name}`,
@@ -59,7 +60,7 @@ export default async function ContactPage() {
                     Check our docs for guides, tutorials, and troubleshooting help.
                   </p>
                   <Button asChild variant="outline" size="sm">
-                    <Link href="/docs">Browse Docs</Link>
+                    <Link href={getDocsUrl()}>Browse Docs</Link>
                   </Button>
                 </div>
               </div>

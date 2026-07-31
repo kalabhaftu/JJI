@@ -13,6 +13,7 @@ import { Spinner } from "@/components/ui/spinner"
 import { UserAuthForm } from "@/components/user-auth-form"
 import { useAuth } from "@/context/auth-provider"
 import { useTheme } from "@/context/theme-provider"
+import { getDocsUrl } from "@/lib/urls"
 
 interface RootPageClientProps {
   nextUrl: string | null
@@ -118,7 +119,7 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
           </Button>
           <div className="flex items-center gap-6">
             <Link
-              href="/docs"
+              href={getDocsUrl()}
               className="text-[10px] text-muted-foreground/40 hover:text-muted-foreground/80 uppercase tracking-[0.2em] font-medium transition-colors flex items-center"
             >
               Docs

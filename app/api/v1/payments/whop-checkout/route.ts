@@ -17,17 +17,16 @@ const CheckoutRequestSchema = z.object({
 })
 
 export async function POST(request: NextRequest) {
-  const requestId = crypto.randomUUID()
   try {
     const auth = await getResolvedUserIdentitySafe()
     if (!auth) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED')
     }
 
     const body = await request.json()
     const result = CheckoutRequestSchema.safeParse(body)
     if (!result.success) {
-      return createErrorResponse('Invalid request', 400, result.error.format(), 'VALIDATION_ERROR', requestId)
+      return createErrorResponse('Invalid request', 400, result.error.format(), 'VALIDATION_ERROR')
     }
 
     const { planId } = result.data
@@ -39,21 +38,19 @@ export async function POST(request: NextRequest) {
         'You already have an active subscription.',
         409,
         undefined,
-        'CONFLICT',
-        requestId,
+        'CONFLICT'
       )
     }
 
     const checkout = await createWhopCheckoutLink(auth.internalUserId, planId)
 
-    return createSuccessResponse(checkout, undefined, undefined, requestId)
+    return createSuccessResponse(checkout)
   } catch (error: any) {
     return createErrorResponse(
-      error.message || 'Failed to create checkout link',
+      'Failed to create checkout link',
       500,
       undefined,
-      'SERVER_ERROR',
-      requestId,
+      'INTERNAL_SERVER_ERROR'
     )
   }
 }

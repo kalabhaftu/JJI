@@ -20,7 +20,7 @@ export async function reconcileWhopMembership(
 ): Promise<void> {
   // Fetch from Whop SDK
   // The Whop SDK uses GET /api/v1/memberships/{id}
-  const response = await whopClient.memberships.retrieve({ id: membershipId })
+  const response = await whopClient.memberships.retrieve(membershipId)
   if (!response) {
     throw new Error(`[WhopReconcile] Membership not found: ${membershipId}`)
   }

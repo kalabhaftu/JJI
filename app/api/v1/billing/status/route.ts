@@ -14,11 +14,10 @@ import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { getUserAccessStatus } from '@/lib/services/subscription-service'
 
 export async function GET(request: NextRequest) {
-  const requestId = crypto.randomUUID()
   try {
     const auth = await getResolvedUserIdentitySafe()
     if (!auth) {
-      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
+      return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED')
     }
 
     const access = await getUserAccessStatus(auth.internalUserId)
@@ -52,18 +51,14 @@ export async function GET(request: NextRequest) {
         membershipId,
         renewsAt: access.subscription?.nextPaymentDue ?? null,
         cancelAtPeriodEnd: access.subscription?.cancelledAt !== null && access.subscription?.cancelledAt !== undefined,
-      },
-      undefined,
-      undefined,
-      requestId,
+      }
     )
   } catch (error: any) {
     return createErrorResponse(
       error.message || 'Failed to get billing status',
       500,
       undefined,
-      'SERVER_ERROR',
-      requestId,
+      'SERVER_ERROR'
     )
   }
 }

@@ -23,6 +23,7 @@ export function SubscribeClient() {
   const router = useRouter()
   const [promoCode, setPromoCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isWhopLoading, setIsWhopLoading] = useState(false)
   const [promoValidation, setPromoValidation] = useState<{ valid: boolean; description?: string } | null>(null)
 
   useEffect(() => {
@@ -69,6 +70,34 @@ export function SubscribeClient() {
       toast.error('Error', { description: 'Something went wrong. Please try again.' })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function handleWhopSubscribe() {
+    setIsWhopLoading(true)
+    try {
+      const res = await fetch('/api/v1/payments/whop-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: 'pro' }),
+      })
+
+      const data = await res.json()
+
+      if (!data.success) {
+        toast.error('Checkout Error', { description: data.error?.message || 'Failed to initialize checkout' })
+        return
+      }
+
+      const { checkoutUrl, referenceId } = data.data
+      if (checkoutUrl) {
+        sessionStorage.setItem('whopReferenceId', referenceId)
+        window.location.href = checkoutUrl
+      }
+    } catch (error) {
+      toast.error('Error', { description: 'Something went wrong. Please try again.' })
+    } finally {
+      setIsWhopLoading(false)
     }
   }
 
@@ -151,27 +180,57 @@ export function SubscribeClient() {
             )}
           </div>
 
-          {/* Subscribe Button */}
-          <Button
-            onClick={handleSubscribe}
-            disabled={isLoading}
-            className="w-full h-11 text-sm font-medium bg-primary hover:bg-primary/90"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating invoice...
-              </>
-            ) : (
-              <>
-                Subscribe Now
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+          {/* Subscribe Buttons */}
+          <div className="space-y-3">
+            <Button
+              onClick={handleWhopSubscribe}
+              disabled={isLoading || isWhopLoading}
+              className="w-full h-11 text-sm font-medium bg-[#FF6B00] hover:bg-[#FF6B00]/90 text-white"
+            >
+              {isWhopLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating checkout...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Pay with Card
+                </>
+              )}
+            </Button>
+            
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t border-border/40" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-card/50 px-2 text-muted-foreground">Or</span>
+              </div>
+            </div>
 
-          <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
-            Secure payment powered by NOWPayments. Cancel anytime.
+            <Button
+              onClick={handleSubscribe}
+              disabled={isLoading || isWhopLoading}
+              variant="outline"
+              className="w-full h-11 text-sm font-medium bg-background/50 border-border/60 hover:bg-muted/50"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating invoice...
+                </>
+              ) : (
+                <>
+                  Pay with Crypto
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground/60 text-center mt-4">
+            Secure payments via Whop & NOWPayments. Cancel anytime.
           </p>
         </motion.div>
 

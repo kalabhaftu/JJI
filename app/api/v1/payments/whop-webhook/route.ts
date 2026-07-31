@@ -17,8 +17,8 @@ const MAX_WEBHOOK_BODY_BYTES = 256 * 1024
 export async function POST(request: NextRequest) {
   const requestId = crypto.randomUUID()
   try {
-    // 1. Read signature header
-    const signature = request.headers.get('webhook-signature')
+    // 1. Check for signature header (Standard Webhooks or Whop signature)
+    const signature = request.headers.get('webhook-signature') || request.headers.get('whop-signature')
     if (!signature) {
       logger.warn('[WhopWebhook] Missing webhook-signature header')
       return NextResponse.json({ error: 'Missing signature' }, { status: 401 })
@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Payload too large' }, { status: 413 })
     }
 
-    // 3. Verify Signature
-    if (!verifyWhopWebhookSignature(rawBody, signature)) {
+    // 3. Verify Signature using Request Headers
+    if (!verifyWhopWebhookSignature(rawBody, request.headers)) {
       logger.warn('[WhopWebhook] Invalid signature')
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
     }

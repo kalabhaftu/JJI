@@ -9,6 +9,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { WhopWebhookEvent, Subscription, User } from '@/lib/db/schema'
 import logger from '@/lib/logger'
+import { whopClient } from './client'
 import {
   upsertWhopSubscription,
   type WhopMembershipSnapshot,
@@ -99,7 +100,7 @@ async function handleMembershipEvent(membershipData: any) {
   if (!internalUserId) {
     logger.warn(
       { membershipId: membershipData.id },
-      '[WhopWebhook] Could not map membership to an internal JJI user. No metadata[jji_user_id] found.',
+      '[WhopWebhook] Could not map membership to an internal JJI user.',
     )
     return
   }
@@ -118,9 +119,6 @@ async function handleMembershipEvent(membershipData: any) {
   }
 
   await upsertWhopSubscription(snapshot, internalUserId)
-
-  // Revalidate access caches so UI reflects new status
-  // Subscription access check logic handles revalidation automatically on main
 }
 
 /**
@@ -132,24 +130,57 @@ async function handlePaymentEvent(paymentData: any) {
   const membershipId = paymentData?.membership_id
   if (!membershipId) return
 
-  // We could fetch the full membership from the Whop API here via reconcileWhopMembership,
-  // but usually Whop sends a `membership.activated` or `membership.deactivated` event
-  // right after a payment event.
   logger.info({ membershipId, status: paymentData.status }, '[WhopWebhook] Payment event received')
 }
 
 /**
  * Extracts the internal JJI User ID from a Whop membership.
- * We require `metadata.jji_user_id` to be set during checkout.
+ * First checks metadata.jji_user_id, then falls back to email matching.
  */
 async function extractUserId(membershipData: any): Promise<string | null> {
+  // 1. Check metadata binding
   const userIdFromMetadata = membershipData?.metadata?.jji_user_id
   if (userIdFromMetadata) {
-    // Verify user exists
     const user = await db.query.User.findFirst({
       where: eq(User.id, userIdFromMetadata),
     })
     if (user) return user.id
   }
+
+  // 2. Fallback: Check email directly on membership user object
+  const buyerEmail =
+    membershipData?.user?.email ??
+    membershipData?.email ??
+    membershipData?.user_email
+  if (buyerEmail && typeof buyerEmail === 'string') {
+    const cleanEmail = buyerEmail.trim().toLowerCase()
+    const user = await db.query.User.findFirst({
+      where: eq(User.email, cleanEmail),
+    })
+    if (user) {
+      logger.info({ userId: user.id, email: cleanEmail }, '[WhopWebhook] Mapped membership via email fallback')
+      return user.id
+    }
+  }
+
+  // 3. Fallback: Retrieve user via Whop SDK if user_id is provided
+  if (membershipData?.user_id) {
+    try {
+      const whopUser = await whopClient.users.retrieve(membershipData.user_id)
+      if (whopUser?.email) {
+        const cleanEmail = whopUser.email.trim().toLowerCase()
+        const user = await db.query.User.findFirst({
+          where: eq(User.email, cleanEmail),
+        })
+        if (user) {
+          logger.info({ userId: user.id, email: cleanEmail }, '[WhopWebhook] Mapped membership via Whop SDK user lookup')
+          return user.id
+        }
+      }
+    } catch (err) {
+      logger.warn({ err, whopUserId: membershipData.user_id }, '[WhopWebhook] Whop SDK user lookup failed')
+    }
+  }
+
   return null
 }

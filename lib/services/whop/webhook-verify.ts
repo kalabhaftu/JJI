@@ -1,92 +1,74 @@
 /**
  * lib/services/whop/webhook-verify.ts
  *
- * HMAC-SHA256 signature verification for Whop webhook payloads.
- *
- * Whop sends a `webhook-signature` header in the format:
- *   v1,<base64-encoded-HMAC-SHA256-of-raw-body>
- *
- * This module verifies the signature using a timing-safe comparison to
- * prevent timing-oracle attacks.
- *
- * IMPORTANT: The raw body (string) must be passed — do NOT pre-parse to JSON.
+ * HMAC-SHA256 signature verification for Whop webhook payloads according to
+ * the Standard Webhooks specification and Whop SDK.
  */
 
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import Whop from '@whop/sdk'
 import { WHOP_CONFIG } from './client'
-
-/**
- * Parses the Whop `webhook-signature` header value.
- * Returns null when the format is unexpected.
- *
- * @example "v1,abc123==" → { version: 'v1', signature: Buffer }
- */
-function parseSignatureHeader(header: string): { version: string; signature: Buffer } | null {
-  const commaIdx = header.indexOf(',')
-  if (commaIdx === -1) return null
-
-  const version = header.slice(0, commaIdx)
-  const encodedSig = header.slice(commaIdx + 1)
-
-  if (!version || !encodedSig) return null
-
-  try {
-    return { version, signature: Buffer.from(encodedSig, 'base64') }
-  } catch {
-    return null
-  }
-}
-
-/**
- * Computes the HMAC-SHA256 of the raw body using the provided webhook secret.
- */
-function computeHmac(rawBody: string, secret: string): Buffer {
-  return createHmac('sha256', secret)
-    .update(rawBody, 'utf8')
-    .digest()
-}
+import { logger } from '@/lib/logger'
 
 /**
  * Verifies that the Whop `webhook-signature` header is valid for the given
  * raw request body.
  *
- * - Returns `true` if the signature is valid.
- * - Returns `false` for any invalid or unexpected input (never throws).
- * - Uses `timingSafeEqual` to prevent timing-oracle side-channel attacks.
+ * Checks both WHOP_WEBHOOK_SECRET and WHOP_SANDBOX_WEBHOOK_SECRET as a fallback.
  *
- * @param rawBody       The raw UTF-8 request body (before JSON parsing).
- * @param signatureHeader The value of the `webhook-signature` request header.
+ * @param rawBody The raw UTF-8 request body (before JSON parsing).
+ * @param headers The HTTP request headers (Headers instance or plain object).
  */
 export function verifyWhopWebhookSignature(
   rawBody: string,
-  signatureHeader: string | null | undefined,
+  headers: Record<string, string | string[] | undefined> | Headers,
 ): boolean {
   try {
-    if (!signatureHeader) return false
+    const secrets = [
+      WHOP_CONFIG.webhookSecret,
+      process.env.WHOP_SANDBOX_WEBHOOK_SECRET,
+    ].filter((s): s is string => Boolean(s && s.trim() !== ''))
 
-    const parsed = parseSignatureHeader(signatureHeader)
-    if (!parsed) return false
-
-    // Currently only 'v1' is supported. Reject unknown versions.
-    if (parsed.version !== 'v1') return false
-
-    let expected = computeHmac(rawBody, WHOP_CONFIG.webhookSecret)
-
-    if (parsed.signature.length === expected.length && timingSafeEqual(parsed.signature, expected)) {
-      return true
+    if (secrets.length === 0) {
+      logger.warn('[WhopWebhook] No webhook secret configured')
+      return false
     }
 
-    // Fallback for Sandbox: If routing Sandbox webhooks to Production, try the sandbox secret
-    const sandboxSecret = process.env.WHOP_SANDBOX_WEBHOOK_SECRET
-    if (sandboxSecret) {
-      expected = computeHmac(rawBody, sandboxSecret)
-      if (parsed.signature.length === expected.length && timingSafeEqual(parsed.signature, expected)) {
-        return true
+    // Standardize headers into a plain Record<string, string>
+    const normalizedHeaders: Record<string, string> = {}
+    if (headers instanceof Headers) {
+      headers.forEach((value, key) => {
+        normalizedHeaders[key.toLowerCase()] = value
+      })
+    } else {
+      for (const [key, value] of Object.entries(headers)) {
+        if (typeof value === 'string') {
+          normalizedHeaders[key.toLowerCase()] = value
+        } else if (Array.isArray(value) && value[0]) {
+          normalizedHeaders[key.toLowerCase()] = value[0]
+        }
+      }
+    }
+
+    for (const secret of secrets) {
+      try {
+        const client = new Whop({
+          apiKey: WHOP_CONFIG.apiKey,
+          webhookKey: btoa(secret),
+        })
+
+        // sdk unwrap verifies signature against Standard Webhooks spec
+        const unwrapped = client.webhooks.unwrap(rawBody, { headers: normalizedHeaders })
+        if (unwrapped) {
+          return true
+        }
+      } catch (err: any) {
+        // Continue to next secret if signature failed
       }
     }
 
     return false
-  } catch {
+  } catch (err) {
+    logger.error({ err }, '[WhopWebhook] Unexpected error during signature verification')
     return false
   }
 }

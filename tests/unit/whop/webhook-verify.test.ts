@@ -4,6 +4,7 @@ import { WHOP_CONFIG } from '@/lib/services/whop/client'
 import { createHmac } from 'crypto'
 
 // Mock the WHOP_CONFIG since it reads from process.env on load
+// Mock the WHOP_CONFIG since it reads from process.env on load
 vi.mock('@/lib/services/whop/client', () => ({
   WHOP_CONFIG: {
     webhookSecret: 'test_secret_key',
@@ -14,11 +15,10 @@ describe('Whop Webhook Verification', () => {
   it('should return true for a valid signature', () => {
     const rawBody = '{"id":"evt_123","type":"membership.activated"}'
     
-    // Generate valid signature using the test secret
     const signature = createHmac('sha256', 'test_secret_key')
       .update(rawBody, 'utf8')
       .digest('base64')
-      
+
     const header = `v1,${signature}`
     
     expect(verifyWhopWebhookSignature(rawBody, header)).toBe(true)
@@ -44,7 +44,7 @@ describe('Whop Webhook Verification', () => {
       .update(rawBody, 'utf8')
       .digest('base64')
       
-    const header = `v2,${signature}` // Unsupported version
+    const header = `v2,${signature}`
     
     expect(verifyWhopWebhookSignature(rawBody, header)).toBe(false)
   })

@@ -61,16 +61,10 @@ export const PaymentRecord = pgTable('PaymentRecord', {
   rawProviderPayload: jsonb('rawProviderPayload'),
   promoCodeId: text('promoCodeId'),
   discountAmount: doublePrecision('discountAmount').default(0),
-  // --- Whop-specific fields ---
-  /** Whop membership ID (mem_xxx). Unique — one row per Whop membership. */
   whopMembershipId: text('whopMembershipId').unique(),
-  /** Whop user ID attached to this membership. */
   whopUserId: text('whopUserId'),
-  /** Whop plan ID this membership was purchased under. */
   whopPlanId: text('whopPlanId'),
-  /** Whop product ID. */
   whopProductId: text('whopProductId'),
-  /** 'sandbox' | 'production' — records which environment originated the event. */
   whopEnvironment: text('whopEnvironment'),
   createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow(),
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
@@ -79,27 +73,13 @@ export const PaymentRecord = pgTable('PaymentRecord', {
   index('PaymentRecord_whopMembershipId_idx').on(table.whopMembershipId),
 ]);
 
-/**
- * WhopWebhookEvent — idempotency log for Whop webhook deliveries.
- *
- * Before processing any Whop event we attempt to INSERT a row here.
- * The UNIQUE constraint on `eventId` causes a conflict on duplicate delivery,
- * which we catch and treat as a no-op. This guarantees exactly-once processing
- * even when Whop re-delivers an event on retry.
- */
 export const WhopWebhookEvent = pgTable('WhopWebhookEvent', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
-  /** Unique Whop event ID from the webhook payload. */
   eventId: text('eventId').notNull().unique(),
-  /** e.g. 'membership.activated', 'payment.succeeded' */
   eventType: text('eventType').notNull(),
-  /** The Whop membership ID referenced by this event, if applicable. */
   membershipId: text('membershipId'),
-  /** Processing outcome: 'processed' | 'skipped' | 'error' */
   processingResult: text('processingResult').notNull(),
-  /** Optional error message if processingResult is 'error'. */
   errorMessage: text('errorMessage'),
-  /** Raw JSON payload (for debugging). Truncated to 64 KB. */
   rawPayload: jsonb('rawPayload'),
   processedAt: timestamp('processedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
 }, (table) => [

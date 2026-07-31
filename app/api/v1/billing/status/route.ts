@@ -1,9 +1,3 @@
-/**
- * GET /api/v1/billing/status
- *
- * Exposes current billing and subscription status to the client.
- */
-
 import { NextRequest } from 'next/server'
 import { eq } from 'drizzle-orm'
 
@@ -22,7 +16,6 @@ export async function GET(request: NextRequest) {
 
     const access = await getUserAccessStatus(auth.internalUserId)
 
-    // Pull the latest payment record to determine provider details
     let provider = 'none'
     let manageUrl = null
     let membershipId = null

@@ -845,7 +845,16 @@ export default function SettingsPage() {
                 </div>
               )}
 
-              {!subscriptionData.hasAccess && (
+              {subscriptionData.hasAccess ? (
+                <div className="pt-2">
+                  <a href="https://whop.com/orders/" target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="sm" className="gap-2 w-full h-9 text-xs">
+                      <SettingsIcon className="h-3.5 w-3.5" />
+                      Manage Subscription
+                    </Button>
+                  </a>
+                </div>
+              ) : (
                 <Link href="/subscribe">
                   <Button size="sm" className="gap-2 w-full mt-2 h-9 text-xs">
                     <CreditCard className="h-3.5 w-3.5" />
@@ -853,6 +862,13 @@ export default function SettingsPage() {
                   </Button>
                 </Link>
               )}
+
+              <div className="mt-4 p-3 rounded bg-muted/30 border border-border/10 flex items-start gap-2">
+                <WarningCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Payments are processed securely via Whop. Please note that all sales are final. We maintain a strict no-refund policy unless an internal billing error occurred. Opening a false dispute will result in a permanent ban.
+                </p>
+              </div>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">Unable to load subscription info</p>

@@ -4,8 +4,6 @@ import { mapWhopStatusToLocal } from '@/lib/services/whop/membership-sync'
 describe('Whop Status Mapping', () => {
   it('should map active statuses to active', () => {
     expect(mapWhopStatusToLocal('active', false)).toBe('active')
-    
-    // Even if cancel at period end is true, it remains active until that date
     expect(mapWhopStatusToLocal('active', true)).toBe('active')
   })
 

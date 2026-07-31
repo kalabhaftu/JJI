@@ -1,32 +1,15 @@
-/**
- * lib/services/whop/checkout.ts
- *
- * Server-side checkout link construction for Whop card payments.
- *
- * Creates a checkout URL for a given plan by directing the user to the Whop
- * hosted checkout page. The internal user ID is passed as a metadata parameter
- * so the webhook handler can reconcile the purchase back to the JJI account.
- */
-
+import { db } from '@/lib/db/client'
+import { User } from '@/lib/db/schema'
+import { eq } from 'drizzle-orm'
 import { WHOP_CONFIG, whopClient, type WhopPlanKey } from './client'
 import { logger } from '@/lib/logger'
 
 export interface WhopCheckoutResult {
-  /** The full Whop checkout URL to redirect the user to. */
   checkoutUrl: string
-  /** The plan ID resolved for this checkout session. */
   planId: string
-  /** Local idempotency key stored in sessionStorage to correlate the return. */
   referenceId: string
 }
 
-/**
- * Constructs a Whop checkout URL for the given plan.
- *
- * @param internalUserId The JJI `User.id` — embedded in the checkout
- *   as metadata for webhook reconciliation.
- * @param planKey        The plan key, e.g. `'pro'`.
- */
 export async function createWhopCheckoutLink(
   internalUserId: string,
   planKey: WhopPlanKey,
@@ -40,7 +23,12 @@ export async function createWhopCheckoutLink(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.justjournalit.site'
   const redirectSuccessUrl = `${appUrl}/subscribe/success`
 
-  // Extract clean plan_xxx if rawPlanValue is a URL
+  const user = await db.query.User.findFirst({
+    where: eq(User.id, internalUserId),
+    columns: { email: true }
+  })
+  const userEmail = user?.email || ''
+
   let resolvedPlanId = rawPlanValue
   const checkoutSplit = rawPlanValue.split('checkout/')[1]
   if (checkoutSplit) {
@@ -51,19 +39,31 @@ export async function createWhopCheckoutLink(
     }
   }
 
-  // 1. Try creating official checkout session via Whop API to preserve metadata
   try {
-    const session = await whopClient.checkoutConfigurations.create({
+    const sessionConfig: any = {
       plan_id: resolvedPlanId,
       metadata: {
         jji_user_id: internalUserId,
         jji_reference_id: referenceId,
       },
-    } as any)
+    }
 
-    const sessionUrl = (session as any)?.url || (session as any)?.purchase_url
+    if (userEmail) {
+      sessionConfig.email = userEmail
+    }
+
+    const session = await whopClient.checkoutConfigurations.create(sessionConfig)
+
+    let sessionUrl = (session as any)?.url || (session as any)?.purchase_url
     if (sessionUrl) {
       logger.info({ planKey, sessionId: (session as any).id }, '[WhopCheckout] Created dynamic checkout configuration session')
+
+      if (userEmail) {
+        const parsedUrl = new URL(sessionUrl)
+        parsedUrl.searchParams.set('email', userEmail)
+        sessionUrl = parsedUrl.toString()
+      }
+
       return {
         checkoutUrl: sessionUrl,
         planId: resolvedPlanId,
@@ -74,7 +74,6 @@ export async function createWhopCheckoutLink(
     logger.warn({ err: err?.message || err }, '[WhopCheckout] API checkout session creation failed, falling back to direct URL')
   }
 
-  // 2. Fallback: Direct storefront / checkout URL
   let baseUrl = rawPlanValue
   if (!baseUrl.startsWith('http')) {
     baseUrl = `https://whop.com/checkout/${rawPlanValue}/`
@@ -86,6 +85,9 @@ export async function createWhopCheckoutLink(
   url.searchParams.set('metadata[jji_reference_id]', referenceId)
   url.searchParams.set('redirect_url', redirectSuccessUrl)
   url.searchParams.set('success_url', redirectSuccessUrl)
+  if (userEmail) {
+    url.searchParams.set('email', userEmail)
+  }
 
   return {
     checkoutUrl: url.toString(),

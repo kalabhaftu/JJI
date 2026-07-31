@@ -1,28 +1,13 @@
-/**
- * lib/services/whop/webhook-verify.ts
- *
- * HMAC-SHA256 signature verification for Whop webhook payloads according to
- * the Standard Webhooks specification and Whop SDK.
- */
-
 import Whop from '@whop/sdk'
 import { WHOP_CONFIG } from './client'
 import { logger } from '@/lib/logger'
 
-/**
- * Verifies that the Whop `webhook-signature` header is valid for the given
- * raw request body.
- *
- * Checks both WHOP_WEBHOOK_SECRET and WHOP_SANDBOX_WEBHOOK_SECRET as a fallback.
- *
- * @param rawBody The raw UTF-8 request body (before JSON parsing).
- * @param headers The HTTP request headers (Headers instance or plain object).
- */
 export function verifyWhopWebhookSignature(
   rawBody: string,
   headers: Record<string, string | string[] | undefined> | Headers,
 ): boolean {
   try {
+    // Tries the main secret first, then the sandbox secret as a fallback.
     const secrets = [
       WHOP_CONFIG.webhookSecret,
       process.env.WHOP_SANDBOX_WEBHOOK_SECRET,
@@ -33,7 +18,6 @@ export function verifyWhopWebhookSignature(
       return false
     }
 
-    // Standardize headers into a plain Record<string, string>
     const normalizedHeaders: Record<string, string> = {}
     if (headers instanceof Headers) {
       headers.forEach((value, key) => {
@@ -56,13 +40,12 @@ export function verifyWhopWebhookSignature(
           webhookKey: btoa(secret),
         })
 
-        // sdk unwrap verifies signature against Standard Webhooks spec
         const unwrapped = client.webhooks.unwrap(rawBody, { headers: normalizedHeaders })
         if (unwrapped) {
           return true
         }
-      } catch (err: any) {
-        // Continue to next secret if signature failed
+      } catch {
+        // Signature check failed for this secret; try the next one.
       }
     }
 

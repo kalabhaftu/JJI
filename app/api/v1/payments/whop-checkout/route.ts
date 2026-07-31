@@ -1,9 +1,3 @@
-/**
- * POST /api/v1/payments/whop-checkout
- *
- * Creates a Whop checkout URL for the authenticated user.
- */
-
 import { NextRequest } from 'next/server'
 import { z } from 'zod'
 
@@ -31,7 +25,6 @@ export async function POST(request: NextRequest) {
 
     const { planId } = result.data
 
-    // Check if user already has an active subscription to prevent double-billing
     const access = await getUserAccessStatus(auth.internalUserId)
     if (access.hasAccess && access.status !== 'past_due') {
       return createErrorResponse(

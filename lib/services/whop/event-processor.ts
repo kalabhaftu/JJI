@@ -1,10 +1,3 @@
-/**
- * lib/services/whop/event-processor.ts
- *
- * Processes Whop webhook events idempotently.
- * Converts Whop events into database state changes for user subscriptions.
- */
-
 import { eq } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { WhopWebhookEvent, Subscription, User } from '@/lib/db/schema'
@@ -17,30 +10,22 @@ import {
 
 
 export interface WhopWebhookPayload {
-  id: string         // event id
-  type: string       // e.g. 'membership.activated'
-  data: any          // The actual payload data (membership, payment, etc.)
-  created_at: number // Unix timestamp
+  id: string
+  type: string
+  data: any
+  created_at: number
 }
 
-/**
- * Attempts to process a Whop webhook payload idempotently.
- *
- * If this exact event ID has already been processed (or is currently being
- * processed by a concurrent request), this will safely exit without side effects.
- */
 export async function processWhopWebhookEvent(payload: WhopWebhookPayload): Promise<void> {
   const { id: eventId, type: eventType, data } = payload
 
-  // We map the Whop membership ID if it's available in the payload.
-  // Whop sends membership events (data = membership object)
-  // and payment events (data = payment object, data.membership_id).
+  // Membership events carry the membership object as `data`; payment events
+  // carry a payment object with `data.membership_id`.
   const membershipId =
     (eventType.startsWith('membership.') ? data?.id : data?.membership_id) ?? null
 
   try {
-    // 1. Idempotency Lock / Insert
-    // This insert will fail with a unique constraint violation if `eventId` already exists.
+    // The UNIQUE constraint on `eventId` makes duplicate deliveries fail here.
     await db.insert(WhopWebhookEvent).values({
       eventId,
       eventType,
@@ -51,13 +36,12 @@ export async function processWhopWebhookEvent(payload: WhopWebhookPayload): Prom
   } catch (err: any) {
     if (err.code === '23505' || err.message?.includes('unique constraint')) {
       logger.info({ eventId, eventType }, '[WhopWebhook] Duplicate event ignored')
-      return // Already processed
+      return
     }
     throw err
   }
 
   try {
-    // 2. Route event
     if (eventType.startsWith('membership.')) {
       await handleMembershipEvent(data)
     } else if (eventType.startsWith('payment.')) {
@@ -66,13 +50,11 @@ export async function processWhopWebhookEvent(payload: WhopWebhookPayload): Prom
       logger.info({ eventType }, '[WhopWebhook] Ignored unhandled event type')
     }
 
-    // 3. Mark successful
     await db
       .update(WhopWebhookEvent)
       .set({ processingResult: 'processed' })
       .where(eq(WhopWebhookEvent.eventId, eventId))
   } catch (err: any) {
-    // 4. Mark failed
     logger.error({ eventId, eventType, err }, '[WhopWebhook] Failed to process event')
     await db
       .update(WhopWebhookEvent)
@@ -81,21 +63,15 @@ export async function processWhopWebhookEvent(payload: WhopWebhookPayload): Prom
         errorMessage: err.message || String(err),
       })
       .where(eq(WhopWebhookEvent.eventId, eventId))
-    throw err // Let the caller (or Inngest) retry
+    throw err
   }
 }
 
-/**
- * Handles all `membership.*` events.
- * Since Whop events include the full membership object snapshot,
- * our logic is mostly purely state-based: we map the Whop state to our DB state.
- */
 async function handleMembershipEvent(membershipData: any) {
   if (!membershipData?.id) {
     throw new Error('Membership data missing id')
   }
 
-  // Find the internal user ID
   const internalUserId = await extractUserId(membershipData)
   if (!internalUserId) {
     logger.warn(
@@ -121,11 +97,7 @@ async function handleMembershipEvent(membershipData: any) {
   await upsertWhopSubscription(snapshot, internalUserId)
 }
 
-/**
- * Handles `payment.*` events.
- * Whop's payment events usually just mean we should pull the latest membership state.
- * For now, we trust the `membership.*` events for access control, but we log payments.
- */
+// Payment events are logged only; access control relies on membership events.
 async function handlePaymentEvent(paymentData: any) {
   const membershipId = paymentData?.membership_id
   if (!membershipId) return
@@ -133,12 +105,7 @@ async function handlePaymentEvent(paymentData: any) {
   logger.info({ membershipId, status: paymentData.status }, '[WhopWebhook] Payment event received')
 }
 
-/**
- * Extracts the internal JJI User ID from a Whop membership.
- * First checks metadata.jji_user_id, then falls back to email matching.
- */
 async function extractUserId(membershipData: any): Promise<string | null> {
-  // 1. Check metadata binding
   const userIdFromMetadata = membershipData?.metadata?.jji_user_id
   if (userIdFromMetadata) {
     const user = await db.query.User.findFirst({
@@ -147,7 +114,6 @@ async function extractUserId(membershipData: any): Promise<string | null> {
     if (user) return user.id
   }
 
-  // 2. Fallback: Check email directly on membership user object
   const buyerEmail =
     membershipData?.user?.email ??
     membershipData?.email ??
@@ -163,7 +129,6 @@ async function extractUserId(membershipData: any): Promise<string | null> {
     }
   }
 
-  // 3. Fallback: Retrieve user via Whop SDK if user_id is provided
   if (membershipData?.user_id) {
     try {
       const whopUser: any = await whopClient.users.retrieve(membershipData.user_id)

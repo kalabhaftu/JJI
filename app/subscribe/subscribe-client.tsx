@@ -109,7 +109,6 @@ export function SubscribeClient() {
         transition={{ duration: 0.6 }}
         className="w-full max-w-md"
       >
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Logo className="w-8 h-8" />
@@ -124,14 +123,12 @@ export function SubscribeClient() {
           </div>
         </div>
 
-        {/* Pricing Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
           className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-6 shadow-lg"
         >
-          {/* Price */}
           <div className="text-center mb-6 pb-6 border-b border-border/40">
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-4xl font-bold tracking-tight">$10</span>
@@ -140,7 +137,6 @@ export function SubscribeClient() {
             <p className="text-xs text-muted-foreground mt-1">Pay with any cryptocurrency</p>
           </div>
 
-          {/* Features */}
           <div className="space-y-3 mb-6">
             {FEATURES.map((feature, i) => (
               <motion.div
@@ -156,7 +152,6 @@ export function SubscribeClient() {
             ))}
           </div>
 
-          {/* Promo Code */}
           <div className="mb-4">
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -180,7 +175,6 @@ export function SubscribeClient() {
             )}
           </div>
 
-          {/* Subscribe Buttons */}
           <div className="space-y-3">
             <Button
               onClick={handleWhopSubscribe}
@@ -234,7 +228,6 @@ export function SubscribeClient() {
           </p>
         </motion.div>
 
-        {/* Sign out */}
         <div className="text-center mt-6">
           <Button
             variant="ghost"

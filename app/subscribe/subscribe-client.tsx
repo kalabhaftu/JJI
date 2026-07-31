@@ -223,9 +223,14 @@ export function SubscribeClient() {
             </Button>
           </div>
 
-          <p className="text-[10px] text-muted-foreground/60 text-center mt-4">
-            Secure payments via Whop & NOWPayments. Cancel anytime.
-          </p>
+          <div className="mt-4 p-3 rounded bg-muted/30 border border-border/10">
+            <p className="text-[11px] text-muted-foreground/80 text-center leading-relaxed">
+              Secure payments via Whop & NOWPayments. Cancel anytime.
+            </p>
+            <p className="text-[11px] text-muted-foreground/80 text-center leading-relaxed mt-1">
+              All sales are final. We maintain a strict no-refund policy unless an internal billing error occurred. Opening a false dispute will result in a permanent ban.
+            </p>
+          </div>
         </motion.div>
 
         <div className="text-center mt-6">

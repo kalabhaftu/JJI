@@ -866,7 +866,7 @@ export default function SettingsPage() {
               <div className="mt-4 p-3 rounded bg-muted/30 border border-border/10 flex items-start gap-2">
                 <WarningCircle className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
                 <p className="text-[11px] text-muted-foreground leading-relaxed">
-                  Payments are processed securely via Whop. Please note that all sales are final. We maintain a strict no-refund policy unless an internal billing error occurred. Opening a false dispute will result in a permanent ban.
+                  Payments are processed securely via Whop.
                 </p>
               </div>
             </div>

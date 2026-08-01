@@ -34,6 +34,9 @@ if (!existsSync(journalPath)) {
 const journal = JSON.parse(readFileSync(journalPath, 'utf8')) as {
   entries?: Array<{ tag?: string }>
 }
+const journalTags = new Set(
+  (journal.entries ?? []).map((entry) => entry.tag).filter(Boolean),
+)
 const missingJournalFiles = (journal.entries ?? [])
   .map((entry) => entry.tag)
   .filter((tag): tag is string => Boolean(tag))
@@ -45,7 +48,12 @@ if (missingJournalFiles.length > 0) {
 }
 
 const imperativeMigrations = migrationFiles.filter((name) => /^\d{14}_/.test(name))
-const drizzleMigrations = migrationFiles.filter((name) => /^\d{4}_/.test(name))
+const drizzleMigrations = migrationFiles.filter((name) => (
+  journalTags.has(name.replace(/\.sql$/, ''))
+))
+const historyMarkers = migrationFiles.filter((name) => (
+  /^\d{4}_/.test(name) && !journalTags.has(name.replace(/\.sql$/, ''))
+))
 
 function changedFiles(): string[] {
   try {
@@ -83,6 +91,7 @@ console.log(JSON.stringify({
   total: migrationFiles.length,
   imperative: imperativeMigrations.length,
   drizzleJournaled: drizzleMigrations.length,
+  historyMarkers: historyMarkers.length,
   changedSchema,
   changedMigration,
 }, null, 2))

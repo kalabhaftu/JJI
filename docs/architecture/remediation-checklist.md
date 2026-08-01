@@ -308,7 +308,8 @@ Legend:
 - [x] Route provider failures and manual-review events through the canonical scrubbed Sentry reporter.
 - [x] Treat disputes and resolution-center cases as manual review; never automatically ban or revoke a user.
 - [x] Add the Whop failure alert class to the reviewed Sentry manifest.
-- [x] Add an additive timestamped Supabase migration with server-only RLS posture; reject both conflicting `0004` migrations from main.
+- [x] Restore the proven production-history `0004_add_ban_columns` marker, model its inert columns, and reject only the conflicting generated `0004_whop_integration` migration.
+- [x] Add an additive timestamped Supabase migration with server-only RLS posture that upgrades and redacts the legacy Whop table.
 - [x] Add Whop to service, API-policy, API-contract, migration, and alert source guards.
 - [x] Pass the focused membership-status mapping test for all current provider states.
 - [x] Document provider permissions, preview/production credential separation, verification, rollout, and rollback.

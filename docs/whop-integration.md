@@ -49,8 +49,9 @@ provides those permissions.
 
 ## Verification and rollout
 
-1. Apply the timestamped Supabase migration to staging; never use the two
-   duplicate `0004` migrations from the old main-branch implementation.
+1. Preserve the production-history `0004_add_ban_columns` marker, then apply the
+   timestamped Supabase migration to staging. Never apply the conflicting
+   generated `0004_whop_integration` migration.
 2. Configure preview with sandbox credentials and sync the Inngest functions.
 3. Create one sandbox card checkout and verify the response request ID, webhook
    inbox row, Inngest run, subscription/payment/audit rows, Resend delivery, and
@@ -82,6 +83,6 @@ A normal merge or rebase would restore reverted monoliths and obsolete tooling.
 | Dynamic environment reads | Preserved through lazy validated configuration; missing provider variables do not break unrelated routes at import time. |
 | ISO membership dates | Preserved with validated date parsing. |
 | Direct Sentry capture | Replaced by the canonical scrubbed reporter and request correlation. |
-| User ban columns and punitive dispute copy | Rejected as unused policy state. Disputes create a manual-review signal and never automatically ban or revoke access. |
+| User ban columns and punitive dispute copy | Existing production columns remain modeled only for migration parity; no policy reads or writes them. Disputes create a manual-review signal and never automatically ban or revoke access. |
 | Package override and broad branch-revert commits | Rejected as unrelated or regressive. Existing preview dependency and architecture work stays intact. |
 | Demo/docs routing | Already present in preview and therefore not ported a second time. |

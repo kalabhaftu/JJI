@@ -1,4 +1,4 @@
-'use server'
+import 'server-only'
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'

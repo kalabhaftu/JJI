@@ -1,4 +1,4 @@
-'use server'
+import 'server-only'
 
 import { reportError } from '@/lib/observability/report-error'
 

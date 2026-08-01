@@ -55,11 +55,16 @@ const violations = []
 
 for (const file of await walk('app/api')) {
   const source = await readFile(file, 'utf8')
-  if (/from\s+['"]@\/server\/auth['"]/.test(source)) {
-    violations.push(`${relative(process.cwd(), file)} -> @/server/auth (API routes must use direct auth modules)`)
-  }
-  if (/from\s+['"]@\/app\/actions\//.test(source)) {
-    violations.push(`${relative(process.cwd(), file)} -> Server Action module`)
+  const imports = source.matchAll(/(?:from\s+|import\(\s*)['"]([^'"]+)['"]/g)
+  for (const match of imports) {
+    const statementStart = source.lastIndexOf('import', match.index)
+    const statement = source.slice(statementStart, match.index)
+    if (/^import\s+type\b/.test(statement.trimStart())) continue
+
+    const resolvedImport = resolveImport(file, match[1])
+    if (resolvedImport && serverActionFiles.has(resolvedImport)) {
+      violations.push(`${relative(process.cwd(), file)} -> ${match[1]} (API routes must use domain modules)`)
+    }
   }
 }
 

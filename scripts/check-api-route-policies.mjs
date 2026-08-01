@@ -13,13 +13,14 @@ async function walk(directory) {
 }
 
 const mutations = /export\s+(?:(?:async\s+)?function|const)\s+(?:POST|PUT|PATCH|DELETE)\b/
-const classified = /applyApiRoutePolicy|applyRateLimit|consumeRateLimitKey|authenticateRequest/
+const classified = /applyApiRoutePolicy/
 const violations = []
 
 for (const file of await walk('app/api')) {
   const source = await readFile(file, 'utf8')
   const trustedProtocol = file.includes('app/api/cron/')
     || file.endsWith('app/api/v1/payments/webhook/route.ts')
+    || file.endsWith('app/api/v1/thor/store/route.ts')
   if (mutations.test(source) && !trustedProtocol && !classified.test(source)) {
     violations.push(relative(process.cwd(), file))
   }

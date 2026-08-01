@@ -28,6 +28,9 @@ const requiredPaths = [
   'server/ai/journal-analysis/prompt.ts',
   'server/ai/journal-analysis/provider.ts',
   'server/ai/journal-analysis/fallback.ts',
+  'lib/tours/persistence.ts',
+  'lib/tours/sample-csv.ts',
+  'hooks/use-tour-interactions.ts',
   'server/dashboard-templates-domain.ts',
   'server/weekly-review-domain.ts',
   'server/integrations/dxfeed.ts',
@@ -94,6 +97,11 @@ if (analyticsFacade.split('\n').length > 10) {
 const journalAnalysisOrchestrator = await readFile('server/ai/journal-analysis.ts', 'utf8')
 if (journalAnalysisOrchestrator.split('\n').length > 100) {
   failures.push('server/ai/journal-analysis.ts must remain a thin analysis orchestrator')
+}
+
+const tourContext = await readFile('context/tour-context.tsx', 'utf8')
+if (tourContext.split('\n').length > 360) {
+  failures.push('context/tour-context.tsx must remain focused on tour state orchestration')
 }
 
 if (failures.length > 0) {

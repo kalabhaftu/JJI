@@ -7,8 +7,15 @@ import { toast } from 'sonner'
 import { useData } from '@/context/data-provider'
 import { clearAccountsCache } from '@/hooks/use-accounts'
 import { reportError } from '@/lib/observability/report-error'
+import {
+  useTourAccountCreatedEvent,
+  useTourActionAdvance,
+  useTourTargetVisibility,
+} from '@/hooks/use-tour-interactions'
 
 import { TOURS } from '@/lib/tours/definitions'
+import { mergeOnboardingStatus, persistOnboardingStatus } from '@/lib/tours/persistence'
+import { downloadSampleTradesCsv } from '@/lib/tours/sample-csv'
 import type { OnboardingStatus, TourId, TourStep } from '@/lib/tours/types'
 
 interface TourContextType {
@@ -50,11 +57,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [stepIndex, setStepIndex] = useState<number>(0)
   const [paused, setPaused] = useState<boolean>(false)
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus | null>(null)
-  const [isTargetVisible, setIsTargetVisible] = useState<boolean>(false)
-  const [isLoadingTarget, setIsLoadingTarget] = useState<boolean>(false)
-
-  const targetCheckInterval = useRef<NodeJS.Timeout | null>(null)
-  const targetTimeout = useRef<NodeJS.Timeout | null>(null)
 
   // Track the created demo account during the onboarding tour
   const initialAccountIds = useRef<string[]>([])
@@ -114,24 +116,12 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveOnboardingStatus = useCallback(async (updatedStatus: Partial<OnboardingStatus>) => {
     if (!storeUser) return
 
-    const nextStatus = {
-      ...onboardingStatus,
-      ...updatedStatus,
-      last_updated: new Date().toISOString(),
-    }
-
-    setOnboardingStatus(nextStatus as OnboardingStatus)
+    const nextStatus = mergeOnboardingStatus(onboardingStatus, updatedStatus)
+    setOnboardingStatus(nextStatus)
 
     try {
-      const response = await fetch('/api/auth/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ onboardingStatus: nextStatus }),
-      })
-      const result = await response.json()
-      if (result.success && result.data) {
-        setDbUser(result.data)
-      }
+      const updatedUser = await persistOnboardingStatus(nextStatus)
+      if (updatedUser) setDbUser(updatedUser)
     } catch (error) {
       reportError(error, {
         surface: 'client',
@@ -235,38 +225,24 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [stepIndex])
 
-  const pauseTour = () => {
+  const pauseTour = useCallback(() => {
     setPaused(true)
-  }
+  }, [])
 
-  const resumeTour = () => {
+  const resumeTour = useCallback(() => {
     setPaused(false)
     if (currentStep?.route && pathname !== currentStep.route) {
       router.push(currentStep.route as any)
     }
-  }
+  }, [currentStep, pathname, router])
 
-  // Listen for the custom account-created event (instant detection)
-  useEffect(() => {
-    const handleAccountCreated = (e: Event) => {
-      const customEvent = e as CustomEvent
-      const { id, type } = customEvent.detail || {}
-      if (id && type && !createdAccountId) {
-        setCreatedAccountId(id)
-        setCreatedAccountType(type)
-        
-        // Auto-advance if we are on the submit-account step
-        if (currentStep?.id === 'submit-account') {
-          nextStep()
-        }
-      }
-    }
-
-    document.addEventListener('jji-account-created', handleAccountCreated)
-    return () => {
-      document.removeEventListener('jji-account-created', handleAccountCreated)
-    }
-  }, [createdAccountId, currentStep, nextStep])
+  useTourAccountCreatedEvent({
+    createdAccountId,
+    currentStep,
+    nextStep,
+    setCreatedAccountId,
+    setCreatedAccountType,
+  })
 
   // Fallback: Detect newly created account in onboarding via list diffing
   useEffect(() => {
@@ -288,150 +264,42 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     if (activeTour === 'onboarding' && currentStep?.id === 'csv-download') {
       const timer = setTimeout(() => {
-        downloadSampleCSV()
+        try {
+          downloadSampleTradesCsv()
+          toast.success('Sample CSV file downloaded successfully!')
+        } catch (error) {
+          reportError(error, {
+            surface: 'client',
+            operation: 'generate-onboarding-sample-csv',
+          })
+        }
       }, 500)
       return () => clearTimeout(timer)
     }
   }, [activeTour, currentStep])
 
-  const downloadSampleCSV = () => {
-    try {
-      const headers = ["Symbol", "Side", "Quantity", "Entry Price", "Close Price", "Entry Date", "Close Date", "PnL"]
-      const rows = [
-        ["EURUSD", "Buy", "1.0", "1.0850", "1.0900", "2026-06-08 09:00:00", "2026-06-08 10:00:00", "500.00"],
-        ["GBPUSD", "Sell", "1.5", "1.2650", "1.2600", "2026-06-08 10:30:00", "2026-06-08 12:00:00", "750.00"],
-        ["USDJPY", "Buy", "2.0", "155.20", "154.80", "2026-06-08 13:00:00", "2026-06-08 14:15:00", "-800.00"]
-      ]
-      const csvContent = [headers.join(","), ...rows.map(r => r.join(","))].join("\n")
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement("a")
-      link.setAttribute("href", url)
-      link.setAttribute("download", "sample_trades.csv")
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      toast.success("Sample CSV file downloaded successfully!")
-    } catch (e) {
-      reportError(e, {
-        surface: 'client',
-        operation: 'generate-onboarding-sample-csv',
-      })
-    }
-  }
-
-  // Handle route and target visibility checks for the active step
-  useEffect(() => {
-    if (!activeTour || !currentStep || paused) {
-      setIsTargetVisible(false)
-      setIsLoadingTarget(false)
-      return
-    }
-
-    // Check if we need to route to a different page
-    if (currentStep.route && pathname !== currentStep.route) {
-      setIsLoadingTarget(true)
-      router.push(currentStep.route as any)
-      return
-    }
-
-    // Check if the step is desktop-only and we are on mobile
-    if (currentStep.desktopOnly && isMobile) {
-      nextStep()
-      return
-    }
-
-    // If step has no target selector, it's a modal
-    if (!currentStep.targetSelector) {
-      setIsTargetVisible(true)
-      setIsLoadingTarget(false)
-      return
-    }
-
-    setIsTargetVisible(false)
-    setIsLoadingTarget(true)
-
-    // Clear previous check timers
-    if (targetCheckInterval.current) clearInterval(targetCheckInterval.current)
-    if (targetTimeout.current) clearTimeout(targetTimeout.current)
-
-    // Poll for the target element to handle rendering delays / network loading
-    let attempts = 0
-    targetCheckInterval.current = setInterval(() => {
-      const el = document.querySelector(currentStep.targetSelector!)
-      attempts++
-
-      if (el) {
-        setIsTargetVisible(true)
-        setIsLoadingTarget(false)
-        clearInterval(targetCheckInterval.current!)
-        targetCheckInterval.current = null
-      } else if (attempts >= 15) {
-        clearInterval(targetCheckInterval.current!)
-        targetCheckInterval.current = null
-        setIsLoadingTarget(false)
-        if (stepIndex > 0) {
-          prevStep()
-          toast.info('Dropdown closed or target not found. Rewinding one step. Please click the trigger again to continue the tour.', { duration: 4000 })
-        } else {
-          pauseTour()
-          toast.info('Tour paused. Click the resume widget to continue when ready.', { duration: 4000 })
-        }
-      }
-    }, 500)
-
-    return () => {
-      if (targetCheckInterval.current) clearInterval(targetCheckInterval.current)
-    }
-  }, [activeTour, stepIndex, pathname, paused, isMobile, currentStep, nextStep, prevStep, router])
-
-  // Setup interactive listeners if step requires real user interaction (using Capture Phase listeners to bypass Radix event prevention)
-  useEffect(() => {
-    if (!activeTour || !currentStep || paused || !isTargetVisible) return
-
-    const { actionType, actionTarget } = currentStep
-    if (!actionType || !actionTarget) return
-
-    let actionFired = false
-    const handleAction = () => {
-      if (actionFired) return
-      actionFired = true
-      setTimeout(() => {
-        nextStep()
-      }, 305)
-    }
-
-    const handleCaptureAction = (e: Event) => {
-      if (actionFired) return
-      const target = e.target as Element | null
-      if (target) {
-        // Match target itself or closest ancestor matching the selector
-        const matched = target.closest(actionTarget)
-        if (matched) {
-          handleAction()
-        }
-      }
-    }
-
-    if (actionType === 'click') {
-      document.addEventListener('click', handleCaptureAction, { capture: true })
-      document.addEventListener('mousedown', handleCaptureAction, { capture: true })
-      document.addEventListener('pointerdown', handleCaptureAction, { capture: true })
-    } else if (actionType === 'input') {
-      document.addEventListener('input', handleCaptureAction, { capture: true })
-    }
-
-    return () => {
-      if (actionType === 'click') {
-        document.removeEventListener('click', handleCaptureAction, { capture: true })
-        document.removeEventListener('mousedown', handleCaptureAction, { capture: true })
-        document.removeEventListener('pointerdown', handleCaptureAction, { capture: true })
-      } else if (actionType === 'input') {
-        document.removeEventListener('input', handleCaptureAction, { capture: true })
-      }
-    }
-  }, [activeTour, stepIndex, isTargetVisible, paused, currentStep, nextStep])
-
+  const navigateForTour = useCallback((route: string) => {
+    router.push(route as any)
+  }, [router])
+  const { isTargetVisible, isLoadingTarget } = useTourTargetVisibility({
+    activeTour,
+    currentStep,
+    paused,
+    pathname,
+    isMobile,
+    stepIndex,
+    navigate: navigateForTour,
+    nextStep,
+    prevStep,
+    pauseTour,
+  })
+  useTourActionAdvance({
+    activeTour,
+    currentStep,
+    paused,
+    isTargetVisible,
+    nextStep,
+  })
 
   return (
     <TourContext.Provider

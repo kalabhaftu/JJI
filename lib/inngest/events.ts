@@ -30,11 +30,6 @@ export type WhopWebhookEventData = {
   requestId?: string
 }
 
-export type WhopMembershipCancellationEventData = {
-  membershipId: string
-  requestId?: string
-}
-
 export type WhopReconcileEventData = {
   requestId?: string
 }
@@ -46,6 +41,5 @@ export type JjiInngestEvents = {
   'cron/daily-anchor-reset': { data: DailyAnchorResetEventData }
   'jji/import.migrate-legacy-objects': { data: Record<string, unknown> }
   'jji/billing.whop-webhook': { data: WhopWebhookEventData }
-  'jji/billing.whop-cancel': { data: WhopMembershipCancellationEventData }
   'jji/billing.whop-reconcile': { data: WhopReconcileEventData }
 }

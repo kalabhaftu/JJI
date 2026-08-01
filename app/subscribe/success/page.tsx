@@ -7,40 +7,73 @@ import { CheckCircle2, Loader2, Clock } from 'lucide-react'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
+import { reportError } from '@/lib/observability/report-error'
 
 export default function SubscribeSuccessPage() {
   const router = useRouter()
   const [status, setStatus] = useState<'checking' | 'confirmed' | 'pending'>('checking')
+  const [provider, setProvider] = useState<'whop' | 'crypto' | 'unknown'>('unknown')
 
   useEffect(() => {
     const paymentId = sessionStorage.getItem('pendingPaymentId')
-    if (!paymentId) {
+    const whopReferenceId = sessionStorage.getItem('whopReferenceId')
+    const selectedProvider = new URLSearchParams(window.location.search).get('provider') === 'whop'
+      || whopReferenceId
+      ? 'whop'
+      : paymentId ? 'crypto' : 'unknown'
+    setProvider(selectedProvider)
+    if (selectedProvider === 'unknown') {
       setStatus('pending')
       return
     }
 
-    // Poll payment status
     let attempts = 0
-    const maxAttempts = 10
+    let reportedFailure = false
+    const maxAttempts = selectedProvider === 'whop' ? 15 : 10
 
     async function checkStatus() {
       try {
-        const res = await fetch(`/api/v1/payments/status?paymentRecordId=${paymentId}&refresh=true`)
+        const endpoint = selectedProvider === 'whop'
+          ? '/api/v1/billing/status'
+          : `/api/v1/payments/status?paymentRecordId=${encodeURIComponent(paymentId!)}&refresh=true`
+        const res = await fetch(endpoint)
         const data = await res.json()
 
+        if (!res.ok) {
+          throw new Error(`Subscription confirmation failed with status ${res.status}`)
+        }
+
         if (data.success && data.data) {
-          if (data.data.providerStatus === 'finished') {
+          if (
+            (selectedProvider === 'whop' && data.data.hasAccess)
+            || (selectedProvider === 'crypto' && data.data.providerStatus === 'finished')
+          ) {
             setStatus('confirmed')
             sessionStorage.removeItem('pendingPaymentId')
+            sessionStorage.removeItem('whopReferenceId')
             router.refresh()
             return true
           }
-          if (['failed', 'expired', 'refunded'].includes(data.data.providerStatus)) {
+          if (
+            (selectedProvider === 'crypto'
+              && ['failed', 'expired', 'refunded'].includes(data.data.providerStatus))
+            || (selectedProvider === 'whop'
+              && ['canceled', 'expired'].includes(data.data.providerStatus))
+          ) {
             router.replace('/subscribe/cancelled')
             return true
           }
         }
-      } catch {
+      } catch (error) {
+        if (!reportedFailure) {
+          reportedFailure = true
+          reportError(error, {
+            surface: 'client',
+            operation: 'poll-subscription-confirmation',
+            route: '/subscribe/success',
+            tags: { provider: selectedProvider },
+          })
+        }
         return false
       }
       return false
@@ -79,7 +112,7 @@ export default function SubscribeSuccessPage() {
             </div>
             <h1 className="text-xl font-semibold">Verifying Payment...</h1>
             <p className="text-sm text-muted-foreground">
-              Please wait while we confirm your payment on the blockchain.
+              Please wait while the payment provider confirms your subscription.
             </p>
           </div>
         )}
@@ -101,7 +134,7 @@ export default function SubscribeSuccessPage() {
             <Button onClick={() => {
               router.refresh()
               router.push('/dashboard')
-            }} className="mt-4">
+            }} className="mt-4 w-full">
               Go to Dashboard →
             </Button>
           </div>
@@ -114,11 +147,14 @@ export default function SubscribeSuccessPage() {
             </div>
             <h1 className="text-xl font-semibold">Payment Processing</h1>
             <p className="text-sm text-muted-foreground">
-              Your payment is being processed. Blockchain confirmations may take a few minutes.
-              You&apos;ll receive a notification once confirmed. Access opens only after server-side payment verification.
+              Confirmation is taking longer than expected. Access opens automatically after server-side verification.
             </p>
-            <Button variant="outline" onClick={() => router.push('/subscribe/status')} className="mt-4">
-              Check Status
+            <Button
+              variant="outline"
+              onClick={() => router.push(provider === 'crypto' ? '/subscribe/status' : '/dashboard')}
+              className="mt-4 w-full"
+            >
+              {provider === 'crypto' ? 'Check Status' : 'Go to Dashboard'}
             </Button>
           </div>
         )}

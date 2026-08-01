@@ -5,6 +5,7 @@ import { and, eq, inArray, isNull, lt, or, sql } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { WhopWebhookEvent } from '@/lib/db/schema'
 import { reportError } from '@/lib/observability/report-error'
+import { cancelWhopMembershipImmediately } from '@/lib/services/whop/client'
 import { reconcileWhopMembership } from '@/lib/services/whop/membership-sync'
 import {
   reconcileWhopPayment,
@@ -24,6 +25,7 @@ const PAYMENT_EVENTS = new Set([
   'payment.succeeded',
 ])
 const REFUND_EVENTS = new Set(['refund.created', 'refund.updated'])
+const INTERNAL_CANCELLATION_EVENT = 'jji.membership.cancel'
 
 function safeErrorCode(error: unknown): string {
   return error instanceof Error
@@ -69,7 +71,10 @@ export async function processWhopWebhookEvent(
   let finalStatus = 'processed'
 
   try {
-    if (MEMBERSHIP_EVENTS.has(claimed.eventType)) {
+    if (claimed.eventType === INTERNAL_CANCELLATION_EVENT) {
+      if (!claimed.resourceId) throw new Error('Whop cancellation is missing a membership ID')
+      await cancelWhopMembershipImmediately(claimed.resourceId)
+    } else if (MEMBERSHIP_EVENTS.has(claimed.eventType)) {
       if (!claimed.resourceId) throw new Error('Whop membership event is missing a resource ID')
       await reconcileWhopMembership(claimed.resourceId, requestId ? { requestId } : {})
     } else if (PAYMENT_EVENTS.has(claimed.eventType)) {

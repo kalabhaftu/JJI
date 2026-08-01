@@ -203,6 +203,24 @@ export function SettingsProfileSection({
                 </div>
               )}
 
+              {subscriptionData.provider === 'whop' && (
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Card billing</p>
+                    <p className="text-sm font-semibold text-heading-text mt-0.5">
+                      {subscriptionData.cancelAtPeriodEnd ? 'Cancels at period end' : 'Managed securely through Whop'}
+                    </p>
+                  </div>
+                  {subscriptionData.manageUrl && (
+                    <Button asChild variant="outline" size="sm" className="h-9 text-xs">
+                      <a href={subscriptionData.manageUrl} target="_blank" rel="noopener noreferrer">
+                        Manage Subscription
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              )}
+
               {!subscriptionData.hasAccess && (
                 <Link href="/subscribe">
                   <Button size="sm" className="gap-2 w-full mt-2 h-9 text-xs">

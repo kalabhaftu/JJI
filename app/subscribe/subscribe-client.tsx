@@ -10,12 +10,13 @@ import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/context/auth-provider'
+import { reportError } from '@/lib/observability/report-error'
 
 const FEATURES = [
   { icon: BarChart3, text: 'Advanced analytics & performance tracking' },
   { icon: Zap, text: 'Real-time trade journaling with AI insights' },
   { icon: Shield, text: 'Prop firm phase management & risk alerts' },
-  { icon: CreditCard, text: 'Pay with any cryptocurrency' },
+  { icon: CreditCard, text: 'Card and cryptocurrency payment options' },
 ]
 
 export function SubscribeClient() {
@@ -23,6 +24,7 @@ export function SubscribeClient() {
   const router = useRouter()
   const [promoCode, setPromoCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isWhopLoading, setIsWhopLoading] = useState(false)
   const [promoValidation, setPromoValidation] = useState<{ valid: boolean; description?: string } | null>(null)
 
   useEffect(() => {
@@ -66,9 +68,46 @@ export function SubscribeClient() {
         window.location.href = paymentUrl
       }
     } catch (error) {
+      reportError(error, {
+        surface: 'client',
+        operation: 'create-crypto-checkout',
+        route: '/subscribe',
+      })
       toast.error('Error', { description: 'Something went wrong. Please try again.' })
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  async function handleWhopSubscribe() {
+    setIsWhopLoading(true)
+    try {
+      const response = await fetch('/api/v1/payments/whop-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId: 'pro' }),
+      })
+      const payload = await response.json()
+      if (!response.ok || !payload.success) {
+        toast.error('Checkout Error', {
+          description: payload.error?.message || 'Failed to initialize card checkout',
+        })
+        return
+      }
+
+      const checkout = payload.data
+      if (!checkout?.checkoutUrl) throw new Error('Card checkout response is missing its URL')
+      sessionStorage.setItem('whopReferenceId', checkout.referenceId)
+      window.location.href = checkout.checkoutUrl
+    } catch (error) {
+      reportError(error, {
+        surface: 'client',
+        operation: 'create-whop-checkout',
+        route: '/subscribe',
+      })
+      toast.error('Checkout Error', { description: 'Something went wrong. Please try again.' })
+    } finally {
+      setIsWhopLoading(false)
     }
   }
 
@@ -108,7 +147,7 @@ export function SubscribeClient() {
               <span className="text-4xl font-bold tracking-tight">$10</span>
               <span className="text-muted-foreground text-sm">/month</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Pay with any cryptocurrency</p>
+            <p className="text-xs text-muted-foreground mt-1">Card or cryptocurrency</p>
           </div>
 
           {/* Features */}
@@ -151,27 +190,52 @@ export function SubscribeClient() {
             )}
           </div>
 
-          {/* Subscribe Button */}
-          <Button
-            onClick={handleSubscribe}
-            disabled={isLoading}
-            className="w-full h-11 text-sm font-medium bg-primary hover:bg-primary/90"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Creating invoice...
-              </>
-            ) : (
-              <>
-                Subscribe Now
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </>
-            )}
-          </Button>
+          <div className="space-y-3">
+            <Button
+              onClick={handleWhopSubscribe}
+              disabled={isLoading || isWhopLoading}
+              className="w-full h-11 text-sm font-medium"
+            >
+              {isWhopLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating checkout...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Pay with Card
+                </>
+              )}
+            </Button>
+
+            <div className="relative" aria-hidden="true">
+              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/40" /></div>
+              <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
+            </div>
+
+            <Button
+              onClick={handleSubscribe}
+              disabled={isLoading || isWhopLoading}
+              variant="outline"
+              className="w-full h-11 text-sm font-medium"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating invoice...
+                </>
+              ) : (
+                <>
+                  Pay with Crypto
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </div>
 
           <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
-            Secure payment powered by NOWPayments. Cancel anytime.
+            Secure payment via Whop or NOWPayments. Manage card subscriptions through Whop.
           </p>
         </motion.div>
 

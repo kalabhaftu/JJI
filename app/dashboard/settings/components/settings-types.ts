@@ -17,4 +17,9 @@ export type SettingsSubscriptionData = {
   reason?: string
   currentPeriodEnd?: string
   nextPaymentDue?: string
+  provider?: string
+  providerStatus?: string | null
+  manageUrl?: string | null
+  membershipId?: string | null
+  cancelAtPeriodEnd?: boolean
 }

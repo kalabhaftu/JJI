@@ -1,7 +1,7 @@
-import { and, asc, eq, inArray, isNull, lt, or } from 'drizzle-orm'
+import { inArray } from 'drizzle-orm'
 
 import { db } from '@/lib/db/client'
-import { WhopMembership, WhopWebhookEvent } from '@/lib/db/schema'
+import { WhopMembership } from '@/lib/db/schema'
 import { inngest } from '@/lib/inngest/client'
 import { normalizeRequestId } from '@/lib/observability/request-id'
 import { reconcileWhopMembership } from '@/lib/services/whop/membership-sync'
@@ -45,40 +45,6 @@ export const reconcileWhopBilling = inngest.createFunction(
       reconciled += 1
     }
 
-    const staleCutoff = new Date(Date.now() - 10 * 60_000)
-    const expiredLeaseCutoff = new Date()
-    const recoverable = await step.run('list-recoverable-whop-events', () => (
-      db.query.WhopWebhookEvent.findMany({
-        where: or(
-          inArray(WhopWebhookEvent.status, ['received', 'failed']),
-          and(
-            eq(WhopWebhookEvent.status, 'queued'),
-            lt(WhopWebhookEvent.updatedAt, staleCutoff),
-          ),
-          and(
-            eq(WhopWebhookEvent.status, 'processing'),
-            or(
-              isNull(WhopWebhookEvent.leaseExpiresAt),
-              lt(WhopWebhookEvent.leaseExpiresAt, expiredLeaseCutoff),
-            ),
-          ),
-        ),
-        columns: { eventId: true, requestId: true },
-        orderBy: [asc(WhopWebhookEvent.createdAt)],
-        limit: 100,
-      })
-    ))
-
-    for (const webhookEvent of recoverable) {
-      await step.sendEvent(`retry-${webhookEvent.eventId}`, {
-        name: 'jji/billing.whop-webhook',
-        data: {
-          eventId: webhookEvent.eventId,
-          ...(webhookEvent.requestId ? { requestId: webhookEvent.requestId } : {}),
-        },
-      })
-    }
-
-    return { reconciled, recovered: recoverable.length }
+    return { reconciled }
   },
 )

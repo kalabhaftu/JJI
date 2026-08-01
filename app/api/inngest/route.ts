@@ -7,8 +7,8 @@ import { processImportJob } from '@/lib/inngest/functions/process-import-job'
 import { migrateLegacyImportObjects } from '@/lib/inngest/functions/migrate-legacy-import-objects'
 import { reportInngestFunctionFailure } from '@/lib/inngest/functions/report-function-failure'
 import { processWhopWebhook } from '@/lib/inngest/functions/process-whop-webhook'
-import { cancelWhopMembership } from '@/lib/inngest/functions/cancel-whop-membership'
 import { reconcileWhopBilling } from '@/lib/inngest/functions/reconcile-whop-billing'
+import { recoverWhopInbox } from '@/lib/inngest/functions/recover-whop-inbox'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -20,7 +20,7 @@ export const { GET, POST, PUT } = serve({
     migrateLegacyImportObjects,
     reportInngestFunctionFailure,
     processWhopWebhook,
-    cancelWhopMembership,
     reconcileWhopBilling,
+    recoverWhopInbox,
   ],
 })

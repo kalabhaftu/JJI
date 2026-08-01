@@ -11,13 +11,3 @@ export async function enqueueWhopWebhook(input: {
     data: input,
   })
 }
-
-export async function enqueueWhopMembershipCancellation(input: {
-  membershipId: string
-  requestId?: string
-}) {
-  return inngest.send({
-    name: 'jji/billing.whop-cancel',
-    data: input,
-  })
-}

@@ -134,7 +134,7 @@ export default function SettingsPage() {
     const fetchSubscription = async () => {
       try {
         setIsLoadingSubscription(true)
-        const res = await fetch('/api/v1/subscription/status')
+        const res = await fetch('/api/v1/billing/status')
         const data = await res.json()
         if (!res.ok || !data.success) throw new Error(data.error?.message || 'Failed to load subscription status')
         setSubscriptionData(data.data)

@@ -3,6 +3,8 @@ import { recordAuditEvent } from '@/lib/audit-logger'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { reportError } from '@/lib/observability/report-error'
+import { markWhopWebhookQueued } from '@/lib/services/whop/inbox'
+import { enqueueWhopWebhook } from '@/server/whop-events'
 
 export type UserDeletionMode = 'purge-data' | 'delete-account'
 
@@ -10,6 +12,7 @@ export type UserDeletionResult = {
   authUserId: string
   internalUserId: string
   storageOwnerIds: string[]
+  whopCancellationEvents: Array<{ eventId: string; membershipId: string }>
 }
 
 type UserDeletionInput = {
@@ -146,6 +149,29 @@ export async function deleteUserData({
         await tx.delete(schema.Synchronization).where(eq(schema.Synchronization.userId, internalUserId))
         await tx.delete(schema.PromoRedemption).where(eq(schema.PromoRedemption.userId, internalUserId))
 
+        const whopMemberships = mode === 'delete-account'
+          ? await tx.query.WhopMembership.findMany({
+            where: eq(schema.WhopMembership.userId, internalUserId),
+            columns: { membershipId: true },
+          })
+          : []
+
+        const whopCancellationEvents = whopMemberships.map(({ membershipId }) => ({
+          eventId: `internal:account-delete:${user.id}:${membershipId}`,
+          membershipId,
+        }))
+        if (whopCancellationEvents.length > 0) {
+          await tx.insert(schema.WhopWebhookEvent).values(
+            whopCancellationEvents.map(({ eventId, membershipId }) => ({
+              eventId,
+              eventType: 'jji.membership.cancel',
+              resourceId: membershipId,
+              requestId: requestId ?? null,
+              payloadHash: 'internal:account-deletion:v1',
+            })),
+          ).onConflictDoNothing({ target: schema.WhopWebhookEvent.eventId })
+        }
+
         if (mode === 'delete-account') {
           await tx.delete(schema.PaymentRecord).where(eq(schema.PaymentRecord.userId, internalUserId))
           await tx.delete(schema.Subscription).where(eq(schema.Subscription.userId, internalUserId))
@@ -188,15 +214,44 @@ export async function deleteUserData({
           authUserId: user.auth_user_id,
           internalUserId: user.id,
           storageOwnerIds: Array.from(new Set([user.id, user.auth_user_id])),
+          whopCancellationEvents,
         }
     })
 
-    if (result) return result
+    if (result) {
+      if (mode === 'delete-account' && result.whopCancellationEvents.length > 0) {
+        const cancellations = await Promise.allSettled(
+          result.whopCancellationEvents.map(async ({ eventId }) => {
+            await enqueueWhopWebhook({
+              eventId,
+              ...(requestId ? { requestId } : {}),
+            })
+            await markWhopWebhookQueued(eventId)
+          }),
+        )
+        cancellations.forEach((cancellation, index) => {
+          if (cancellation.status === 'rejected') {
+            const event = result.whopCancellationEvents[index]
+            if (!event) return
+            reportError(cancellation.reason, {
+              surface: 'server',
+              operation: 'enqueue-whop-membership-cancellation',
+              userId: internalUserId,
+              entityId: event.membershipId,
+              ...(requestId ? { requestId } : {}),
+              tags: { provider: 'whop' },
+            })
+          }
+        })
+      }
+      return result
+    }
     if (inputAuthUserId) {
       return {
         authUserId: inputAuthUserId,
         internalUserId,
         storageOwnerIds: Array.from(new Set([internalUserId, inputAuthUserId])),
+        whopCancellationEvents: [],
       }
     }
     throw new Error('Deletion transaction returned no identity')

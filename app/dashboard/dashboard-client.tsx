@@ -5,9 +5,21 @@ import { useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
 import { DashboardErrorBoundary, ErrorBoundaryWrapper } from '@/components/error-boundary'
+import { TemplateAwareDashboardSkeleton } from '@/components/ui/dashboard-skeleton'
+import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
+import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
+
+const loadingLayout = cloneDefaultTemplateLayout()
+const loadingLayouts = buildResponsiveDashboardLayouts(loadingLayout, false)
 
 const WidgetCanvas = NextDynamic(() => import('./components/widget-grid'), {
-  ssr: false
+  ssr: false,
+  loading: () => (
+    <TemplateAwareDashboardSkeleton
+      layout={loadingLayout}
+      layouts={loadingLayouts}
+    />
+  ),
 })
 
 const EditModeControls = NextDynamic(() => import('./components/edit-mode-controls'), {

@@ -23,11 +23,26 @@ export async function middleware(request: NextRequest) {
     ...(!isDevelopment ? ['upgrade-insecure-requests'] : []),
   ].join('; ')
   const requestHeaders = new Headers(request.headers)
+  // Identity context is application-owned. Never trust client-supplied values;
+  // protected routes receive fresh headers only after Supabase verification.
+  requestHeaders.delete('x-user-id')
+  requestHeaders.delete('x-user-authenticated')
+  requestHeaders.delete('x-auth-error')
   requestHeaders.set(REQUEST_ID_HEADER, requestId)
   requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('Content-Security-Policy', csp)
 
   const host = normalizeHostname(request.headers.get('host'))
+  // Keep the app service worker address stable even on rewritten public hosts.
+  // Docs/demo clients do not register it, but stale registrations must not be
+  // redirected to a nonexistent nested path.
+  if (request.nextUrl.pathname === '/sw.js') {
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    response.headers.set('Content-Security-Policy', csp)
+    response.headers.set(REQUEST_ID_HEADER, requestId)
+    return response
+  }
+
   if (host === DOCS_HOST) {
     const url = request.nextUrl.clone()
     if (!url.pathname.startsWith('/docs')) {
@@ -97,7 +112,7 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (isProtectedRoute && !user) {
+  if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     // IMPORTANT: carry forward the refreshed auth cookies so Supabase
@@ -112,9 +127,18 @@ export async function middleware(request: NextRequest) {
     return redirectResponse
   }
 
-  // IMPORTANT: return supabaseResponse (not NextResponse.next()) to ensure
-  // the session cookies updated by getUser() are written to the browser.
-  return supabaseResponse
+  requestHeaders.set('x-user-id', user.id)
+  requestHeaders.set('x-user-authenticated', 'authenticated')
+  const authenticatedResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  })
+  authenticatedResponse.headers.set('Content-Security-Policy', csp)
+  authenticatedResponse.headers.set(REQUEST_ID_HEADER, requestId)
+  // Preserve any auth-cookie refresh performed by Supabase above.
+  supabaseResponse.cookies.getAll().forEach((cookie) => {
+    authenticatedResponse.cookies.set(cookie)
+  })
+  return authenticatedResponse
 }
 
 export const config = {

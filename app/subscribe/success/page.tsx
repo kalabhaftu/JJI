@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { CheckCircle2, Loader2, Clock } from 'lucide-react'
 
 import { Logo } from '@/components/logo'
@@ -95,11 +94,7 @@ export default function SubscribeSuccessPage() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm text-center"
-      >
+      <div className="w-full max-w-sm text-center">
         <div className="flex items-center justify-center gap-2 mb-8">
           <Logo className="w-8 h-8" />
           <span className="text-lg font-bold tracking-tight">JJI</span>
@@ -119,14 +114,9 @@ export default function SubscribeSuccessPage() {
 
         {status === 'confirmed' && (
           <div className="space-y-4">
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ type: 'spring', stiffness: 200 }}
-              className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center"
-            >
+            <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
               <CheckCircle2 className="h-8 w-8 text-emerald-500" />
-            </motion.div>
+            </div>
             <h1 className="text-xl font-semibold">Payment Confirmed!</h1>
             <p className="text-sm text-muted-foreground">
               Your subscription is now active. Welcome to JJI Pro!
@@ -158,7 +148,7 @@ export default function SubscribeSuccessPage() {
             </Button>
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   )
 }

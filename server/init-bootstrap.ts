@@ -5,6 +5,10 @@ import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-lay
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { USER_SETTINGS_SELECT, mergeUserSettings } from '@/lib/user-settings'
 import { ensureActiveTemplateForUser } from '@/server/seed-default-template'
+import {
+  checkSubscriptionAccess,
+  type SubscriptionGuardResult,
+} from '@/lib/services/subscription-guard-service'
 
 interface ActiveTemplateShell {
   id: string
@@ -22,6 +26,7 @@ export interface InitBootstrapPayload {
   user: any | null
   accounts: any[]
   activeTemplateShell: ActiveTemplateShell | null
+  subscriptionAccess: SubscriptionGuardResult | null
 }
 
 export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
@@ -34,6 +39,7 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
         user: null,
         accounts: [],
         activeTemplateShell: null,
+        subscriptionAccess: null,
       }
     }
 
@@ -62,12 +68,13 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
         user: null,
         accounts: [],
         activeTemplateShell: null,
+        subscriptionAccess: null,
       }
     }
 
     const internalUserId = userLookup.id
 
-    const [accounts, propFirmAccounts, allTrades, activeTemplate] = await Promise.all([
+    const [accounts, propFirmAccounts, allTrades, activeTemplate, subscriptionAccess] = await Promise.all([
       db.query.Account.findMany({
         where: (table, { eq }) => eq(table.userId, internalUserId),
         orderBy: (table, { desc }) => [desc(table.createdAt)],
@@ -81,6 +88,7 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
         columns: TRADE_COUNT_SELECT as any,
       }),
       ensureActiveTemplateForUser(internalUserId),
+      checkSubscriptionAccess(internalUserId, userLookup.role ?? undefined),
     ])
 
     const groupedCounts = buildGroupedTradeCountSummary(allTrades as any)
@@ -166,6 +174,7 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
       user: mergeUserSettings(userLookup as any, (userLookup as any).settings),
       accounts: [...processedLiveAccounts, ...processedPropFirmAccounts],
       activeTemplateShell,
+      subscriptionAccess,
     }
   } catch (error) {
     reportError(error, {
@@ -178,6 +187,7 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
       user: null,
       accounts: [],
       activeTemplateShell: null,
+      subscriptionAccess: null,
     }
   }
 }

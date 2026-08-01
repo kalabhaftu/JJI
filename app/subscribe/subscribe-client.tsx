@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { CreditCard, Shield, Zap, BarChart3, ArrowRight, Tag, CheckCircle2, Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -114,12 +113,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="w-full max-w-md"
-      >
+      <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -136,12 +130,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
         </div>
 
         {/* Pricing Card */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-6 shadow-lg"
-        >
+        <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-6 shadow-lg">
           {/* Price */}
           <div className="text-center mb-6 pb-6 border-b border-border/40">
             <div className="flex items-baseline justify-center gap-1">
@@ -153,17 +142,11 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
 
           {/* Features */}
           <div className="space-y-3 mb-6">
-            {features.map((feature, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 + i * 0.1 }}
-                className="flex items-center gap-3 text-sm"
-              >
+            {features.map((feature) => (
+              <div key={feature.text} className="flex items-center gap-3 text-sm">
                 <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
                 <span className="text-muted-foreground">{feature.text}</span>
-              </motion.div>
+              </div>
             ))}
           </div>
 
@@ -247,7 +230,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
           <p className="text-[10px] text-muted-foreground/60 text-center mt-2">
             Subscriptions renew until cancelled. Completed periods are non-refundable except billing errors or where required by law. <Link href="/terms" className="underline underline-offset-2 hover:text-muted-foreground">Terms</Link>
           </p>
-        </motion.div>
+        </div>
 
         {/* Sign out */}
         <div className="text-center mt-6">
@@ -268,7 +251,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             Sign Out
           </Button>
         </div>
-      </motion.div>
+      </div>
     </div>
   )
 }

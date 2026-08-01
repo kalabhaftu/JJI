@@ -8,7 +8,6 @@ import { SidebarLayout } from "./components/sidebar-layout";
 import { MobileBottomNav } from "@/components/ui/mobile-nav";
 import { QuickAddFAB } from "@/components/quick-add-fab";
 import { getInitBootstrapData } from "@/server/init-bootstrap";
-import { checkSubscriptionAccess } from "@/lib/services/subscription-guard-service";
 import { getSiteUiSettings } from "@/server/site-ui-settings";
 
 import { SyncContextWrapper } from "./components/sync-context-wrapper";
@@ -37,10 +36,8 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
 
   // Subscription access gate - admins bypass, unpaid users redirect to /subscribe
   if (initialBootstrapData.isAuthenticated && initialBootstrapData.user?.id) {
-    const access = await checkSubscriptionAccess(
-      initialBootstrapData.user.id,
-      initialBootstrapData.user.role,
-    )
+    const access = initialBootstrapData.subscriptionAccess
+    if (!access) redirect('/login')
     if (!access.hasAccess && access.redirectTo) {
       redirect(access.redirectTo as any)
     }

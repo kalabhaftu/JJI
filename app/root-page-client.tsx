@@ -1,7 +1,6 @@
 'use client'
 
 import { Moon, Sun } from "lucide-react"
-import { motion } from "framer-motion"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -55,56 +54,35 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
   if (isAuthenticated && !isLoading && !isProcessingLogout) {
     return (
       <main id="main-content" className="flex min-h-screen items-center justify-center bg-background">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+        <div
           className="flex flex-col items-center gap-4"
           role="status"
           aria-live="polite"
         >
           <Spinner className="h-8 w-8 text-primary" />
           <p className="text-muted-foreground animate-pulse">Restoring your session...</p>
-        </motion.div>
+        </div>
       </main>
     )
   }
 
   return (
     <main id="main-content" className="relative flex min-h-screen flex-col items-center justify-center bg-background selection:bg-primary/30">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full max-w-[340px] relative z-10 px-6"
-      >
+      <div className="w-full max-w-[340px] relative z-10 px-6">
         <div className="flex flex-col items-center mb-10">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2, duration: 0.5 }}
-            className="mb-6 flex items-center gap-3"
-          >
+          <div className="mb-6 flex items-center gap-3">
             <Logo className="w-10 h-10" />
             <span className="text-xl font-bold tracking-tight text-foreground">
               JJI
             </span>
-          </motion.div>
+          </div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.6 }}
-        >
+        <div>
           <UserAuthForm />
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 1 }}
-          className="mt-10 flex flex-col items-center gap-4"
-        >
+        <div className="mt-10 flex flex-col items-center gap-4">
           <Button
             variant="ghost"
             size="sm"
@@ -135,8 +113,8 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
               &copy; {new Date().getFullYear()} JJI
             </p>
           </div>
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </main>
   )
 }

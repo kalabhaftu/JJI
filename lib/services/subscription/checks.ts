@@ -1,7 +1,7 @@
-import { and, asc, eq, inArray, isNotNull } from 'drizzle-orm'
+import { and, asc, eq, gt, inArray, isNotNull, notExists } from 'drizzle-orm'
 
 import { db } from '@/lib/db/client'
-import { PaymentRecord, Subscription } from '@/lib/db/schema'
+import { PaymentRecord, Subscription, WhopMembership } from '@/lib/db/schema'
 import logger from '@/lib/logger'
 import { reportError } from '@/lib/observability/report-error'
 import { createPaymentNotification } from '@/lib/services/subscription/notifications'
@@ -23,6 +23,7 @@ export async function expireAbandonedPayments(userId?: string) {
   const pendingPayments = await db.query.PaymentRecord.findMany({
     where: and(
       userId ? eq(PaymentRecord.userId, userId) : undefined,
+      eq(PaymentRecord.provider, 'nowpayments'),
       inArray(PaymentRecord.providerStatus, PENDING_PROVIDER_STATUSES)
     ),
     orderBy: asc(PaymentRecord.createdAt),
@@ -76,15 +77,20 @@ export async function runSubscriptionChecks() {
     const subscriptions: any[] = await db.query.Subscription.findMany({
       where: and(
         inArray(Subscription.status, ['active', 'past_due']),
-        isNotNull(Subscription.nextPaymentDue)
+        isNotNull(Subscription.nextPaymentDue),
+        cursorId ? gt(Subscription.id, cursorId) : undefined,
+        // Whop renewals are reconciled from authoritative provider state by
+        // the Whop webhook/reconciliation jobs, never by local due dates.
+        notExists(
+          db.select({ id: WhopMembership.id })
+            .from(WhopMembership)
+            .where(eq(WhopMembership.subscriptionId, Subscription.id)),
+        ),
       ),
       limit: BATCH_SIZE,
-      offset: cursorId ? 1 : 0, // NOTE: this isn't true cursor pagination but will work for small batches if we sort
       with: { User: { columns: { id: true, email: true } } },
       orderBy: asc(Subscription.id),
     })
-    // To make offset pagination safe since we don't have cursors natively like prisma
-    // in this exact query structure, we'd need to modify the where clause, but this is a rough approx.
 
     if (subscriptions.length === 0) {
       hasMore = false

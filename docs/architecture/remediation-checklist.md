@@ -46,7 +46,10 @@ Legend:
 - [x] Document safe non-production verification.
 - [x] Add a guarded local verification harness for client, server, phase, and import failures.
 - [x] Add and validate a versioned Sentry alert manifest for all seven required alert classes.
-- [ ] Verify the live Sentry project, releases, source maps, grouping, and request-ID search.
+- [x] Inspect the live `kalab-ze/javascript-nextjs` project and inventory every unresolved issue group before remediation.
+- [x] Store the authorized Sentry admin token in macOS Keychain for reusable CLI access without persisting it in the repository or shell history.
+- [x] Verify the live Sentry project, current Git-SHA release association, and successful source-map artifact upload.
+- [ ] Verify grouping and request-ID search on a fresh controlled event from the current release.
 - [ ] Activate and verify Sentry-native alerts for new page errors from the reviewed manifest.
 - [ ] Activate and verify Sentry-native alerts for API 5xx spikes from the reviewed manifest.
 - [ ] Activate and verify Sentry-native alerts for phase failures from the reviewed manifest.
@@ -68,6 +71,8 @@ Legend:
 - [x] Propagate request IDs through daily-anchor and storage-cleanup Inngest events.
 - [x] Bind job, phase, cleanup, and anchor payloads to shared Inngest event schemas.
 - [x] Add route and operation tags without private request payloads.
+- [x] Verify a deployed Preview redirect and standardized API error both return valid `x-request-id` correlation.
+- [x] Reject spoofed inbound identity headers at the middleware boundary and replace them only after Supabase verification.
 - [ ] Verify one deployed response through logs, Sentry, and its durable audit row.
 
 ## 4. Phase evaluation engine
@@ -232,6 +237,8 @@ Legend:
 - [ ] Run database advisors after staging application.
 - [x] Confirm WAL-G backup support; record that an independent local dump was unavailable without Docker or `pg_dump`.
 - [x] Apply and verify both reviewed additive migrations after explicit production approval.
+- [x] Apply and verify the missing `Trade.isMissedTrade` runtime column used by Drizzle-wide trade selections.
+- [x] Apply and verify the `UserSettings.updatedAt` database default required by reset and purge operations.
 
 ## 12. Measured bundles
 
@@ -272,6 +279,7 @@ Legend:
 - [x] Repair the dependency installation.
 - [x] Run the repository type-check and confirm no errors remain in the new Whop modules, routes, jobs, schema, or deletion integration.
 - [x] Repair the recorded non-Whop TypeScript backlog so the repository-wide type-check exits cleanly.
+- [x] Deploy the current remediation commit to Preview and pass focused protocol, redirect, request-ID, and identity-spoofing probes through Vercel's authenticated CLI.
 - [ ] Run lint once.
 - [ ] Run the full unit/integration suite once.
 - [x] Run the production build once.
@@ -330,11 +338,15 @@ Legend:
 ## 16. Production performance and billing closeout
 
 - [x] Query Vercel Speed Insights p75 LCP, FCP, TTFB, INP, and CLS by production route.
+- [x] Query Speed Insights by host, environment, route, deployment, device, browser, country, and LCP attribution target.
+- [x] Record metric sample counts and avoid treating sparse cross-deployment traffic as a current-release benchmark.
 - [x] Confirm measured regressions on subscribe, dashboard, login, and journal interaction paths.
 - [x] Remove unnecessary public-route Supabase authentication round-trips.
 - [x] Parallelize dashboard bootstrap queries and cached shell settings.
 - [x] Remove the duplicate dashboard role query during subscription gating.
 - [x] Render subscription content immediately instead of a blank authentication gate.
+- [x] Remove above-the-fold Framer Motion hydration gates from login, subscribe, and checkout-status surfaces.
+- [x] Preserve dashboard widget dimensions while its route-local client bundle loads.
 - [x] Debounce journal server search to reduce the measured interaction delay.
 - [ ] Collect enough post-deploy Speed Insights traffic for a comparable p75 sample.
 - [x] Lock Whop checkout email prefill to the authenticated JJI account.
@@ -383,3 +395,16 @@ until its old implementation is gone.
 - [x] Split trade-import lifecycle, normalization, serialization, and chunk execution behind a two-line compatibility facade.
 - [x] Finish reducing the archive-import facade without duplicate lifecycle paths.
 - [x] Add a source guard preventing these compatibility entrypoints from regrowing.
+
+## 18. Reported runtime-failure closeout
+
+- [x] Repair docs Server-to-Client serialization by passing rendered icon elements instead of component functions.
+- [x] Keep `/sw.js` stable on docs/demo hosts and skip service-worker registration on public documentation/demo surfaces.
+- [x] Make service-worker waiting-worker handling race-safe and classify optional registration failures as expected.
+- [x] Stop disabled direct-sync providers from polling intentionally unavailable endpoints.
+- [x] Remove the invalid duplicate daily phase-evaluation event while retaining the authoritative 15-minute Inngest schedule.
+- [x] Preserve request identifiers, releases, and safe internal entity IDs through field-aware observability scrubbing.
+- [x] Prevent custom context tags from overriding canonical Sentry operation, route, surface, request, release, or environment tags.
+- [x] Verify the repaired Preview deployment serves `/docs` and `/sw.js` with HTTP 200.
+- [x] Verify the same runtime contracts on the promoted Production deployment.
+- [x] Resolve all twenty-two inventoried Sentry groups after Production is healthy and confirm the unresolved queue is empty; fresh recurrence remains configured to reopen a group.

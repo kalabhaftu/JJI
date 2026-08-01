@@ -67,22 +67,21 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
 
     const internalUserId = userLookup.id
 
-    const accounts = await db.query.Account.findMany({
-      where: (table, { eq }) => eq(table.userId, internalUserId),
-      orderBy: (table, { desc }) => [desc(table.createdAt)],
-    })
-
-    const propFirmAccounts = await db.query.MasterAccount.findMany({
-      where: (table, { eq }) => eq(table.userId, internalUserId),
-      with: { PhaseAccount: { orderBy: (table, { asc }) => [asc(table.phaseNumber)] } },
-    })
-
-    const allTrades = await db.query.Trade.findMany({
-      where: (table, { eq }) => eq(table.userId, internalUserId),
-      columns: TRADE_COUNT_SELECT as any,
-    })
-
-    const activeTemplate = await ensureActiveTemplateForUser(internalUserId)
+    const [accounts, propFirmAccounts, allTrades, activeTemplate] = await Promise.all([
+      db.query.Account.findMany({
+        where: (table, { eq }) => eq(table.userId, internalUserId),
+        orderBy: (table, { desc }) => [desc(table.createdAt)],
+      }),
+      db.query.MasterAccount.findMany({
+        where: (table, { eq }) => eq(table.userId, internalUserId),
+        with: { PhaseAccount: { orderBy: (table, { asc }) => [asc(table.phaseNumber)] } },
+      }),
+      db.query.Trade.findMany({
+        where: (table, { eq }) => eq(table.userId, internalUserId),
+        columns: TRADE_COUNT_SELECT as any,
+      }),
+      ensureActiveTemplateForUser(internalUserId),
+    ])
 
     const groupedCounts = buildGroupedTradeCountSummary(allTrades as any)
 

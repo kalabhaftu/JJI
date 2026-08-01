@@ -60,6 +60,15 @@ export async function middleware(request: NextRequest) {
     return supabaseResponse
   }
 
+  const { pathname } = request.nextUrl
+  const isProtectedRoute = pathname.startsWith('/dashboard')
+
+  // Public pages do not need a network round-trip to Supabase before rendering.
+  // Their client auth providers still restore sessions where the UI needs them.
+  if (!isProtectedRoute) {
+    return supabaseResponse
+  }
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -88,31 +97,11 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const { pathname } = request.nextUrl
-
-  // Protected routes - redirect unauthenticated users to /login
-  const isProtectedRoute =
-    pathname.startsWith('/dashboard') || pathname.startsWith('/admin')
-
   if (isProtectedRoute && !user) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     // IMPORTANT: carry forward the refreshed auth cookies so Supabase
     // can re-validate on the /login page and avoid a double-redirect.
-    const redirectResponse = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
-    })
-    redirectResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-    redirectResponse.headers.set('Content-Security-Policy', csp)
-    redirectResponse.headers.set(REQUEST_ID_HEADER, requestId)
-    return redirectResponse
-  }
-
-  // Auth routes - redirect authenticated users away from /login or /signup
-  if (user && (pathname === '/login' || pathname === '/signup')) {
-    const url = request.nextUrl.clone()
-    url.pathname = '/dashboard'
     const redirectResponse = NextResponse.redirect(url)
     supabaseResponse.cookies.getAll().forEach((cookie) => {
       redirectResponse.cookies.set(cookie.name, cookie.value)

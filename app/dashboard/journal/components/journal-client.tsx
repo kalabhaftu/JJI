@@ -211,6 +211,7 @@ export function JournalClient() {
   const searchInputRef = useRef<HTMLInputElement>(null)
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('')
   const [tradeDateFilter, setTradeDateFilter] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'wins' | 'losses' | 'breakeven' | 'buys' | 'sells'>('all')
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([])
@@ -226,10 +227,15 @@ export function JournalClient() {
   const tradeIdParam = searchParams.get('tradeId')
   const dateParam = searchParams.get('date')
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDebouncedSearchTerm(searchTerm), 250)
+    return () => window.clearTimeout(timeout)
+  }, [searchTerm])
+
   // Pagination via Backend V1 Endpoint
   const { trades: paginatedTrades, totalCount, statistics, isLoading, refetch } = useJournal({
     page: currentPage,
-    search: searchTerm,
+    search: debouncedSearchTerm,
     tradeDate: tradeDateFilter,
     filterBy,
     selectedTagIds,

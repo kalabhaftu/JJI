@@ -35,8 +35,6 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
     }
   }, [isAuthenticated, isAuthLoading, router])
 
-  if (isAuthLoading || !isAuthenticated) return null
-
   async function handleSubscribe() {
     setIsLoading(true)
     try {
@@ -197,7 +195,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
               <>
                 <Button
                   onClick={handleWhopSubscribe}
-                  disabled={isLoading || isWhopLoading}
+                  disabled={isAuthLoading || !isAuthenticated || isLoading || isWhopLoading}
                   className="w-full h-11 text-sm font-medium"
                 >
                   {isWhopLoading ? (
@@ -222,7 +220,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
 
             <Button
               onClick={handleSubscribe}
-              disabled={isLoading || isWhopLoading}
+              disabled={isAuthLoading || !isAuthenticated || isLoading || isWhopLoading}
               variant={whopEnabled ? 'outline' : 'default'}
               className="w-full h-11 text-sm font-medium"
             >

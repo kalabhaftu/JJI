@@ -30,12 +30,17 @@ export const metadata: Metadata = {
   },
 }
 export default async function RootLayout({ children }: { children: ReactNode }) {
-  const initialBootstrapData = await getInitBootstrapData()
-  const siteUiSettings = await getSiteUiSettings()
+  const [initialBootstrapData, siteUiSettings] = await Promise.all([
+    getInitBootstrapData(),
+    getSiteUiSettings(),
+  ])
 
   // Subscription access gate - admins bypass, unpaid users redirect to /subscribe
   if (initialBootstrapData.isAuthenticated && initialBootstrapData.user?.id) {
-    const access = await checkSubscriptionAccess(initialBootstrapData.user.id)
+    const access = await checkSubscriptionAccess(
+      initialBootstrapData.user.id,
+      initialBootstrapData.user.role,
+    )
     if (!access.hasAccess && access.redirectTo) {
       redirect(access.redirectTo as any)
     }

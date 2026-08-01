@@ -20,13 +20,15 @@ export interface SubscriptionGuardResult {
  * Returns access status and redirect info for unauthorized users.
  */
 export async function checkSubscriptionAccess(
-  userId: string
+  userId: string,
+  knownUserRole?: string,
 ): Promise<SubscriptionGuardResult> {
-  // Get user role
-  const user = await db.query.User.findFirst({
-    where: eq(schema.User.id, userId),
-    columns: { role: true },
-  })
+  const user = knownUserRole
+    ? { role: knownUserRole }
+    : await db.query.User.findFirst({
+        where: eq(schema.User.id, userId),
+        columns: { role: true },
+      })
 
   if (!user) {
     return {

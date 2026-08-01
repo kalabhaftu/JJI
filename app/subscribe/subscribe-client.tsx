@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { CreditCard, Shield, Zap, BarChart3, ArrowRight, Tag, CheckCircle2, Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
@@ -242,6 +243,9 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             {whopEnabled
               ? 'Secure payment via Whop or NOWPayments. Manage card subscriptions through Whop.'
               : 'Secure cryptocurrency payment powered by NOWPayments.'}
+          </p>
+          <p className="text-[10px] text-muted-foreground/60 text-center mt-2">
+            Subscriptions renew until cancelled. Completed periods are non-refundable except billing errors or where required by law. <Link href="/terms" className="underline underline-offset-2 hover:text-muted-foreground">Terms</Link>
           </p>
         </motion.div>
 

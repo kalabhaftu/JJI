@@ -44,6 +44,11 @@ export function getWhopEnvironment(): WhopEnvironment {
   return value
 }
 
+export function getConfiguredWhopEnvironment(): WhopEnvironment | null {
+  const value = process.env.WHOP_ENVIRONMENT?.trim()
+  return value === 'sandbox' || value === 'production' ? value : null
+}
+
 export function getWhopConfig() {
   const environment = getWhopEnvironment()
   const planId = normalizePlanId(requireWhopEnv('WHOP_PLAN_ID_PRO'), environment)

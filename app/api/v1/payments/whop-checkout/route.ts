@@ -3,6 +3,7 @@ import { z } from 'zod'
 
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { db } from '@/lib/db/client'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 import { getUserAccessStatus } from '@/lib/services/subscription/access'
@@ -37,7 +38,13 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const access = await getUserAccessStatus(identity.internalUserId)
+    const [access, user] = await Promise.all([
+      getUserAccessStatus(identity.internalUserId),
+      db.query.User.findFirst({
+        where: (table, { eq }) => eq(table.id, identity.internalUserId),
+        columns: { email: true },
+      }),
+    ])
     if (access.hasAccess && access.status !== 'past_due') {
       return createErrorResponse(
         'You already have active access.',
@@ -47,9 +54,19 @@ export async function POST(request: NextRequest) {
         requestId,
       )
     }
+    if (!user?.email) {
+      return createErrorResponse(
+        'Your account email is unavailable.',
+        409,
+        undefined,
+        'CHECKOUT_EMAIL_MISSING',
+        requestId,
+      )
+    }
 
     const checkout = await createWhopCheckoutLink({
       internalUserId: identity.internalUserId,
+      email: user.email,
       planKey: parsed.data.planId,
       requestId,
     })

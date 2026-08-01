@@ -21,6 +21,7 @@ function assertWhopCheckoutUrl(value: string): string {
 
 export async function createWhopCheckoutLink(input: {
   internalUserId: string
+  email: string
   planKey: WhopPlanKey
   requestId: string
 }): Promise<WhopCheckoutResult> {
@@ -44,8 +45,14 @@ export async function createWhopCheckoutLink(input: {
     throw new Error('Whop checkout configuration did not return a purchase URL')
   }
 
+  const purchaseUrl = new URL(assertWhopCheckoutUrl(checkout.purchase_url))
+  // Whop's supported prefill contract. The authenticated JJI email stays
+  // locked so checkout identity cannot be changed through request editing.
+  purchaseUrl.searchParams.set('email', input.email)
+  purchaseUrl.searchParams.set('email.disabled', '1')
+
   return {
-    checkoutUrl: assertWhopCheckoutUrl(checkout.purchase_url),
+    checkoutUrl: purchaseUrl.toString(),
     checkoutId: checkout.id,
     planId,
     referenceId,

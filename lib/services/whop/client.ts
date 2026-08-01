@@ -47,3 +47,9 @@ export async function cancelWhopMembershipImmediately(membershipId: string) {
     cancellation_mode: 'immediate',
   })
 }
+
+export async function cancelWhopMembershipAtPeriodEnd(membershipId: string) {
+  return getWhopClient().memberships.cancel(membershipId, {
+    cancellation_mode: 'at_period_end',
+  })
+}

@@ -102,6 +102,7 @@ export default function SettingsPage() {
 
   const [subscriptionData, setSubscriptionData] = useState<SettingsSubscriptionData | null>(null)
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true)
+  const [isCancelingSubscription, setIsCancelingSubscription] = useState(false)
 
   const [webhookToken, setWebhookToken] = useState<string | null>(null)
   const [isLoadingWebhook, setIsLoadingWebhook] = useState(false)
@@ -129,6 +130,35 @@ export default function SettingsPage() {
     }
     fetchWebhookToken()
   }, [])
+
+  const handleCancelSubscription = async () => {
+    setIsCancelingSubscription(true)
+    try {
+      const response = await fetch('/api/v1/billing/cancel', { method: 'POST' })
+      const payload = await response.json()
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error?.message || 'Failed to cancel subscription')
+      }
+
+      setSubscriptionData((current) => current
+        ? {
+            ...current,
+            cancelAtPeriodEnd: true,
+            currentPeriodEnd: payload.data?.currentPeriodEnd ?? current.currentPeriodEnd,
+          }
+        : current)
+      toast.success('Subscription cancellation scheduled', {
+        description: 'Your access remains active until the end of the paid period.',
+      })
+    } catch (error) {
+      reportSettingsMutationError(error, 'cancel-whop-subscription')
+      toast.error('Cancellation failed', {
+        description: error instanceof Error ? error.message : 'Please try again.',
+      })
+    } finally {
+      setIsCancelingSubscription(false)
+    }
+  }
 
   useEffect(() => {
     const fetchSubscription = async () => {
@@ -568,6 +598,8 @@ export default function SettingsPage() {
                 onSave={handleProfileUpdate}
                 subscriptionData={subscriptionData}
                 isLoadingSubscription={isLoadingSubscription}
+                isCancelingSubscription={isCancelingSubscription}
+                onCancelSubscription={handleCancelSubscription}
               />
             )}
             {activeTab === 'preferences' && (

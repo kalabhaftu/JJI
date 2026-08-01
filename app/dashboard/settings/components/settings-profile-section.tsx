@@ -3,6 +3,17 @@
 import type { Dispatch, SetStateAction } from 'react'
 import Link from 'next/link'
 import { CreditCard, Pencil, User } from 'lucide-react'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -29,6 +40,8 @@ type SettingsProfileSectionProps = {
   onSave: () => void
   subscriptionData: SettingsSubscriptionData | null
   isLoadingSubscription: boolean
+  isCancelingSubscription: boolean
+  onCancelSubscription: () => Promise<void>
 }
 
 export function SettingsProfileSection({
@@ -44,6 +57,8 @@ export function SettingsProfileSection({
   onSave: handleProfileUpdate,
   subscriptionData,
   isLoadingSubscription,
+  isCancelingSubscription,
+  onCancelSubscription,
 }: SettingsProfileSectionProps) {
   return (
       <div className="space-y-6">
@@ -204,20 +219,48 @@ export function SettingsProfileSection({
               )}
 
               {subscriptionData.provider === 'whop' && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/10 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="p-4 rounded-lg bg-muted/20 border border-border/10 space-y-3">
                   <div>
                     <p className="text-xs text-muted-foreground">Card billing</p>
                     <p className="text-sm font-semibold text-heading-text mt-0.5">
                       {subscriptionData.cancelAtPeriodEnd ? 'Cancels at period end' : 'Managed securely through Whop'}
                     </p>
                   </div>
-                  {subscriptionData.manageUrl && (
-                    <Button asChild variant="outline" size="sm" className="h-9 text-xs">
-                      <a href={subscriptionData.manageUrl} target="_blank" rel="noopener noreferrer">
-                        Manage Subscription
-                      </a>
-                    </Button>
-                  )}
+                  <div className="flex flex-col gap-2 sm:flex-row">
+                    {subscriptionData.manageUrl && (
+                      <Button asChild variant="outline" size="sm" className="h-9 text-xs">
+                        <a href={subscriptionData.manageUrl} target="_blank" rel="noopener noreferrer">
+                          Payment methods & invoices
+                        </a>
+                      </Button>
+                    )}
+                    {!subscriptionData.cancelAtPeriodEnd && subscriptionData.hasAccess && (
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="h-9 text-xs" disabled={isCancelingSubscription}>
+                            Cancel renewal
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Cancel subscription renewal?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              You will keep JJI Pro until the current paid period ends. Future card renewals will stop. Payments already completed are not prorated.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Keep subscription</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => void onCancelSubscription()} disabled={isCancelingSubscription}>
+                              Cancel renewal
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Billing changes and receipts are handled in Whop. See the <Link href="/terms" className="text-primary hover:underline">refund policy</Link>.
+                  </p>
                 </div>
               )}
 

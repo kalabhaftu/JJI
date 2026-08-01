@@ -1,10 +1,11 @@
 import 'server-only'
 
-import { desc, eq } from 'drizzle-orm'
+import { and, desc, eq } from 'drizzle-orm'
 
 import { db } from '@/lib/db/client'
 import { PaymentRecord, WhopMembership } from '@/lib/db/schema'
 import { getUserAccessStatus } from '@/lib/services/subscription/access'
+import { getConfiguredWhopEnvironment } from '@/lib/services/whop/config'
 
 function safeManageUrl(value: string | null): string | null {
   if (!value) return null
@@ -20,12 +21,18 @@ function safeManageUrl(value: string | null): string | null {
 }
 
 export async function getBillingStatus(userId: string, userRole?: string) {
+  const environment = getConfiguredWhopEnvironment()
   const [access, whopMembership, latestPayment] = await Promise.all([
     getUserAccessStatus(userId, userRole),
-    db.query.WhopMembership.findFirst({
-      where: eq(WhopMembership.userId, userId),
-      orderBy: [desc(WhopMembership.updatedAt)],
-    }),
+    environment
+      ? db.query.WhopMembership.findFirst({
+          where: and(
+            eq(WhopMembership.userId, userId),
+            eq(WhopMembership.environment, environment),
+          ),
+          orderBy: [desc(WhopMembership.updatedAt)],
+        })
+      : Promise.resolve(undefined),
     db.query.PaymentRecord.findFirst({
       where: eq(PaymentRecord.userId, userId),
       orderBy: [desc(PaymentRecord.createdAt)],

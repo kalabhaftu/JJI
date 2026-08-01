@@ -7,7 +7,7 @@ export default function TermsPage() {
       <div className="max-w-3xl mx-auto space-y-8">
         <div className="space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Terms of Service</h1>
-          <p className="text-lg text-muted-foreground leading-relaxed">Last updated: July 2, 2026</p>
+          <p className="text-lg text-muted-foreground leading-relaxed">Last updated: August 1, 2026</p>
         </div>
 
         <section className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -35,6 +35,9 @@ export default function TermsPage() {
           <h2 className="text-2xl font-semibold tracking-tight text-foreground mb-4">Subscriptions and payments</h2>
           <p>
             Paid features may be processed by third-party payment providers. Subscription access can be changed, suspended, or revoked for failed payments, fraud, abuse, or violation of these terms. Crypto payments may be final once processed by the payment provider or blockchain network.
+          </p>
+          <p>
+            Recurring subscriptions renew until cancelled. You can cancel card renewal from JJI Settings or the provider billing portal and keep access through the paid period. Except for duplicate charges, confirmed technical billing errors, or rights that cannot legally be excluded, completed subscription periods and partial months are non-refundable. Contact us through the <Link href="/contact" className="text-primary hover:underline">contact page</Link> promptly if you believe a charge is incorrect so it can be reviewed before opening a payment dispute.
           </p>
         </section>
 

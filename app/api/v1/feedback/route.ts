@@ -5,7 +5,6 @@ import * as schema from '@/lib/db/schema'
 import { applyRateLimit, feedbackLimiter } from '@/lib/rate-limiter'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { extractIP } from '@/server/geolocation'
-import { logServerError } from '@/lib/error-logger'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { z } from 'zod'
 import { buildFeedbackAttachmentPath } from '@/lib/storage/paths'
@@ -189,8 +188,13 @@ export async function POST(req: NextRequest) {
     }
 
     return createSuccessResponse({ id: feedback.id })
-  } catch (error: any) {
-    await logServerError(error, { url: req.url, source: 'API' })
-    return createErrorResponse('Failed to submit feedback', 500)
+  } catch (error: unknown) {
+    reportError(error, {
+      surface: 'api',
+      operation: 'submit-feedback',
+      route: req.nextUrl.pathname,
+      requestId,
+    })
+    return createErrorResponse('Failed to submit feedback', 500, undefined, 'SERVER_ERROR', requestId)
   }
 }

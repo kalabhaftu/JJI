@@ -54,6 +54,7 @@ const requiredPaths = [
 ]
 
 const removedImports = [
+  '@/lib/error-logger',
   '@/server/accounts',
   '@/server/database',
   '@/server/dashboard-templates',
@@ -62,6 +63,10 @@ const removedImports = [
   '@/server/trades',
   '@/server/user-data',
   '@/server/weekly-review',
+]
+
+const removedPaths = [
+  'lib/error-logger.ts',
 ]
 
 async function walk(directory) {
@@ -78,6 +83,12 @@ async function walk(directory) {
 const failures = []
 for (const path of requiredPaths) {
   await access(path).catch(() => failures.push(`missing replacement: ${path}`))
+}
+
+for (const path of removedPaths) {
+  await access(path)
+    .then(() => failures.push(`obsolete implementation still exists: ${path}`))
+    .catch(() => undefined)
 }
 
 for (const root of ['app', 'components', 'context', 'hooks', 'lib', 'server', 'store']) {

@@ -2,12 +2,26 @@ import { readFile } from 'node:fs/promises'
 
 const requirements = [
   {
+    file: 'lib/cache/client.ts',
+    patterns: [
+      ['Upstash Redis SDK', /@upstash\/redis/],
+      ['configuration validation', /isRedisConfigured/],
+    ],
+  },
+  {
     file: 'lib/rate-limiter.ts',
     patterns: [
       ['Upstash SDK', /@upstash\/ratelimit/],
       ['bounded timeout', /UPSTASH_TIMEOUT_MS/],
       ['timeout fail-closed conversion', /isUpstashTimeout/],
       ['backend telemetry', /rate-limit-backend/],
+    ],
+  },
+  {
+    file: 'lib/inngest/client.ts',
+    patterns: [
+      ['typed event schemas', /EventSchemas/],
+      ['shared event contract', /JjiInngestEvents/],
     ],
   },
   {

@@ -1,16 +1,11 @@
 import { inngest } from '@/lib/inngest/client'
-
-type StorageCleanupEvent = {
-  internalUserId: string
-  storageOwnerIds: string[]
-  requestId?: string
-}
+import type { StorageCleanupEventData } from '@/lib/inngest/events'
 
 /**
  * Queue storage cleanup when Inngest is configured. Local/test environments
  * report pending work instead of making an unreachable network request.
  */
-export async function enqueueUserStorageCleanup(data: StorageCleanupEvent): Promise<boolean> {
+export async function enqueueUserStorageCleanup(data: StorageCleanupEventData): Promise<boolean> {
   if (!process.env.INNGEST_EVENT_KEY) return false
 
   await inngest.send({

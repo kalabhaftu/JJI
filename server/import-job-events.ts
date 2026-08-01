@@ -1,6 +1,7 @@
 import { inngest } from '@/lib/inngest/client'
+import type { InngestImportJobKind } from '@/lib/inngest/events'
 
-export type ImportJobKind = 'archive' | 'trade'
+export type ImportJobKind = InngestImportJobKind
 
 export async function enqueueImportJob(params: {
   jobId: string

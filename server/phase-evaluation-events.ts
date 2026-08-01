@@ -1,11 +1,7 @@
 import { inngest } from '@/lib/inngest/client'
+import type { PhaseEvaluationEventData } from '@/lib/inngest/events'
 
-export async function enqueuePhaseEvaluation(params: {
-  source: string
-  masterAccountId?: string
-  phaseAccountId?: string
-  requestId?: string
-}) {
+export async function enqueuePhaseEvaluation(params: Omit<PhaseEvaluationEventData, 'requestedAt'>) {
   await inngest.send({
     name: 'jji/phase.evaluate',
     data: {

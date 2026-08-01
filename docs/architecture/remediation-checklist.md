@@ -20,11 +20,11 @@ Legend:
 - [x] Keep `app/dashboard/components/trade-replay/trade-replayer.tsx` unchanged.
 - [x] Inventory phase callers, mutation actions, route policies, direct Sentry captures, migrations, and monolith consumers.
 - [x] Record a bundle-analyzer baseline in `docs/architecture/bundle-baseline.json`.
-- [x] Inventory four Drizzle-journaled and twenty imperative Supabase migrations without rewriting history.
+- [x] Inventory four Drizzle-journaled entries and nineteen timestamped Supabase migrations without rewriting history.
 - [x] Record pre-existing dependency/build/test failures for the final validation gate.
 - [x] Repair the local dependency installation and synchronize the Bun lockfile.
 - [ ] Establish a clean full-build baseline after the recorded repository TypeScript backlog is repaired.
-- [ ] Create a remote database migration-list snapshot after database access is approved.
+- [x] Create a remote database migration-list snapshot and reconcile it without rewriting history.
 
 ## 2. Error reporting and Sentry
 
@@ -215,7 +215,7 @@ Legend:
 - [x] Add audit redaction, bulk-summary, request-correlation, and rollback-propagation tests.
 - [x] Preserve a final deletion audit row with nullable user ownership and `ON DELETE SET NULL`.
 - [x] Audit prop-firm creation, update, deletion, and phase advancement transactionally.
-- [ ] Apply and verify the audit migration in staging.
+- [x] Apply and verify the additive audit migration against the linked database after explicit approval.
 
 ## 11. Migration workflow
 
@@ -227,11 +227,11 @@ Legend:
 - [x] Add migration naming, order, schema-alignment, and untracked-file checks.
 - [x] Add CI migration consistency enforcement.
 - [x] Pass the local read-only migration consistency guard.
-- [ ] Start local Supabase and run migration-list/dry-run verification.
+- [x] Run linked migration-list and remote dry-run verification.
 - [ ] Rehearse the migration against staging.
 - [ ] Run database advisors after staging application.
-- [ ] Confirm a backup or restore point before production.
-- [ ] Apply the migration to production only after explicit approval.
+- [x] Confirm WAL-G backup support; record that an independent local dump was unavailable without Docker or `pg_dump`.
+- [x] Apply and verify both reviewed additive migrations after explicit production approval.
 
 ## 12. Measured bundles
 
@@ -313,19 +313,47 @@ Legend:
 - [x] Add Whop to service, API-policy, API-contract, migration, and alert source guards.
 - [x] Pass the focused membership-status mapping test for all current provider states.
 - [x] Document provider permissions, preview/production credential separation, verification, rollout, and rollback.
-- [ ] Verify linked Supabase migration history and dry-run the additive migration.
-- [ ] Configure and verify Whop sandbox credentials, webhook subscriptions, and Inngest function discovery on preview.
+- [x] Verify linked Supabase migration history, dry-run the additive migration, apply it, and verify the resulting tables, RLS, trigger, and raw-payload redaction.
+- [x] Configure environment-separated Whop sandbox credentials on JJI Preview and JJI Admin Preview.
+- [ ] Verify Whop webhook subscriptions and Inngest function discovery on deployed Preview.
 - [ ] Verify a sandbox checkout, duplicate webhook, forced retry, refund, cancellation, Resend delivery, and manual-review event.
 - [ ] Inspect the resulting Sentry event for privacy, grouping, and request-ID search.
 - [x] Commit the Whop implementation in focused Conventional Commits.
-- [ ] Join `origin/main` history with a tree-preserving merge; never normal-merge or rebase its reverted tree.
-- [ ] Push and verify `preview`, then fast-forward `main` only after migration and provider gates are satisfied.
+- [x] Join `origin/main` history with a tree-preserving merge without changing the remediated source tree.
+- [x] Push and verify the current JJI and JJI Admin `preview` commits.
+- [ ] Fast-forward `main` only after both Preview deployments are green and sandbox protocols are checked.
 - [ ] Configure production Whop credentials, apply the reviewed migration, deploy, and perform one production-safe checkout verification.
 - [x] Create local Conventional Commit checkpoints.
 - [x] Confirm the final tree contains intended commits plus the preserved user work.
-- [ ] Push, migrate, deploy, activate alerts, or release only with explicit approval.
+- [x] Record explicit approval for migration, Preview deployment, and eventual fast-forward production rollout.
 
-## 15. Additional monolith remediation
+## 16. Production performance and billing closeout
+
+- [x] Query Vercel Speed Insights p75 LCP, FCP, TTFB, INP, and CLS by production route.
+- [x] Confirm measured regressions on subscribe, dashboard, login, and journal interaction paths.
+- [x] Remove unnecessary public-route Supabase authentication round-trips.
+- [x] Parallelize dashboard bootstrap queries and cached shell settings.
+- [x] Remove the duplicate dashboard role query during subscription gating.
+- [x] Render subscription content immediately instead of a blank authentication gate.
+- [x] Debounce journal server search to reduce the measured interaction delay.
+- [ ] Collect enough post-deploy Speed Insights traffic for a comparable p75 sample.
+- [x] Lock Whop checkout email prefill to the authenticated JJI account.
+- [x] Keep plan, price, entitlement metadata, and provider redirect construction server-owned against request editing.
+- [x] Add self-service cancellation at period end without revoking the already-paid period.
+- [x] Expose Whop billing history and payment-method management through the validated membership portal URL.
+- [x] Publish the renewal, cancellation, dispute, and no-prorated-refund policy in subscription context and Terms.
+- [x] Keep duplicate-charge, technical billing-error, and non-excludable legal exceptions.
+- [x] Isolate sandbox and production membership lookups by provider environment.
+- [x] Replace JJI Admin's legacy v2, fire-and-forget cancellation with the pinned official Whop SDK.
+- [x] Make Admin sync, cancel, expire, extend, ban, delete, and approved-refund flows call Whop authoritatively.
+- [x] Keep ban/delete enforcement durable through the shared retryable cancellation inbox when Whop is unavailable.
+- [x] Prevent failed Supabase Auth deletion from silently deleting the remaining database owner record.
+- [x] Configure sandbox Whop only on both Preview deployments; keep Production card billing disabled pending real credentials.
+- [x] Remove the unsafe rate-limit bypass environment variable from both applications.
+- [ ] Verify sandbox checkout, locked email, billing portal, cancellation, admin termination, refund, webhook retry, Resend, and Sentry flow.
+- [ ] Fast-forward both repositories to production only after green Preview deployment and sandbox verification.
+
+## 17. Additional monolith remediation
 
 The 2026-07-29 follow-up scan was checked against the current source. The CSV parser remains
 intentionally cohesive; every file below has more than one responsibility and stays tracked

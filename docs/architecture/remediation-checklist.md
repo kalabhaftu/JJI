@@ -407,4 +407,4 @@ until its old implementation is gone.
 - [x] Prevent custom context tags from overriding canonical Sentry operation, route, surface, request, release, or environment tags.
 - [x] Verify the repaired Preview deployment serves `/docs` and `/sw.js` with HTTP 200.
 - [x] Verify the same runtime contracts on the promoted Production deployment.
-- [x] Resolve all twenty-two inventoried Sentry groups after Production is healthy and confirm the unresolved queue is empty; fresh recurrence remains configured to reopen a group.
+- [x] Resolve all twenty-two inventoried Sentry groups after Production is healthy and confirm the unresolved queue is empty; bind the one stale-client recurrence from release `ae24c46e` to the fixed release `d2467e49` so only a current-release regression reopens it.

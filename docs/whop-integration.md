@@ -36,7 +36,7 @@ production API URL.
 |---|---|
 | `WHOP_API_KEY` | Server-only company API key for the selected environment |
 | `WHOP_WEBHOOK_SECRET` | Secret for the webhook in the same environment |
-| `WHOP_PLAN_ID_PRO` | Existing recurring plan ID in `plan_...` form |
+| `WHOP_PLAN_ID_PRO` | Existing recurring `plan_...` ID, or a matching-environment Whop checkout URL containing that ID |
 | `WHOP_ENVIRONMENT` | `sandbox` on preview, `production` on main |
 
 Webhook URL: `https://<environment-host>/api/v1/payments/whop-webhook`.
@@ -76,7 +76,7 @@ A normal merge or rebase would restore reverted monoliths and obsolete tooling.
 | Main work | Decision in the preview implementation |
 |---|---|
 | Initial checkout and webhook integration | Reimplemented with the current SDK, API envelope, request IDs, rate policy, durable inbox, and Inngest processing. |
-| Direct plan URLs | Rejected. A server-owned `plan_...` ID prevents client-controlled or cross-environment checkout destinations. |
+| Direct plan URLs | Normalized to their embedded `plan_...` ID only when the Whop host matches the configured environment; the application never redirects to the configured URL directly. |
 | Success redirect and welcome email | Preserved with provider-aware polling and idempotent Resend delivery after durable activation. |
 | Production acceptance of sandbox signatures | Rejected. Preview and production use separate credentials and webhook secrets. |
 | Email fallback identity matching | Rejected. Memberships map only through checkout metadata or an existing durable membership link. |

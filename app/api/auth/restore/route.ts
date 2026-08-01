@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { z } from "zod"
 
-import { ensureUserInDatabase } from "@/server/auth"
+import { ensureUserInDatabase } from '@/server/auth/user-provisioning'
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'

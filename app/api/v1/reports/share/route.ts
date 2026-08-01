@@ -9,7 +9,7 @@ import { calculateReportStatistics } from '@/lib/statistics/report-statistics'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
 import { reportApiHandlerError } from '@/lib/api/canonical-handler'
-import { getWebsiteURL } from '@/server/auth'
+import { getWebsiteURL } from '@/server/auth/client'
 import { and, eq, desc } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'

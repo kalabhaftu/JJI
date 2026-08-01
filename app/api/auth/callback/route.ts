@@ -1,5 +1,6 @@
 'use server'
-import { createClient, ensureUserInDatabase } from '@/server/auth'
+import { createClient } from '@/server/auth/client'
+import { ensureUserInDatabase } from '@/server/auth/user-provisioning'
 import { NextResponse } from 'next/server'
 import { logActivity } from '@/lib/activity-logger'
 import { captureUserGeo } from '@/server/geolocation'

@@ -52,6 +52,17 @@ for (const file of allFiles) {
 }
 
 const violations = []
+
+for (const file of await walk('app/api')) {
+  const source = await readFile(file, 'utf8')
+  if (/from\s+['"]@\/server\/auth['"]/.test(source)) {
+    violations.push(`${relative(process.cwd(), file)} -> @/server/auth (API routes must use direct auth modules)`)
+  }
+  if (/from\s+['"]@\/app\/actions\//.test(source)) {
+    violations.push(`${relative(process.cwd(), file)} -> Server Action module`)
+  }
+}
+
 for (const root of roots) {
   for (const file of await walk(root)) {
     const source = await readFile(file, 'utf8')

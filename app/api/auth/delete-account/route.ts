@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserIdSafe } from '@/server/auth'
+import { getUserIdSafe } from '@/server/auth/identity'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { deleteUserData } from '@/server/user-data-deletion'
 import { getSupabaseAdminClient } from '@/server/supabase-admin'

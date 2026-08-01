@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import yahooFinance from 'yahoo-finance2';
-import { getUserIdSafe } from '@/server/auth';
+import { getUserIdSafe } from '@/server/auth/identity';
 import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 
 export async function GET(request: NextRequest) {

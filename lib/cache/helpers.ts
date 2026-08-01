@@ -1,5 +1,6 @@
 import { redis } from './client'
 import logger from '../logger'
+import { getSafeErrorMessage } from '@/lib/observability/report-error'
 
 /**
  * Generic cache wrapper.
@@ -24,7 +25,7 @@ export async function withCache<T>(
       return cached
     }
   } catch (err) {
-    logger.warn({ key, err }, 'cache:read-failed - computing fresh')
+    logger.warn({ key, error: getSafeErrorMessage(err) }, 'cache:read-failed - computing fresh')
   }
 
   logger.debug({ key }, 'cache:miss')
@@ -33,7 +34,7 @@ export async function withCache<T>(
   try {
     await redis.set(key, result, { ex: ttl })
   } catch (err) {
-    logger.warn({ key, err }, 'cache:write-failed - result still returned')
+    logger.warn({ key, error: getSafeErrorMessage(err) }, 'cache:write-failed - result still returned')
   }
 
   return result
@@ -49,7 +50,7 @@ export async function invalidateCache(...keys: string[]): Promise<void> {
     await redis.del(...keys)
     logger.debug({ keys }, 'cache:invalidated')
   } catch (err) {
-    logger.warn({ keys, err }, 'cache:invalidation-failed')
+    logger.warn({ keys, error: getSafeErrorMessage(err) }, 'cache:invalidation-failed')
   }
 }
 
@@ -69,7 +70,7 @@ export async function getUserCacheVersion(userId: string): Promise<number> {
     await redis.set(verKey, 1)
     return 1
   } catch (err) {
-    logger.warn({ userId, err }, 'cache:get-user-version-failed - fallback to 1')
+    logger.warn({ userId, error: getSafeErrorMessage(err) }, 'cache:get-user-version-failed - fallback to 1')
     return 1
   }
 }
@@ -87,7 +88,7 @@ export async function bumpUserCacheVersion(userId: string): Promise<number> {
     logger.debug({ userId, newVer }, 'cache:user-version-bumped')
     return typeof newVer === 'number' ? newVer : 1
   } catch (err) {
-    logger.warn({ userId, err }, 'cache:bump-user-version-failed')
+    logger.warn({ userId, error: getSafeErrorMessage(err) }, 'cache:bump-user-version-failed')
     return 1
   }
 }

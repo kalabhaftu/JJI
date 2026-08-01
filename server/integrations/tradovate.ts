@@ -18,7 +18,7 @@ import {
 } from '@/app/dashboard/components/import/tradovate/sync/fee-types'
 import { logger as baseLogger } from '@/lib/logger';
 import { DIRECT_SYNC_STATUS, directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
-import { reportError } from '@/lib/observability/report-error'
+import { getSafeErrorMessage, reportError } from '@/lib/observability/report-error'
 
 
 function formatDateForAPI(date: Date): string {
@@ -59,8 +59,16 @@ const logger = {
   info: (message: string, data?: any) => {
     baseLogger.info(`[TRADOVATE] ${message}`, data)
   },
-  warn: (message: string, error?: any) => {
-    baseLogger.warn(`[TRADOVATE] ${message}`, error)
+  warn: (message: string, error?: unknown) => {
+    const providerStatus = error && typeof error === 'object' && 'status' in error
+      ? Number((error as { status?: unknown }).status)
+      : undefined
+    baseLogger.warn({
+      event: 'tradovate_provider_warning',
+      provider: 'tradovate',
+      ...(Number.isFinite(providerStatus) ? { providerStatus } : {}),
+      ...(error !== undefined ? { error: getSafeErrorMessage(error) } : {}),
+    }, `[TRADOVATE] ${message}`)
   },
   error: (message: string, error?: any) => {
     reportError(error instanceof Error ? error : new Error(message), {

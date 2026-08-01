@@ -12,6 +12,7 @@
 
 import { isRedisConfigured, redis } from './client'
 import logger from '../logger'
+import { getSafeErrorMessage } from '@/lib/observability/report-error'
 
 // Cache key prefixes for organization
 export const CachePrefix = {
@@ -45,7 +46,7 @@ export async function getFromCache<T>(key: string): Promise<T | null> {
     const data = await redis.get<T>(key)
     return data
   } catch (error) {
-    logger.warn({ error, key }, 'redis cache read failed')
+    logger.warn({ error: getSafeErrorMessage(error), key }, 'redis cache read failed')
     return null
   }
 }
@@ -66,7 +67,7 @@ export async function setInCache<T>(
     await redis.set(key, value, { ex: ttl })
     return true
   } catch (error) {
-    logger.warn({ error, key }, 'redis cache write failed')
+    logger.warn({ error: getSafeErrorMessage(error), key }, 'redis cache write failed')
     return false
   }
 }

@@ -5,7 +5,7 @@ import { Ratelimit } from '@upstash/ratelimit'
 import { isRedisConfigured, redis } from '@/lib/cache/client'
 import { getClientIp } from '@/lib/security/client-ip'
 import { ErrorResponses } from '@/lib/api-response'
-import { reportError } from '@/lib/observability/report-error'
+import { getSafeErrorMessage, reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
 // ─── Limiter config type ───
@@ -186,7 +186,15 @@ async function getRateLimitIdentifier(req: NextRequest): Promise<string> {
       return `rate-limit:user:${identity.internalUserId}`
     }
   } catch (error) {
-    logger.warn({ error }, 'Unable to resolve authenticated rate-limit identity; using IP fallback')
+    reportError(error, {
+      surface: 'api',
+      operation: 'resolve-rate-limit-identity',
+      extra: { fallbackUsed: true },
+    })
+    logger.warn(
+      { event: 'rate_limit_identity_fallback', error: getSafeErrorMessage(error) },
+      'Unable to resolve authenticated rate-limit identity; using IP fallback',
+    )
   }
 
   return `rate-limit:ip:${getClientIp(req.headers)}`

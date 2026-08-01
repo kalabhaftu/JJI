@@ -282,7 +282,7 @@ until its old implementation is gone.
 
 - [x] Replace the 857-line `server/auth.ts` with client, identity, provider, OTP, and user-provisioning modules.
 - [x] Replace the 824-line subscription service with access, payments, promotions, checks, and notification modules.
-- [ ] Split dashboard analytics by curve, strategy, time/calendar, risk, and behavioral calculations.
+- [x] Split dashboard analytics by curve, strategy, time/calendar, risk, and behavioral calculations.
 - [x] Reduce the journal AI API route to request/auth/query orchestration.
 - [x] Move journal-analysis prompt generation and rule fallback behind a server AI module.
 - [x] Extract the deterministic journal-analysis fallback from provider orchestration.

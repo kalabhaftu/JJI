@@ -19,6 +19,11 @@ const requiredPaths = [
   'server/trade-import-jobs/execution.ts',
   'server/trade-import-jobs/normalization.ts',
   'server/trade-import-jobs/types.ts',
+  'lib/dashboard/analytics/common.ts',
+  'lib/dashboard/analytics/curves.ts',
+  'lib/dashboard/analytics/overview.ts',
+  'lib/dashboard/analytics/strategy.ts',
+  'lib/dashboard/analytics/behavior.ts',
   'server/dashboard-templates-domain.ts',
   'server/weekly-review-domain.ts',
   'server/integrations/dxfeed.ts',
@@ -75,6 +80,11 @@ if (!/export function cn/.test(utils) || utils.split('\n').length > 20) {
 const tradeImportFacade = await readFile('server/trade-import-jobs.ts', 'utf8')
 if (tradeImportFacade.split('\n').length > 10) {
   failures.push('server/trade-import-jobs.ts must remain a compatibility export facade')
+}
+
+const analyticsFacade = await readFile('lib/dashboard/analytics-calculations.ts', 'utf8')
+if (analyticsFacade.split('\n').length > 10) {
+  failures.push('lib/dashboard/analytics-calculations.ts must remain an analytics export facade')
 }
 
 if (failures.length > 0) {

@@ -3,7 +3,8 @@ import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canon
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentity } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter, aiReviewLimiter, consumeRateLimitKey } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { aiReviewLimiter, consumeRateLimitKey } from '@/lib/rate-limiter'
 import { logger } from '@/lib/logger'
 import { cleanContent } from '@/lib/content/cleaning'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
@@ -29,7 +30,7 @@ const weeklyReviewResultSchema = z.object({
 }).strict()
 
 async function getWeeklyReviews(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -82,7 +83,7 @@ async function getWeeklyReviews(request: NextRequest) {
 }
 
 async function createWeeklyReview(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   const start = Date.now()

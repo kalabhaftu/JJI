@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 import { db } from '@/lib/db/client'
 import { format } from 'date-fns'
 import { USER_SETTINGS_SELECT, mergeUserSettings } from '@/lib/user-settings'
 
 export async function GET(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {

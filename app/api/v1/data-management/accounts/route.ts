@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db/client'
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import * as schema from '@/lib/db/schema'
 import { and, eq } from 'drizzle-orm'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
@@ -14,7 +14,7 @@ import { getClientIp } from '@/lib/security/client-ip'
 import { invalidateUserAccountCaches } from '@/server/accounts/cache'
 
 export async function GET(request: NextRequest) {
-  const rateLimitResponse = await applyRateLimit(request, apiLimiter)
+  const rateLimitResponse = await applyApiRoutePolicy(request)
   if (rateLimitResponse) return rateLimitResponse
 
   try {

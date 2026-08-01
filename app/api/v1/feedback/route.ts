@@ -2,7 +2,7 @@ import { logger } from '@/lib/logger';
 import { NextResponse, NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { applyRateLimit, feedbackLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { extractIP } from '@/server/geolocation'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
@@ -71,7 +71,7 @@ function sanitizeOriginalFileName(fileName: string) {
 
 export async function POST(req: NextRequest) {
   const requestId = resolveRequestId(req.headers)
-  const rl = await applyRateLimit(req, feedbackLimiter)
+  const rl = await applyApiRoutePolicy(req)
   if (rl) return rl
 
   try {

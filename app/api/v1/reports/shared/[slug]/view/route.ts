@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'
-import { applyRateLimit, publicLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { reportApiHandlerError } from '@/lib/api/canonical-handler'
 
@@ -13,7 +13,7 @@ interface Props {
 const sharedReportSlugPattern = /^[a-z0-9]{10}$/
 
 export async function POST(request: NextRequest, { params }: Props) {
-  const rateLimitResponse = await applyRateLimit(request, publicLimiter)
+  const rateLimitResponse = await applyApiRoutePolicy(request)
   if (rateLimitResponse) return rateLimitResponse
 
   const { slug } = await params

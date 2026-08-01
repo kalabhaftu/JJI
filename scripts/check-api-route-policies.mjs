@@ -12,7 +12,7 @@ async function walk(directory) {
   return files
 }
 
-const mutations = /export\s+async\s+function\s+(?:POST|PUT|PATCH|DELETE)\b/
+const mutations = /export\s+(?:(?:async\s+)?function|const)\s+(?:POST|PUT|PATCH|DELETE)\b/
 const classified = /applyApiRoutePolicy|applyRateLimit|consumeRateLimitKey|authenticateRequest/
 const violations = []
 
@@ -22,6 +22,9 @@ for (const file of await walk('app/api')) {
     || file.endsWith('app/api/v1/payments/webhook/route.ts')
   if (mutations.test(source) && !trustedProtocol && !classified.test(source)) {
     violations.push(relative(process.cwd(), file))
+  }
+  if (/applyRateLimit\s*\(/.test(source)) {
+    violations.push(`${relative(process.cwd(), file)} uses direct applyRateLimit instead of the route-policy registry`)
   }
 }
 

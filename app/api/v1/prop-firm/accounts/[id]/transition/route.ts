@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { z } from 'zod'
 import { advancePropFirmPhaseForUser } from '@/server/accounts/phase-progression'
 import { isDomainError } from '@/lib/domain-error'
@@ -22,7 +22,7 @@ const PhaseTransitionSchema = z.object({
  * based on the evaluation type.
  */
 async function transitionPropFirmAccount(request: NextRequest, { params }: RouteParams) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {

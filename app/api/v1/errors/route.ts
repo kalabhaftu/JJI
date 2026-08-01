@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { applyRateLimit, errorReportLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { extractIP } from '@/server/geolocation'
 import { shouldIgnoreError } from '@/lib/observability/error-policy'
@@ -41,7 +41,7 @@ function sanitizeMetadata(value: unknown, depth = 0): unknown {
 }
 
 export async function POST(req: NextRequest) {
-  const rl = await applyRateLimit(req, errorReportLimiter)
+  const rl = await applyApiRoutePolicy(req, 'error-report')
   if (rl) return rl
 
   try {

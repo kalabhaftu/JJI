@@ -3,7 +3,7 @@ import { streamObject } from "ai";
 import { NextRequest } from "next/server";
 import { NextResponse } from 'next/server'
 import { mappingSchema } from "./schema";
-import { applyRateLimit, aiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
 import { z } from 'zod'
@@ -44,7 +44,7 @@ const mappingRequestSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const requestId = resolveRequestId(req.headers)
-  const rateLimitRes = await applyRateLimit(req, aiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(req)
   if (rateLimitRes) return rateLimitRes
 
   try {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq, and } from 'drizzle-orm'
@@ -9,7 +9,7 @@ import { deletePublicStorageUrls } from '@/server/storage-admin'
 
 // GET - Fetch all backtests for user
 async function getBacktests(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -41,7 +41,7 @@ async function getBacktests(request: NextRequest) {
 
 // POST - Create new backtest
 async function createBacktest(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -127,7 +127,7 @@ async function createBacktest(request: NextRequest) {
 
 // PUT - Update backtest
 async function updateBacktest(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -193,7 +193,7 @@ async function updateBacktest(request: NextRequest) {
 
 // DELETE - Delete backtest
 async function deleteBacktest(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {

@@ -11,7 +11,8 @@ import { createHash } from 'crypto'
 import { getOrSetCached } from '@/lib/cache/unified-cache'
 import { CachePrefix, CacheTTL } from '@/lib/cache/redis-cache'
 import { hasCurrentAiDataConsent } from '@/lib/services/ai-consent'
-import { applyRateLimit, aiLimiter, consumeRateLimitKey } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
+import { aiLimiter, consumeRateLimitKey } from '@/lib/rate-limiter'
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { reportError } from '@/lib/observability/report-error'
@@ -364,7 +365,7 @@ export async function POST(
   }
   const userId = identity.internalUserId
 
-  const rateLimitResponse = await applyRateLimit(request, aiLimiter)
+  const rateLimitResponse = await applyApiRoutePolicy(request)
   if (rateLimitResponse) return rateLimitResponse
 
   const { chatId } = await params

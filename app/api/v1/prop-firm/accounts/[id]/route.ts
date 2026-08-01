@@ -6,7 +6,7 @@ import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
@@ -73,7 +73,7 @@ function getLatestTradeTimestamp(trades: any[]) {
 }
 
 async function getPropFirmAccount(request: NextRequest, { params }: RouteParams) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -550,7 +550,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
 }
 
 async function updatePropFirmAccount(request: NextRequest, { params }: RouteParams) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -614,7 +614,7 @@ async function updatePropFirmAccount(request: NextRequest, { params }: RoutePara
 }
 
 async function deletePropFirmAccount(request: NextRequest, { params }: RouteParams) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {

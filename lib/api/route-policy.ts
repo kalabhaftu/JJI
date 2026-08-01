@@ -6,6 +6,7 @@ import {
   applyRateLimit,
   authenticatedReadLimiter,
   authLimiter,
+  errorReportLimiter,
   feedbackLimiter,
   importLimiter,
   paymentLimiter,
@@ -26,6 +27,7 @@ export type ApiRoutePolicy =
   | 'payment'
   | 'upload'
   | 'feedback'
+  | 'error-report'
   | 'admin'
 
 const TRUSTED_PREFIXES = [
@@ -44,6 +46,11 @@ const PUBLIC_READ_PREFIXES = [
   '/api/v1/reports/shared/',
   '/api/v1/prop-firm-templates',
 ] as const
+
+const SENSITIVE_READ_PATHS = new Set([
+  '/api/v1/data/export',
+  '/api/v1/user/data/backup',
+])
 
 function startsWithAny(pathname: string, prefixes: readonly string[]): boolean {
   return prefixes.some((prefix) => pathname.startsWith(prefix))
@@ -72,7 +79,9 @@ export function classifyApiRoute(
   }
   if (pathname.startsWith('/api/v1/payments/')) return 'payment'
   if (pathname === '/api/v1/feedback') return 'feedback'
+  if (pathname === '/api/v1/errors') return 'error-report'
   if (pathname.includes('/upload')) return 'upload'
+  if (SENSITIVE_READ_PATHS.has(pathname)) return 'sensitive'
   if (
     normalizedMethod === 'GET'
     || normalizedMethod === 'HEAD'
@@ -101,6 +110,8 @@ function limiterForPolicy(policy: ApiRoutePolicy): LimiterConfig | null {
       return uploadLimiter
     case 'feedback':
       return feedbackLimiter
+    case 'error-report':
+      return errorReportLimiter
     case 'admin':
       return adminLimiter
     case 'public-read':

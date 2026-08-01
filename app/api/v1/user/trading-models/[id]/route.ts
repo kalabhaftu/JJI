@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { logger } from '@/lib/logger'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
@@ -36,7 +36,7 @@ async function updateTradingModel(
   request: NextRequest,
   context: TradingModelRouteContext
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {
@@ -109,7 +109,7 @@ async function deleteTradingModel(
   request: NextRequest,
   context: TradingModelRouteContext
 ) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {

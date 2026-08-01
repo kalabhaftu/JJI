@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { reportApiHandlerError, withCanonicalApiResponse } from '@/lib/api/canonical-handler'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { z } from 'zod'
 import { validatePhaseId } from '@/lib/validation/phase-id-validator'
 import { db } from '@/lib/db/client'
@@ -39,7 +39,7 @@ const CreateMasterAccountSchema = z.object({
 })
 
 async function createPropFirmAccount(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
   const requestId = resolveRequestId(request.headers)
 
@@ -151,7 +151,7 @@ async function createPropFirmAccount(request: NextRequest) {
 }
 
 async function listPropFirmAccounts(request: NextRequest) {
-  const rateLimitRes = await applyRateLimit(request, apiLimiter)
+  const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
 
   try {

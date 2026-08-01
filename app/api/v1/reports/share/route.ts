@@ -4,7 +4,7 @@ import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentity } from '@/server/user-identity'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
-import { applyRateLimit, apiLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { calculateReportStatistics } from '@/lib/statistics/report-statistics'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
@@ -58,7 +58,7 @@ function normalizeRuleBroken(value: z.infer<typeof shareReportSchema>['ruleBroke
 }
 
 export async function POST(req: NextRequest) {
-  const rl = await applyRateLimit(req, apiLimiter)
+  const rl = await applyApiRoutePolicy(req)
   if (rl) return rl
 
   try {
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
-  const rl = await applyRateLimit(req, apiLimiter)
+  const rl = await applyApiRoutePolicy(req)
   if (rl) return rl
 
   try {
@@ -174,7 +174,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const rl = await applyRateLimit(req, apiLimiter)
+  const rl = await applyApiRoutePolicy(req)
   if (rl) return rl
 
   try {

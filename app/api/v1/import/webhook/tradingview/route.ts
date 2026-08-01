@@ -3,7 +3,7 @@ import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { nanoid } from 'nanoid'
 import { z } from 'zod'
-import { applyRateLimit, webhookLimiter } from '@/lib/rate-limiter'
+import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { logger } from '@/lib/logger'
 import { reportError } from '@/lib/observability/report-error'
@@ -59,7 +59,7 @@ function parseWebhookDate(value: string | undefined) {
 
 export async function POST(req: NextRequest) {
   const requestId = resolveRequestId(req.headers)
-  const rl = await applyRateLimit(req, webhookLimiter)
+  const rl = await applyApiRoutePolicy(req)
   if (rl) return rl
 
   try {

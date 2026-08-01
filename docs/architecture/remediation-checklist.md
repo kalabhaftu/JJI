@@ -289,7 +289,7 @@ until its old implementation is gone.
 - [x] Split the remaining journal AI server module into preparation, prompt, and provider modules.
 - [x] Split settings profile/plan, preferences, integrations, and destructive-account UI into focused components.
 - [x] Extract the settings help/tour section into a focused component.
-- [ ] Split the weekly modal data access, document serialization, metrics, charts, and journal UI.
+- [x] Split the weekly modal data access, document serialization, metrics, charts, and journal UI.
 - [x] Extract weekly-review API access and Lexical document serialization from the modal.
 - [x] Move tour definitions, persistence, event handling, and CSV download out of the tour context.
 - [x] Move all static tour definitions and public tour types out of the context.
@@ -297,4 +297,4 @@ until its old implementation is gone.
 - [x] Extract the Rithmic credential contract and rate-limit response parser.
 - [x] Split trade-import lifecycle, normalization, serialization, and chunk execution behind a two-line compatibility facade.
 - [x] Finish reducing the archive-import facade without duplicate lifecycle paths.
-- [ ] Add a source guard preventing these compatibility entrypoints from regrowing.
+- [x] Add a source guard preventing these compatibility entrypoints from regrowing.

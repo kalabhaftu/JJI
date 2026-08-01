@@ -39,6 +39,11 @@ const requiredPaths = [
   'app/dashboard/settings/components/settings-dialogs.tsx',
   'app/dashboard/settings/components/settings-preferences-section.tsx',
   'app/dashboard/settings/components/settings-profile-section.tsx',
+  'app/dashboard/components/calendar/use-weekly-modal-metrics.ts',
+  'app/dashboard/components/calendar/weekly-analysis-tab.tsx',
+  'app/dashboard/components/calendar/weekly-calendar-tab.tsx',
+  'app/dashboard/components/calendar/weekly-notes-tab.tsx',
+  'app/dashboard/components/calendar/weekly-overview-tab.tsx',
   'server/dashboard-templates-domain.ts',
   'server/weekly-review-domain.ts',
   'server/integrations/dxfeed.ts',
@@ -92,6 +97,16 @@ if (!/export function cn/.test(utils) || utils.split('\n').length > 20) {
   failures.push('lib/utils.ts must remain the focused class-name helper')
 }
 
+const authFacade = await readFile('server/auth.ts', 'utf8')
+if (authFacade.split('\n').length > 30) {
+  failures.push('server/auth.ts must remain a compatibility export facade')
+}
+
+const subscriptionFacade = await readFile('lib/services/subscription-service.ts', 'utf8')
+if (subscriptionFacade.split('\n').length > 30) {
+  failures.push('lib/services/subscription-service.ts must remain a compatibility export facade')
+}
+
 const tradeImportFacade = await readFile('server/trade-import-jobs.ts', 'utf8')
 if (tradeImportFacade.split('\n').length > 10) {
   failures.push('server/trade-import-jobs.ts must remain a compatibility export facade')
@@ -125,6 +140,11 @@ if (rithmicContext.split('\n').length > 350) {
 const settingsPage = await readFile('app/dashboard/settings/page.tsx', 'utf8')
 if (settingsPage.split('\n').length > 750) {
   failures.push('app/dashboard/settings/page.tsx must remain focused on settings data orchestration')
+}
+
+const weeklyModal = await readFile('app/dashboard/components/calendar/weekly-modal.tsx', 'utf8')
+if (weeklyModal.split('\n').length > 550) {
+  failures.push('weekly-modal.tsx must remain focused on review lifecycle orchestration')
 }
 
 if (failures.length > 0) {

@@ -1,8 +1,19 @@
 import { apiRequest } from '@/lib/api/client'
 import type { CalendarData } from '@/app/dashboard/types/calendar'
 
+export type WeeklyReviewData = {
+  id?: string
+  startDate?: string | Date
+  endDate?: string | Date
+  calendarImage?: string | null
+  expectation?: WeeklyExpectation | null
+  actualOutcome?: WeeklyExpectation | null
+  isCorrect?: boolean | null
+  notes?: string | null
+}
+
 export async function getWeeklyReview(startDate: Date) {
-  const response = await apiRequest<any>(
+  const response = await apiRequest<WeeklyReviewData | null>(
     `/api/v1/weekly-journal?startDate=${encodeURIComponent(startDate.toISOString())}`,
   )
   return response.data
@@ -10,7 +21,7 @@ export async function getWeeklyReview(startDate: Date) {
 
 export async function saveWeeklyReview(data: Record<string, unknown>) {
   try {
-    const response = await apiRequest<any>('/api/v1/weekly-journal', {
+    const response = await apiRequest<WeeklyReviewData>('/api/v1/weekly-journal', {
       method: 'PUT',
       body: JSON.stringify(data),
     })

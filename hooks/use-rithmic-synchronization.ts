@@ -7,7 +7,7 @@ import logger from '@/lib/logger'
 import { reportError } from '@/lib/observability/report-error'
 import { getRithmicData, updateLastSyncTime } from '@/lib/rithmic-storage'
 import { parseRithmicRateLimitMessage, type RithmicCredentials } from '@/lib/rithmic/sync-contract'
-import { getUserId } from '@/server/auth/identity'
+import { useUserStore } from '@/store/user-store'
 
 interface RithmicSynchronizationInput {
   disabled: boolean
@@ -24,6 +24,7 @@ interface RithmicSynchronizationInput {
 }
 
 export function useRithmicSynchronization(input: RithmicSynchronizationInput) {
+  const authUserId = useUserStore((state) => state.supabaseUser?.id)
   const {
     disabled,
     isLoading,
@@ -69,8 +70,7 @@ const performSyncForCredential = useCallback(
     resetProcessingState();
     clearMessageHistory();
 
-    const userId = await getUserId();
-    if (!userId || isAutoSyncing) return;
+    if (!authUserId || isAutoSyncing) return;
 
     const savedData = getRithmicData(credentialId);
 
@@ -90,7 +90,7 @@ const performSyncForCredential = useCallback(
 
             body: JSON.stringify({
               ...savedData.credentials,
-              userId: userId,
+              userId: authUserId,
             }),
           }
         ),
@@ -227,6 +227,7 @@ const performSyncForCredential = useCallback(
     setAvailableAccounts,
     setIsAutoSyncing,
     trades,
+    authUserId,
   ]
 );
 

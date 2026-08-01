@@ -18,7 +18,7 @@ export function getDailyAggregations(
     if (!trade.entryDate) return
     const dateStr = trade.entryDate.toString().split('T')[0]
     if (!dateStr) return
-    
+
     if (!dailyMap[dateStr]) {
       dailyMap[dateStr] = { pnl: 0, wins: 0, losses: 0, shortNumber: 0, longNumber: 0 }
     }

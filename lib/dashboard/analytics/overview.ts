@@ -23,7 +23,7 @@ export function calculateDayOfWeekPerformance(
     const dayOfWeek = getDay(new Date(trade.entryDate))
     const netPnl = getTradeNetPnl(trade)
     const dayData = dayMap[dayOfWeek]!
-    
+
     dayData.totalPnl += netPnl
     dayData.total++
     if (isWinningTrade(netPnl, breakEvenThreshold)) {
@@ -88,7 +88,7 @@ export function calculatePerformanceScoreResult(
 
   const metrics = calculateMetricsFromTrades(trades as any, breakEvenThreshold)
   if (!metrics) return { hasData: false }
-  
+
   const scoreResult = calculatePerformanceScore(metrics)
   const radarData = [
     { metric: 'Win %', value: scoreResult.breakdown.tradeWinPercentageScore, fullMark: 100, rawValue: scoreResult.metrics.tradeWinPercentage, weight: 15, description: 'Percentage of winning trades', target: '60%+' },
@@ -136,15 +136,15 @@ export function calculateTradingOverviewKpis(
   const monthLosses = monthTrades.filter(t => isLosingTrade(getTradeNetPnl(t), breakEvenThreshold)).length
   const weekPnL = weekTrades.reduce((sum, t) => sum + getTradeNetPnl(t), 0)
 
-  const currentStats = { 
-    monthTrades: monthTrades.length, 
+  const currentStats = {
+    monthTrades: monthTrades.length,
     monthWinRate: calculateWinRate(monthWins, monthLosses),
-    weekPnL 
+    weekPnL
   }
 
   const sortedByTime = [...trades].sort((a, b) => (new Date(a.entryDate || 0).getTime()) - (new Date(b.entryDate || 0).getTime()))
   const pnls = sortedByTime.map(t => getTradeNetPnl(t))
-  
+
   const { maxDrawdown } = calculatePeakToTroughDrawdown(pnls)
 
   const losses = trades.filter(t => isLosingTrade(getTradeNetPnl(t), breakEvenThreshold))
@@ -197,10 +197,10 @@ export function calculateCalendarData(
   trades: Partial<TradeType>[],
   breakEvenThreshold: number = DEFAULT_BREAK_EVEN_THRESHOLD
 ) {
-  const data: Record<string, { 
-    pnl: number; 
-    tradeNumber: number; 
-    longNumber: number; 
+  const data: Record<string, {
+    pnl: number;
+    tradeNumber: number;
+    longNumber: number;
     shortNumber: number;
     dailyRMultiple: number;
     isProfit: boolean;
@@ -213,10 +213,10 @@ export function calculateCalendarData(
 
     const key = format(new Date(trade.entryDate), 'yyyy-MM-dd')
     if (!data[key]) {
-      data[key] = { 
-        pnl: 0, 
-        tradeNumber: 0, 
-        longNumber: 0, 
+      data[key] = {
+        pnl: 0,
+        tradeNumber: 0,
+        longNumber: 0,
         shortNumber: 0,
         dailyRMultiple: 0,
         isProfit: false,
@@ -236,7 +236,7 @@ export function calculateCalendarData(
     const isLong = side === 'long' || side === 'buy' || side === 'b'
     if (isLong) data[key].longNumber++
     else data[key].shortNumber++
-    
+
     data[key].isProfit = isWinningTrade(data[key].pnl, breakEvenThreshold)
     data[key].isLoss = isLosingTrade(data[key].pnl, breakEvenThreshold)
     data[key].isBreakEven = !data[key].isProfit && !data[key].isLoss

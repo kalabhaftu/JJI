@@ -350,7 +350,7 @@ export function prepareJournalAnalysis(
   function analyzeConsecutiveLosses(tradesList: typeof trades): { maxStreak: number, avgAfterStreak: number | null, tradesAfterStreak: number } {
     let maxStreak = 0, currentStreak = 0
     let afterStreakSum = 0, afterStreakCount = 0
-    
+
     for (let i = 0; i < tradesList.length; i++) {
       const netPnL = getNetPnl(tradesList[i])
       if (getOutcome(tradesList[i]) === 'loss') {
@@ -374,7 +374,7 @@ export function prepareJournalAnalysis(
       if (!tradesByDate[dateKey]) tradesByDate[dateKey] = []
       tradesByDate[dateKey]!.push(t)
     })
-    
+
     let sum = 0, count = 0, wins = 0
     Object.values(tradesByDate).forEach(dayTrades => {
       if (dayTrades.length > 0) {
@@ -396,11 +396,11 @@ export function prepareJournalAnalysis(
       tradesByDate[dateKey]!.count++
       tradesByDate[dateKey]!.pnl += getNetPnl(t)
     })
-    
+
     const tradingDays = Object.keys(tradesByDate).length
     const highVolumeDays = Object.entries(tradesByDate).filter(([_, d]) => d.count > 5)
     const lowVolumeDays = Object.entries(tradesByDate).filter(([_, d]) => d.count <= 3)
-    
+
     return {
       avgTradesPerDay: tradingDays > 0 ? tradesList.length / tradingDays : 0,
       daysOver5Trades: highVolumeDays.length,
@@ -411,15 +411,15 @@ export function prepareJournalAnalysis(
 
   function analyzeRiskMetrics(tradesList: typeof trades): { largestWin: number, largestLoss: number, avgRRR: number | null, tradesWithLargerLossThanAvg: number } {
     if (tradesList.length === 0) return { largestWin: 0, largestLoss: 0, avgRRR: null, tradesWithLargerLossThanAvg: 0 }
-    
+
     const netPnLs = tradesList.map(t => getNetPnl(t))
     const largestWin = Math.max(...netPnLs, 0)
     const largestLoss = Math.min(...netPnLs, 0)
     const avgLossValue = avgLoss > 0 ? avgLoss : 1
-    
+
     const lossTrades = tradesList.filter(t => getOutcome(t) === 'loss')
     const tradesWithLargerLossThanAvg = lossTrades.filter(t => Math.abs(getNetPnl(t)) > avgLossValue).length
-    
+
     return {
       largestWin,
       largestLoss,
@@ -432,7 +432,7 @@ export function prepareJournalAnalysis(
     let maxWinStreak = 0, maxLossStreak = 0
     let currentWinStreak = 0, currentLossStreak = 0
     let lastType = ''
-    
+
     tradesList.forEach(t => {
       const outcome = getOutcome(t)
       if (outcome === 'win') {
@@ -447,7 +447,7 @@ export function prepareJournalAnalysis(
         lastType = 'loss'
       }
     })
-    
+
     return {
       maxWinStreak,
       maxLossStreak,

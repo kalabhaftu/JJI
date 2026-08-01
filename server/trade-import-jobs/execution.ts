@@ -151,21 +151,21 @@ export async function processTradeImportJobChunk(
     const chunk = payload.trades.slice(state.index, endIndex)
 
     state.rowErrors = state.rowErrors || []
-    
+
     const preparedRows: any[] = []
     for (let i = 0; i < chunk.length; i++) {
       const rawTrade = chunk[i]
       const rowIndex = state.index + i + 1
-      
+
       if (!rawTrade || typeof rawTrade !== 'object') {
         state.rowErrors.push({ row: rowIndex, message: 'Invalid trade data format' })
         continue
       }
-      
+
       const trade = Object.fromEntries(
         Object.entries(rawTrade).filter(([, value]) => value !== undefined)
       ) as any
-      
+
       if (!trade.instrument) {
         state.rowErrors.push({ row: rowIndex, message: 'Missing instrument/symbol' })
         continue
@@ -182,7 +182,7 @@ export async function processTradeImportJobChunk(
         state.rowErrors.push({ row: rowIndex, message: 'Invalid quantity' })
         continue
       }
-      
+
       const normalized = normalizeTrade(rawTrade, internalUserId, state.accountNumber || '')
       if (normalized) {
         preparedRows.push({

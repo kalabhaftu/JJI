@@ -118,11 +118,11 @@ OUTPUT REQUIREMENTS:
   3. discipline/behavior mistakes
   4. review-process gaps
 - End recommendations with a blunt "Stop / Keep / Test" mini-playbook.
-    
+
     THE DATA (Study this carefully):
-    
+
     **Time Period**: ${journals.length > 0 ? `${new Date(journals[0].date).toLocaleDateString()} to ${new Date(journals[journals.length - 1].date).toLocaleDateString()}` : 'No data'}
-    
+
     **FUNDED ACCOUNT STATUS (CRITICAL - Failures mean real money lost)**:
     ${accountStatusSummary}
     ${propFirmAccounts.filter(acc => acc.status === 'failed').length > 0 ?
@@ -321,22 +321,22 @@ OUTPUT REQUIREMENTS:
     ==========================================================
 
     ADDITIONAL ANALYSIS DIRECTIVES:
-    
+
     6. CONSISTENCY CHECK:
        - Are they making money consistently or having one big win that masks many losses?
        - Is their edge real (repeatable) or lucky (one-off)?
        - Would removing the best trade make them unprofitable? If so, their edge is fragile.
-    
+
     7. TRADE DURATION PATTERNS:
        - Are winning trades held long enough? Or are they cutting winners short out of fear?
        - Are losing trades cut quickly? Or are they hoping for a reversal (holding losers too long)?
        - Compare avg duration of wins vs losses. If losses are held longer, that's a huge red flag.
-    
+
     8. POSITION SIZING PATTERNS:
        - Look at largest wins vs largest losses. Asymmetry = ticking time bomb.
        - Are they sizing up after wins? (overconfidence trap)
        - Are they sizing up after losses? (martingale/tilt behavior, the fastest way to blow an account)
-    
+
     9. DRAWDOWN AWARENESS:
        - If total P&L went from high to low within the period, calculate the peak-to-trough drawdown.
        - How quickly (or slowly) did they recover from their worst losing stretch?
@@ -387,6 +387,6 @@ OUTPUT REQUIREMENTS:
     * If they have failed accounts, do not coddle them. Analyze what went wrong and what pattern they need to break.
     * Every single claim MUST reference a specific number from the data. No vague statements.
     * If data is insufficient for a section, say so honestly rather than making things up.
-    
+
     Analyze now. Be the coach they need, not the friend they want.`
 }

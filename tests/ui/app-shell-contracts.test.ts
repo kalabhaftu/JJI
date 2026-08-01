@@ -71,4 +71,43 @@ describe('app shell navigation contracts', () => {
     expect(getActiveMobileNavId('/demo/reports', true)).toBe('reports')
     expect(getActiveMobileNavId('/login', false)).toBeNull()
   })
+
+  it('keeps dashboard navbar actions on the shared compact nav button contract', () => {
+    expect(source('components/ui/button.tsx')).toContain('navIcon: "h-8 w-8 rounded-lg"')
+    expect(source('components/ui/button.tsx')).toContain('nav: "text-muted-foreground hover:bg-muted/40 hover:text-foreground"')
+
+    for (const path of [
+      'app/dashboard/components/import/import-button.tsx',
+      'app/dashboard/components/navbar-display-mode.tsx',
+      'app/dashboard/components/navbar-filters/combined-filters.tsx',
+      'app/dashboard/components/template-selector.tsx',
+      'components/notifications/notification-center.tsx',
+      'components/theme-switcher.tsx',
+    ]) {
+      const contents = source(path)
+      expect(contents, path).toContain('variant="nav"')
+      expect(contents, path).toContain('size="navIcon"')
+    }
+
+    const importTrigger = source('app/dashboard/components/import/import-button.tsx')
+      .slice(
+        source('app/dashboard/components/import/import-button.tsx').indexOf('data-tour="import-nav-btn"') - 250,
+        source('app/dashboard/components/import/import-button.tsx').indexOf('data-tour="import-nav-btn"') + 250,
+      )
+    expect(importTrigger).not.toContain('variant="outline"')
+    expect(importTrigger).not.toContain('whileHover')
+    expect(importTrigger).not.toContain('Import Trades</span>')
+  })
+
+  it('closes collapsed sidebar tooltips instead of keeping hidden tooltip content mounted', () => {
+    const sidebar = source('components/ui/sidebar.tsx')
+    const menuButton = sidebar.slice(sidebar.indexOf('const SidebarMenuButton'))
+
+    expect(menuButton).toContain('open={tooltipOpen}')
+    expect(menuButton).toContain('onOpenChange={setTooltipOpen}')
+    expect(menuButton).toContain('onPointerLeave={(event) =>')
+    expect(menuButton).toContain('onBlur={(event) =>')
+    expect(menuButton).toContain('onClick={(event) =>')
+    expect(menuButton).not.toContain('hidden={state !== "collapsed" || isMobile}')
+  })
 })

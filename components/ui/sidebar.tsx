@@ -292,18 +292,18 @@ const SidebarTrigger = React.forwardRef<
     <Button
       ref={ref}
       data-sidebar="trigger"
-      variant="ghost"
-      size="icon"
+      variant="nav"
+      size="navIcon"
       aria-label="Toggle sidebar"
       title="Toggle sidebar"
-      className={cn("h-7 w-7", className)}
+      className={cn(className)}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()
       }}
       {...props}
     >
-      <PanelLeft />
+      <PanelLeft aria-hidden />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )
@@ -576,12 +576,22 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
+      onBlur,
+      onClick,
+      onPointerLeave,
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
+    const [tooltipOpen, setTooltipOpen] = React.useState(false)
+
+    React.useEffect(() => {
+      if (state !== "collapsed" || isMobile) {
+        setTooltipOpen(false)
+      }
+    }, [isMobile, state])
 
     const button = (
       <Comp
@@ -590,6 +600,18 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
+        onBlur={(event) => {
+          onBlur?.(event)
+          setTooltipOpen(false)
+        }}
+        onClick={(event) => {
+          onClick?.(event)
+          setTooltipOpen(false)
+        }}
+        onPointerLeave={(event) => {
+          onPointerLeave?.(event)
+          setTooltipOpen(false)
+        }}
         {...props}
       />
     )
@@ -604,13 +626,16 @@ const SidebarMenuButton = React.forwardRef<
       }
     }
 
+    if (state !== "collapsed" || isMobile) {
+      return button
+    }
+
     return (
-      <Tooltip>
+      <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
         <TooltipContent
           side="right"
           align="center"
-          hidden={state !== "collapsed" || isMobile}
           {...tooltip}
         />
       </Tooltip>

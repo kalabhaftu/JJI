@@ -208,14 +208,7 @@ export default function SettingsPage() {
       }
     }
 
-    const handleWindowFocus = () => {
-      fetchSubscription()
-    }
-
     fetchSubscription()
-    window.addEventListener('focus', handleWindowFocus)
-
-    return () => window.removeEventListener('focus', handleWindowFocus)
   }, [])
 
   const regenerateWebhookToken = async () => {

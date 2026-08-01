@@ -1,16 +1,11 @@
-const STATIC_CACHE = 'jji-static-v1.5.0'
-const IMAGE_CACHE = 'jji-images-v1.5.0'
+const STATIC_CACHE = 'jji-static-v1.6.0'
+const PAGE_CACHE = 'jji-pages-v1.6.0'
+const DATA_CACHE = 'jji-data-v1.6.0'
+const IMAGE_CACHE = 'jji-images-v1.6.0'
 let currentUserId = null
 
-const STATIC_FILES = ['/', '/offline.html']
-
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    Promise.all([
-      caches.open(STATIC_CACHE).then((cache) => cache.addAll(STATIC_FILES)),
-      self.skipWaiting(),
-    ]),
-  )
+  event.waitUntil(self.skipWaiting())
 })
 
 self.addEventListener('activate', (event) => {
@@ -18,7 +13,7 @@ self.addEventListener('activate', (event) => {
     Promise.all([
       caches.keys().then((cacheNames) => Promise.all(
         cacheNames
-          .filter((cacheName) => ![STATIC_CACHE, IMAGE_CACHE].includes(cacheName))
+          .filter((cacheName) => ![STATIC_CACHE, PAGE_CACHE, DATA_CACHE, IMAGE_CACHE].includes(cacheName))
           .map((cacheName) => caches.delete(cacheName)),
       )),
       self.clients.claim(),
@@ -33,15 +28,17 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || url.protocol === 'chrome-extension:') return
 
   if (isAPIRequest(url)) {
-    event.respondWith(handleAPIRequest(request))
+    event.respondWith(handleAPIRequest(request, url))
   } else if (isPrivateMediaRequest(url)) {
     event.respondWith(fetch(request))
   } else if (isStaticFile(url)) {
     event.respondWith(handleStaticRequest(request))
   } else if (isImageRequest(url)) {
     event.respondWith(handleImageRequest(request))
-  } else {
+  } else if (request.mode === 'navigate') {
     event.respondWith(handlePageRequest(request))
+  } else {
+    event.respondWith(fetch(request))
   }
 })
 
@@ -59,15 +56,30 @@ async function handleStaticRequest(request) {
   }
 }
 
-async function handleAPIRequest(request) {
-  try {
-    return await fetch(request)
-  } catch {
-    return new Response(
-      JSON.stringify({ error: 'Offline', message: 'JJI needs an internet connection to sync live data.' }),
-      { status: 503, headers: { 'Content-Type': 'application/json' } },
-    )
+async function handleAPIRequest(request, url) {
+  if (!isCacheableAPIRequest(url)) {
+    try {
+      return await fetch(request)
+    } catch {
+      return offlineAPIResponse()
+    }
   }
+
+  const cache = await caches.open(DATA_CACHE)
+  try {
+    const response = await fetch(request)
+    if (response.ok) await cache.put(request, response.clone())
+    return response
+  } catch {
+    return (await cache.match(request)) || offlineAPIResponse()
+  }
+}
+
+function offlineAPIResponse() {
+  return new Response(
+    JSON.stringify({ error: 'Offline', message: 'Live data will refresh when the connection returns.' }),
+    { status: 503, headers: { 'Content-Type': 'application/json' } },
+  )
 }
 
 async function handleImageRequest(request) {
@@ -87,19 +99,16 @@ async function handleImageRequest(request) {
   }
 }
 
-// Authenticated documents are network-only. Only the explicit offline page is cached.
 async function handlePageRequest(request) {
+  const cache = await caches.open(PAGE_CACHE)
   try {
-    return await fetch(request)
+    const response = await fetch(request)
+    if (response.ok && response.headers.get('content-type')?.includes('text/html')) {
+      await cache.put(request, response.clone())
+    }
+    return response
   } catch {
-    const cache = await caches.open(STATIC_CACHE)
-    const offlinePage = await cache.match('/offline.html')
-    if (offlinePage) return offlinePage
-
-    return new Response(
-      '<!DOCTYPE html><html><head><title>Offline - JJI</title><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body><main><h1>You\'re Offline</h1><p>JJI needs an internet connection to sync live data. Reconnect and try again.</p><button onclick="window.location.reload()">Retry</button></main></body></html>',
-      { headers: { 'Content-Type': 'text/html' } },
-    )
+    return (await cache.match(request)) || Response.error()
   }
 }
 
@@ -125,7 +134,7 @@ async function clearAllUserData() {
   const cacheNames = await caches.keys()
   await Promise.all(
     cacheNames
-      .filter((cacheName) => cacheName !== STATIC_CACHE)
+      .filter((cacheName) => [PAGE_CACHE, DATA_CACHE, IMAGE_CACHE].includes(cacheName))
       .map((cacheName) => caches.delete(cacheName)),
   )
 
@@ -144,6 +153,22 @@ function isStaticFile(url) {
 
 function isAPIRequest(url) {
   return url.pathname.startsWith('/api/')
+}
+
+function isCacheableAPIRequest(url) {
+  return [
+    '/api/v1/init',
+    '/api/v1/accounts',
+    '/api/v1/trades',
+    '/api/v1/reports/',
+    '/api/v1/tags',
+    '/api/v1/settings/account-filters',
+    '/api/v1/user/trading-models',
+    '/api/v1/goals',
+    '/api/v1/journal/',
+    '/api/v1/prop-firm/',
+    '/api/v1/live-accounts/',
+  ].some((prefix) => url.pathname === prefix || url.pathname.startsWith(prefix))
 }
 
 function isImageRequest(url) {

@@ -596,23 +596,20 @@ export default function ImportButton() {
         />
       )}
 
-      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-        <Button
-          onClick={() => {
-            setIsOpen(true)
-            emitTourEvent('import.opened')
-          }}
-          variant="outline"
-          className="justify-start text-left font-medium w-full transition-all duration-200 hover:bg-muted/50 border-border/50"
-          id="import-data"
-          data-tour="import-nav-btn"
-          onMouseEnter={() => { }}
-          onMouseLeave={() => { }}
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          <span className='hidden md:block'>Import Trades</span>
-        </Button>
-      </motion.div>
+      <Button
+        onClick={() => {
+          setIsOpen(true)
+          emitTourEvent('import.opened')
+        }}
+        variant="nav"
+        size="navIcon"
+        id="import-data"
+        data-tour="import-nav-btn"
+        title="Import trades"
+        aria-label="Import trades"
+      >
+        <Upload aria-hidden />
+      </Button>
 
       <Dialog
         open={isOpen}

@@ -38,16 +38,15 @@ export function DashboardDisplayModeSelector({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
+          variant="nav"
+          size="navIcon"
           className={cn(
-            'h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground',
             mobile && 'h-9 w-9'
           )}
           title={allModes[mode].label}
           aria-label={allModes[mode].label}
         >
-          <ActiveIcon className="h-4 w-4" />
+          <ActiveIcon aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-56">

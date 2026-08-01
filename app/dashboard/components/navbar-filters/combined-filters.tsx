@@ -574,14 +574,15 @@ export function CombinedFilters({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
-          size="sm"
-          className="h-8 px-3 hover:bg-muted/50 transition-all duration-200 border border-border/50 bg-card/50"
+          variant="nav"
+          size="navIcon"
+          className="relative"
+          title="Filters"
+          aria-label="Filters"
         >
-          <Filter className="mr-2 h-4 w-4" />
-          <span className="text-sm">Filters</span>
+          <Filter aria-hidden />
           {(instruments.length > 0 || (dateRange?.from && dateRange?.to)) && (
-            <Badge variant="secondary" className="ml-2 h-5 px-1.5 text-xs">
+            <Badge variant="secondary" className="absolute -right-1 -top-1 h-4 min-w-4 px-1 text-[10px] leading-none">
               {instruments.length > 0
                 ? instruments.length
                 : (dateRange?.from && dateRange?.to)
@@ -590,6 +591,7 @@ export function CombinedFilters({
               {(dateRange?.from && dateRange?.to) && instruments.length > 0 && '+'}
             </Badge>
           )}
+          <span className="sr-only">Filters</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent
@@ -605,4 +607,3 @@ export function CombinedFilters({
     </Popover>
   )
 }
-

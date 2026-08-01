@@ -177,11 +177,14 @@ export function TemplateSelector() {
     <>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-2 h-8 px-3 text-xs">
-            <LayoutGrid className="h-3.5 w-3.5" />
-            <span className="hidden sm:inline truncate max-w-[100px]">
-              {activeTemplate?.name || 'Templates'}
-            </span>
+          <Button
+            variant="nav"
+            size="navIcon"
+            title={activeTemplate?.name || 'Templates'}
+            aria-label={activeTemplate?.name ? `Template: ${activeTemplate.name}` : 'Templates'}
+          >
+            <LayoutGrid aria-hidden />
+            <span className="sr-only">{activeTemplate?.name || 'Templates'}</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">

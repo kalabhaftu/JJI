@@ -6,16 +6,21 @@ import { describe, expect, it } from 'vitest'
 const serviceWorker = readFileSync(resolve(process.cwd(), 'public/sw.js'), 'utf8')
 
 describe('service worker privacy boundary', () => {
-  it('does not put document responses into a shared runtime cache', () => {
+  it('keeps the app shell and last successful page available without an offline document', () => {
     const pageHandler = serviceWorker.match(/async function handlePageRequest[\s\S]*?\/\/ Message handling/)?.[0]
 
     expect(pageHandler).toBeTruthy()
-    expect(pageHandler).not.toContain('cache.put')
-    expect(pageHandler).toContain('return await fetch(request)')
+    expect(pageHandler).toContain("caches.open(PAGE_CACHE)")
+    expect(pageHandler).toContain('cache.put(request, response.clone())')
+    expect(pageHandler).toContain('cache.match(request)')
+    expect(serviceWorker).not.toContain('/offline.html')
+    expect(serviceWorker).toContain('Response.error()')
   })
 
   it('bypasses caching for Supabase media and clears offline data on session changes', () => {
     expect(serviceWorker).toContain('isPrivateMediaRequest(url)')
+    expect(serviceWorker).toContain('DATA_CACHE')
+    expect(serviceWorker).toContain('isCacheableAPIRequest(url)')
     expect(serviceWorker).toContain("indexedDB.deleteDatabase('JJIOffline')")
     expect(serviceWorker).toContain('event.waitUntil(clearAllUserData())')
   })

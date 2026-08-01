@@ -10,8 +10,8 @@ export function ThemeSwitcher() {
 
   return (
     <Button
-      variant="ghost"
-      size="icon"
+      variant="nav"
+      size="navIcon"
       onClick={() => {
         toggleTheme()
         emitTourEvent('theme.changed')
@@ -20,9 +20,9 @@ export function ThemeSwitcher() {
       data-tour="theme-switcher-btn"
     >
       {effectiveTheme === 'dark' ? (
-        <Moon className="h-4 w-4 text-muted-foreground" />
+        <Moon aria-hidden />
       ) : (
-        <Sun className="h-4 w-4 text-muted-foreground" />
+        <Sun aria-hidden />
       )}
     </Button>
   )

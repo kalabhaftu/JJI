@@ -179,16 +179,6 @@ export function NotificationCenter() {
   }, [isOpen, fetchNotifications])
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (!isOpenRef.current && realtimeStatus !== 'connected') {
-        refreshUnreadCount()
-      }
-    }, 180000)
-
-    return () => clearInterval(interval)
-  }, [refreshUnreadCount, realtimeStatus])
-
-  useEffect(() => {
     const handleNotificationsRefresh = () => {
       if (isOpenRef.current) {
         fetchNotifications()
@@ -397,11 +387,14 @@ export function NotificationCenter() {
     <>
       <Popover open={isOpen} onOpenChange={setIsOpen}>
         <PopoverTrigger asChild>
-          <button
-            className="relative inline-flex items-center justify-center rounded-full p-2 hover:bg-muted transition-colors"
+          <Button
+            type="button"
+            variant="nav"
+            size="navIcon"
+            className="relative"
             aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
           >
-            <Bell className="h-5 w-5" />
+            <Bell aria-hidden />
             {unreadCount > 0 && (
               <Badge
                 variant="default"
@@ -410,7 +403,7 @@ export function NotificationCenter() {
                 {unreadCount > 9 ? '9+' : unreadCount}
               </Badge>
             )}
-          </button>
+          </Button>
         </PopoverTrigger>
 
         <PopoverContent

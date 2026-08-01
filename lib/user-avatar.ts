@@ -6,7 +6,37 @@ function asRecord(value: unknown): UnknownRecord | null {
 
 function readString(record: UnknownRecord | null, key: string): string | undefined {
   const value = record?.[key]
-  return typeof value === 'string' && value.length > 0 ? value : undefined
+  if (typeof value !== 'string') return undefined
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}
+
+function readNestedString(record: UnknownRecord | null, path: string[]): string | undefined {
+  let current: unknown = record
+  for (const key of path) {
+    const currentRecord = asRecord(current)
+    if (!currentRecord) return undefined
+    current = currentRecord[key]
+  }
+
+  return typeof current === 'string' && current.trim().length > 0 ? current.trim() : undefined
+}
+
+function firstImageCandidate(record: UnknownRecord | null): string | undefined {
+  return (
+    readString(record, 'avatar_url') ??
+    readString(record, 'avatarUrl') ??
+    readString(record, 'picture') ??
+    readString(record, 'image') ??
+    readString(record, 'image_url') ??
+    readString(record, 'photo_url') ??
+    readString(record, 'photoURL') ??
+    readNestedString(record, ['data', 'avatar_url']) ??
+    readNestedString(record, ['data', 'picture']) ??
+    readNestedString(record, ['metadata', 'avatar_url']) ??
+    readNestedString(record, ['metadata', 'picture'])
+  )
 }
 
 export function getUserAvatarUrl(user: unknown): string | undefined {
@@ -15,14 +45,9 @@ export function getUserAvatarUrl(user: unknown): string | undefined {
   const appMetadata = asRecord(root?.app_metadata)
 
   const directCandidates = [
-    readString(root, 'avatar_url'),
-    readString(root, 'picture'),
-    readString(metadata, 'avatar_url'),
-    readString(metadata, 'picture'),
-    readString(metadata, 'photo_url'),
-    readString(metadata, 'photoURL'),
-    readString(appMetadata, 'avatar_url'),
-    readString(appMetadata, 'picture'),
+    firstImageCandidate(root),
+    firstImageCandidate(metadata),
+    firstImageCandidate(appMetadata),
   ]
 
   for (const candidate of directCandidates) {
@@ -33,11 +58,8 @@ export function getUserAvatarUrl(user: unknown): string | undefined {
   for (const identity of identities) {
     const identityRecord = asRecord(identity)
     const identityData = asRecord(identityRecord?.identity_data)
-    const candidate =
-      readString(identityData, 'avatar_url') ??
-      readString(identityData, 'picture') ??
-      readString(identityData, 'photo_url') ??
-      readString(identityData, 'photoURL')
+    const providerIdentityData = asRecord(identityRecord?.provider_identity_data)
+    const candidate = firstImageCandidate(identityData) ?? firstImageCandidate(providerIdentityData)
 
     if (candidate) return candidate
   }

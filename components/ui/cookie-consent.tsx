@@ -42,8 +42,8 @@ export function CookieConsent() {
             <p className="mt-1 text-sm leading-6 text-muted-foreground">Essential session and preference storage is always enabled. Optional telemetry sends only crash reports and sampled performance diagnostics. No ads, session replay, or behavioral tracking.</p>
           </div>
         </div>
-        <div className="mt-4 flex items-center justify-end gap-2">
-          <Button variant="ghost" asChild><Link href="/cookies">Read policy</Link></Button>
+        <div className="mt-4 flex flex-wrap items-center justify-start gap-2 sm:justify-end">
+          <Button variant="ghost" asChild className="w-full justify-start sm:mr-auto sm:w-auto"><Link href="/cookies">Read policy</Link></Button>
           <Button variant="outline" onClick={() => choose(false)}>Only essential</Button>
           <Button onClick={() => choose(true)}>Allow telemetry</Button>
         </div>

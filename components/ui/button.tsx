@@ -18,6 +18,7 @@ const buttonVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-muted/50 hover:text-foreground",
+        nav: "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
@@ -25,6 +26,7 @@ const buttonVariants = cva(
         sm: "h-9 px-3 text-xs",
         lg: "h-11 px-6 text-base",
         icon: "h-10 w-10",
+        navIcon: "h-8 w-8 rounded-lg",
       },
     },
     defaultVariants: {

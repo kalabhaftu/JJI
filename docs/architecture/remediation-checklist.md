@@ -4,7 +4,8 @@ Status date: 2026-08-01
 
 Branch: `preview`
 
-Execution policy: local code only; no push, deployment, remote migration, or provider mutation.
+Execution policy: production remediation authorized; remote changes still require
+the documented migration, provider, branch-reconciliation, and verification gates.
 
 Legend:
 
@@ -21,7 +22,8 @@ Legend:
 - [x] Record a bundle-analyzer baseline in `docs/architecture/bundle-baseline.json`.
 - [x] Inventory four Drizzle-journaled and twenty imperative Supabase migrations without rewriting history.
 - [x] Record pre-existing dependency/build/test failures for the final validation gate.
-- [ ] Repair the local dependency installation and establish a clean full-build baseline.
+- [x] Repair the local dependency installation and synchronize the Bun lockfile.
+- [ ] Establish a clean full-build baseline after the recorded repository TypeScript backlog is repaired.
 - [ ] Create a remote database migration-list snapshot after database access is approved.
 
 ## 2. Error reporting and Sentry
@@ -113,7 +115,7 @@ Legend:
 - [x] Preserve AI format and mapping text streams as explicit protocol exemptions while standardizing reporting and request IDs.
 - [x] Migrate prop-firm account lifecycle, phase-advance, and transition routes to the envelope.
 - [x] Migrate backtesting, trading-model, and weekly-review routes to the envelope.
-- [x] Add a source contract guard covering every v1 route and the eight reviewed protocol exemptions.
+- [x] Add a source contract guard covering every v1 route and the nine reviewed protocol exemptions.
 - [ ] Add contract coverage for every migrated route family after dependencies are repaired.
 - [x] Inventory browser-triggered mutation Server Actions.
 - [x] Move account, trade, payout, provider, template, notification-setting, onboarding, and funded-decision mutations behind classified APIs.
@@ -267,8 +269,9 @@ Legend:
 - [x] Keep full validation to one final gate.
 - [x] Inspect for direct Sentry captures, mutation-action imports, unclassified mutation routes, migration drift, whitespace errors, and replay-file changes.
 - [x] Keep database, provider, alert, push, and deployment operations local/pending.
-- [ ] Repair the dependency installation.
-- [ ] Run type-check once.
+- [x] Repair the dependency installation.
+- [x] Run the repository type-check and confirm no errors remain in the new Whop modules, routes, jobs, schema, or deletion integration.
+- [ ] Repair the recorded non-Whop TypeScript backlog so the repository-wide type-check exits cleanly.
 - [ ] Run lint once.
 - [ ] Run the full unit/integration suite once.
 - [ ] Run the production build once.
@@ -278,6 +281,45 @@ Legend:
 - [ ] Run authenticated representative browser verification once.
 - [ ] Run controlled Sentry client/server/phase/import failures once.
 - [ ] Verify end-to-end request correlation and privacy once.
+
+## 15. Whop billing and main-branch reconciliation
+
+- [x] Audit all twenty-three commits unique to `origin/main` and document each Whop behavior kept, replaced, or rejected.
+- [x] Keep the `preview` architecture as the source tree; reject the broad main-branch revert.
+- [x] Pin the current official `@whop/sdk` and synchronize `bun.lock`.
+- [x] Add lazy, environment-separated Whop API configuration without import-time failures.
+- [x] Create server-owned, payment-rate-limited checkout configurations with internal metadata, idempotency, and validated provider URLs.
+- [x] Preserve NOWPayments crypto checkout alongside Whop card checkout.
+- [x] Verify Standard Webhooks signatures against the untouched raw body using the official SDK.
+- [x] Enforce a bounded webhook body and preserve its provider-controlled response protocol with `x-request-id`.
+- [x] Persist only minimal event metadata and a SHA-256 payload hash; never persist raw billing payloads.
+- [x] Make repeated event delivery idempotent without suppressing failed retries.
+- [x] Enqueue verified events to Inngest and return a retryable provider response when enqueueing fails.
+- [x] Add leased, retryable webhook processing and scheduled recovery for received, failed, stale queued, and expired-processing events.
+- [x] Retrieve authoritative membership, payment, and refund state from Whop before persistence.
+- [x] Map active, trialing, canceling, completed, past-due, canceled, expired, unresolved, and drafted states explicitly.
+- [x] Resolve users only through trusted checkout metadata or an existing membership link; reject email fallback matching.
+- [x] Transactionally synchronize local entitlements, durable membership state, payment records, and redacted audit events.
+- [x] Preserve special free and promotional access when a Whop membership becomes terminal.
+- [x] Send idempotent Resend welcome mail and application notifications only after durable state succeeds.
+- [x] Add provider-neutral billing status and safe Whop subscription-management links to settings.
+- [x] Preserve loading, toast, success-polling, and crypto fallback behavior in the subscription UI.
+- [x] Queue immediate Whop cancellation after durable account deletion without rolling back correct local deletion state.
+- [x] Route provider failures and manual-review events through the canonical scrubbed Sentry reporter.
+- [x] Treat disputes and resolution-center cases as manual review; never automatically ban or revoke a user.
+- [x] Add the Whop failure alert class to the reviewed Sentry manifest.
+- [x] Add an additive timestamped Supabase migration with server-only RLS posture; reject both conflicting `0004` migrations from main.
+- [x] Add Whop to service, API-policy, API-contract, migration, and alert source guards.
+- [x] Pass the focused membership-status mapping test for all current provider states.
+- [x] Document provider permissions, preview/production credential separation, verification, rollout, and rollback.
+- [ ] Verify linked Supabase migration history and dry-run the additive migration.
+- [ ] Configure and verify Whop sandbox credentials, webhook subscriptions, and Inngest function discovery on preview.
+- [ ] Verify a sandbox checkout, duplicate webhook, forced retry, refund, cancellation, Resend delivery, and manual-review event.
+- [ ] Inspect the resulting Sentry event for privacy, grouping, and request-ID search.
+- [x] Commit the Whop implementation in focused Conventional Commits.
+- [ ] Join `origin/main` history with a tree-preserving merge; never normal-merge or rebase its reverted tree.
+- [ ] Push and verify `preview`, then fast-forward `main` only after migration and provider gates are satisfied.
+- [ ] Configure production Whop credentials, apply the reviewed migration, deploy, and perform one production-safe checkout verification.
 - [x] Create local Conventional Commit checkpoints.
 - [x] Confirm the final tree contains intended commits plus the preserved user work.
 - [ ] Push, migrate, deploy, activate alerts, or release only with explicit approval.

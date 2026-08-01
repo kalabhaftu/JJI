@@ -279,7 +279,7 @@ Legend:
 - [ ] Run controlled Sentry client/server/phase/import failures once.
 - [ ] Verify end-to-end request correlation and privacy once.
 - [x] Create local Conventional Commit checkpoints.
-- [ ] Confirm the final tree contains intended commits plus the preserved user work.
+- [x] Confirm the final tree contains intended commits plus the preserved user work.
 - [ ] Push, migrate, deploy, activate alerts, or release only with explicit approval.
 
 ## 15. Additional monolith remediation

@@ -26,7 +26,7 @@ export function PageHeader({
   return (
     <div className={cn('flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between', className)}>
       <div className={cn('flex min-w-0 flex-col gap-1', contentClassName)}>
-        <h1 className={cn('truncate text-2xl font-bold tracking-tight sm:text-3xl', titleClassName)}>
+        <h1 className={cn('truncate text-2xl font-semibold tracking-tight sm:text-3xl', titleClassName)}>
           {title}
         </h1>
         {meta ? (

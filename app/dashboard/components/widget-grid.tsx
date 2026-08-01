@@ -23,7 +23,7 @@ import { TemplateAwareDashboardSkeleton } from '@/components/ui/dashboard-skelet
 import { WidgetErrorBoundary } from './widget-wrapper'
 import { WIDGET_GRID_DEFAULTS } from '../config/widget-dimensions'
 import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
-import { getMobileWidgetHeight, isContentSizedMobileWidget } from '@/lib/dashboard/mobile-widget-layout'
+import { getMobileWidgetHeight, getWidgetSurfaceContract } from '@/lib/dashboard/mobile-widget-layout'
 import { toast } from 'sonner'
 import { useDashboardPropFirmAccount } from '@/hooks/use-dashboard-prop-firm-account'
 import { getPropFirmCacheKey, usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data'
@@ -360,14 +360,14 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
 
               const isChart = (config.category === 'charts' && widget.type !== 'performanceSummary') || widget.type.startsWith('calendar')
               const mobileHeight = getMobileWidgetHeight(widget.type, isChart, config.previewHeight)
-              const isContentSized = isContentSizedMobileWidget(widget.type) || !isChart
-              const minHeight = mobileHeight
+              const surfaceContract = getWidgetSurfaceContract(widget.type, isChart, config.previewHeight)
+              const minHeight = surfaceContract.mobileMinHeight ?? mobileHeight
 
               return (
                 <div
                   key={`mobile-${widget.i}`}
                   className={cn('widget-wrapper flex-shrink-0', isEditMode && 'relative rounded-2xl ring-1 ring-border/30 ring-inset')}
-                  style={{ height: isContentSized ? undefined : mobileHeight, minHeight }}
+                  style={{ minHeight }}
                 >
                   {isEditMode && (
                     <Button
@@ -381,7 +381,6 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                     </Button>
                   )}
                   <LazyMobileWidget
-                    {...(isContentSized ? {} : { height: mobileHeight })}
                     minHeight={minHeight}
                     isEditMode={isEditMode}
                   >

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { reportClientError } from '@/lib/observability/report-error'
 
 const ACCOUNT_STORAGE_KEY = 'dashboard.propFirmWidgets.selectedMasterAccountId'
 const RESET_TIMEZONE_STORAGE_KEY = 'dashboard.propFirmWidgets.resetTimezone'
@@ -187,6 +188,7 @@ export function useDashboardPropFirmAccount() {
         setSelectedMasterAccountIdState(preferred)
         if (preferred && preferred !== stored) setStoredSelection(preferred)
       } catch (err) {
+        reportClientError(err, { operation: 'load-dashboard-prop-firm-accounts', route: '/api/v1/prop-firm/accounts' })
         if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load prop firm accounts')
       } finally {
         if (!cancelled) setIsLoading(false)

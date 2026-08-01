@@ -42,7 +42,7 @@ export class WidgetErrorBoundary extends Component<WidgetErrorBoundaryProps, Wid
   render() {
     if (this.state.hasError) {
       return (
-        <Card className="h-full w-full border-destructive/20 bg-destructive/5">
+        <Card role="alert" aria-live="assertive" className="h-full w-full border-destructive/20 bg-destructive/5">
           <CardContent className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
             <div className="rounded-full bg-destructive/20 p-3">
               <AlertCircle className="h-6 w-6 text-destructive" />
@@ -51,14 +51,14 @@ export class WidgetErrorBoundary extends Component<WidgetErrorBoundaryProps, Wid
               <h3 className="text-sm font-medium text-destructive">
                 Failed to load widget
               </h3>
-              <p className="max-w-[200px] truncate text-xs text-destructive/80">
+              <p className="max-w-[240px] text-sm text-destructive/80">
                 An unexpected error occurred. Try again.
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="mt-2 h-8 border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
+              className="mt-2 border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() => this.setState({ hasError: false, error: null })}
             >
               Try again

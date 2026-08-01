@@ -7,6 +7,7 @@ import { inferMetricKind } from '@/lib/dashboard/display-mode'
 import { useTheme } from '@/context/theme-provider'
 import { useIsMobile } from '@/hooks/use-is-mobile'
 import { Info } from 'lucide-react'
+import type { WidgetSurfaceContract } from '@/app/dashboard/types/dashboard'
 import {
   Tooltip,
   TooltipContent,
@@ -44,10 +45,9 @@ function getWidgetDescription(title: string): string | null {
   return null
 }
 
-interface WidgetCardProps {
+export interface WidgetCardProps extends Partial<Pick<WidgetSurfaceContract, 'title' | 'actions' | 'mobileMinHeight'>> {
   children: React.ReactNode
   /** Widget title shown in the header */
-  title?: string
   headerRight?: React.ReactNode
   /** Whether this is a KPI card (compact, no border-radius padding) */
   isKpi?: boolean
@@ -65,10 +65,12 @@ interface WidgetCardProps {
 export function WidgetCard({
   children,
   title,
+  actions,
   headerRight,
   isKpi = false,
   className,
   noPadding = false,
+  mobileMinHeight,
 }: WidgetCardProps) {
   const { widgetStyle } = useTheme()
   const isMobile = useIsMobile()
@@ -83,11 +85,12 @@ export function WidgetCard({
       return (
         <div
           className={cn(
-            'w-full h-full overflow-hidden widget-card',
+            'w-full min-h-full h-auto overflow-visible widget-card',
             'bg-card border border-border/60 dark:border-border/30 rounded-xl',
             'p-3',
             className
           )}
+          style={mobileMinHeight ? { minHeight: mobileMinHeight } : undefined}
         >
           {children}
         </div>
@@ -99,14 +102,15 @@ export function WidgetCard({
     return (
       <div
         className={cn(
-          'w-full h-full overflow-hidden flex flex-col widget-card',
+          'w-full min-h-full h-auto overflow-visible flex flex-col widget-card',
           'bg-card border border-border/60 dark:border-border/30 rounded-xl',
           !noPadding && 'p-3',
           className
         )}
+        style={mobileMinHeight ? { minHeight: mobileMinHeight } : undefined}
       >
         {title && (
-          <div className="flex items-center justify-between mb-3 flex-shrink-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3 flex-shrink-0">
             <div className="flex items-center gap-1.5 min-w-0">
               <h3 className="text-[9px] uppercase font-black tracking-widest text-muted-foreground truncate">
                 {title}
@@ -126,7 +130,7 @@ export function WidgetCard({
                 </TooltipProvider>
               )}
             </div>
-            {headerRight}
+            {headerRight ?? actions}
           </div>
         )}
         <div className="flex-1 min-h-0 w-full flex flex-col">
@@ -168,7 +172,7 @@ export function WidgetCard({
       )}
     >
       {title && (
-        <div className="flex items-center justify-between mb-3 sm:mb-4 flex-shrink-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 sm:mb-4 flex-shrink-0">
           <div className="flex items-center gap-1.5 min-w-0">
             <h3 className="text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-muted-foreground truncate">
               {title}
@@ -188,7 +192,7 @@ export function WidgetCard({
               </TooltipProvider>
             )}
           </div>
-          {headerRight}
+          {headerRight ?? actions}
         </div>
       )}
       <div className="flex-1 min-h-0 w-full flex flex-col">

@@ -282,11 +282,11 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
   )
 
   return (
-    <div id="advanced-calendar-capture" ref={calendarRef} data-screenshot-wrap className={cn("h-full w-full", className)}>
+    <div id="advanced-calendar-capture" ref={calendarRef} data-screenshot-wrap className={cn("h-full w-full max-[767px]:h-auto max-[767px]:min-h-full", className)}>
       <WidgetCard
         noPadding
         data-widget-card="true"
-        className="overflow-hidden flex flex-col h-full"
+        className="overflow-hidden flex flex-col h-full max-[767px]:h-auto max-[767px]:min-h-full max-[767px]:overflow-visible"
       >
         <div className="border-b border-border/40 dark:border-border/20 bg-muted/5 px-3 py-2 flex-shrink-0 overflow-x-auto scrollbar-none">
           <div className="flex items-center justify-between gap-4 min-w-max">
@@ -379,7 +379,7 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
           </div>
         </div>
 
-        <div className="flex-1 min-h-0 overflow-hidden relative">
+        <div className="flex-1 min-h-0 overflow-hidden relative max-[767px]:overflow-visible">
           {viewMode === 'daily' ? (
             <MonthlyView
               currentDate={currentDate}

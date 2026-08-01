@@ -26,7 +26,7 @@ export function ApplicationErrorScreen({
       <div className="w-full max-w-md space-y-6 text-center">
         <AlertCircle aria-hidden="true" className="mx-auto size-12 text-destructive" />
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Something went wrong</h1>
+          <h1 className="text-3xl font-semibold tracking-tight">Something went wrong</h1>
           <p className="text-muted-foreground">
             The error was recorded. Try again, or return home if it continues.
           </p>

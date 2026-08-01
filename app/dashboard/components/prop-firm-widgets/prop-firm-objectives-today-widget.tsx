@@ -1,14 +1,33 @@
 "use client"
 
-import { Target, ShieldAlert, CalendarClock, Trophy, TrendingDown, Activity } from 'lucide-react'
+import { Target, ShieldAlert, CalendarClock, Trophy, TrendingDown, Activity, type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { PropFirmWidgetShell } from './prop-firm-widget-shell'
 import { clampPercent, formatInteger, formatPercent, getObjectiveTone } from './prop-firm-widget-utils'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 
-function ObjectiveCard({ title, icon: Icon, rows, progress, danger }: any) {
+type ObjectiveRow = {
+  label: string
+  value: string
+  rawValue?: number
+  tone?: 'positive' | 'negative' | 'remaining' | undefined
+}
+
+function ObjectiveCard({
+  title,
+  icon: Icon,
+  rows,
+  progress,
+  danger = false,
+}: {
+  title: string
+  icon: LucideIcon
+  rows: ObjectiveRow[]
+  progress: number
+  danger?: boolean
+}) {
   const { formatValue } = useDashboardDisplay()
-  const remainingRow = rows.find((row: any) => row.tone === 'remaining')
+  const remainingRow = rows.find((row) => row.tone === 'remaining')
   const remaining = Number(remainingRow?.rawValue ?? 0)
   const tone = danger || getObjectiveTone(remaining) === 'short' ? 'short' : 'long'
   return (
@@ -26,7 +45,7 @@ function ObjectiveCard({ title, icon: Icon, rows, progress, danger }: any) {
         <div className={cn('h-full rounded-full', tone === 'long' ? 'bg-long' : 'bg-short')} style={{ width: `${clampPercent(progress)}%` }} />
       </div>
       <div className="mt-4 divide-y divide-border/20 rounded-lg border border-border/20 bg-background/20">
-        {rows.map((row: any) => (
+        {rows.map((row) => (
           <div key={row.label} className="flex items-center justify-between gap-3 px-3 py-2 text-xs">
             <span className="text-muted-foreground">{row.label}</span>
             <span className={cn('font-mono font-bold', row.tone === 'positive' && 'text-long', row.tone === 'negative' && 'text-short', row.tone === 'remaining' && (remaining <= 0 ? 'text-short' : 'text-long'))}>
@@ -39,7 +58,17 @@ function ObjectiveCard({ title, icon: Icon, rows, progress, danger }: any) {
   )
 }
 
-function StatTile({ label, value, icon: Icon, tone = 'neutral' }: any) {
+function StatTile({
+  label,
+  value,
+  icon: Icon,
+  tone = 'neutral',
+}: {
+  label: string
+  value: string
+  icon: LucideIcon
+  tone?: 'positive' | 'negative' | 'neutral'
+}) {
   return (
     <div className="rounded-xl border border-border/25 bg-muted/10 p-3">
       <div className="mb-2 flex items-center justify-between">
@@ -59,7 +88,8 @@ export function PropFirmObjectivesTodayWidget() {
     <PropFirmWidgetShell title="Trading Objectives + Today">
       {({ data }) => {
         const account = data.account
-        const phase = account.currentPhase
+        if (!account) return null
+        const phase = account.currentPhase ?? {}
         const accountSize = Number(account.accountSize || 0)
         const targetAmount = accountSize * (Number(phase.profitTargetPercent || 0) / 100)
         const maxLossLimit = accountSize * (Number(phase.maxDrawdownPercent || 0) / 100)

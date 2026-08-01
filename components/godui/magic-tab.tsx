@@ -38,23 +38,23 @@ export type MagicTabProps = Omit<
 // `variant`, and `rainbow` are known per-render, so their styling is resolved
 // in JS — `group-*` variants cover only runtime hover / focus-visible state.
 const CONTAINER_CLASS =
-  "inline-flex items-stretch gap-2 rounded-xl bg-muted p-2 font-medium select-none [-webkit-tap-highlight-color:transparent]";
+  "inline-flex items-stretch gap-1 rounded-lg bg-muted/60 p-1 font-medium select-none [-webkit-tap-highlight-color:transparent]";
 
 const ITEM_BASE =
-  "group relative cursor-pointer border-none bg-transparent p-0 outline-none [transition:filter_600ms] [-webkit-tap-highlight-color:transparent] disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none disabled:filter-none";
+  "group relative min-h-10 cursor-pointer rounded-md border-none bg-transparent p-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background [transition:filter_200ms] [-webkit-tap-highlight-color:transparent] disabled:cursor-not-allowed disabled:opacity-50 disabled:pointer-events-none disabled:filter-none";
 
 const EDGE_BASE =
-  "absolute inset-0 rounded-xl [transition:opacity_250ms_ease] motion-reduce:[transition:none]";
+  "absolute inset-0 rounded-md [transition:opacity_200ms_ease] motion-reduce:[transition:none]";
 
 const SHADOW_BASE =
-  "absolute inset-0 rounded-xl translate-y-[2px] [will-change:translate] [transition:translate_600ms_cubic-bezier(0.3,0.7,0.4,1),opacity_250ms_ease] motion-reduce:[transition:none]";
+  "absolute inset-0 rounded-md [transition:opacity_200ms_ease] motion-reduce:[transition:none]";
 
 // Resting transform AND colors are kept out of the base: the selected state
 // sets its own (`-translate-y-[4px]`, `bg-primary`, …) and a same-specificity
 // resting utility (`translate-y-0`, `bg-transparent`) would win the cascade —
 // leaving the selected tab flat and transparent (rainbow edge showing through).
 const FRONT_BASE =
-  "relative block rounded-xl [will-change:translate] [transition:translate_600ms_cubic-bezier(0.3,0.7,0.4,1),color_250ms_ease,background_250ms_ease] motion-reduce:[transition:none]";
+  "relative block rounded-md [transition:color_200ms_ease,background-color_200ms_ease,box-shadow_200ms_ease] motion-reduce:[transition:none]";
 
 const RAINBOW_FILL =
   "[background-image:linear-gradient(90deg,var(--rainbow-1),var(--rainbow-5),var(--rainbow-3),var(--rainbow-4),var(--rainbow-2))] [background-size:200%_100%] animate-magic-rainbow motion-reduce:animate-none";
@@ -101,7 +101,7 @@ const MagicTab = React.forwardRef<HTMLDivElement, MagicTabProps>(
       variant = "default",
       size = "md",
       orientation = "horizontal",
-      rainbow = true,
+      rainbow = false,
       onKeyDown,
       ...props
     },
@@ -248,21 +248,13 @@ const MagicTab = React.forwardRef<HTMLDivElement, MagicTabProps>(
             selected && rainbow
               ? `${RAINBOW_FILL} blur-[12px]`
               : SOLID_SHADOW_FILL;
-          const shadowOpacity = selected
-            ? rainbow
-              ? "opacity-70"
-              : "opacity-100"
-            : "opacity-0";
-          const shadowLift = selected
-            ? "group-focus-visible:translate-y-[4px] group-focus-visible:[transition:translate_250ms_cubic-bezier(0.22,1,0.36,1)]"
-            : "";
+          const shadowOpacity = "opacity-0";
+          const shadowLift = "";
 
-          const edgeFill = selected
-            ? `opacity-100 ${rainbow ? RAINBOW_FILL : edgeVariant[variant]}`
-            : "opacity-0";
+          const edgeFill = "opacity-0";
 
           const frontState = selected
-            ? `-translate-y-[4px] ${frontVariantSelected[variant]} group-focus-visible:-translate-y-[6px] group-focus-visible:[transition:translate_250ms_cubic-bezier(0.22,1,0.36,1)]`
+            ? `${frontVariantSelected[variant]} shadow-sm`
             : `bg-transparent text-muted-foreground ${frontVariantPreview[variant]}`;
 
           return (

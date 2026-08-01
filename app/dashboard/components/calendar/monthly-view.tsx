@@ -311,6 +311,138 @@ function WeeklySummary({
   )
 }
 
+const MobileDayRow = memo(function MobileDayRow({
+  date,
+  dayData,
+  isCurrentMonth,
+  hasJournal,
+  onClick,
+}: {
+  date: Date
+  dayData: CalendarData[string] | undefined
+  isCurrentMonth: boolean
+  hasJournal: boolean
+  onClick?: () => void
+}) {
+  const { visibleStats } = useCalendarViewStore()
+  const { formatValue } = useDashboardDisplay()
+  const { statistics } = useData()
+  const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
+  const hasTrades = Boolean(dayData?.tradeNumber)
+  const outcome = classifyOutcome(Number(dayData?.pnl || 0), breakEvenThreshold)
+  const tone = outcome === 'win' ? 'long' : outcome === 'loss' ? 'short' : 'neutral'
+  const isTodayDate = isToday(date)
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={!isCurrentMonth || !onClick}
+      aria-label={`Open ${format(date, 'MMMM d, yyyy')}${hasTrades ? `, ${dayData?.tradeNumber} trades` : ''}`}
+      className={cn(
+        'flex min-h-16 w-full items-center justify-between gap-3 rounded-xl border px-3 py-2.5 text-left transition-colors',
+        'disabled:pointer-events-none disabled:opacity-35',
+        tone === 'long' && 'border-long/25 bg-long/10 hover:bg-long/15',
+        tone === 'short' && 'border-short/25 bg-short/10 hover:bg-short/15',
+        tone === 'neutral' && 'border-border/40 bg-muted/20 hover:bg-muted/30',
+        isTodayDate && isCurrentMonth && 'ring-1 ring-primary/70',
+      )}
+    >
+      <span className="flex min-w-0 items-center gap-2.5">
+        <span className={cn(
+          'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold',
+          isTodayDate && isCurrentMonth ? 'bg-primary text-primary-foreground' : 'bg-background/60 text-foreground',
+        )}>
+          {format(date, 'd')}
+        </span>
+        <span className="min-w-0">
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            {format(date, 'EEE')}
+            {hasJournal && <CalendarIcon className="h-3.5 w-3.5 text-primary" aria-label="Journal entry" />}
+          </span>
+          <span className="text-[11px] text-muted-foreground">
+            {hasTrades ? `${dayData?.tradeNumber} trade${dayData?.tradeNumber === 1 ? '' : 's'}` : 'No trades'}
+          </span>
+        </span>
+      </span>
+
+      <span className="flex shrink-0 flex-col items-end gap-1">
+        <span className={cn(
+          'font-mono text-sm font-bold tabular-nums',
+          tone === 'long' && 'text-long',
+          tone === 'short' && 'text-short',
+          tone === 'neutral' && 'text-muted-foreground',
+        )}>
+          {formatValue(dayData?.pnl || 0, { kind: 'money', compact: true, emptyLabel: '$0' })}
+        </span>
+        {hasTrades && (visibleStats.rMultiple || visibleStats.winRate) && (
+          <span className="text-[10px] text-muted-foreground">
+            {visibleStats.rMultiple && dayData?.dailyRMultiple !== undefined ? `${dayData.dailyRMultiple.toFixed(2)}R` : null}
+            {visibleStats.rMultiple && visibleStats.winRate ? ' · ' : null}
+            {visibleStats.winRate && dayData?.trades?.length
+              ? `${((dayData.trades.filter((trade) => classifyOutcome(getTradeNetPnl(trade), breakEvenThreshold) === 'win').length / dayData.trades.length) * 100).toFixed(0)}% win`
+              : null}
+          </span>
+        )}
+      </span>
+    </button>
+  )
+})
+
+function MobileWeekCards({
+  weeks,
+  calendarData,
+  currentDate,
+  journals,
+  onSelectDate,
+  onReviewWeek,
+}: {
+  weeks: Date[][]
+  calendarData: CalendarData
+  currentDate: Date
+  journals: Record<string, { note?: string | null; emotion?: string | null }> | undefined
+  onSelectDate?: ((date: Date) => void) | undefined
+  onReviewWeek?: ((date: Date) => void) | undefined
+}) {
+  return (
+    <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-2 pb-4">
+      {weeks.map((week, weekIndex) => (
+        <section key={weekIndex} className="rounded-2xl border border-border/40 bg-muted/10 p-2.5">
+          <div className="mb-2.5 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Week {weekIndex + 1}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">{week[0] ? format(week[0], 'MMM d') : ''} – {week.at(-1) ? format(week.at(-1)!, 'MMM d') : ''}</p>
+            </div>
+            <WeeklySummary
+              weekIndex={weekIndex}
+              weekDays={week}
+              calendarData={calendarData}
+              currentDate={currentDate}
+              onReviewWeek={onReviewWeek}
+            />
+          </div>
+          <div className="grid gap-2">
+            {week.map((date) => {
+              const dateKey = format(date, 'yyyy-MM-dd')
+              const journal = journals?.[dateKey]
+              return (
+                <MobileDayRow
+                  key={dateKey}
+                  date={date}
+                  dayData={calendarData[dateKey]}
+                  isCurrentMonth={isSameMonth(date, currentDate)}
+                  hasJournal={Boolean(journal && (journal.note?.trim() || journal.emotion))}
+                  onClick={() => onSelectDate?.(date)}
+                />
+              )
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
+
 export default function MonthlyView({
   currentDate,
   calendarData,
@@ -369,6 +501,19 @@ export default function MonthlyView({
     : isMobile
       ? `repeat(${weeks.length}, minmax(48px, 1fr))`
       : `repeat(${weeks.length}, minmax(68px, 1fr))`
+
+  if (isMobile && !isMiniCalendar) {
+    return (
+      <MobileWeekCards
+        weeks={weeks}
+        calendarData={calendarData}
+        currentDate={currentDate}
+        journals={journals}
+        onSelectDate={onSelectDate}
+        onReviewWeek={onReviewWeek}
+      />
+    )
+  }
 
   return (
     <div className={cn("flex h-full w-full overflow-hidden flex-col", isMiniCalendar ? "" : "md:flex-row")}>

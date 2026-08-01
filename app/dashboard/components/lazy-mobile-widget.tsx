@@ -6,12 +6,11 @@ import { cn } from '@/lib/utils'
 interface LazyMobileWidgetProps {
   children: ReactNode
   minHeight?: number
-  height?: number
   isEditMode: boolean
 }
 
 /** Defers off-screen mobile widgets without changing their layout footprint. */
-export function LazyMobileWidget({ children, minHeight, height, isEditMode }: LazyMobileWidgetProps) {
+export function LazyMobileWidget({ children, minHeight, isEditMode }: LazyMobileWidgetProps) {
   const [isIntersecting, setIsIntersecting] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -40,8 +39,8 @@ export function LazyMobileWidget({ children, minHeight, height, isEditMode }: La
   return (
     <div
       ref={ref}
-      style={{ height, minHeight }}
-      className={cn('flex w-full flex-col', height ? 'h-full' : 'h-auto')}
+      style={{ minHeight }}
+      className="flex min-h-0 w-full flex-col"
     >
       {isIntersecting ? (
         children
@@ -49,7 +48,7 @@ export function LazyMobileWidget({ children, minHeight, height, isEditMode }: La
         <div
           aria-hidden="true"
           className="flex w-full flex-1 animate-pulse rounded-xl border border-border/40 bg-muted/10"
-          style={{ minHeight: height || minHeight }}
+          style={{ minHeight }}
         />
       )}
     </div>

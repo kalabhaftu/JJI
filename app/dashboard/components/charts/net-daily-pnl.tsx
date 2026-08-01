@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import * as RechartsPrimitive from "recharts"
 import { WidgetCard, ChartTooltip as SharedChartTooltip } from '../widget-card'
 import { useWidgetData } from '@/hooks/use-widget-data'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
@@ -15,10 +14,10 @@ import {
   Tooltip as RechartsTooltip,
   ResponsiveContainer,
   Cell,
-  ReferenceLine
+  ReferenceLine,
+  BarChart,
 } from 'recharts'
 
-const AnyBarChart = (RechartsPrimitive as any).BarChart as React.ComponentType<any>
 import { Info } from "lucide-react"
 import {
   Tooltip,
@@ -40,6 +39,9 @@ interface ChartDataPoint {
   wins: number
   losses: number
 }
+
+type RawDailyPoint = Partial<ChartDataPoint>
+type RenderedDailyPoint = RawDailyPoint & { originalPnl: number; pnl: number }
 
 const COLORS = {
   profit: 'hsl(var(--chart-profit))',      // Emerald green
@@ -84,12 +86,12 @@ export default function NetDailyPnL({ size = 'small-long' }: NetDailyPnLProps) {
   const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
   const { data: rawChartData, isLoading } = useWidgetData('netDailyPnl')
   const { formatValue, transformValue, isPrivacyMode } = useDashboardDisplay()
-  const chartData = React.useMemo(
+  const chartData = React.useMemo<RenderedDailyPoint[]>(
     () =>
-      (rawChartData ?? []).map((item: any) => ({
+      (rawChartData ?? []).map((item: RawDailyPoint) => ({
         ...item,
-        originalPnl: item.pnl,
-        pnl: transformValue(item.pnl, { kind: 'money' }) ?? 0,
+        originalPnl: Number(item.pnl ?? 0),
+        pnl: transformValue(Number(item.pnl ?? 0), { kind: 'money' }) ?? 0,
       })),
     [rawChartData, transformValue]
   )
@@ -102,7 +104,7 @@ export default function NetDailyPnL({ size = 'small-long' }: NetDailyPnLProps) {
       }
     }
 
-    const pnls = chartData.map((item: any) => item.pnl)
+    const pnls = chartData.map((item) => item.pnl)
     const minValue = Math.min(0, ...pnls)
     const maxValue = Math.max(0, ...pnls)
     const maxAbs = Math.max(Math.abs(minValue), Math.abs(maxValue))
@@ -122,12 +124,10 @@ export default function NetDailyPnL({ size = 'small-long' }: NetDailyPnLProps) {
     return { yDomain: domain, yTicks: ticks }
   }, [chartData])
 
-  const isCompact = size === 'small' || size === 'small-long'
-
   if (isLoading) {
     return (
       <WidgetCard title="Net Daily P/L">
-        <div className="flex items-center justify-center h-full">
+        <div className="flex min-h-[220px] items-center justify-center">
           <div className="animate-pulse w-full h-[200px] bg-muted/20 rounded-xl" />
         </div>
       </WidgetCard>
@@ -137,7 +137,7 @@ export default function NetDailyPnL({ size = 'small-long' }: NetDailyPnLProps) {
   if (chartData.length === 0) {
     return (
       <WidgetCard title="Net Daily P/L">
-        <div className="flex items-center justify-center h-full text-muted-foreground/50 text-sm">
+        <div className="flex min-h-[220px] items-center justify-center text-muted-foreground/50 text-sm">
           No trade data available
         </div>
       </WidgetCard>
@@ -146,9 +146,9 @@ export default function NetDailyPnL({ size = 'small-long' }: NetDailyPnLProps) {
 
   return (
     <WidgetCard title="Net Daily P/L">
-      <div className="w-full h-full">
+      <div className="min-h-[260px] w-full flex-1 sm:min-h-[320px]">
         <ResponsiveContainer width="100%" height="100%">
-        <AnyBarChart
+        <BarChart
           data={chartData}
           margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
           barCategoryGap="25%"
@@ -201,7 +201,7 @@ export default function NetDailyPnL({ size = 'small-long' }: NetDailyPnLProps) {
             radius={CHART_CONFIG.barRadius}
             maxBarSize={60}
           >
-            {chartData.map((entry: any, index: number) => (
+            {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${index}`}
                 fill={
@@ -214,7 +214,7 @@ export default function NetDailyPnL({ size = 'small-long' }: NetDailyPnLProps) {
               />
             ))}
           </Bar>
-        </AnyBarChart>
+        </BarChart>
       </ResponsiveContainer>
       </div>
     </WidgetCard>

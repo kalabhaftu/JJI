@@ -1,3 +1,5 @@
+import type { ReactNode } from 'react'
+
 export type WidgetType =
   | 'calendarAdvanced'
   | 'calendarMini'
@@ -34,6 +36,23 @@ export type WidgetType =
   | 'propFirmAccountStatistics'
   | 'propFirmGrowthCurve'
 export type WidgetSize = 'tiny' | 'small' | 'small-long' | 'medium' | 'large' | 'extra-large' | 'kpi'
+
+export type WidgetSurfaceState = 'loading' | 'ready' | 'empty' | 'error'
+
+export interface WidgetDataState<TData> {
+  data: TData
+  isLoading: boolean
+  error: Error | string | null
+}
+
+export interface WidgetSurfaceContract {
+  title?: string
+  actions?: ReactNode
+  state?: WidgetSurfaceState
+  mobileMinHeight?: number
+  mobileSizing: 'content' | 'minimum'
+  resizableAt: 'desktop' | 'desktop-tablet'
+}
 
 interface LayoutItem {
   i: string

@@ -15,6 +15,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export default function EditModeControls() {
   const { isEditMode, hasUnsavedChanges, currentLayout, exitEditMode, discardChanges, saveChanges } = useTemplateEditStore()
@@ -48,6 +49,7 @@ export default function EditModeControls() {
       exitEditMode()
       setTimeout(() => toast.success('Template saved successfully'), 0)
     } catch (error) {
+      reportClientError(error, { operation: 'save-dashboard-template-layout', route: '/dashboard' })
       const errorMessage = error instanceof Error ? error.message : 'Failed to save template'
       setTimeout(() => toast.error(errorMessage), 0)
     } finally {

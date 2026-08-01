@@ -21,7 +21,7 @@ function LogoText() {
         <svg width="256" height="64" viewBox="0 0 1180 260" fill="none" xmlns="http://www.w3.org/2000/svg" className="fill-foreground" aria-label="JJI wordmark" role="img">
             <rect width="260" height="260" rx="52" className="fill-current" />
             <path className="fill-background" d="M65 69h130v37h-47v110h-36V106H65z" />
-            <text x="310" y="166" fontFamily="Inter, Arial, Helvetica, sans-serif" fontSize="106" fontWeight="700" letterSpacing="-2" className="fill-current">JJI</text>
+            <text x="310" y="166" fontFamily="DM Sans, Arial, Helvetica, sans-serif" fontSize="106" fontWeight="700" letterSpacing="-2" className="fill-current">JJI</text>
         </svg>
     )
 }

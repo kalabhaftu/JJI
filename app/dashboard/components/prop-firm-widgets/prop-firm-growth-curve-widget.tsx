@@ -14,8 +14,19 @@ import {
 import { PropFirmWidgetShell } from './prop-firm-widget-shell'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { useTheme } from '@/context/theme-provider'
+import type { PropFirmAccount, PropFirmWidgetData } from '@/hooks/use-prop-firm-dashboard-widget-data'
 
-function getReferenceValues(account: any, data: any) {
+type GrowthPoint = PropFirmWidgetData['growth'][number]
+
+type GrowthReferences = {
+  accountSize: number
+  targetBalance: number
+  dailyLossFloor: number
+  maxLossFloor: number
+  currentBalance: number
+}
+
+function getReferenceValues(account: PropFirmAccount, data: PropFirmWidgetData): GrowthReferences {
   const accountSize = Number(account.accountSize || 0)
   const phase = account.currentPhase || {}
   const targetAmount = accountSize * (Number(phase.profitTargetPercent || 0) / 100)
@@ -41,8 +52,8 @@ function getReferenceValues(account: any, data: any) {
   }
 }
 
-function buildChartData(account: any, data: any, refs: ReturnType<typeof getReferenceValues>) {
-  const points = [
+function buildChartData(data: PropFirmWidgetData, refs: GrowthReferences): GrowthPoint[] {
+  const points: GrowthPoint[] = [
     {
       label: 'Start',
       timestamp: 0,
@@ -50,14 +61,15 @@ function buildChartData(account: any, data: any, refs: ReturnType<typeof getRefe
       pnl: 0,
       tradePnl: 0,
     },
-    ...data.growth.map((point: any) => ({
+    ...data.growth.map((point) => ({
       ...point,
     })),
   ]
 
   if (points.length === 1) {
+    const firstPoint = points[0]!
     points.push({
-      ...points[0],
+      ...firstPoint,
       label: 'Current',
       timestamp: 1,
     })
@@ -66,7 +78,7 @@ function buildChartData(account: any, data: any, refs: ReturnType<typeof getRefe
   return points
 }
 
-function getYAxisConfig(chartData: any[], refs: ReturnType<typeof getReferenceValues>) {
+function getYAxisConfig(chartData: GrowthPoint[], refs: GrowthReferences) {
   // The Y-axis must show exact meaningful values
   const balances = chartData.map((p) => Number(p.balance || 0)).filter((v) => !isNaN(v) && v > 0)
   const currentBalance = balances.length > 0 ? balances[balances.length - 1]! : refs.accountSize
@@ -135,7 +147,15 @@ function getYAxisConfig(chartData: any[], refs: ReturnType<typeof getReferenceVa
   }
 }
 
-function GrowthTooltip({ active, payload, refs }: any) {
+function GrowthTooltip({
+  active,
+  payload,
+  refs,
+}: {
+  active?: boolean
+  payload?: Array<{ payload?: GrowthPoint }>
+  refs: GrowthReferences
+}) {
   const { formatValue, isPrivacyMode } = useDashboardDisplay()
   const forcedMode = isPrivacyMode ? 'privacy' : 'dollars'
 
@@ -228,8 +248,9 @@ export function PropFirmGrowthCurveWidget() {
     <PropFirmWidgetShell title="Prop Firm Growth Curve">
       {({ data }) => {
         const account = data.account
+        if (!account) return null
         const refs = getReferenceValues(account, data)
-        const chartData = buildChartData(account, data, refs)
+        const chartData = buildChartData(data, refs)
         const yAxisConfig = getYAxisConfig(chartData, refs)
 
         const isSharp = chartStyle === 'sharp'
@@ -266,7 +287,7 @@ export function PropFirmGrowthCurveWidget() {
               </span>
             </div>
 
-            <div className="min-h-0 flex-1">
+            <div className="min-h-[260px] flex-1 sm:min-h-[320px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart
                   data={chartData}

@@ -22,14 +22,14 @@ export function EmptyAccountState({ onOpenAccountSelector }: EmptyAccountStatePr
       <div className="mb-5 flex items-center justify-center rounded-full bg-muted p-4">
         <WalletCards className="h-8 w-8 text-muted-foreground" />
       </div>
-      <h3 className="mb-2 text-xl font-semibold tracking-tight">No Account Selected</h3>
+      <h3 className="mb-2 text-xl font-semibold tracking-tight">Choose an account</h3>
       <p className="mb-8 max-w-sm text-sm text-muted-foreground">
-        Select a trading account to view your performance data. You can connect a broker for automatic sync or import trades manually.
+        Choose a trading account to view performance data. Create one first if you have not set up your portfolio yet.
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button onClick={handleSelectAccount}>Select Account</Button>
         <Button variant="outline" asChild>
-          <Link href="/dashboard/accounts">Connect Broker</Link>
+          <Link href="/dashboard/accounts">Create Account</Link>
         </Button>
       </div>
     </div>

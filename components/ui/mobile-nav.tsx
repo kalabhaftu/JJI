@@ -94,7 +94,7 @@ export function MobileBottomNav() {
                 aria-expanded={moreOpen}
                 onClick={() => setMoreOpen(true)}
                 className={cn(
-                  "flex min-h-14 min-w-[60px] flex-col items-center justify-center rounded-xl px-2 py-1 touch-manipulation transition-colors",
+                  "flex min-h-14 min-w-[60px] flex-col items-center justify-center rounded-lg px-2 py-1 touch-manipulation transition-colors",
                   isActive ? "text-primary" : "text-muted-foreground active:text-foreground"
                 )}
               >
@@ -114,7 +114,7 @@ export function MobileBottomNav() {
               href={getMobileNavHref(item.href, Boolean(isDemoMode), hostname) as any}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                "flex min-h-14 min-w-[60px] flex-col items-center justify-center rounded-xl px-2 py-1 touch-manipulation transition-colors",
+                "flex min-h-14 min-w-[60px] flex-col items-center justify-center rounded-lg px-2 py-1 touch-manipulation transition-colors",
                 isActive
                   ? "text-primary"
                   : "text-muted-foreground active:text-foreground"

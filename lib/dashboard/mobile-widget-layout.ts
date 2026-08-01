@@ -1,3 +1,5 @@
+import type { WidgetSurfaceContract } from '@/app/dashboard/types/dashboard'
+
 const MOBILE_WIDGET_HEIGHTS: Readonly<Record<string, number>> = {
   calendarAdvanced: 560,
   calendarMini: 420,
@@ -15,6 +17,14 @@ export const MAX_MOBILE_WIDGET_HEIGHT = Math.max(
   560,
   ...Object.values(CONTENT_SIZED_WIDGET_MIN_HEIGHTS),
 )
+
+export function getWidgetSurfaceContract(type: string, isChart: boolean, previewHeight?: number): WidgetSurfaceContract {
+  return {
+    mobileMinHeight: getMobileWidgetHeight(type, isChart, previewHeight),
+    mobileSizing: 'content',
+    resizableAt: 'desktop-tablet',
+  }
+}
 
 export function isContentSizedMobileWidget(type: string) {
   return Object.prototype.hasOwnProperty.call(CONTENT_SIZED_WIDGET_MIN_HEIGHTS, type)

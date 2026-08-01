@@ -24,10 +24,12 @@ export default function Error({
   }, [error])
 
   return (
-    <ApplicationErrorScreen
-      reference={reference}
-      onRetry={reset}
-      details={error.message}
-    />
+    <div role="alert" aria-live="assertive">
+      <ApplicationErrorScreen
+        reference={reference}
+        onRetry={reset}
+        details={error.message}
+      />
+    </div>
   )
 }

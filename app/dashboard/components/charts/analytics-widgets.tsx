@@ -11,6 +11,42 @@ import { ChartTooltip, WidgetCard } from '../widget-card'
 
 import { useTheme } from '@/context/theme-provider'
 
+type AccountCurvePoint = {
+  date: string
+  balance?: number | string | null
+  change?: number | string | null
+  cumulativePnL?: number | string | null
+  dailyPnL?: number | string | null
+  trades?: number | string | null
+}
+
+type AccountCurvePayload = {
+  balance?: AccountCurvePoint[]
+  cumulative?: AccountCurvePoint[]
+  summary?: Record<string, number | string | null | undefined>
+}
+
+type TagPerformanceRow = {
+  tag: string
+  trades?: number | string | null
+  winRate?: number | string | null
+  pnl?: number | string | null
+  profitFactor?: number | string | null
+}
+
+type TimeOfDayRow = {
+  hour: number | string
+  trades?: number | string | null
+  pnl?: number | string | null
+}
+
+type DisciplinePayload = {
+  ruleBrokenRate?: number | string | null
+  ruleCoverage?: number | string | null
+  avgRulesPerTaggedTrade?: number | string | null
+  playbooks?: Array<{ model: string; broken?: number | string | null; trades?: number | string | null }>
+}
+
 function Segmented<T extends string>({
   value,
   options,
@@ -41,7 +77,7 @@ function Segmented<T extends string>({
 
 function EmptyWidget({ label }: { label: string }) {
   return (
-    <div className="flex h-full min-h-[180px] items-center justify-center text-center text-xs font-semibold text-muted-foreground">
+    <div className="flex min-h-[180px] items-center justify-center text-center text-xs font-semibold text-muted-foreground">
       {label}
     </div>
   )
@@ -65,16 +101,17 @@ export function AccountCurveWidget({ initialMode = 'cumulative' }: { initialMode
   const [mode, setMode] = useState<'cumulative' | 'balance'>(initialMode)
 
   const chartData = useMemo(() => {
-    if (!data) return []
+    const payload = data as AccountCurvePayload | null | undefined
+    if (!payload) return []
     if (mode === 'balance') {
-      return (data.balance || []).map((item: any) => ({
+      return (payload.balance || []).map((item) => ({
         date: item.date,
         value: item.balance,
         dailyPnL: item.change,
         trades: item.trades,
       }))
     }
-    return (data.cumulative || []).map((item: any) => ({
+    return (payload.cumulative || []).map((item) => ({
       date: item.date,
       value: item.cumulativePnL,
       dailyPnL: item.dailyPnL,
@@ -82,7 +119,7 @@ export function AccountCurveWidget({ initialMode = 'cumulative' }: { initialMode
     }))
   }, [data, mode])
 
-  const summary = data?.summary || {}
+  const summary = (data as AccountCurvePayload | null | undefined)?.summary || {}
 
   const isSharp = chartStyle === 'sharp'
   const strokeColor = 'hsl(var(--chart-bullish))'
@@ -98,8 +135,8 @@ export function AccountCurveWidget({ initialMode = 'cumulative' }: { initialMode
       ]} />}
     >
       {isLoading ? <EmptyWidget label="Loading account curve..." /> : chartData.length === 0 ? <EmptyWidget label="No account curve data yet" /> : (
-        <div className="flex h-full min-h-0 flex-col gap-3 xl:flex-row">
-          <div className="w-full h-full flex-1">
+        <div className="flex min-h-[280px] flex-col gap-3 xl:flex-row">
+          <div className="min-h-[240px] w-full flex-1 xl:min-h-0">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData} margin={{ top: 10, right: 10, bottom: 0, left: -25 }}>
                 <defs>
@@ -132,20 +169,21 @@ export function TagPerformanceWidget() {
   const { data = [], isLoading } = useWidgetData('tagPerformance')
   const { getTagById } = useTags()
   const { formatValue } = useDashboardDisplay()
-  const rows = data.slice(0, 8)
+  const rows = (data as TagPerformanceRow[]).slice(0, 8)
   return (
     <WidgetCard title="Tag Performance" headerRight={<Tags className="h-4 w-4 text-muted-foreground" />}>
       {isLoading ? <EmptyWidget label="Loading tags..." /> : rows.length === 0 ? <EmptyWidget label="No tag data yet" /> : (
         <div className="space-y-2">
-          {rows.map((item: any) => {
+          {rows.map((item) => {
             const tag = getTagById(item.tag)
+            const pnl = Number(item.pnl ?? 0)
             return (
               <div key={item.tag} className="grid grid-cols-[minmax(0,1fr)_72px_52px] items-center gap-3 border-b border-border/20 pb-2 last:border-0">
                 <div className="min-w-0">
                   <p className="truncate text-xs font-bold">{tag?.name || item.tag}</p>
                   <p className="text-[10px] font-semibold text-muted-foreground">{item.trades} trades / {Number(item.winRate || 0).toFixed(0)}% WR</p>
                 </div>
-                <p className={cn('text-right font-mono text-xs font-black', item.pnl >= 0 ? 'text-long' : 'text-short')}>{formatValue(item.pnl, { kind: 'money' })}</p>
+                <p className={cn('text-right font-mono text-xs font-black', pnl >= 0 ? 'text-long' : 'text-short')}>{formatValue(pnl, { kind: 'money' })}</p>
                 <p className="text-right font-mono text-xs text-muted-foreground">{Number(item.profitFactor || 0).toFixed(2)} PF</p>
               </div>
             )
@@ -158,18 +196,20 @@ export function TagPerformanceWidget() {
 
 export function TimeOfDayPerformanceWidget() {
   const { data = [], isLoading } = useWidgetData('timeOfDayPerformance')
-  const active = data.filter((item: any) => item.trades > 0)
-  const maxAbs = Math.max(...active.map((item: any) => Math.abs(Number(item.pnl || 0))), 1)
+  const rows = data as TimeOfDayRow[]
+  const active = rows.filter((item) => Number(item.trades || 0) > 0)
+  const maxAbs = Math.max(...active.map((item) => Math.abs(Number(item.pnl || 0))), 1)
   return (
     <WidgetCard title="Time of Day" headerRight={<Clock3 className="h-4 w-4 text-muted-foreground" />}>
       {isLoading ? <EmptyWidget label="Loading time of day..." /> : active.length === 0 ? <EmptyWidget label="No hourly data yet" /> : (
         <div>
           <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">New York time · 24h</div>
           <div className="grid grid-cols-6 gap-2">
-            {data.map((item: any) => {
-              const intensity = Math.max(0.12, Math.abs(Number(item.pnl || 0)) / maxAbs)
+            {rows.map((item) => {
+              const pnl = Number(item.pnl ?? 0)
+              const intensity = Math.max(0.12, Math.abs(pnl) / maxAbs)
               return (
-                <div key={item.hour} className={cn('rounded-md border border-border/25 px-2 py-2', item.pnl >= 0 ? 'bg-long/10' : 'bg-short/10')} style={{ opacity: item.trades > 0 ? 0.55 + intensity * 0.45 : 0.35 }}>
+                <div key={item.hour} className={cn('rounded-md border border-border/25 px-2 py-2', pnl >= 0 ? 'bg-long/10' : 'bg-short/10')} style={{ opacity: Number(item.trades || 0) > 0 ? 0.55 + intensity * 0.45 : 0.35 }}>
                   <p className="font-mono text-[10px] font-black">{String(item.hour).padStart(2, '0')}:00</p>
                   <p className="mt-1 text-[9px] font-bold text-muted-foreground">{item.trades || 0}T</p>
                 </div>
@@ -184,17 +224,18 @@ export function TimeOfDayPerformanceWidget() {
 
 export function DisciplineAnalyticsWidget() {
   const { data, isLoading } = useWidgetData('disciplineAnalytics')
+  const payload = data as DisciplinePayload | null | undefined
   return (
     <WidgetCard title="Discipline" headerRight={<BadgeCheck className="h-4 w-4 text-muted-foreground" />}>
-      {isLoading ? <EmptyWidget label="Loading discipline..." /> : !data ? <EmptyWidget label="No discipline data yet" /> : (
-        <div className="flex h-full flex-col gap-4">
+      {isLoading ? <EmptyWidget label="Loading discipline..." /> : !payload ? <EmptyWidget label="No discipline data yet" /> : (
+        <div className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-3">
-            <MetricPill label="Broken" value={`${Number(data.ruleBrokenRate || 0).toFixed(0)}%`} tone={Number(data.ruleBrokenRate || 0) > 25 ? 'bad' : 'good'} />
-            <MetricPill label="Coverage" value={`${Number(data.ruleCoverage || 0).toFixed(0)}%`} />
-            <MetricPill label="Avg Rules" value={Number(data.avgRulesPerTaggedTrade || 0).toFixed(1)} />
+            <MetricPill label="Broken" value={`${Number(payload.ruleBrokenRate || 0).toFixed(0)}%`} tone={Number(payload.ruleBrokenRate || 0) > 25 ? 'bad' : 'good'} />
+            <MetricPill label="Coverage" value={`${Number(payload.ruleCoverage || 0).toFixed(0)}%`} />
+            <MetricPill label="Avg Rules" value={Number(payload.avgRulesPerTaggedTrade || 0).toFixed(1)} />
           </div>
           <div className="space-y-2">
-            {(data.playbooks || []).slice(0, 5).map((item: any) => (
+            {(payload?.playbooks || []).slice(0, 5).map((item) => (
               <div key={item.model} className="flex items-center justify-between gap-3 border-b border-border/20 pb-2 text-xs last:border-0">
                 <span className="truncate font-bold">{item.model}</span>
                 <span className="font-mono text-muted-foreground">{item.broken}/{item.trades} broken</span>

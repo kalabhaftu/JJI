@@ -18,7 +18,7 @@ export function PropFirmWidgetShell({ title, children }: Props) {
     <WidgetCard
       title={title}
       headerRight={
-        <div className="flex flex-wrap items-center justify-end gap-2">
+        <div className="flex w-full flex-wrap items-center justify-start gap-2 sm:w-auto sm:justify-end">
           {data?.dailyDrawdown?.isBreached && (
             <div
               title={data.dailyDrawdown.notes || undefined}
@@ -45,11 +45,11 @@ export function PropFirmWidgetShell({ title, children }: Props) {
       }
     >
       {error ? (
-        <div className="flex h-full items-center justify-center rounded-xl border border-border/30 bg-muted/10 p-6 text-center text-sm text-muted-foreground">
+        <div className="flex min-h-24 items-center justify-center rounded-xl border border-border/30 bg-muted/10 p-6 text-center text-sm text-muted-foreground">
           {error}
         </div>
       ) : accounts.length === 0 && !isLoading ? (
-        <div className="flex h-full items-center justify-center rounded-xl border border-border/30 bg-muted/10 p-6 text-center text-sm text-muted-foreground">
+        <div className="flex min-h-24 items-center justify-center rounded-xl border border-border/30 bg-muted/10 p-6 text-center text-sm text-muted-foreground">
           Create a prop-firm account to use this widget.
         </div>
       ) : !data.account && !isLoading ? (
@@ -57,7 +57,7 @@ export function PropFirmWidgetShell({ title, children }: Props) {
           Select a prop-firm challenge to view this widget.
         </div>
       ) : isLoading ? (
-        <div className="grid h-full gap-3 md:grid-cols-3">
+        <div className="grid min-h-24 gap-3 md:grid-cols-3">
           <div className="animate-pulse rounded-xl bg-muted/25" />
           <div className="animate-pulse rounded-xl bg-muted/25" />
           <div className="animate-pulse rounded-xl bg-muted/25" />
@@ -65,7 +65,7 @@ export function PropFirmWidgetShell({ title, children }: Props) {
       ) : data.account?.currentPhase ? (
         children(state)
       ) : (
-        <div className="flex h-full items-center justify-center rounded-xl border border-border/30 bg-muted/10 p-6 text-center text-sm text-muted-foreground">
+        <div className="flex min-h-24 items-center justify-center rounded-xl border border-border/30 bg-muted/10 p-6 text-center text-sm text-muted-foreground">
           This prop-firm account has no current challenge phase configured.
         </div>
       )}

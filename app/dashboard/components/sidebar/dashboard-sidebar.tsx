@@ -46,7 +46,7 @@ import { useRithmicSyncContext } from '@/context/rithmic-sync-context'
 import { getAllRithmicData } from '@/lib/rithmic-storage'
 import { toast } from 'sonner'
 import { useEffect, useRef, useState } from 'react'
-import { reportError } from '@/lib/observability/report-error'
+import { reportClientError, reportError } from '@/lib/observability/report-error'
 import { MOBILE_SYNC_EVENT } from '@/lib/navigation/mobile-nav'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 
@@ -119,6 +119,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
         await refreshTrades()
         toast.success("Data refreshed")
       } catch (err) {
+        reportClientError(err, { operation: 'refresh-dashboard-data', route: '/dashboard' })
         toast.error("Failed to refresh data")
       } finally {
         setIsSyncing(false)

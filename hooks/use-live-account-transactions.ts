@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface Transaction {
   id: string
@@ -48,6 +49,7 @@ export function useLiveAccountTransactions() {
 
         setTransactions(result.data || [])
       } catch (error) {
+        reportClientError(error, { operation: 'load-live-account-transactions', route: '/api/v1/live-accounts/transactions' })
         setError(error instanceof Error ? error.message : 'Failed to fetch transactions')
       } finally {
         setIsLoading(false)

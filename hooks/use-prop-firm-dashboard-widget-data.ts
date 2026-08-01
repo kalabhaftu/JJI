@@ -18,10 +18,61 @@ type PropFirmTrade = {
   exitTime?: string | Date | null
 }
 
-type PropFirmWidgetData = {
-  account: any | null
-  drawdown: any | null
-  statistics: any | null
+export type PropFirmNumeric = number | string | null | undefined
+
+export type PropFirmPhase = {
+  phaseNumber?: PropFirmNumeric
+  status?: string | null
+  profitTargetPercent?: PropFirmNumeric
+  dailyDrawdownPercent?: PropFirmNumeric
+  maxDrawdownPercent?: PropFirmNumeric
+  maxDrawdownType?: string | null
+}
+
+export type PropFirmAccount = {
+  accountSize?: PropFirmNumeric
+  currentPhase?: PropFirmPhase | null
+  currentPhaseNumber?: PropFirmNumeric
+  currentBalance?: PropFirmNumeric
+  currentEquity?: PropFirmNumeric
+  currentGrossPnL?: PropFirmNumeric
+  currentNetPnL?: PropFirmNumeric
+  profitTargetProgress?: PropFirmNumeric
+  dailyDrawdownRemaining?: PropFirmNumeric
+  maxDrawdownRemaining?: PropFirmNumeric
+  status?: string | null
+}
+
+export type PropFirmStatistics = Record<string, PropFirmNumeric>
+
+export type PropFirmDrawdown = {
+  dailyDrawdownRemaining?: PropFirmNumeric
+  maxDrawdownRemaining?: PropFirmNumeric
+}
+
+type PropFirmWidgetMetrics = {
+  accountExtremes?: PropFirmWidgetData['accountExtremes']
+  dailyDrawdown?: PropFirmWidgetData['dailyDrawdown']
+  todayStats?: PropFirmWidgetData['todayStats']
+  growth?: PropFirmWidgetData['growth']
+  resetTimezone?: string
+  groupedTradeCount?: number
+  peakEquity?: number
+  maxDrawdown?: number
+  tradingDays?: number
+}
+
+export type PropFirmAccountPayload = {
+  account?: PropFirmAccount | null
+  drawdown?: PropFirmDrawdown | null
+  statistics?: PropFirmStatistics | null
+  widgetMetrics?: PropFirmWidgetMetrics
+}
+
+export type PropFirmWidgetData = {
+  account: PropFirmAccount | null
+  drawdown: PropFirmDrawdown | null
+  statistics: PropFirmStatistics | null
   trades: PropFirmTrade[]
   todayStats: {
     pnl: number
@@ -64,7 +115,7 @@ type PropFirmWidgetData = {
 }
 
 interface PropFirmCacheEntry {
-  accountPayload: any | null
+  accountPayload: PropFirmAccountPayload | null
   trades: PropFirmTrade[]
   isLoading: boolean
   error: string | null
@@ -124,7 +175,7 @@ export const usePropFirmStore = create<PropFirmStore>((set, get) => ({
         cache: {
           ...state.cache,
           [cacheKey]: {
-            accountPayload: accountJson.data,
+            accountPayload: accountJson.data as PropFirmAccountPayload,
             trades: [],
             isLoading: false,
             error: null,

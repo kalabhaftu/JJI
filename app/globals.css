@@ -1,12 +1,13 @@
 @import "tailwindcss";
+@import "@fontsource-variable/dm-sans/wght.css";
 @plugin "@tailwindcss/typography";
 @source "../node_modules/onborda/dist";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --font-sans: var(--font-system), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-satoshi: var(--font-system), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "DM Sans", var(--font-system), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-satoshi: "DM Sans", var(--font-system), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-heading-text: hsl(var(--heading-text));
@@ -243,8 +244,12 @@
 
 @layer base {
   :root {
+    --font-dm-sans: "DM Sans";
     --font-system: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     --font-satoshi: var(--font-system);
+    --radius-control: 0.5rem;
+    --radius-surface: 0.75rem;
+    --radius-pill: 9999px;
   }
 
   *,
@@ -869,6 +874,9 @@ body[data-sidebar-drawer-open="true"] .mobile-bottom-nav {
     @apply bg-background text-foreground;
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
+    font-family: "DM Sans", var(--font-system), -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.5;
   }
 
   /* High contrast mode support */

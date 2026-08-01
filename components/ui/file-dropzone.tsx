@@ -51,7 +51,7 @@ export function FileDropzone({
                 <div className="flex flex-col items-center justify-center p-2 text-center space-y-1">
                     {icon || <Upload className={cn("h-4 w-4", isDragActive ? "text-primary" : "text-muted-foreground/40")} />}
                     {isDragActive && (
-                        <span className="text-[10px] font-medium text-primary">Drop</span>
+                <span className="text-xs font-medium text-primary">Drop</span>
                     )}
                 </div>
             </div>
@@ -102,7 +102,7 @@ export function FileDropzone({
                             {(value.size / 1024 / 1024).toFixed(2)} MB
                         </p>
                         {!isLoading && (
-                            <p className="text-[10px] text-muted-foreground/60 mt-3 border-b border-dashed border-border/50 pb-0.5">
+                                    <p className="text-xs text-muted-foreground/60 mt-3 border-b border-dashed border-border/50 pb-0.5">
                                 Click or drag to replace
                             </p>
                         )}
@@ -139,7 +139,7 @@ export function FileDropzone({
 
             {/* Error Feedback */}
             {fileRejections.length > 0 && (
-                <div role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-md bg-destructive/10 p-2 text-xs text-destructive">
+                <div role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
                     <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                     <div className="space-y-0.5">
                         <span className="font-semibold">File not accepted:</span>

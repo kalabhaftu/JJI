@@ -5,6 +5,7 @@ import { API_TIMEOUT } from '@/lib/constants'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface PropFirmAccountLocal {
   id: string
@@ -163,6 +164,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       setLastUpdated(new Date())
 
     } catch (err) {
+      reportClientError(err, { operation: 'load-prop-firm-realtime-account', route: '/api/v1/prop-firm/accounts' })
       setError(handleFetchError(err))
     } finally {
       isFetchingRef.current = false

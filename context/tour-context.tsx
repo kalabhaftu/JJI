@@ -2,6 +2,7 @@
 
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import type { Route } from 'next'
 import { toast } from 'sonner'
 import { useUserStore } from '@/store/user-store'
 import { clearAccountsCache } from '@/hooks/use-accounts'
@@ -266,10 +267,10 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const pauseTour = useCallback(() => setPaused(true), [])
   const resumeTour = useCallback(() => {
     setPaused(false)
-    if (currentStep?.route && pathname !== currentStep.route) router.push(currentStep.route)
+    if (currentStep?.route && pathname !== currentStep.route) router.push(currentStep.route as Route)
   }, [currentStep?.route, pathname, router])
 
-  const navigateForTour = useCallback((route: string) => router.push(route), [router])
+  const navigateForTour = useCallback((route: string) => router.push(route as Route), [router])
   const target = useTourTargetVisibility({
     activeTour,
     currentStep,

@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { WidgetCard } from '../widget-card'
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
@@ -130,7 +131,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
       
       // Draw text - LARGER font
       const fontSize = Math.round(14 * scale)
-      ctx.font = `800 ${fontSize}px -apple-system, BlinkMacSystemFont, "Inter", sans-serif`
+      ctx.font = `800 ${fontSize}px "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif`
       ctx.fillStyle = 'rgba(255,255,255,0.5)'
       ctx.textAlign = 'left'
       ctx.textBaseline = 'middle'
@@ -149,7 +150,8 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
         URL.revokeObjectURL(url)
         toast.success("Screenshot saved!")
       }, 'image/png')
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'capture-mini-calendar-screenshot', route: '/dashboard' })
       toast.error("Failed to capture screenshot")
     }
   }, [currentDate])
@@ -179,8 +181,8 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
 
   return (
     // Outer wrapper is what html2canvas captures - it covers the full widget area
-    <div ref={calendarRef} className="w-full h-full relative">
-      <WidgetCard noPadding data-widget-card="true" className="overflow-hidden flex flex-col h-full">
+    <div ref={calendarRef} className="relative h-full w-full max-[767px]:h-auto max-[767px]:min-h-full">
+      <WidgetCard noPadding data-widget-card="true" className="flex h-full flex-col overflow-hidden max-[767px]:h-auto max-[767px]:min-h-full max-[767px]:overflow-visible">
 
         {/* ── Single-line header ── */}
         <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/20 bg-muted/5 flex-shrink-0 min-w-0">
@@ -248,7 +250,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
         </div>
 
         {/* Calendar grid - fills available height, no vertical overflow */}
-        <div className="flex-1 min-h-0 overflow-hidden">
+        <div className="flex-1 min-h-0 overflow-hidden max-[767px]:overflow-visible">
           <MonthlyView
             hideWeekends
             currentDate={currentDate}

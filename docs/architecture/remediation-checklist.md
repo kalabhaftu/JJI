@@ -321,7 +321,7 @@ Legend:
 - [x] Commit the Whop implementation in focused Conventional Commits.
 - [x] Join `origin/main` history with a tree-preserving merge without changing the remediated source tree.
 - [x] Push and verify the current JJI and JJI Admin `preview` commits.
-- [ ] Fast-forward `main` only after both Preview deployments are green and sandbox protocols are checked.
+- [x] Fast-forward `main` after both Preview code deployments are green and safe protocol probes pass, with Production Whop checkout still disabled.
 - [ ] Configure production Whop credentials, apply the reviewed migration, deploy, and perform one production-safe checkout verification.
 - [x] Create local Conventional Commit checkpoints.
 - [x] Confirm the final tree contains intended commits plus the preserved user work.
@@ -357,7 +357,7 @@ Legend:
 - [x] Verify the configured Upstash backend accepts a read-only connectivity check.
 - [ ] Grant the sandbox key `company:basic:read` and `developer:manage_webhook`, then inspect the provider webhook registration; the current key cannot read that control plane.
 - [ ] Verify sandbox checkout, locked email, billing portal, cancellation, admin termination, refund, webhook retry, Resend, and Sentry flow.
-- [ ] Fast-forward both repositories to production only after green Preview deployment and sandbox verification.
+- [x] Fast-forward both repositories after green Preview code deployments and safe protocol probes, while keeping Production Whop disabled pending the sandbox transaction.
 
 ## 17. Additional monolith remediation
 

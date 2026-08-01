@@ -31,6 +31,8 @@ const requiredPaths = [
   'lib/tours/persistence.ts',
   'lib/tours/sample-csv.ts',
   'hooks/use-tour-interactions.ts',
+  'hooks/use-rithmic-synchronization.ts',
+  'lib/rithmic/message-handler.ts',
   'server/dashboard-templates-domain.ts',
   'server/weekly-review-domain.ts',
   'server/integrations/dxfeed.ts',
@@ -102,6 +104,11 @@ if (journalAnalysisOrchestrator.split('\n').length > 100) {
 const tourContext = await readFile('context/tour-context.tsx', 'utf8')
 if (tourContext.split('\n').length > 360) {
   failures.push('context/tour-context.tsx must remain focused on tour state orchestration')
+}
+
+const rithmicContext = await readFile('context/rithmic-sync-context.tsx', 'utf8')
+if (rithmicContext.split('\n').length > 350) {
+  failures.push('context/rithmic-sync-context.tsx must remain focused on connection state and composition')
 }
 
 if (failures.length > 0) {

@@ -293,7 +293,7 @@ until its old implementation is gone.
 - [x] Extract weekly-review API access and Lexical document serialization from the modal.
 - [x] Move tour definitions, persistence, event handling, and CSV download out of the tour context.
 - [x] Move all static tour definitions and public tour types out of the context.
-- [ ] Move Rithmic protocol handling and synchronization orchestration out of the context provider.
+- [x] Move Rithmic protocol handling and synchronization orchestration out of the context provider.
 - [x] Extract the Rithmic credential contract and rate-limit response parser.
 - [x] Split trade-import lifecycle, normalization, serialization, and chunk execution behind a two-line compatibility facade.
 - [ ] Finish reducing the archive-import facade without duplicate lifecycle paths.

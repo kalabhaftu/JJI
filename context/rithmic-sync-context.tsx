@@ -3,22 +3,19 @@
 import {
   createContext,
   useContext,
-  useEffect,
   useState,
   useCallback,
   ReactNode,
 } from "react";
-import { getRithmicData, updateLastSyncTime } from "@/lib/rithmic-storage";
 import { useData } from "@/context/data-provider";
-import { toast } from "sonner";
 import { useRithmicSyncStore } from "@/store/rithmic-sync-store";
 import { useTradesStore } from "@/store/trades-store";
-import { getUserId } from "@/server/auth";
 import { useUserStore } from "@/store/user-store";
 import logger from "@/lib/logger";
+import { handleRithmicMessage } from '@/lib/rithmic/message-handler'
+import { useRithmicSynchronization } from '@/hooks/use-rithmic-synchronization'
 import { reportError } from '@/lib/observability/report-error'
 import {
-  parseRithmicRateLimitMessage,
   type RithmicCredentials,
 } from '@/lib/rithmic/sync-contract'
 
@@ -114,266 +111,25 @@ export function RithmicSyncContextProvider({
     }
   }, [ws, resetProcessingState, syncCheckInterval]);
 
-  const handleMessage = useCallback(
-    (message: any) => {
-      if (!message) return;
-
-      setLastMessage(message);
-      addMessageToHistory(message);
-
-      switch (message.type) {
-        case "log":
-          if (message.level === "info") {
-            // Handle initial days count message
-            if (
-              message.message.includes("Processing") &&
-              message.message.includes("days of history")
-            ) {
-              const match = message.message.match(
-                /Processing (\d+) days of history from \d{8}/
-              );
-              if (match) {
-                const [, totalDays] = match;
-
-                // Look for the most recently added account that doesn't have totalDays set
-                const entries = Object.entries(accountsProgress);
-                const activeAccount = entries.find(
-                  ([_, progress]) =>
-                    !progress.isComplete && progress.totalDays === 0
-                );
-
-                if (activeAccount) {
-                  const [accountId] = activeAccount;
-                  logger.debug({ accountId, totalDays }, "Setting Rithmic total days");
-                  updateAccountProgress(accountId, {
-                    totalDays: parseInt(totalDays),
-                    daysProcessed: 0,
-                    total: parseInt(totalDays),
-                  });
-                } else {
-                  console.warn(
-                    "No matching account found for setting total days:",
-                    {
-                      totalDays,
-                      message: message.message,
-                    }
-                  );
-                }
-              }
-            }
-            // Handle day-by-day progress
-            else if (message.message.includes("Processing date")) {
-              // Support both old and new message formats
-              const newFormatMatch = message.message.match(
-                /\[(.*?)\] Processing date (\d+)\/(\d+)(?:: (\d{8}))?/
-              );
-              const oldFormatMatch = message.message.match(
-                /Processing date (\d+) of (\d+)(?:: (\d{8}))?/
-              );
-
-              let accountId: string | undefined;
-              let currentDay: string | undefined;
-              let totalDays: string | undefined;
-              let currentDate: string | undefined = undefined;
-
-              if (newFormatMatch) {
-                [, accountId, currentDay, totalDays, currentDate] =
-                  newFormatMatch;
-              } else if (oldFormatMatch) {
-                [, currentDay, totalDays, currentDate] = oldFormatMatch;
-                accountId = currentAccount || message.account_id;
-              }
-
-              if (accountId && currentDay && totalDays) {
-                // Calculate the actual days processed based on the current day number
-                const daysProcessed = Math.max(parseInt(currentDay) - 1, 0);
-                const currentProgress = accountsProgress[accountId] || {
-                  processedDates: [],
-                };
-
-                updateAccountProgress(accountId, {
-                  currentDayNumber: parseInt(currentDay),
-                  totalDays: parseInt(totalDays),
-                  currentDate: currentDate || "",
-                  daysProcessed: daysProcessed,
-                  processedDates: currentProgress.processedDates || [],
-                  current: parseInt(currentDay),
-                  total: parseInt(totalDays),
-                });
-              }
-            }
-            // Handle completed dates
-            else if (
-              message.message.includes("Successfully processed orders for date")
-            ) {
-              const date = message.message.match(/date (\d{8})/)?.[1];
-              const accountId = currentAccount || message.account_id;
-              if (date && accountId) {
-                const currentProgress = accountsProgress[accountId] || {
-                  ordersProcessed: 0,
-                  daysProcessed: 0,
-                  totalDays: 0,
-                  isComplete: false,
-                  processedDates: [],
-                  currentDayNumber: 0,
-                  currentDate: "",
-                  lastProcessedDate: "",
-                };
-
-                const newDaysProcessed = currentProgress.daysProcessed + 1;
-
-                updateAccountProgress(accountId, {
-                  processedDates: [
-                    ...(currentProgress.processedDates || []),
-                    date,
-                  ],
-                  lastProcessedDate: date,
-                  daysProcessed: newDaysProcessed,
-                });
-              }
-            }
-            // Handle account initialization
-            else if (message.message.includes("Successfully added account")) {
-              const accountId = message.message.match(/account ([^"]+)/)?.[1];
-              if (accountId) {
-                updateAccountProgress(accountId, {
-                  ordersProcessed: 0,
-                  daysProcessed: 0,
-                  totalDays: 0,
-                  isComplete: false,
-                  processedDates: [],
-                  currentDayNumber: 0,
-                  currentDate: "",
-                  lastProcessedDate: "",
-                  current: 0,
-                  total: 0,
-                });
-              }
-            }
-            // Handle account start
-            else if (
-              message.message.includes("Starting processing for account")
-            ) {
-              const accountMatch = message.message.match(
-                /account \d+ of \d+: ([^"\s]+)/
-              );
-              const accountId = accountMatch?.[1];
-              if (accountId) {
-                setCurrentAccount(accountId);
-                updateAccountProgress(accountId, {
-                  ordersProcessed: 0,
-                  daysProcessed: 0,
-                  isComplete: false,
-                  processedDates: [],
-                  currentDayNumber: 0,
-                  currentDate: "",
-                  lastProcessedDate: "",
-                });
-              }
-            }
-            // Handle account completion
-            else if (
-              message.message.includes("Completed processing account") &&
-              message.message.includes("collected")
-            ) {
-              const match = message.message.match(
-                /account ([^,]+), collected (\d+) orders/
-              );
-              if (match) {
-                const [, accountId, ordersStr] = match;
-                const ordersCount = parseInt(ordersStr, 10);
-                const currentProgress = accountsProgress[accountId];
-                updateAccountProgress(accountId, {
-                  ordersProcessed: ordersCount,
-                  isComplete: true,
-                  daysProcessed: currentProgress?.totalDays || 0,
-                  currentDayNumber: currentProgress?.totalDays || 0,
-                });
-              }
-            }
-          }
-          break;
-
-        case "order_update":
-          if (message.account_id) {
-            const prevAccount = accountsProgress[message.account_id];
-            if (prevAccount) {
-              updateAccountProgress(message.account_id, {
-                ordersProcessed: prevAccount.ordersProcessed + 1,
-              });
-            }
-          }
-          break;
-
-        case "processing_complete":
-          refreshTrades();
-          break;
-
-        case "status":
-          if (message.all_complete) {
-          }
-          break;
-
-        case "progress":
-          const progressMatch = message.message.match(
-            /\[(.*?)\] Processing date (\d+)\/(\d+)(?:: (\d{8}))?/
-          );
-          if (progressMatch) {
-            const [, accountId, currentDay, totalDays, currentDate] =
-              progressMatch;
-            const current = parseInt(currentDay);
-            const total = parseInt(totalDays);
-            const prevAccount = accountsProgress[accountId] || {
-              ordersProcessed: 0,
-              daysProcessed: 0,
-              totalDays: 0,
-              isComplete: false,
-              processedDates: [],
-              currentDayNumber: 0,
-              currentDate: "",
-              current: 0,
-              total: 0,
-            };
-
-            // Only update if it's a newer progress
-            if (current > prevAccount.current || total !== prevAccount.total) {
-              const daysProcessed = Math.max(current - 1, 0);
-
-              updateAccountProgress(accountId, {
-                currentDayNumber: current,
-                totalDays: total,
-                currentDate: currentDate || prevAccount.currentDate,
-                daysProcessed,
-                processedDates: [
-                  ...new Set([
-                    ...(prevAccount.processedDates || []),
-                    currentDate,
-                  ]),
-                ].filter(Boolean),
-                current,
-                total,
-                isComplete: current === total,
-              });
-            }
-
-            // Update current account if not set
-            if (!currentAccount) {
-              setCurrentAccount(accountId);
-            }
-          }
-          break;
-      }
-    },
-    [
-      currentAccount,
+  const handleMessage = useCallback((message: any) => {
+    handleRithmicMessage(message, {
       accountsProgress,
-      setCurrentAccount,
-      refreshTrades,
+      currentAccount,
       setLastMessage,
       addMessageToHistory,
       updateAccountProgress,
-    ]
-  );
+      setCurrentAccount,
+      refreshTrades,
+    })
+  }, [
+    accountsProgress,
+    currentAccount,
+    setLastMessage,
+    addMessageToHistory,
+    updateAccountProgress,
+    setCurrentAccount,
+    refreshTrades,
+  ])
 
   const connect = useCallback(
     (url: string, token: string, accounts: string[], startDate: string) => {
@@ -493,341 +249,24 @@ export function RithmicSyncContextProvider({
     ]
   );
 
-  const getProtocols = useCallback(() => {
-    const isLocalhost =
-      process.env.NEXT_PUBLIC_RITHMIC_API_URL?.includes("localhost");
-    return {
-      http: isLocalhost ? window.location.protocol : "https:",
-      ws: isLocalhost
-        ? window.location.protocol === "https:"
-          ? "wss:"
-          : "ws:"
-        : "wss:",
-    };
-  }, []);
-
-  const getWebSocketUrl = useCallback(
-    (baseUrl: string) => {
-      const { ws } = getProtocols();
-      return baseUrl.replace(
-        "ws://your-domain",
-        `${ws}//${process.env.NEXT_PUBLIC_RITHMIC_API_URL}`
-      );
-    },
-    [getProtocols]
-  );
-
-  const performSyncForCredential = useCallback(
-    async (credentialId: string) => {
-      if (isAutoSyncing) return;
-
-      resetProcessingState();
-      clearMessageHistory();
-
-      const userId = await getUserId();
-      if (!userId || isAutoSyncing) return;
-
-      const savedData = getRithmicData(credentialId);
-
-      if (!savedData) return;
-
-      setIsAutoSyncing(true);
-
-      try {
-        const { http } = getProtocols();
-
-        const response = (await Promise.race([
-          fetch(
-            `${http}//${process.env.NEXT_PUBLIC_RITHMIC_API_URL}/accounts`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-
-              body: JSON.stringify({
-                ...savedData.credentials,
-                userId: userId,
-              }),
-            }
-          ),
-          new Promise((_, reject) =>
-            setTimeout(
-              () => reject(new Error("Auto-sync operation timed out")),
-              30000
-            )
-          ),
-        ])) as Response;
-
-        // Handle rate limit error specifically
-        if (response.status === 429) {
-          const data = await response.json();
-          const params = parseRithmicRateLimitMessage(data.detail);
-
-          toast.error("Rithmic Rate Limit Exceeded", {
-            description: `Maximum ${params.max} attempts allowed per ${params.period} minutes. Please wait ${params.wait} minutes.`,
-          });
-
-          return {
-            success: false as const,
-            rateLimited: true,
-            message: data.detail || "Rate limit exceeded",
-          };
-        }
-
-        const data = await response.json();
-        if (!data.success) throw new Error(data.message);
-
-        // If allAccounts is true, use all available accounts else use selected accounts (which exist in the data.accounts array)
-        const accountsToSync = savedData.allAccounts
-          ? data.accounts.map((acc: any) => acc.account_id)
-          : savedData.selectedAccounts.filter((account: string) =>
-              data.accounts.some((acc: any) => acc.account_id === account)
-            );
-
-        setAvailableAccounts(data.accounts);
-        const wsUrl = getWebSocketUrl(data.websocket_url);
-
-        // Get most recent date for each account
-        const mostRecentDates = accountsToSync
-          .map((accountId: string) => {
-            const accountTrades = trades.filter(
-              (trade) => trade.accountNumber === accountId
-            );
-            if (accountTrades.length === 0) return null;
-            return Math.max(
-              ...accountTrades.map((trade) =>
-                new Date(trade.entryDate).getTime()
-              )
-            );
-          })
-          .filter(Boolean) as number[];
-
-        let startDate: string;
-
-        // If no valid dates found, use 200 days ago as default
-        if (mostRecentDates.length === 0) {
-          const defaultDate = new Date(Date.now() - 200 * 24 * 60 * 60 * 1000);
-          startDate = defaultDate.toISOString().slice(0, 10).replace(/-/g, "");
-        } else {
-          // Find oldest of the most recent dates
-          const oldestRecentDate = new Date(Math.min(...mostRecentDates));
-          // Add 3 days buffer
-          oldestRecentDate.setDate(oldestRecentDate.getDate() - 3);
-          startDate = oldestRecentDate
-            .toISOString()
-            .slice(0, 10)
-            .replace(/-/g, "");
-        }
-
-        connect(wsUrl, data.token, accountsToSync, startDate);
-        updateLastSyncTime(credentialId);
-
-        handleMessage({
-          type: "log",
-          level: "info",
-          message: `Starting automatic background sync for ${savedData.name || savedData.credentials.username}`,
-        });
-
-        // Update last sync time in the database
-        // Call API route instead of server action
-        const syncResponse = await fetch("/api/v1/rithmic/synchronizations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            accountId: savedData.id,
-            lastSyncedAt: new Date(),
-          }),
-        });
-
-        if (!syncResponse.ok) {
-          const errorData = await syncResponse.json();
-          throw new Error(
-            errorData.message || "Failed to update synchronization"
-          );
-        }
-
-        return {
-          success: true,
-          rateLimited: false,
-          message: "Sync started successfully",
-        };
-      } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'auto-sync-rithmic-credential',
-          entityId: credentialId,
-        })
-        handleMessage({
-          type: "log",
-          level: "error",
-          message: `Auto-sync error for credential set ${credentialId}: ${error instanceof Error ? error.message : "Unknown error"}`,
-        });
-
-        return {
-          success: false,
-          rateLimited: false,
-          message: error instanceof Error ? error.message : "Unknown error",
-        };
-      } finally {
-        setIsAutoSyncing(false);
-      }
-    },
-    [
-      isAutoSyncing,
-      connect,
-      handleMessage,
-      getProtocols,
-      getWebSocketUrl,
-      resetProcessingState,
-      clearMessageHistory,
-      setAvailableAccounts,
-      setIsAutoSyncing,
-      trades,
-    ]
-  );
-
-  const authenticateAndGetAccounts = useCallback(
-    async (credentials: RithmicCredentials) => {
-      const { http } = getProtocols();
-      const response = await fetch(
-        `${http}//${process.env.NEXT_PUBLIC_RITHMIC_API_URL}/accounts`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(credentials),
-        }
-      );
-
-      // Handle rate limit error specifically
-      if (response.status === 429) {
-        const data = await response.json();
-        const params = parseRithmicRateLimitMessage(data.detail);
-
-        toast.error("Rithmic Rate Limit Exceeded", {
-          description: `Maximum ${params.max} attempts allowed per ${params.period} minutes. Please wait ${params.wait} minutes.`,
-        });
-
-        return {
-          success: false as const,
-          rateLimited: true,
-          message: data.detail || "Rate limit exceeded",
-        };
-      }
-
-      const data = await response.json();
-      if (!data.success) {
-        return {
-          success: false as const,
-          rateLimited: false,
-          message: data.message,
-        };
-      }
-
-      return {
-        success: true as const,
-        rateLimited: false,
-        token: data.token,
-        websocket_url: getWebSocketUrl(data.websocket_url),
-        accounts: data.accounts,
-      };
-    },
-    [getProtocols, getWebSocketUrl]
-  );
-
-  const calculateStartDate = useCallback(
-    (selectedAccounts: string[]): string => {
-      // Filter trades for selected accounts
-      const accountTrades = trades.filter((trade) =>
-        selectedAccounts.includes(trade.accountNumber)
-      );
-
-      if (accountTrades.length === 0) {
-        const date = new Date();
-        date.setDate(date.getDate() - 91);
-        const startDate = date.toISOString().slice(0, 10).replace(/-/g, "");
-        logger.debug({ startDate }, "No Rithmic trades found; using default start date");
-        return startDate;
-      }
-
-      // Find the most recent trade date for each account
-      const accountDates = selectedAccounts
-        .map((accountId) => {
-          const accountTrades = trades.filter(
-            (trade) => trade.accountNumber === accountId
-          );
-          if (accountTrades.length === 0) return null;
-          return Math.max(
-            ...accountTrades.map((trade) => new Date(trade.entryDate).getTime())
-          );
-        })
-        .filter(Boolean) as number[];
-
-      // Get the oldest most recent date across all accounts
-      const oldestRecentDate = new Date(Math.min(...accountDates));
-
-      // Set to next day
-      oldestRecentDate.setDate(oldestRecentDate.getDate() + 1);
-
-      // Format as YYYYMMDD
-      const startDate = oldestRecentDate
-        .toISOString()
-        .slice(0, 10)
-        .replace(/-/g, "");
-
-      logger.debug({ startDate }, "Calculated Rithmic start date from trades");
-      return startDate;
-    },
-    [trades]
-  );
-
-  const checkAndPerformSyncs = useCallback(async () => {
-    if (isLoading) return;
-    if (isAutoSyncing) return;
-    try {
-      // Call API route instead of server action
-      const response = await fetch("/api/v1/rithmic/synchronizations", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch synchronizations");
-      }
-
-      const result = await response.json();
-      const synchronizations = result.data || [];
-
-      for (const sync of synchronizations) {
-        if (!sync.lastSyncedAt) continue;
-
-        const lastSyncTime = new Date(sync.lastSyncedAt).getTime();
-        const now = Date.now();
-        const minutesSinceLastSync = (now - lastSyncTime) / (1000 * 60);
-
-        if (minutesSinceLastSync >= syncInterval) {
-          logger.debug({ accountId: sync.accountId }, "Rithmic auto-sync triggered");
-          await performSyncForCredential(sync.accountId);
-        }
-      }
-    } catch (error) {
-      console.warn("Error during rithmic auto-sync check:", error);
-    }
-  }, [syncInterval, isAutoSyncing, performSyncForCredential, isLoading]);
-
-  useEffect(() => {
-    if (disabled) return;
-
-    const intervalMs = 1 * 60 * 1000; // 1 minute
-
-    const intervalId = setInterval(() => {
-      checkAndPerformSyncs();
-    }, intervalMs);
-
-    return () => {
-      clearInterval(intervalId);
-    };
-  }, [disabled, syncInterval, checkAndPerformSyncs]);
+  const {
+    performSyncForCredential,
+    authenticateAndGetAccounts,
+    calculateStartDate,
+    getWebSocketUrl,
+  } = useRithmicSynchronization({
+    disabled,
+    isLoading,
+    isAutoSyncing,
+    syncInterval,
+    trades,
+    connect,
+    handleMessage,
+    resetProcessingState,
+    clearMessageHistory,
+    setAvailableAccounts,
+    setIsAutoSyncing,
+  })
 
   return (
     <RithmicSyncContext.Provider

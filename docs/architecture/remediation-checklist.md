@@ -287,7 +287,7 @@ until its old implementation is gone.
 - [x] Move journal-analysis prompt generation and rule fallback behind a server AI module.
 - [x] Extract the deterministic journal-analysis fallback from provider orchestration.
 - [x] Split the remaining journal AI server module into preparation, prompt, and provider modules.
-- [ ] Split settings profile/plan, preferences, integrations, and destructive-account UI into focused components.
+- [x] Split settings profile/plan, preferences, integrations, and destructive-account UI into focused components.
 - [x] Extract the settings help/tour section into a focused component.
 - [ ] Split the weekly modal data access, document serialization, metrics, charts, and journal UI.
 - [x] Extract weekly-review API access and Lexical document serialization from the modal.

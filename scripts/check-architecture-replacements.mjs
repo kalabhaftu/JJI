@@ -36,6 +36,9 @@ const requiredPaths = [
   'hooks/use-tour-interactions.ts',
   'hooks/use-rithmic-synchronization.ts',
   'lib/rithmic/message-handler.ts',
+  'app/dashboard/settings/components/settings-dialogs.tsx',
+  'app/dashboard/settings/components/settings-preferences-section.tsx',
+  'app/dashboard/settings/components/settings-profile-section.tsx',
   'server/dashboard-templates-domain.ts',
   'server/weekly-review-domain.ts',
   'server/integrations/dxfeed.ts',
@@ -117,6 +120,11 @@ if (tourContext.split('\n').length > 360) {
 const rithmicContext = await readFile('context/rithmic-sync-context.tsx', 'utf8')
 if (rithmicContext.split('\n').length > 350) {
   failures.push('context/rithmic-sync-context.tsx must remain focused on connection state and composition')
+}
+
+const settingsPage = await readFile('app/dashboard/settings/page.tsx', 'utf8')
+if (settingsPage.split('\n').length > 750) {
+  failures.push('app/dashboard/settings/page.tsx must remain focused on settings data orchestration')
 }
 
 if (failures.length > 0) {

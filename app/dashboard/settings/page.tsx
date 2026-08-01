@@ -1,95 +1,44 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { motion } from 'framer-motion'
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Switch } from "@/components/ui/switch"
-import { useTheme } from '@/context/theme-provider'
-import { useAuth } from '@/context/auth-provider'
-import { createClient } from "@/lib/supabase"
-import { cn } from "@/lib/utils"
-import { formatBreakevenBand } from '@/lib/metrics/outcome'
-import { normalizePnlDisplayMode, type PnlDisplayMode } from '@/lib/metrics/pnl'
-import { signOut } from "@/server/auth"
-import { useUserStore } from '@/store/user-store'
-import {
-  ChevronRight as CaretRight,
-  ChevronDown,
-  Check,
-  Clock,
-  CreditCard,
-  Pencil,
-  Laptop,
-  Moon,
-  Palette,
-  Settings as SettingsIcon,
-  Bot,
-  Shield,
-  Sparkles,
-  BellRing,
-  Sun,
-  Trash2 as Trash,
-  User,
-  AlertCircle as WarningCircle,
-  Calendar,
-  Target,
-  LayoutGrid,
-  Zap,
-  Globe,
-  SunMoon,
-  TrendingUp,
-  Activity,
-  Webhook,
-  Link2 as LinkIcon,
   BookMarked,
-  Eye,
-} from "lucide-react"
-import { motion } from "framer-motion"
-import { reportError } from '@/lib/observability/report-error'
-import Link from 'next/link'
+  Link2 as LinkIcon,
+  Settings as SettingsIcon,
+  Shield,
+  User,
+  Webhook,
+} from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { toast } from "sonner"
-import { SettingRow } from './components/setting-row'
-import { defaultAiSettings, timezones } from './components/settings-config'
-import { useSettingsPreferences } from './hooks/use-settings-preferences'
-import { PageHeader } from "@/components/ui/page-header"
-import { getUserAvatarUrl } from "@/lib/user-avatar"
+import { toast } from 'sonner'
+import { PageHeader } from '@/components/ui/page-header'
+import { useAuth } from '@/context/auth-provider'
+import { useTheme } from '@/context/theme-provider'
 import { useTour } from '@/context/tour-context'
-import { SettingsNavigation, type SettingsSectionId } from './components/settings-navigation'
+import { normalizePnlDisplayMode } from '@/lib/metrics/pnl'
+import { reportError } from '@/lib/observability/report-error'
+import { createClient } from '@/lib/supabase'
+import { getUserAvatarUrl } from '@/lib/user-avatar'
+import { signOut } from '@/server/auth'
+import { useUserStore } from '@/store/user-store'
+import { SettingsDialogs } from './components/settings-dialogs'
+import { defaultAiSettings } from './components/settings-config'
 import { SettingsHelpSection } from './components/settings-help-section'
-import { SettingsHeader, SettingsShell } from './components/settings-shell'
+import { SettingsNavigation, type SettingsSectionId } from './components/settings-navigation'
 import { SettingsConnections, SettingsIntegrations, SettingsSecurity } from './components/settings-panels'
+import { SettingsPreferencesSection } from './components/settings-preferences-section'
+import { SettingsProfileSection } from './components/settings-profile-section'
+import { SettingsHeader, SettingsShell } from './components/settings-shell'
+import type { SettingsProfileData, SettingsSubscriptionData } from './components/settings-types'
+import { useSettingsPreferences } from './hooks/use-settings-preferences'
+
+function reportSettingsMutationError(error: unknown, operation: string) {
+  reportError(error, {
+    surface: 'client',
+    operation,
+    route: '/dashboard/settings',
+  })
+}
 
 export default function SettingsPage() {
   const { theme, accentPack, widgetStyle, chartStyle } = useTheme()
@@ -114,13 +63,13 @@ export default function SettingsPage() {
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSignOutDialogOpen, setIsSignOutDialogOpen] = useState(false)
 
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<SettingsProfileData>({
     firstName: '',
     lastName: '',
     email: user?.email || '',
     autoAdjustAccountDate: false,
     breakEvenThreshold: 10,
-    pnlDisplayMode: 'net' as PnlDisplayMode,
+    pnlDisplayMode: 'net',
     aiSettings: defaultAiSettings,
   })
   const [breakEvenDraft, setBreakEvenDraft] = useState('10')
@@ -151,13 +100,7 @@ export default function SettingsPage() {
     })
   }
 
-  const [subscriptionData, setSubscriptionData] = useState<{
-    hasAccess: boolean
-    status: string
-    reason?: string
-    currentPeriodEnd?: string
-    nextPaymentDue?: string
-  } | null>(null)
+  const [subscriptionData, setSubscriptionData] = useState<SettingsSubscriptionData | null>(null)
   const [isLoadingSubscription, setIsLoadingSubscription] = useState(true)
 
   const [webhookToken, setWebhookToken] = useState<string | null>(null)
@@ -232,7 +175,8 @@ export default function SettingsPage() {
         description: 'Your TradingView webhook token has been regenerated. Update your TradingView alert.',
         duration: 4000,
       })
-    } catch {
+    } catch (error) {
+      reportSettingsMutationError(error, 'regenerate-webhook-token')
       toast.error('Failed to regenerate token')
     } finally {
       setIsRegeneratingWebhook(false)
@@ -246,7 +190,8 @@ export default function SettingsPage() {
       await navigator.clipboard.writeText(url)
       setWebhookCopied(true)
       setTimeout(() => setWebhookCopied(false), 2500)
-    } catch {
+    } catch (error) {
+      reportSettingsMutationError(error, 'copy-webhook-url')
       toast.error('Could not copy webhook URL')
     }
   }
@@ -326,6 +271,7 @@ export default function SettingsPage() {
         throw new Error(result.error?.message || 'Update failed')
       }
     } catch (error) {
+      reportSettingsMutationError(error, 'update-profile')
       toast.error("Update failed", {
         description: error instanceof Error ? error.message : "There was an error updating your profile.",
         duration: 3000
@@ -349,7 +295,8 @@ export default function SettingsPage() {
         description: `Timezone changed to ${value.replace('_', ' ')}.`,
         duration: 2000
       })
-    } catch {
+    } catch (error) {
+      reportSettingsMutationError(error, 'update-timezone')
       setTimezone(previous)
       toast.error("Failed to sync timezone")
     }
@@ -376,6 +323,7 @@ export default function SettingsPage() {
         autoAdjustAccountDate: result.data?.autoAdjustAccountDate ?? checked
       }))
     } catch (error) {
+      reportSettingsMutationError(error, 'update-auto-adjust-account-date')
       setProfileData(prev => ({ ...prev, autoAdjustAccountDate: previous }))
       toast.error('Auto-adjust update failed', {
         description: error instanceof Error ? error.message : 'Failed to save Auto-adjust Account Date preference.',
@@ -421,6 +369,7 @@ export default function SettingsPage() {
         duration: 2500
       })
     } catch (error) {
+      reportSettingsMutationError(error, 'update-break-even-threshold')
       setProfileData(prev => ({ ...prev, breakEvenThreshold: previous }))
       setBreakEvenDraft(String(previous))
       toast.error('Break-even update failed', {
@@ -468,6 +417,7 @@ export default function SettingsPage() {
         duration: 2500
       })
     } catch (error) {
+      reportSettingsMutationError(error, 'update-pnl-display-mode')
       setProfileData(prev => ({ ...prev, pnlDisplayMode: previous }))
       toast.error('P&L display update failed', {
         description: error instanceof Error ? error.message : 'Failed to save P&L display preference.',
@@ -503,6 +453,7 @@ export default function SettingsPage() {
         duration: 2500
       })
     } catch (error) {
+      reportSettingsMutationError(error, 'update-ai-settings')
       setProfileData(prev => ({ ...prev, aiSettings: previous }))
       toast.error('AI settings update failed', {
         description: error instanceof Error ? error.message : 'Failed to save AI settings.',
@@ -547,6 +498,7 @@ export default function SettingsPage() {
       window.location.href = '/?deleted=true'
 
     } catch (error) {
+      reportSettingsMutationError(error, 'delete-account')
       toast.error("Deletion failed", {
         description: error instanceof Error ? error.message : "There was an error deleting your account.",
         duration: 5000
@@ -569,13 +521,6 @@ export default function SettingsPage() {
     setIsEditingProfile(false)
   }
 
-  const getThemeDisplay = () => {
-    if (theme === 'dark') return { icon: Moon, label: 'Dark' }
-    if (theme === 'light') return { icon: Sun, label: 'Light' }
-    return { icon: Laptop, label: 'System' }
-  }
-
-  const themeInfo = getThemeDisplay()
 
   const [activeTab, setActiveTab] = useState<SettingsSectionId>('profile')
 
@@ -589,548 +534,6 @@ export default function SettingsPage() {
   ]
 
   const { startTour } = useTour()
-
-  const renderProfileTab = () => {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-heading-text">Profile & Plan</h2>
-          <p className="text-xs text-muted-foreground/85">Manage your personal information and subscription plan</p>
-        </div>
-
-        {/* Profile Card */}
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6" data-tour="settings-card-profile">
-          <div className="flex items-start justify-between gap-4">
-            <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Personal Info
-            </h3>
-            <Button
-              variant={isEditingProfile ? "secondary" : "outline"}
-              size="sm"
-              className="gap-2 h-8"
-              onClick={() => setIsEditingProfile(true)}
-              disabled={isLoadingProfile || isEditingProfile}
-            >
-              <Pencil className="h-3 w-3" />
-              Edit
-            </Button>
-          </div>
-
-          {/* User Info details */}
-          <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/20 border border-border/10">
-            <Avatar className="h-12 w-12 shrink-0 border border-border/25">
-              <AvatarImage key={avatarUrl ?? 'settings-avatar-fallback'} src={avatarUrl} referrerPolicy="no-referrer" />
-              <AvatarFallback className="text-lg">
-                {user?.email?.[0].toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm truncate text-heading-text">{user?.email}</p>
-              <p className="text-xs text-muted-foreground">
-                Member since {new Date(user?.created_at || '').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-              </p>
-            </div>
-            <Badge variant="secondary" className="shrink-0 bg-muted text-muted-foreground border-border/25 text-xs font-normal">Active</Badge>
-          </div>
-
-          {isLoadingProfile ? (
-            <div className="space-y-4">
-              <div className="space-y-1.5"><Skeleton className="h-3 w-16" /><Skeleton className="h-9 w-full" /></div>
-              <div className="space-y-1.5"><Skeleton className="h-3 w-16" /><Skeleton className="h-9 w-full" /></div>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="firstName" className="text-xs text-muted-foreground">First Name</Label>
-                <Input
-                  id="firstName"
-                  placeholder="Enter your first name"
-                  value={profileData.firstName}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, firstName: e.target.value }))}
-                  disabled={isLoadingProfile || !isEditingProfile}
-                  className="h-9 bg-background/50"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="lastName" className="text-xs text-muted-foreground">Last Name</Label>
-                <Input
-                  id="lastName"
-                  placeholder="Enter your last name"
-                  value={profileData.lastName}
-                  onChange={(e) => setProfileData(prev => ({ ...prev, lastName: e.target.value }))}
-                  disabled={isLoadingProfile || !isEditingProfile}
-                  className="h-9 bg-background/50"
-                />
-              </div>
-            </div>
-          )}
-
-          <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs text-muted-foreground">Email</Label>
-            <Input id="email" type="email" value={user?.email || ''} disabled className="h-9 bg-background/25 border-border/20 text-muted-foreground" />
-          </div>
-
-          {isEditingProfile && (
-            <div className="flex flex-col gap-2 sm:flex-row pt-2">
-              <Button
-                variant="outline"
-                className="w-full sm:w-auto h-9 text-xs"
-                onClick={handleCancelProfileEdit}
-                disabled={isUpdatingProfile}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={handleProfileUpdate}
-                loading={isUpdatingProfile || isLoadingProfile}
-                loadingText={isLoadingProfile ? "Fetching..." : "Updating..."}
-                className="w-full sm:w-auto h-9 text-xs"
-              >
-                Save Profile
-              </Button>
-            </div>
-          )}
-        </div>
-
-        {/* Subscription Plan details */}
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
-          <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-            <CreditCard className="h-4 w-4" />
-            Subscription Plan
-          </h3>
-
-          {isLoadingSubscription ? (
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-4 w-32" />
-            </div>
-          ) : subscriptionData ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/10">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Status</p>
-                    <p className="text-sm font-semibold text-heading-text mt-0.5">
-                      {subscriptionData.reason || subscriptionData.status}
-                    </p>
-                  </div>
-                  <Badge variant={subscriptionData.hasAccess ? 'secondary' : 'destructive'} className="shrink-0">
-                    {subscriptionData.hasAccess ? 'Active' : 'Inactive'}
-                  </Badge>
-                </div>
-
-                {subscriptionData.currentPeriodEnd && (
-                  <div className="flex items-center justify-between p-4 rounded-lg bg-muted/20 border border-border/10">
-                    <div>
-                      <p className="text-xs text-muted-foreground">Period Ends</p>
-                      <p className="text-sm font-semibold text-heading-text mt-0.5">
-                        {new Date(subscriptionData.currentPeriodEnd).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                      </p>
-                    </div>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {(() => {
-                        const days = Math.ceil((new Date(subscriptionData.currentPeriodEnd!).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
-                        return days > 0 ? `${days} day${days !== 1 ? 's' : ''} left` : 'Expired'
-                      })()}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              {subscriptionData.nextPaymentDue && (
-                <div className="p-4 rounded-lg bg-muted/20 border border-border/10 flex justify-between items-center">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Next Payment Due</p>
-                    <p className="text-sm font-semibold text-heading-text mt-0.5">
-                      {new Date(subscriptionData.nextPaymentDue).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {!subscriptionData.hasAccess && (
-                <Link href="/subscribe">
-                  <Button size="sm" className="gap-2 w-full mt-2 h-9 text-xs">
-                    <CreditCard className="h-3.5 w-3.5" />
-                    Subscribe to Premium
-                  </Button>
-                </Link>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">Unable to load subscription info</p>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  const renderPreferencesTab = () => {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-heading-text">Preferences</h2>
-          <p className="text-xs text-muted-foreground/85">Customize your platform experience and AI settings</p>
-        </div>
-
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-1" data-tour="settings-card-preferences">
-          {/* Theme selection */}
-          <SettingRow
-            icon={SunMoon}
-            label="Theme"
-            description="Choose your preferred color scheme"
-            action={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[110px] h-8 text-xs" data-tour="theme-switcher-container">
-                    <themeInfo.icon className="h-3.5 w-3.5" />
-                    {themeInfo.label}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
-                    <Moon className="mr-2 h-3.5 w-3.5" />
-                    Dark
-                    {theme === 'dark' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleThemeChange("light")}>
-                    <Sun className="mr-2 h-3.5 w-3.5" />
-                    Light
-                    {theme === 'light' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleThemeChange("system")}>
-                    <Laptop className="mr-2 h-3.5 w-3.5" />
-                    System
-                    {theme === 'system' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Color Accent selection */}
-          <SettingRow
-            icon={Palette}
-            label="Color Accent"
-            description={accentPack === 'reports' ? 'Forest' : accentPack === 'violet' ? 'Orchid' : accentPack === 'slate' ? 'Graphite' : 'Classic'}
-            action={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[155px] h-8 text-xs justify-between">
-                    <span className="flex items-center gap-2">
-                      <span className="flex gap-1 shrink-0">
-                        <span className={cn("w-2 h-2 rounded-full",
-                          accentPack === 'reports' ? 'bg-[#83b885]' : accentPack === 'violet' ? 'bg-[#a78bfa]' : accentPack === 'slate' ? 'bg-[#f8fafc]' : 'bg-[#10b981]'
-                        )} />
-                        <span className={cn("w-2 h-2 rounded-full",
-                          accentPack === 'reports' ? 'bg-[#ce6730]' : accentPack === 'violet' ? 'bg-[#f472b6]' : accentPack === 'slate' ? 'bg-[#64748b]' : 'bg-[#ef4444]'
-                        )} />
-                      </span>
-                      {accentPack === 'reports' ? 'Forest' : accentPack === 'violet' ? 'Orchid' : accentPack === 'slate' ? 'Graphite' : 'Classic'}
-                    </span>
-                    <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleAccentChange('classic')}>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 shrink-0">
-                        <div className="w-3 h-3 rounded-full bg-[#10b981]" />
-                        <div className="w-3 h-3 rounded-full bg-[#ef4444]" />
-                      </div>
-                      Classic
-                    </div>
-                    {accentPack === 'classic' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAccentChange('reports')}>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 shrink-0">
-                        <div className="w-3 h-3 rounded-full bg-[#83b885]" />
-                        <div className="w-3 h-3 rounded-full bg-[#ce6730]" />
-                      </div>
-                      Forest
-                    </div>
-                    {accentPack === 'reports' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAccentChange('violet')}>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 shrink-0">
-                        <div className="w-3 h-3 rounded-full bg-[#a78bfa]" />
-                        <div className="w-3 h-3 rounded-full bg-[#f472b6]" />
-                      </div>
-                      Orchid
-                    </div>
-                    {accentPack === 'violet' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleAccentChange('slate')}>
-                    <div className="flex items-center gap-2">
-                      <div className="flex gap-1 shrink-0">
-                        <div className="w-3 h-3 rounded-full bg-[#f8fafc]" />
-                        <div className="w-3 h-3 rounded-full bg-[#64748b]" />
-                      </div>
-                      Graphite
-                    </div>
-                    {accentPack === 'slate' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Timezone selection */}
-          <SettingRow
-            icon={Globe}
-            label="Timezone"
-            description={timezone.replace('_', ' ')}
-            action={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
-                    Change
-                    <CaretRight className="h-3.5 w-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <ScrollArea className="h-[200px]">
-                    <DropdownMenuRadioGroup value={timezone} onValueChange={handleTimezoneChange}>
-                      {timezones.map((tz) => (
-                        <DropdownMenuRadioItem key={tz} value={tz} className="text-xs">
-                          {tz.replace('_', ' ')}
-                        </DropdownMenuRadioItem>
-                      ))}
-                    </DropdownMenuRadioGroup>
-                  </ScrollArea>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Time Format */}
-          <SettingRow
-            icon={Clock}
-            label="Time Format"
-            description={use24HourFormat ? "24-hour" : "12-hour"}
-            action={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
-                    Change
-                    <CaretRight className="h-3.5 w-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuRadioGroup value={use24HourFormat ? "24h" : "12h"} onValueChange={(v) => {
-                    setUse24HourFormat(v === "24h")
-                    toast.success("Time format updated", {
-                      description: `Time format changed to ${v === "24h" ? "24-hour" : "12-hour"}.`,
-                      duration: 2000
-                    })
-                  }}>
-                    <DropdownMenuRadioItem value="24h" className="text-xs">24-hour (14:30)</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="12h" className="text-xs">12-hour (2:30 PM)</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Break-even band */}
-          <SettingRow
-            icon={Target}
-            label="Break-even threshold"
-            description={`Breakeven band: ${formatBreakevenBand(profileData.breakEvenThreshold)}. Counted as win above +$${profileData.breakEvenThreshold}, loss below -$${profileData.breakEvenThreshold}.`}
-            action={
-              <div className="flex items-center gap-2">
-                <Input
-                  type="number"
-                  min={0}
-                  step={0.01}
-                  value={breakEvenDraft}
-                  onChange={(e) => setBreakEvenDraft(e.target.value)}
-                  className="h-8 w-24 text-xs"
-                />
-                <Button
-                  size="sm"
-                  className="h-8 text-xs"
-                  onClick={handleBreakEvenThresholdSave}
-                  disabled={isUpdatingBreakEven}
-                >
-                  {isUpdatingBreakEven ? 'Saving...' : 'Save'}
-                </Button>
-              </div>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* P&L display */}
-          <SettingRow
-            icon={TrendingUp}
-            label="P&L display"
-            description={profileData.pnlDisplayMode === 'gross'
-              ? 'Show gross P&L before commissions and swap on dashboard/report money surfaces.'
-              : 'Show net P&L after commissions and swap on dashboard/report money surfaces.'}
-            action={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
-                    {profileData.pnlDisplayMode === 'gross' ? 'Gross' : 'Net'}
-                    <CaretRight className="h-3.5 w-3.5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuRadioGroup
-                    value={profileData.pnlDisplayMode}
-                    onValueChange={handlePnlDisplayModeChange}
-                  >
-                    <DropdownMenuRadioItem value="net" className="text-xs">Net (after fees)</DropdownMenuRadioItem>
-                    <DropdownMenuRadioItem value="gross" className="text-xs">Gross (before fees)</DropdownMenuRadioItem>
-                  </DropdownMenuRadioGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Widget Style */}
-          <SettingRow
-            icon={LayoutGrid}
-            label="Widget Style"
-            description={widgetStyle === 'glass' ? 'Glassmorphism with distinct borders' : 'Standard muted panel style'}
-            action={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[120px] h-8 text-xs">
-                    {widgetStyle === 'glass' ? 'Glassmorphism' : 'Standard'}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleWidgetStyleChange('default')}>
-                    Standard
-                    {widgetStyle === 'default' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleWidgetStyleChange('glass')}>
-                    Glassmorphism
-                    {widgetStyle === 'glass' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Chart Style */}
-          <SettingRow
-            icon={Activity}
-            label="Chart Edge Style"
-            description={chartStyle === 'sharp' ? 'Sharp angular lines following your color accent' : 'Smooth curved lines following your color accent'}
-            action={
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[120px] h-8 text-xs">
-                    {chartStyle === 'sharp' ? 'Sharp' : 'Smooth'}
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => handleChartStyleChange('smooth')}>
-                    Smooth
-                    {chartStyle === 'smooth' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleChartStyleChange('sharp')}>
-                    Sharp
-                    {chartStyle === 'sharp' && <Check className="ml-auto h-3.5 w-3.5" />}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Privacy Mode */}
-          <SettingRow
-            icon={Eye}
-            label="Privacy Mode"
-            description="Hide monetary balances across the dashboard"
-            action={
-              <Switch
-                checked={privacyMode}
-                onCheckedChange={handlePrivacyModeToggle}
-              />
-            }
-          />
-
-          <Separator className="my-1 border-border/30" />
-
-          {/* Auto-adjust date */}
-          <SettingRow
-            icon={Calendar}
-            label="Auto-adjust Account Date"
-            description="Automatically set account start date to your first trade"
-            action={
-              <Button
-                variant={profileData.autoAdjustAccountDate ? "default" : "outline"}
-                size="sm"
-                className="h-8 text-xs"
-                onClick={() => handleAutoAdjustChange(!profileData.autoAdjustAccountDate)}
-              >
-                {profileData.autoAdjustAccountDate ? "Enabled" : "Disabled"}
-              </Button>
-            }
-          />
-        </div>
-
-        {/* AI Preferences */}
-        <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
-          <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-            <Bot className="h-4 w-4" />
-            AI Preferences
-          </h3>
-
-          <div className="space-y-1">
-            <SettingRow
-              icon={Sparkles}
-              label="Weekly AI Performance Reviews"
-              description="Get an AI-generated weekly report card every weekend"
-              action={
-                <Switch
-                  checked={profileData.aiSettings.autoGenerateInsights}
-                  onCheckedChange={(checked) => handleAiSettingsChange('autoGenerateInsights', checked)}
-                  disabled={isLoadingProfile || isUpdatingAiSettings}
-                />
-              }
-            />
-
-            <Separator className="my-1 border-border/30" />
-
-            <SettingRow
-              icon={BellRing}
-              label="AI insights in notifications"
-              description="Create a notification with a summary when you run an AI analysis"
-              action={
-                <Switch
-                  checked={profileData.aiSettings.includeAiInsightsInNotifications}
-                  onCheckedChange={(checked) => handleAiSettingsChange('includeAiInsightsInNotifications', checked)}
-                  disabled={isLoadingProfile || isUpdatingAiSettings}
-                />
-              }
-            />
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   return (
     <SettingsShell>
@@ -1151,8 +554,50 @@ export default function SettingsPage() {
             transition={{ duration: 0.2, ease: "easeOut" }}
             className="space-y-8"
           >
-            {activeTab === 'profile' && renderProfileTab()}
-            {activeTab === 'preferences' && renderPreferencesTab()}
+            {activeTab === 'profile' && (
+              <SettingsProfileSection
+                user={user}
+                avatarUrl={avatarUrl}
+                profileData={profileData}
+                setProfileData={setProfileData}
+                isEditingProfile={isEditingProfile}
+                setIsEditingProfile={setIsEditingProfile}
+                isLoadingProfile={isLoadingProfile}
+                isUpdatingProfile={isUpdatingProfile}
+                onCancelEdit={handleCancelProfileEdit}
+                onSave={handleProfileUpdate}
+                subscriptionData={subscriptionData}
+                isLoadingSubscription={isLoadingSubscription}
+              />
+            )}
+            {activeTab === 'preferences' && (
+              <SettingsPreferencesSection
+                theme={theme}
+                accentPack={accentPack}
+                widgetStyle={widgetStyle}
+                chartStyle={chartStyle}
+                onThemeChange={handleThemeChange}
+                onAccentChange={handleAccentChange}
+                onWidgetStyleChange={handleWidgetStyleChange}
+                onChartStyleChange={handleChartStyleChange}
+                timezone={timezone}
+                onTimezoneChange={handleTimezoneChange}
+                use24HourFormat={use24HourFormat}
+                setUse24HourFormat={setUse24HourFormat}
+                profileData={profileData}
+                breakEvenDraft={breakEvenDraft}
+                setBreakEvenDraft={setBreakEvenDraft}
+                isUpdatingBreakEven={isUpdatingBreakEven}
+                onBreakEvenSave={handleBreakEvenThresholdSave}
+                onPnlDisplayModeChange={handlePnlDisplayModeChange}
+                privacyMode={privacyMode}
+                onPrivacyModeToggle={handlePrivacyModeToggle}
+                onAutoAdjustChange={handleAutoAdjustChange}
+                isLoadingProfile={isLoadingProfile}
+                isUpdatingAiSettings={isUpdatingAiSettings}
+                onAiSettingsChange={handleAiSettingsChange}
+              />
+            )}
             {activeTab === 'integrations' && <SettingsIntegrations token={webhookToken} loading={isLoadingWebhook} copied={webhookCopied} regenerating={isRegeneratingWebhook} onCopyUrl={copyWebhookUrl} onRegenerate={() => setIsRegenerateWebhookDialogOpen(true)} />}
             {activeTab === 'connections' && <SettingsConnections webhook={{ token: webhookToken, loading: isLoadingWebhook, copied: webhookCopied, regenerating: isRegeneratingWebhook, onCopyUrl: copyWebhookUrl, onRegenerate: () => setIsRegenerateWebhookDialogOpen(true) }} />}
             {activeTab === 'security' && <SettingsSecurity editingProfile={isEditingProfile} onSignOutPrompt={() => { if (isEditingProfile) setIsSignOutDialogOpen(true); else { localStorage.removeItem('jji_user_data'); void signOut() } }} onDelete={() => setIsDeleteModalOpen(true)} />}
@@ -1161,119 +606,25 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Delete Account Modal */}
-      <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-destructive">
-              <WarningCircle className="h-5 w-5" />
-              Delete Account
-            </DialogTitle>
-            <DialogDescription asChild>
-              <div className="text-left space-y-3">
-                <p className="text-sm">
-                  This action is <strong>irreversible</strong> and will permanently delete:
-                </p>
-                <ul className="text-sm list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Your account and profile</li>
-                  <li>All trading data and history</li>
-                  <li>Prop firm settings</li>
-                  <li>Dashboard layouts and preferences</li>
-                  <li>All uploaded files</li>
-                </ul>
-                <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
-                  <p className="text-sm font-medium text-destructive flex items-center gap-2">
-                    <WarningCircle className="h-4 w-4" />
-                    This data cannot be recovered.
-                  </p>
-                </div>
-              </div>
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-3 py-4">
-            <Label htmlFor="delete-confirm" className="text-sm">
-              Type <code className="bg-muted px-1 py-0.5 rounded text-xs">Delete my account</code> to confirm:
-            </Label>
-            <Input
-              id="delete-confirm"
-              type="text"
-              value={deleteConfirmText}
-              onChange={(e) => setDeleteConfirmText(e.target.value)}
-              placeholder="Type here..."
-              className="font-mono text-sm"
-            />
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsDeleteModalOpen(false)
-                setDeleteConfirmText('')
-              }}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteAccount}
-              disabled={!isDeleteConfirmed || isDeleting}
-              loading={isDeleting}
-              loadingText="Deleting..."
-            >
-              <Trash className="mr-2 h-4 w-4" />
-              Delete Account
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <AlertDialog open={isRegenerateWebhookDialogOpen} onOpenChange={setIsRegenerateWebhookDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Regenerate webhook token?</AlertDialogTitle>
-            <AlertDialogDescription>
-              The current TradingView webhook token will be invalid immediately. Existing alerts using it will stop importing trades until you update them with the new token.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isRegeneratingWebhook}>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              disabled={isRegeneratingWebhook}
-              onClick={(event) => {
-                event.preventDefault()
-                void regenerateWebhookToken().finally(() => setIsRegenerateWebhookDialogOpen(false))
-              }}
-            >
-              {isRegeneratingWebhook ? 'Regenerating…' : 'Regenerate token'}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={isSignOutDialogOpen} onOpenChange={setIsSignOutDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Discard profile changes and sign out?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Your unsaved profile edits will be lost. Save them first or continue signing out.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep editing</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                localStorage.removeItem('jji_user_data')
-                void signOut()
-              }}
-            >
-              Discard and sign out
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <SettingsDialogs
+        deleteOpen={isDeleteModalOpen}
+        onDeleteOpenChange={setIsDeleteModalOpen}
+        deleteConfirmText={deleteConfirmText}
+        onDeleteConfirmTextChange={setDeleteConfirmText}
+        deleting={isDeleting}
+        deleteConfirmed={isDeleteConfirmed}
+        onDeleteAccount={handleDeleteAccount}
+        regenerateOpen={isRegenerateWebhookDialogOpen}
+        onRegenerateOpenChange={setIsRegenerateWebhookDialogOpen}
+        regenerating={isRegeneratingWebhook}
+        onRegenerateToken={regenerateWebhookToken}
+        signOutOpen={isSignOutDialogOpen}
+        onSignOutOpenChange={setIsSignOutDialogOpen}
+        onSignOut={() => {
+          localStorage.removeItem('jji_user_data')
+          void signOut()
+        }}
+      />
     </SettingsShell>
   )
 }

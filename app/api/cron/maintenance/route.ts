@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
   if (authError) return authError
 
   const timestamp = new Date().toISOString()
+  const requestId = request.headers.get('x-request-id') ?? undefined
   const results: any = {
     timestamp,
     tasks: {}
@@ -40,9 +41,7 @@ export async function GET(request: NextRequest) {
       data: {
         source: 'maintenance-cron',
         requestedAt: timestamp,
-        ...(request.headers.get('x-request-id')
-          ? { requestId: request.headers.get('x-request-id') }
-          : {}),
+        ...(requestId ? { requestId } : {}),
       },
     })
     results.tasks.phaseEvaluation = { queued: true }
@@ -62,7 +61,6 @@ export async function GET(request: NextRequest) {
       ...results
     })
   } catch (error) {
-    const requestId = request.headers.get('x-request-id')
     reportError(error, {
       surface: 'cron',
       operation: 'run-daily-maintenance',

@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
 import { BacktestingClient } from './components/backtesting-client'
 import { BacktestTrade } from '@/types/backtesting-types'
-import { getUserId } from '@/server/auth'
+import { getUserId } from '@/server/auth/identity'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { BacktestingPageSkeleton } from './components/backtesting-page-skeleton'

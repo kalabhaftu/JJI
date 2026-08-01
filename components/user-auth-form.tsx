@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Icons } from "@/components/icons"
-import { signInWithDiscord, signInWithEmail, verifyOtp, signInWithGoogle } from "@/server/auth"
+import { verifyOtp } from '@/server/auth/otp'
+import { signInWithDiscord, signInWithEmail, signInWithGoogle } from '@/server/auth/providers'
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"

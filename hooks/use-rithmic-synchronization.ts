@@ -7,7 +7,7 @@ import logger from '@/lib/logger'
 import { reportError } from '@/lib/observability/report-error'
 import { getRithmicData, updateLastSyncTime } from '@/lib/rithmic-storage'
 import { parseRithmicRateLimitMessage, type RithmicCredentials } from '@/lib/rithmic/sync-contract'
-import { getUserId } from '@/server/auth'
+import { getUserId } from '@/server/auth/identity'
 
 interface RithmicSynchronizationInput {
   disabled: boolean

@@ -1,5 +1,3 @@
-'use server'
-
 export { createClient, getWebsiteURL } from '@/server/auth/client'
 export { safeDbOperation } from '@/server/auth/database'
 export { getUserId, getUserIdSafe } from '@/server/auth/identity'

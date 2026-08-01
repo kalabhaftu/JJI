@@ -1,4 +1,5 @@
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
+import { getTradingSession } from '@/lib/time-utils'
 import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 
 export function prepareJournalAnalysis(
@@ -307,7 +308,6 @@ export function prepareJournalAnalysis(
     .sort((a, b) => b[1].pnl - a[1].pnl)
 
   // Session Analysis
-  const { getTradingSession } = await import('@/lib/time-utils')
   const sessionStats: Record<string, { trades: number, pnl: number, wins: number }> = {}
 
   analyzedTrades.forEach(t => {

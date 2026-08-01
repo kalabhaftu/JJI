@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { db } from '@/lib/db/client'
-import { getUserId, getUserIdSafe } from '@/server/auth'
+import { getUserId, getUserIdSafe } from '@/server/auth/identity'
 
 export interface ResolvedUserIdentity {
   authUserId: string

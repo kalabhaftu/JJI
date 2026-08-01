@@ -13,7 +13,7 @@ import type { DashboardTemplateType as DashboardLayoutType } from '@/lib/db/sche
 
 import { apiRequest } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase';
-import { signOut } from '@/server/auth';
+import { signOut } from '@/server/auth/providers';
 import { useUserStore } from '@/store/user-store';
 import { useAccountFilterSettings } from '@/hooks/use-account-filter-settings';
 import { useFilteredTrades } from '@/hooks/use-filtered-trades';

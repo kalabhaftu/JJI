@@ -16,7 +16,7 @@ import { useUserStore } from '@/store/user-store'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { TemplateSelector } from './template-selector'
 import { DashboardDisplayModeSelector } from './navbar-display-mode'
-import { signOut } from '@/server/auth'
+import { signOut } from '@/server/auth/providers'
 import { Settings, LogOut, Wallet, Plus, SlidersHorizontal } from 'lucide-react'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import {

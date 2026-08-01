@@ -18,7 +18,7 @@ import {
   linkGoogleAccount,
   unlinkIdentity,
   getUserIdentities
-} from "@/server/auth"
+} from '@/server/auth/linked-identities'
 import { toast } from "sonner"
 import {
   AlertDialog,

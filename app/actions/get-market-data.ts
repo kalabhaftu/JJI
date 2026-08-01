@@ -3,7 +3,7 @@
 import YahooFinance from 'yahoo-finance2'
 import { YAHOO_FINANCE_SYMBOL_MAP, FOREX_PAIRS } from '@/lib/constants'
 import { YahooFinanceQuote } from '@/types/yahoo-finance'
-import { getUserId } from '@/server/auth'
+import { getUserId } from '@/server/auth/identity'
 import { getCached, setCached, CachePrefix, CacheTTL } from '@/lib/cache/unified-cache'
 import { logger } from '@/lib/logger';
 import { reportError } from '@/lib/observability/report-error'

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import hotkeys from 'hotkeys-js';
 import { useRouter } from 'next/navigation';
-import { signOut } from '@/server/auth';
+import { signOut } from '@/server/auth/providers';
 import { toast } from 'sonner';
 
 export function useKeyboardShortcuts() {
@@ -86,4 +86,4 @@ export function useKeyboardShortcuts() {
       hotkeys.unbind();
     };
   }, [router]);
-} 
+}

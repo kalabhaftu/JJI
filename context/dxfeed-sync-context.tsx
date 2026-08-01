@@ -81,7 +81,7 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
       const data = Array.isArray(result.data) ? result.data : []
       setAccounts(data.map(normalizeSynchronization))
     } catch (error) {
-      console.warn('Failed to load DxFeed accounts:', error)
+      reportError(error, { surface: 'client', operation: 'load-dxfeed-accounts', route: '/api/v1/dxfeed/accounts' })
     }
   }, [disabled, normalizeSynchronization])
 
@@ -216,8 +216,8 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
           await performSyncForAccount(account.accountId)
         }
       }
-    } catch (error) {
-      console.warn('Error during dxfeed auto-sync check:', error)
+      } catch (error) {
+      reportError(error, { surface: 'client', operation: 'check-dxfeed-auto-sync', route: '/dashboard' })
     } finally {
       isAutoSyncingRef.current = false
       setIsAutoSyncing(false)

@@ -11,7 +11,7 @@ import { getClientIp } from '@/lib/security/client-ip'
 
 export async function DELETE(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
-  const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')
+  const rateLimitRes = await applyApiRoutePolicy(request, 'account-delete')
   if (rateLimitRes) return rateLimitRes
 
   try {

@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 // UploadIcon removed
 import type { TradeType } from '@/lib/db/schema/trades';
 
@@ -304,6 +305,7 @@ export default function ImportButton() {
       }
 
     } catch (error) {
+      reportClientError(error, { operation: 'import-trades', route: '/dashboard/import' })
       let errorMessage = "An error occurred while importing trades."
       let errorTitle = "Import Failed"
 

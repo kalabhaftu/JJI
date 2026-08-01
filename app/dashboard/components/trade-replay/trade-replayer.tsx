@@ -8,6 +8,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Play, Pause, RotateCcw, FastForward } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface TradeReplayerProps {
   trade: ExtendedTrade
@@ -55,7 +56,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
         setMarketData(data)
         setReplayIndex(0) // Start from beginning
       } catch (err: any) {
-        console.error(err)
+        reportClientError(err, { operation: 'load-trade-replay-market-data', route: '/api/v1/market-data' })
         setError(err.message)
       } finally {
         setIsLoading(false)

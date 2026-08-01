@@ -159,6 +159,7 @@ export const apiLimiter: LimiterConfig = { points: 100, duration: 60, failClosed
 export const authenticatedReadLimiter: LimiterConfig = { points: 100, duration: 60 }
 export const sensitiveMutationLimiter: LimiterConfig = { points: 60, duration: 60, failClosed: true }
 export const authLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
+export const accountDeletionLimiter: LimiterConfig = { points: 3, duration: 300, failClosed: true }
 export const aiLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 export const aiReviewLimiter: LimiterConfig = { points: 1, duration: 86400, failClosed: true }
 export const importLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }

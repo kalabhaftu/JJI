@@ -1,11 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const captureException = vi.fn(() => 'event-id')
-const setTags = vi.fn()
-const setExtras = vi.fn()
-const setLevel = vi.fn()
-const setUser = vi.fn()
-const logError = vi.fn()
+const {
+  captureException,
+  setTags,
+  setExtras,
+  setLevel,
+  setUser,
+  logError,
+} = vi.hoisted(() => ({
+  captureException: vi.fn(() => 'event-id'),
+  setTags: vi.fn(),
+  setExtras: vi.fn(),
+  setLevel: vi.fn(),
+  setUser: vi.fn(),
+  logError: vi.fn(),
+}))
 
 vi.mock('@sentry/nextjs', () => ({
   captureException,
@@ -18,7 +27,7 @@ vi.mock('@/lib/logger', () => ({
   default: { error: logError },
 }))
 
-import { reportError } from '@/lib/observability/report-error'
+import { reportClientError, reportError } from '@/lib/observability/report-error'
 import {
   createRequestId,
   normalizeRequestId,
@@ -74,6 +83,30 @@ describe('reportError', () => {
       status: 400,
     })).toBeNull()
     expect(captureException).not.toHaveBeenCalled()
+  })
+
+  it('reports rate limits and server failures but suppresses ordinary 4xx responses', () => {
+    const rateLimited = Object.assign(new Error('Too many requests'), { status: 429 })
+    const serverFailure = Object.assign(new Error('Server failed'), { status: 500 })
+    const unauthorized = Object.assign(new Error('Unauthorized'), { status: 401 })
+
+    expect(reportClientError(rateLimited, {
+      operation: 'api-response-failure',
+      route: '/api/v1/user/delete',
+    })).toBe('event-id')
+    expect(reportClientError(serverFailure, {
+      operation: 'api-response-failure',
+      route: '/api/v1/user/delete',
+    })).toBe('event-id')
+    expect(reportClientError(unauthorized, {
+      operation: 'api-response-failure',
+      route: '/api/v1/user/delete',
+    })).toBeNull()
+    expect(reportClientError(Object.assign(new Error('Request aborted'), { name: 'AbortError' }), {
+      operation: 'api-network-request',
+      route: '/api/v1/user/delete',
+    })).toBeNull()
+    expect(captureException).toHaveBeenCalledTimes(2)
   })
 })
 

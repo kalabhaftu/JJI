@@ -5,6 +5,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import {
   Dialog,
   DialogContent,
@@ -131,6 +132,7 @@ export function PhaseTransitionDialog({
       }, 500)
 
     } catch (error) {
+      reportClientError(error, { operation: 'transition-prop-firm-phase', route: '/api/v1/prop-firm/accounts' })
       toast.error("Transition Failed", {
         description: error instanceof Error ? error.message : 'Failed to transition to next phase',
         icon: <AlertCircle className="h-4 w-4" />

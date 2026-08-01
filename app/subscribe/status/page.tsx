@@ -8,6 +8,7 @@ import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { reportClientError } from '@/lib/observability/report-error'
 
 type PaymentStatus = {
   providerStatus: string | null
@@ -44,6 +45,7 @@ export default function SubscribeStatusPage() {
         router.refresh()
       }
     } catch (err) {
+      reportClientError(err, { operation: 'load-payment-status', route: '/api/v1/payments/status' })
       setError(err instanceof Error ? err.message : 'Unable to load payment status')
     } finally {
       setLoading(false)

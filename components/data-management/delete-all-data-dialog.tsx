@@ -26,6 +26,7 @@ import {
   XCircle
 } from "lucide-react"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface DeleteAllDataDialogProps {
   open: boolean
@@ -87,6 +88,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
         description: 'Your data has been saved to your downloads folder.'
       })
     } catch (error) {
+      reportClientError(error, { operation: 'download-user-backup', route: '/dashboard/data' })
       toast.error('Failed to download backup', {
         description: 'Please try again or contact support.'
       })
@@ -134,6 +136,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
       window.location.href = '/dashboard'
 
     } catch (error) {
+      reportClientError(error, { operation: 'delete-user-data', route: '/dashboard/data' })
       toast.error('Failed to delete data', {
         description: error instanceof Error ? error.message : 'Please try again.'
       })

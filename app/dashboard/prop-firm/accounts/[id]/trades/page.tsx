@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -99,6 +100,7 @@ export default function AccountTradesPage() {
         throw new Error(data.error?.message || 'Failed to fetch account details')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-trade-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to fetch account details', {
         description: 'An error occurred while fetching account details'
       })
@@ -132,6 +134,7 @@ export default function AccountTradesPage() {
         throw new Error(data.error?.message || 'Failed to fetch trades')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-trades', route: `/api/v1/prop-firm/accounts/${accountId}/trades` })
       toast.error('Failed to fetch trades', {
         description: 'An error occurred while fetching trades'
       })

@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export interface TradingModel {
   id: string
@@ -141,11 +142,16 @@ export function useTradingModels(filters?: TradingModelFilters) {
           }
         ]
       }
-      const response = await fetch(`/api/v1/user/trading-models${buildTradingModelQuery(filters)}`)
-      if (!response.ok) throw new Error('Failed to fetch trading models')
-      const data = await response.json()
-      if (Array.isArray(data?.data?.models)) return data.data.models
-      return []
+      try {
+        const response = await fetch(`/api/v1/user/trading-models${buildTradingModelQuery(filters)}`)
+        if (!response.ok) throw Object.assign(new Error('Failed to fetch trading models'), { status: response.status })
+        const data = await response.json()
+        if (Array.isArray(data?.data?.models)) return data.data.models
+        return []
+      } catch (error) {
+        reportClientError(error, { operation: 'load-trading-models', route: '/api/v1/user/trading-models' })
+        throw error
+      }
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

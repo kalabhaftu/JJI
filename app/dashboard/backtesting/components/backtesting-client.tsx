@@ -10,6 +10,7 @@ import { AnalyticsTab } from './analytics-tab'
 import { BacktestTrade, BacktestStats } from '@/types/backtesting-types'
 import { Search, Filter, TrendingUp as TrendUp, BarChart3, Plus, AlertCircle as AlertTriangle } from "lucide-react"
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -95,6 +96,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
 
       setBacktests(transformedBacktests)
     } catch (err) {
+      reportClientError(err, { operation: 'load-backtests', route: '/dashboard/backtesting' })
       // Only show error toast if it's not an abort error
       if (err instanceof Error && err.name !== 'AbortError') {
         toast.error('Failed to load backtests')
@@ -176,6 +178,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
       toast.success('Backtest deleted successfully')
       await refreshBacktests()
     } catch (error) {
+      reportClientError(error, { operation: 'delete-backtest', route: '/dashboard/backtesting' })
       toast.error('Failed to delete backtest')
     }
   }
@@ -406,6 +409,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
               await refreshBacktests()
             }, 100)
           } catch (error) {
+            reportClientError(error, { operation: 'create-backtest', route: '/dashboard/backtesting' })
             toast.error('Failed to create backtest')
             throw error // Re-throw to prevent dialog close on error
           }

@@ -1,5 +1,4 @@
-import logger from '@/lib/logger';
-import { reportError } from '@/lib/observability/report-error'
+import { reportClientError } from '@/lib/observability/report-error'
 
 import { 
   API_TIMEOUT, 
@@ -62,6 +61,24 @@ function getRetryDelay(attempt: number): number {
   return RETRY_BASE_DELAY * Math.pow(RETRY_MULTIPLIER, attempt - 1)
 }
 
+function reportFetchFailure(error: FetchError, url: string) {
+  const reportable = new Error(error.message)
+  Object.assign(reportable, {
+    status: error.status,
+    code: error.code,
+  })
+  reportClientError(reportable, {
+    operation: 'fetch-request-failure',
+    route: url,
+    extra: {
+      code: error.code,
+      ...(error.status !== undefined ? { httpStatus: error.status } : {}),
+      ...(error.isTimeout ? { timeout: true } : {}),
+      ...(error.isNetworkError ? { network: true } : {}),
+    },
+  })
+}
+
 /**
  * Fetch with automatic timeout, retry, and error handling
  * 
@@ -121,8 +138,7 @@ export async function fetchWithError<T = unknown>(
         try {
           data = await response.json()
         } catch (error) {
-          reportError(error, {
-            surface: 'client',
+          reportClientError(error, {
             operation: 'parse-fetch-error-response',
             route: url,
             status: response.status,
@@ -152,6 +168,10 @@ export async function fetchWithError<T = unknown>(
           lastError = error
           await sleep(getRetryDelay(attempt))
           continue
+        }
+
+        if (response.status === 429 || response.status >= 500) {
+          reportFetchFailure(error, url)
         }
 
         return {
@@ -187,6 +207,7 @@ export async function fetchWithError<T = unknown>(
           continue
         }
 
+        reportFetchFailure(error, url)
         return {
           data: null,
           error,
@@ -212,6 +233,7 @@ export async function fetchWithError<T = unknown>(
         continue
       }
 
+      reportFetchFailure(error, url)
       return {
         data: null,
         error,
@@ -222,10 +244,12 @@ export async function fetchWithError<T = unknown>(
   }
 
   // All retries exhausted
+  const exhaustedError = lastError || createFetchError('Request failed after retries', 'MAX_RETRIES')
+  reportFetchFailure(exhaustedError, url)
   return {
     data: null,
-    error: lastError || createFetchError('Request failed after retries', 'MAX_RETRIES'),
-    status: lastError?.status || 0,
+    error: exhaustedError,
+    status: exhaustedError.status || 0,
     ok: false
   }
 }

@@ -86,7 +86,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       const data = Array.isArray(result.data) ? result.data : []
       setAccounts(data.map(normalizeSynchronization))
     } catch (error) {
-      console.warn('Failed to load Tradovate accounts:', error)
+      reportError(error, { surface: 'client', operation: 'load-tradovate-accounts', route: '/api/v1/tradovate/accounts' })
     }
   }, [disabled, normalizeSynchronization])
 
@@ -262,7 +262,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
         }
       }
     } catch (error) {
-      console.warn('Error during tradovate auto-sync check:', error)
+      reportError(error, { surface: 'client', operation: 'check-tradovate-auto-sync', route: '/dashboard' })
     }
   }, [disabled, enableAutoSync, isAutoSyncing, accounts, syncInterval, performSyncForAccount]);
 

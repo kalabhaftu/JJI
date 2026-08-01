@@ -24,6 +24,7 @@ import { Mail, ArrowLeft, RefreshCw } from "lucide-react"
 import { useRouter } from "next/navigation"
 import type { Route } from "next"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import {
     InputOTP,
     InputOTPGroup,
@@ -107,6 +108,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             router.refresh()
             router.push((nextUrl || '/dashboard') as Route)
         } catch (error) {
+            reportClientError(error, { operation: 'verify-email-otp', route: '/login' })
             setFailedAttempts(prev => prev + 1)
             setOtpError(true)
             otpForm.setValue('otp', '')
@@ -162,6 +164,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             toast.success("Code sent!", { description: "Check your email for the verification code." })
 
         } catch (error) {
+            reportClientError(error, { operation: 'send-email-otp', route: '/login' })
             toast.error("Error", { description: "Failed to send verification code. Please try again." })
         } finally {
             setIsLoading(false)
@@ -189,6 +192,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             const result = await signInWithDiscord(nextUrl)
             if (result.url) window.location.assign(result.url)
         } catch (error) {
+            reportClientError(error, { operation: 'sign-in-discord', route: '/login' })
             setAuthMethod(null)
             setIsLoading(false)
             toast.error("Discord sign-in failed", {
@@ -205,6 +209,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             const result = await signInWithGoogle(nextUrl)
             if (result.url) window.location.assign(result.url)
         } catch (error) {
+            reportClientError(error, { operation: 'sign-in-google', route: '/login' })
             setAuthMethod(null)
             setIsLoading(false)
             toast.error("Google sign-in failed", {

@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button"
 import { useRouter } from 'next/navigation'
 
 import { generateTradeHash } from '@/lib/trading/trade-grouping'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export type Step = 
   | 'select-import-type'
@@ -168,6 +169,7 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
       })
 
     } catch (error: any) {
+      reportClientError(error, { operation: 'import-trades-card', route: '/api/v1/data/import' })
       
       // User-friendly error messages
       const errorMessage = error?.message || String(error)

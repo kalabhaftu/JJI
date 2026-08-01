@@ -17,6 +17,7 @@ import { toast } from "sonner"
 import { apiRequest } from '@/lib/api/client'
 import { TradeEditPanel } from '@/app/dashboard/components/tables/trade-edit-panel'
 import { TradeDetailPanel } from '@/app/dashboard/components/tables/trade-detail-panel'
+import { reportClientError } from '@/lib/observability/report-error'
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
@@ -42,7 +43,17 @@ type PnlFilter = 'all' | 'wins' | 'losses'
 import useSWR from 'swr'
 
 // Custom fetcher for Data Management
-const fetcher = (url: string) => fetch(url).then(res => res.json())
+const fetcher = async (url: string) => {
+  try {
+    const response = await fetch(url)
+    const payload = await response.json()
+    if (!response.ok) throw Object.assign(new Error(payload.error?.message || 'Failed to load trades'), { status: response.status })
+    return payload
+  } catch (error) {
+    reportClientError(error, { operation: 'load-data-management-trades', route: url })
+    throw error
+  }
+}
 
 export default function TradeTable() {
   const router = useRouter()
@@ -192,6 +203,7 @@ export default function TradeTable() {
         description: `Successfully deleted ${ids.length} trade(s).`,
       })
     } catch (error) {
+      reportClientError(error, { operation: 'delete-data-management-trade', route: '/api/v1/trades' })
 
       // Dismiss loading toast before showing error
       if (loadingToastId) {
@@ -252,6 +264,7 @@ export default function TradeTable() {
         description: "Trade has been successfully updated.",
       })
     } catch (error) {
+      reportClientError(error, { operation: 'update-data-management-trade', route: '/api/v1/trades' })
       toast.error("Error", {
         description: "Failed to update trade. Please try again.",
       })

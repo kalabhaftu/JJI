@@ -14,6 +14,7 @@ import {
 import { invalidateAccountsCache } from '@/hooks/use-accounts'
 import { Trash2 as Trash, Info, CheckCircle2 as CheckCircle } from "lucide-react"
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export function CacheManagement({ plain = false }: { plain?: boolean }) {
   const [isClearing, setIsClearing] = useState(false)
@@ -44,6 +45,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
       setLastCleared(new Date())
       setStats(getCacheStats())
     } catch (error) {
+      reportClientError(error, { operation: 'clear-account-cache', route: '/dashboard/settings' })
       toast.error('Failed to clear cache', {
         description: 'Please try again or contact support if the issue persists.'
       })
@@ -77,6 +79,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
         window.location.reload()
       }, 1500)
     } catch (error) {
+      reportClientError(error, { operation: 'clear-all-caches', route: '/dashboard/settings' })
       toast.error('Failed to clear all caches', {
         description: 'Please try again or contact support if the issue persists.'
       })
@@ -219,4 +222,3 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
     </Card>
   )
 }
-

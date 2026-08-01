@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Minus, Calendar, DollarSign } from "lucide-react"
 import { format } from 'date-fns'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface Transaction {
   id: string
@@ -38,6 +39,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
 
       setTransactions(result.data || [])
     } catch (error) {
+      reportClientError(error, { operation: 'load-account-transaction-history', route: `/api/v1/live-accounts/${accountId}/transactions` })
       setError(error instanceof Error ? error.message : 'Failed to fetch transactions')
     } finally {
       setIsLoading(false)

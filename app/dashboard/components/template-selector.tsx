@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/dialog'
 import { LayoutGrid, Check, Plus, Pencil, Trash2, Copy, Lock } from 'lucide-react'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export function TemplateSelector() {
   const { templates, activeTemplate, switchTemplate, createTemplate, deleteTemplate, updateLayout } = useTemplates()
@@ -48,7 +49,7 @@ export function TemplateSelector() {
     try {
       await switchTemplate(templateId)
     } catch (e) {
-      // error toast handled in context
+      reportClientError(e, { operation: 'switch-dashboard-template', route: '/dashboard' })
     }
   }
 
@@ -140,6 +141,7 @@ export function TemplateSelector() {
         toast.success(`Template "${finalName}" created - you can now edit it`)
       }
     } catch (e) {
+      reportClientError(e, { operation: 'create-dashboard-template', route: '/dashboard' })
       const message = e instanceof Error ? e.message : 'Failed to save template'
       toast.error(message)
     }
@@ -156,7 +158,7 @@ export function TemplateSelector() {
     try {
       await deleteTemplate(deleteTarget.id)
     } catch (e) {
-      // error toast handled in context
+      reportClientError(e, { operation: 'delete-dashboard-template', route: '/dashboard' })
     }
     setDeleteTarget(null)
   }

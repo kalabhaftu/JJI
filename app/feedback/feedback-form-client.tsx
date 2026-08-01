@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Upload, X, CheckCircle2, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 
 const MAX_FILES = 3
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -66,7 +67,8 @@ export function FeedbackFormClient() {
       } else {
         toast.error(data.error?.message || 'Failed to submit feedback')
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'submit-feedback', route: '/api/feedback' })
       toast.error('Something went wrong. Please try again.')
     } finally {
       setSubmitting(false)

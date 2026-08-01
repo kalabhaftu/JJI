@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import {
   Calculator,
   TrendingUp,
@@ -382,6 +383,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       handleClose()
 
     } catch (error) {
+      reportClientError(error, { operation: 'save-manual-trade', route: '/api/v1/trades' })
       let errorMessage = 'An error occurred while saving the trade.'
       if (error instanceof Error) {
         errorMessage = error.message

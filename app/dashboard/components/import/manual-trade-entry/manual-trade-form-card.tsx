@@ -18,6 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { Calculator, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
 import type { TradeType } from '@/lib/db/schema/trades';
 
@@ -308,6 +309,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
       router.push(`/dashboard/prop-firm/accounts/${accountId}/trades`)
 
     } catch (error) {
+      reportClientError(error, { operation: 'save-manual-trade-card', route: '/api/v1/trades' })
       
       // Provide more specific error messages based on error type
       let errorMessage = 'An error occurred while saving the trade. Please try again.'

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { platforms } from './config/platforms'
 import { Step } from './import-button'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface FileUploadProps {
   importType: ImportType
@@ -77,6 +78,7 @@ export default function FileUpload({
           setUploadProgress(prev => ({ ...prev, [file.name]: 100 }))
         })
         .catch(error => {
+          reportClientError(error, { operation: 'parse-import-file', route: '/dashboard/import' })
           setError(error.message)
           setUploadProgress(prev => ({ ...prev, [file.name]: 0 }))
         })
@@ -145,6 +147,7 @@ export default function FileUpload({
       
       setError(null)
     } catch (error) {
+      reportClientError(error, { operation: 'combine-import-files', route: '/dashboard/import' })
       setError((error as Error).message)
     }
   }, [importType, parsedFiles, setRawCsvData, setCsvData, setHeaders, setStep, setError])

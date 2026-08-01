@@ -2,30 +2,41 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { AccountFilterSettings, DEFAULT_FILTER_SETTINGS } from '@/types/account-filter-settings'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { reportClientError } from '@/lib/observability/report-error'
 
 const QUERY_KEY = ['account-filter-settings'] as const
 
 async function fetchAccountFilterSettings(): Promise<AccountFilterSettings> {
-  const response = await fetch('/api/v1/settings/account-filters', {
-    method: 'GET',
-    headers: { 'Content-Type': 'application/json' },
-  })
-  if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to fetch settings`)
-  const data = await response.json()
-  if (!data.success) throw new Error(data.error?.message || 'Failed to fetch settings')
-  return data.data || DEFAULT_FILTER_SETTINGS
+  try {
+    const response = await fetch('/api/v1/settings/account-filters', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}: Failed to fetch settings`), { status: response.status })
+    const data = await response.json()
+    if (!data.success) throw Object.assign(new Error(data.error?.message || 'Failed to fetch settings'), { status: response.status })
+    return data.data || DEFAULT_FILTER_SETTINGS
+  } catch (error) {
+    reportClientError(error, { operation: 'load-account-filter-settings', route: '/api/v1/settings/account-filters' })
+    throw error
+  }
 }
 
 async function saveAccountFilterSettings(settings: AccountFilterSettings): Promise<AccountFilterSettings> {
-  const response = await fetch('/api/v1/settings/account-filters', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(settings),
-  })
-  if (!response.ok) throw new Error(`HTTP ${response.status}: Failed to save settings`)
-  const data = await response.json()
-  if (!data.success) throw new Error(data.error?.message || 'Failed to save settings')
-  return data.data
+  try {
+    const response = await fetch('/api/v1/settings/account-filters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(settings),
+    })
+    if (!response.ok) throw Object.assign(new Error(`HTTP ${response.status}: Failed to save settings`), { status: response.status })
+    const data = await response.json()
+    if (!data.success) throw Object.assign(new Error(data.error?.message || 'Failed to save settings'), { status: response.status })
+    return data.data
+  } catch (error) {
+    reportClientError(error, { operation: 'save-account-filter-settings', route: '/api/v1/settings/account-filters' })
+    throw error
+  }
 }
 
 export interface UseAccountFilterSettingsResult {

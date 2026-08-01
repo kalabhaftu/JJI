@@ -1,5 +1,9 @@
 import { readdir, readFile } from 'node:fs/promises'
 import { extname, join } from 'node:path'
+import { createRequire } from 'node:module'
+
+const require = createRequire(import.meta.url)
+const ts = require('typescript')
 
 const roots = ['app', 'components', 'context', 'hooks', 'lib', 'server']
 const allowedDirectErrorLoggers = new Set([
@@ -38,6 +42,26 @@ for (const root of roots) {
     ) {
       failures.push(`${file}: direct Sentry capture bypasses reportError`)
     }
+
+    const sourceFile = ts.createSourceFile(
+      file,
+      source,
+      ts.ScriptTarget.Latest,
+      true,
+      extname(file) === '.tsx' ? ts.ScriptKind.TSX : ts.ScriptKind.TS,
+    )
+    function inspectCatch(node) {
+      if (ts.isCatchClause(node)) {
+        const catchSource = source.slice(node.block.pos, node.block.end)
+        const presentsUserFacingFailure = /\btoast(?:\.error|\s*\()|\bset[A-Za-z]*Error\s*\(/.test(catchSource)
+        if (presentsUserFacingFailure && !/\breport(?:Client)?Error\s*\(|\breportSettingsMutationError\s*\(/.test(catchSource)) {
+          const line = sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1
+          failures.push(`${file}:${line}: user-facing catch must report through reportClientError/reportError`)
+        }
+      }
+      ts.forEachChild(node, inspectCatch)
+    }
+    inspectCatch(sourceFile)
   }
 }
 

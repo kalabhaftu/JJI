@@ -49,6 +49,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useData } from '@/context/data-provider'
 import { useModalStateStore } from '@/store/modal-state-store'
@@ -269,6 +270,7 @@ export function JournalClient() {
       await refetch()
       toast.success('Trades refreshed')
     } catch (error) {
+      reportClientError(error, { operation: 'refresh-journal-trades', route: '/dashboard/journal' })
       toast.error('Failed to refresh')
     } finally {
       setIsRefreshing(false)
@@ -295,6 +297,7 @@ export function JournalClient() {
       toast.success('Trade deleted successfully')
       await refetch()
     } catch (error) {
+      reportClientError(error, { operation: 'delete-journal-trade', route: '/dashboard/journal' })
       toast.error('Failed to delete trade')
     } finally {
       setShowDeleteDialog(false)
@@ -311,6 +314,7 @@ export function JournalClient() {
 
       await refetch()
     } catch (error) {
+      reportClientError(error, { operation: 'update-journal-trade', route: '/dashboard/journal' })
       toast.error('Failed to update trade')
     }
   }, [matchedTrade, updateTrades, refetch])

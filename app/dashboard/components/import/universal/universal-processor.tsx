@@ -30,6 +30,7 @@ import {
   RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import {
   Card,
   CardContent,
@@ -166,6 +167,7 @@ export default function UniversalProcessor({
         throw new Error('Could not parse AI response')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'process-universal-import-with-ai', route: '/api/v1/import/universal' })
       setAiProcessingState('error')
       toast.error('AI processing failed. Please try the CSV-AI option with manual column mapping.')
     }

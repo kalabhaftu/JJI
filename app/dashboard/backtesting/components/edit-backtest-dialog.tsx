@@ -35,6 +35,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { BacktestTrade, BacktestDirection, BacktestSession, BacktestModel, BacktestOutcome } from '@/types/backtesting-types'
 import { Pencil as Edit, Camera, X, Target, Download } from "lucide-react"
 import { formatTradePrice } from '@/lib/trading/precision'
@@ -148,6 +149,7 @@ export function EditBacktestDialog({
 
       onClose()
     } catch (error) {
+      reportClientError(error, { operation: 'update-backtest', route: '/dashboard/backtesting' })
       toast.error('Error', {
         description: error instanceof Error ? error.message : 'Failed to update backtest',
       })

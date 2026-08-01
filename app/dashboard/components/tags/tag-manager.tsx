@@ -26,6 +26,7 @@ import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { Loader2, Plus, Trash2, PenLine, Check, X, Tag } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useTags } from '@/hooks/use-tags'
@@ -73,6 +74,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
       toast.success('Tag created successfully')
       onRefresh?.()
     } catch (error: any) {
+      reportClientError(error, { operation: 'create-tag', route: '/api/v1/tags' })
       toast.error(error.message || 'Failed to create tag')
     } finally {
       setIsCreating(false)
@@ -98,6 +100,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
       toast.success('Tag updated successfully')
       onRefresh?.()
     } catch (error: any) {
+      reportClientError(error, { operation: 'update-tag', route: '/api/v1/tags' })
       toast.error(error.message || 'Failed to update tag')
     }
   }
@@ -119,6 +122,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
       toast.success('Tag deleted successfully')
       onRefresh?.()
     } catch (error) {
+      reportClientError(error, { operation: 'delete-tag', route: '/api/v1/tags' })
       toast.error('Failed to delete tag')
     }
     setDeleteTagTarget(null)

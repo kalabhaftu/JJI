@@ -38,6 +38,7 @@ import { JOURNAL_EMOTIONS, getJournalEmotionLabel, type JournalEmotion } from '@
 import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface DailyNote {
@@ -116,7 +117,8 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
           setNoteContent('')
           setSelectedEmotion(null)
         }
-      } catch {
+      } catch (error) {
+        reportClientError(error, { operation: 'load-daily-note', route: '/dashboard/journal' })
         toast.error('Failed to load daily note')
       } finally {
         setIsLoading(false)
@@ -160,6 +162,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         toast.success('Daily note saved')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'save-daily-note', route: '/dashboard/journal' })
       toast.error(error instanceof Error ? error.message : 'Failed to save note')
     } finally {
       setIsSaving(false)
@@ -178,7 +181,8 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
       setSelectedEmotion(null)
       queryClient.invalidateQueries({ queryKey: ['journal-data'] })
       toast.success('Daily note deleted')
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'delete-daily-note', route: '/dashboard/journal' })
       toast.error('Failed to delete note')
     } finally {
       setIsDeleting(false)

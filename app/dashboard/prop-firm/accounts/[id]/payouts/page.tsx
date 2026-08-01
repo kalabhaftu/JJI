@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -92,6 +93,7 @@ export default function AccountPayoutsPage() {
         throw new Error(data.error?.message || 'Failed to fetch account details')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-account-for-payouts', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to fetch account details', {
         description: 'An error occurred while fetching account details'
       })
@@ -115,6 +117,7 @@ export default function AccountPayoutsPage() {
         throw new Error(data.error?.message || 'Failed to fetch payouts')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-payouts', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
       toast.error('Failed to fetch payouts', {
         description: 'An error occurred while fetching payouts'
       })
@@ -180,6 +183,7 @@ export default function AccountPayoutsPage() {
         throw new Error(data.error?.message || 'Failed to delete payout')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'delete-prop-firm-payout', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
       toast.error(error instanceof Error ? error.message : 'Failed to delete payout')
     } finally {
       setDeletingPayoutId(null)

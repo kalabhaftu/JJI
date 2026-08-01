@@ -27,6 +27,8 @@ export interface ReportErrorContext extends ErrorPolicyContext {
   extra?: Record<string, unknown>
 }
 
+export type ClientErrorContext = Omit<ReportErrorContext, 'surface'>
+
 const reportedErrors = new WeakSet<Error>()
 const EMAIL_VALUE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
 const SECRET_VALUE = /\b(?:bearer\s+)?[A-Za-z0-9_-]{24,}\b/gi
@@ -68,6 +70,34 @@ export function getSafeErrorMessage(
   const normalized = normalizeError(error)
   const message = safeErrorForReporting(normalized).message.trim()
   return message || fallback
+}
+
+export function getErrorStatus(error: unknown): number | undefined {
+  if (!error || typeof error !== 'object' || !('status' in error)) return undefined
+  const status = (error as { status?: unknown }).status
+  return typeof status === 'number' && Number.isFinite(status) ? status : undefined
+}
+
+export function reportClientError(
+  error: unknown,
+  context: ClientErrorContext,
+): string | null {
+  const { status: contextStatus, ...reportContext } = context
+  const status = getErrorStatus(error) ?? contextStatus
+  if (status !== undefined && status >= 400 && status < 500 && status !== 429) return null
+
+  return reportError(error, {
+    ...reportContext,
+    surface: 'client',
+    tags: {
+      ...context.tags,
+      ...(status !== undefined ? { http_status: status } : {}),
+    },
+    extra: {
+      ...context.extra,
+      ...(status !== undefined ? { httpStatus: status } : {}),
+    },
+  })
 }
 
 function compactTags(context: ReportErrorContext): Record<string, string> {

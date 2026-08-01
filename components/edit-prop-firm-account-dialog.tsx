@@ -27,6 +27,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Building2 as Building } from "lucide-react"
+import { reportClientError } from '@/lib/observability/report-error'
 
 const editAccountSchema = z.object({
   accountName: z.string().min(1, 'Account name is required').max(100, 'Name too long'),
@@ -191,6 +192,7 @@ export function EditPropFirmAccountDialog({
       onSuccess?.()
 
     } catch (error) {
+      reportClientError(error, { operation: 'update-prop-firm-account', route: '/api/v1/prop-firm/accounts' })
       toast.error('Update Failed', {
         description: error instanceof Error ? error.message : 'Failed to update account',
       })

@@ -29,6 +29,7 @@ import type { TradeType } from '@/lib/db/schema/trades';
 import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { z } from 'zod'
 import { TradeNewsTab } from './components/trade-news-tab'
 import { TradeNotesTab } from './components/trade-notes-tab'
@@ -272,6 +273,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
       setImageErrors(prev => { const n = { ...prev }; delete n[field]; return n })
       toast.success('Image uploaded successfully')
     } catch (error) {
+      reportClientError(error, { operation: 'upload-trade-image', route: '/dashboard/journal' })
       toast.error(error instanceof Error ? error.message : 'Failed to upload image')
     } finally {
       setUploadingField(null)
@@ -311,6 +313,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
       toast.success('Trade updated successfully')
       onClose()
     } catch (error) {
+      reportClientError(error, { operation: 'update-trade', route: '/dashboard/journal' })
       toast.error(error instanceof Error ? error.message : 'Failed to update trade')
     } finally {
       setIsSubmitting(false)

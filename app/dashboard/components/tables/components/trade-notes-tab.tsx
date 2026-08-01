@@ -30,6 +30,7 @@ import { DEFAULT_TRADE_PREVIEW_TRANSFORM, type TradePreviewTransform } from '@/l
 import { TradePreviewCropEditor } from './trade-preview-crop-editor'
 import { toast } from 'sonner'
 import { BUILT_IN_JOURNAL_TEMPLATES } from '@/lib/journal-note-templates'
+import { reportClientError } from '@/lib/observability/report-error'
 
 type TradeNotesFieldValues = FieldValues & {
     comment?: string
@@ -244,6 +245,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
             const templates = Array.isArray(payload?.data?.templates) ? payload.data.templates : []
             setCustomTemplates(templates)
         } catch (error) {
+            reportClientError(error, { operation: 'load-journal-templates', route: '/api/v1/journal/templates' })
             toast.error(error instanceof Error ? error.message : 'Failed to load custom templates')
         } finally {
             setIsLoadingTemplates(false)
@@ -300,6 +302,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
             setTemplateName('')
             await loadCustomTemplates()
         } catch (error) {
+            reportClientError(error, { operation: 'save-journal-template', route: '/api/v1/journal/templates' })
             toast.error(error instanceof Error ? error.message : 'Failed to save template')
         } finally {
             setIsSavingTemplate(false)
@@ -320,6 +323,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
             setCustomTemplates((prev) => prev.filter((template) => template.id !== templateId))
             toast.success('Template deleted')
         } catch (error) {
+            reportClientError(error, { operation: 'delete-journal-template', route: '/api/v1/journal/templates' })
             toast.error(error instanceof Error ? error.message : 'Failed to delete template')
         } finally {
             setDeletingTemplateId(null)

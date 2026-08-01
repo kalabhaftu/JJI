@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react'
 import { useTheme } from 'next-themes'
 import { Spinner } from '@/components/ui/spinner'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface TradeData {
   entryTime: Date
@@ -114,6 +115,7 @@ export function TradingViewAdvancedChart({
       // as the onload/onerror events handle the widget lifecycle
 
       } catch (error) {
+      reportClientError(error, { operation: 'initialize-tradingview-chart', route: '/dashboard/journal' })
       setError('Failed to initialize chart')
       setIsLoading(false)
     }
@@ -171,5 +173,4 @@ export function TradingViewAdvancedChart({
     </div>
   )
 }
-
 

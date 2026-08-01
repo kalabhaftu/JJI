@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { CACHE_DURATION_MEDIUM } from '@/lib/constants'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export interface TradeTag {
   id: string
@@ -72,6 +73,7 @@ export function TagsProvider({ children }: { children: React.ReactNode }) {
           throw new Error('Failed to fetch tags')
         }
       } catch (err) {
+        reportClientError(err, { operation: 'load-tags', route: '/api/v1/tags' })
         if (mountedRef.current) {
           setError('Failed to fetch tags')
         }

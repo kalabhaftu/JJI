@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -78,6 +79,7 @@ export default function PayoutDetailPage() {
 
       setPayout(foundPayout)
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-payout-details', route: `/dashboard/prop-firm/payouts/${payoutId}` })
       toast.error('Failed to fetch payout details', {
         description: 'An error occurred while fetching payout details'
       })

@@ -21,6 +21,7 @@ import {
 import { Plus, TrendingUp as TrendUp, TrendingDown as TrendDown } from "lucide-react"
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
@@ -83,6 +84,7 @@ export function QuickAddFAB({ className }: QuickAddFABProps) {
                 throw new Error('Failed to add trade')
             }
         } catch (error) {
+            reportClientError(error, { operation: 'quick-add-trade', route: '/api/v1/trades/quick-add' })
             toast.error('Failed to add trade')
         } finally {
             setIsSubmitting(false)

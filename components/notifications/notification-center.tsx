@@ -24,6 +24,7 @@ import { PhaseTransitionApprovalDialog } from '@/components/prop-firm/phase-tran
 import { AdjustDateDialog } from './adjust-date-dialog'
 import { WeeklyReviewDialog } from './weekly-review-dialog'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { useUserStore } from '@/store/user-store'
@@ -143,7 +144,7 @@ export function NotificationCenter() {
         setUnreadCount(result.data.unreadCount)
       }
     } catch (error) {
-      // Silently fail - user sees empty notification state
+      reportClientError(error, { operation: 'load-notifications', route: '/api/v1/notifications' })
     } finally {
       setIsLoading(false)
     }
@@ -161,7 +162,7 @@ export function NotificationCenter() {
         setUnreadCount(result.data.unreadCount)
       }
     } catch (error) {
-      // Silent fail
+      reportClientError(error, { operation: 'load-unread-notification-count', route: '/api/v1/notifications' })
     }
   }, [user?.id, isDemo])
 
@@ -261,6 +262,7 @@ export function NotificationCenter() {
       )
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (error) {
+      reportClientError(error, { operation: 'mark-notification-read', route: '/api/v1/notifications' })
       toast.error('Failed to mark notification as read')
     }
   }
@@ -282,6 +284,7 @@ export function NotificationCenter() {
       setUnreadCount(0)
       toast.success('All notifications marked as read')
     } catch (error) {
+      reportClientError(error, { operation: 'mark-all-notifications-read', route: '/api/v1/notifications' })
       toast.error('Failed to mark all as read')
     }
   }
@@ -309,6 +312,7 @@ export function NotificationCenter() {
       }
       toast.success('Notification deleted')
     } catch (error) {
+      reportClientError(error, { operation: 'delete-notification', route: '/api/v1/notifications' })
       toast.error('Failed to delete notification')
     }
   }
@@ -328,6 +332,7 @@ export function NotificationCenter() {
       setUnreadCount(0)
       toast.success('All notifications cleared')
     } catch (error) {
+      reportClientError(error, { operation: 'clear-notifications', route: '/api/v1/notifications' })
       toast.error('Failed to clear notifications')
     }
   }

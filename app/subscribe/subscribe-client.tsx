@@ -10,7 +10,7 @@ import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { useAuth } from '@/context/auth-provider'
-import { reportError } from '@/lib/observability/report-error'
+import { reportClientError, reportError } from '@/lib/observability/report-error'
 
 export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
@@ -89,6 +89,18 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
       })
       const payload = await response.json()
       if (!response.ok || !payload.success) {
+        const requestId = payload.requestId ?? response.headers.get('x-request-id') ?? undefined
+        reportClientError(Object.assign(new Error('Checkout initialization failed'), {
+          status: response.status,
+          code: payload.error?.code,
+          requestId,
+        }), {
+          operation: 'create-whop-checkout-response',
+          route: '/api/v1/payments/whop-checkout',
+          status: response.status,
+          ...(requestId ? { requestId } : {}),
+          ...(payload.error?.code ? { extra: { code: payload.error.code } } : {}),
+        })
         toast.error('Checkout Error', {
           description: payload.error?.message || 'Failed to initialize card checkout',
         })

@@ -40,6 +40,7 @@ import { DeleteAllDataDialog } from '@/components/data-management/delete-all-dat
 import { useUserStore } from '@/store/user-store'
 import { useSearchParams } from 'next/navigation'
 import { DataManagementCardSkeleton } from '../data-page-skeleton'
+import { reportClientError } from '@/lib/observability/report-error'
 
 type AccountWithTrades = {
   id: string
@@ -89,7 +90,17 @@ function getPhaseDisplayLabel(evaluationType: string | undefined, phaseNumber: n
 }
 
 // Custom fetcher for Data Management
-const fetcher = (url: string) => fetch(url).then(res => res.json())
+const fetcher = async (url: string) => {
+  try {
+    const response = await fetch(url)
+    const payload = await response.json()
+    if (!response.ok) throw Object.assign(new Error(payload.error?.message || 'Failed to load accounts'), { status: response.status })
+    return payload
+  } catch (error) {
+    reportClientError(error, { operation: 'load-data-management-accounts', route: url })
+    throw error
+  }
+}
 
 export function DataManagementCard() {
   const router = useRouter()
@@ -242,6 +253,7 @@ export function DataManagementCard() {
         description: `Successfully deleted ${accountsToDelete.length} account(s).`,
       })
     } catch (error) {
+      reportClientError(error, { operation: 'delete-data-management-account', route: '/api/v1/accounts' })
       setError(error instanceof Error ? error : new Error('Failed to delete accounts'))
 
       // Dismiss loading toast before showing error
@@ -311,6 +323,7 @@ export function DataManagementCard() {
       setAccountToRename("")
       setNewAccountNumber("")
     } catch (error) {
+      reportClientError(error, { operation: 'rename-data-management-account', route: '/api/v1/accounts' })
       toast.error('Rename failed', {
         description: error instanceof Error ? error.message : 'Please try again.',
       })

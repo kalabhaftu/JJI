@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface SharedReport {
   id: string
@@ -39,7 +40,8 @@ export function SharedLinksManager() {
       if (!res.ok) throw new Error('Failed to fetch links')
       const data = await res.json()
       setReports(data.data?.reports || [])
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'load-shared-report-links', route: '/api/v1/reports/share' })
       toast.error('Failed to load shared links.')
     } finally {
       setIsLoading(false)
@@ -57,7 +59,8 @@ export function SharedLinksManager() {
       setCopiedSlug(slug)
       toast.success('Link copied to clipboard')
       setTimeout(() => setCopiedSlug(null), 2000)
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'copy-shared-report-link', route: '/reports/shared' })
       toast.error('Could not copy link')
     }
   }, [])
@@ -71,7 +74,8 @@ export function SharedLinksManager() {
       if (!res.ok) throw new Error('Delete failed')
       toast.success('Shared report deleted successfully')
       setReports((prev) => prev.filter((r) => r.id !== id))
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'delete-shared-report-link', route: '/api/v1/reports/share' })
       toast.error('Failed to delete shared link')
     } finally {
       setDeletingId(null)

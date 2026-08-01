@@ -20,6 +20,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useUserStore } from "@/store/user-store"
+import { reportClientError } from '@/lib/observability/report-error'
 
 export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) => void; onBack?: () => void }) {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -43,6 +44,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
       setUser({ ...user, thorToken: token })
       toast.success('Thor API Token generated successfully')
     } catch (error) {
+      reportClientError(error, { operation: 'generate-thor-token', route: '/api/v1/thor/token' })
       toast.error('Failed to generate Thor API Token')
     } finally {
       setIsGenerating(false)

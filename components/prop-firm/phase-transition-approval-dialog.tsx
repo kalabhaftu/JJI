@@ -22,6 +22,7 @@ import {
   Trophy
 } from "lucide-react"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import type { NotificationRow } from '@/lib/db/schema/users';
 
 import { clearAccountsCache } from '@/hooks/use-accounts'
@@ -147,6 +148,7 @@ export function PhaseTransitionApprovalDialog({
       }, 100)
 
     } catch (error) {
+      reportClientError(error, { operation: 'transition-phase-from-notification', route: '/api/v1/notifications/phase-transition' })
       toast.error('Failed to transition phase', {
         description: error instanceof Error ? error.message : 'Please try again'
       })

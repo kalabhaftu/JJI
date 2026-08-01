@@ -14,7 +14,7 @@ import {
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Logo } from '@/components/logo'
-import { reportError } from '@/lib/observability/report-error'
+import { reportClientError, reportError } from '@/lib/observability/report-error'
 
 interface PerformanceCardProps {
     period: string
@@ -87,7 +87,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                 toast.success('Performance card exported!')
             }, 'image/png')
         } catch (err) {
-            // Error shown via toast
+            reportClientError(err, { operation: 'export-performance-card', route: '/dashboard/reports' })
             toast.error('Export failed. Please try again.')
         } finally {
             setIsExporting(false)

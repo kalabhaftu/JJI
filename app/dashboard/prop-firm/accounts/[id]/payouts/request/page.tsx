@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -86,6 +87,7 @@ export default function RequestPayoutPage() {
           }
         }
       } catch (error) {
+        reportClientError(error, { operation: 'load-payout-eligibility', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
         toast.error('Failed to load payout eligibility')
       } finally {
         setIsLoading(false)
@@ -139,6 +141,7 @@ export default function RequestPayoutPage() {
         throw new Error(data.error?.message || 'Failed to submit payout request')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'submit-payout-request', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
       toast.error(error instanceof Error ? error.message : 'Failed to submit payout request')
     } finally {
       setIsSubmitting(false)

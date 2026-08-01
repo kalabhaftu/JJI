@@ -33,6 +33,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Loader2, User, AlertCircle, CheckCircle2, Building2, DollarSign } from "lucide-react"
 import { toast } from "sonner"
@@ -151,6 +152,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
       onOpenChange(false)
 
     } catch (error) {
+      reportClientError(error, { operation: 'create-live-account', route: '/api/v1/accounts' })
       toast.error("Failed to create account", {
         description: error instanceof Error ? error.message : "Please try again",
       })

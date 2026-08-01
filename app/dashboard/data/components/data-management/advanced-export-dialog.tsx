@@ -11,6 +11,7 @@ import { CustomDateRangePicker, DateRange } from "@/components/ui/custom-date-ra
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
 import { Spinner } from '@/components/ui/spinner'
+import { reportClientError } from '@/lib/observability/report-error'
 
 type ExportOptionAccount = {
   id: string
@@ -20,11 +21,16 @@ type ExportOptionAccount = {
 }
 
 const fetcher = async (url: string) => {
-  const response = await fetch(url)
-  if (!response.ok) {
-    throw new Error('Failed to load export options')
+  try {
+    const response = await fetch(url)
+    if (!response.ok) {
+      throw Object.assign(new Error('Failed to load export options'), { status: response.status })
+    }
+    return response.json()
+  } catch (error) {
+    reportClientError(error, { operation: 'load-export-options', route: url })
+    throw error
   }
-  return response.json()
 }
 
 export function AdvancedExportDialog() {
@@ -166,7 +172,7 @@ export function AdvancedExportDialog() {
       })
       setIsOpen(false)
     } catch (error) {
-      // Error shown via toast below
+      reportClientError(error, { operation: 'export-user-data', route: '/api/v1/data/export' })
       toast.error('Export Failed', {
         id: 'export',
         description: 'Could not generate backup. Please try again.'

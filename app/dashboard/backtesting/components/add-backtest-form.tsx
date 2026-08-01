@@ -28,6 +28,7 @@ import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
 import { apiRequest } from '@/lib/api/client'
+import { reportClientError } from '@/lib/observability/report-error'
 
 // Schema for manual mode
 const manualBacktestSchema = z.object({
@@ -189,6 +190,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
           setInputMode(data.data?.mode || 'manual')
         }
       } catch (error) {
+        reportClientError(error, { operation: 'load-backtest-mode-preference', route: '/api/v1/settings/backtest-mode' })
       } finally {
         setIsLoadingMode(false)
       }
@@ -205,6 +207,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
       })
       toast.success(`Switched to ${newMode === 'manual' ? 'Full Manual' : 'Simple R:R'} mode`)
     } catch (error) {
+      reportClientError(error, { operation: 'save-backtest-mode-preference', route: '/api/v1/settings/backtest-mode' })
       toast.error('Failed to save preference')
     }
   }
@@ -409,6 +412,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
       setImages([])
       setCardPreview('')
     } catch (error) {
+      reportClientError(error, { operation: 'create-backtest', route: '/api/v1/backtesting' })
     } finally {
       setIsSubmitting(false)
     }

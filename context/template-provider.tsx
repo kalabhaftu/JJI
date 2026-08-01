@@ -9,6 +9,7 @@ import { apiRequest } from '@/lib/api/client'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import { toast } from 'sonner'
 import { useData } from '@/context/data-provider'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface TemplateContextType {
   templates: DashboardTemplate[]
@@ -114,6 +115,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
         setActiveTemplate(buildFallbackTemplate())
       }
     } catch (error) {
+      reportClientError(error, { operation: 'load-dashboard-templates', route: '/api/v1/dashboard/templates' })
       setTimeout(() => toast.error('Failed to load templates'), 0)
 
       setActiveTemplate(buildFallbackTemplate())
@@ -172,6 +174,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       setTimeout(() => toast.success(`Template "${name}" created successfully`), 0)
       return newTemplate
     } catch (error) {
+      reportClientError(error, { operation: 'create-dashboard-template', route: '/api/v1/dashboard/templates' })
       const message = error instanceof Error ? error.message : 'Failed to create template'
       setTimeout(() => toast.error(message), 0)
       throw error
@@ -203,6 +206,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
 
       setTimeout(() => toast.success('Template deleted successfully'), 0)
     } catch (error) {
+      reportClientError(error, { operation: 'delete-dashboard-template', route: '/api/v1/dashboard/templates' })
       const message = error instanceof Error ? error.message : 'Failed to delete template'
       setTimeout(() => toast.error(message), 0)
       throw error
@@ -241,6 +245,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       // setTimeout(() => toast.success('Template switched successfully'), 0)
       return updated
     } catch (error) {
+      reportClientError(error, { operation: 'switch-dashboard-template', route: '/api/v1/dashboard/templates' })
       const message = error instanceof Error ? error.message : 'Failed to switch template'
       setTimeout(() => toast.error(message), 0)
       throw error
@@ -277,6 +282,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       templateBootstrapCache = null
       return updated
     } catch (error) {
+      reportClientError(error, { operation: 'update-dashboard-template-layout', route: '/api/v1/dashboard/templates' })
       const message = error instanceof Error ? error.message : 'Failed to update layout'
       setTimeout(() => toast.error(message), 0)
       throw error

@@ -10,6 +10,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export interface TradeFilters {
   accounts?: string[]
@@ -80,11 +81,16 @@ export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoM
         const { getMockDemoData } = await import('@/lib/demo/mock-data')
         return getMockDemoData();
       }
-      const res = await fetch(`/api/v1/trades?${queryString}`)
-      if (!res.ok) throw new Error('Failed to fetch trades')
-      const payload = await res.json()
-      if (!payload.success) throw new Error(payload.error?.message ?? 'Failed to fetch trades')
-      return payload.data
+      try {
+        const res = await fetch(`/api/v1/trades?${queryString}`)
+        if (!res.ok) throw Object.assign(new Error('Failed to fetch trades'), { status: res.status })
+        const payload = await res.json()
+        if (!payload.success) throw Object.assign(new Error(payload.error?.message ?? 'Failed to fetch trades'), { status: res.status })
+        return payload.data
+      } catch (error) {
+        reportClientError(error, { operation: 'load-filtered-trades', route: '/api/v1/trades' })
+        throw error
+      }
     },
     enabled,
     staleTime: 2 * 60 * 1000, // 2 min - realtime subscriptions handle live updates

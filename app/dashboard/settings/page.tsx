@@ -18,7 +18,8 @@ import { useTheme } from '@/context/theme-provider'
 import { useTour } from '@/context/tour-context'
 import { formatBreakevenBand } from '@/lib/metrics/outcome'
 import { normalizePnlDisplayMode } from '@/lib/metrics/pnl'
-import { reportError } from '@/lib/observability/report-error'
+import { reportClientError, reportError } from '@/lib/observability/report-error'
+import { ApiClientError, apiRequest } from '@/lib/api/client'
 import { createClient } from '@/lib/supabase'
 import { getUserAvatarUrl } from '@/lib/user-avatar'
 import { signOut } from '@/server/auth/providers'
@@ -35,11 +36,35 @@ import type { SettingsProfileData, SettingsSubscriptionData } from './components
 import { useSettingsPreferences } from './hooks/use-settings-preferences'
 
 function reportSettingsMutationError(error: unknown, operation: string) {
-  reportError(error, {
-    surface: 'client',
+  reportClientError(error, {
     operation,
     route: '/dashboard/settings',
   })
+}
+
+function getDeleteAccountErrorDescription(error: unknown): string {
+  if (error instanceof ApiClientError && error.status === 429) {
+    const waitSeconds = error.retryAfterSeconds ?? 300
+    return `Too many requests. Please wait ${waitSeconds} seconds before trying again.`
+  }
+
+  if (error instanceof ApiClientError && error.status >= 500 && error.requestId) {
+    return `We could not complete the deletion right now. Please try again later. Reference: ${error.requestId}`
+  }
+
+  if (error instanceof ApiClientError && error.status >= 500) {
+    return 'We could not complete the deletion right now. Please try again later.'
+  }
+
+  if (error instanceof ApiClientError && error.status === 401) {
+    return 'Your session has expired. Please sign in again and retry.'
+  }
+
+  if (error instanceof ApiClientError && error.status === 403) {
+    return 'You do not have permission to delete this account.'
+  }
+
+  return 'We could not complete the deletion. Please try again.'
 }
 
 export default function SettingsPage() {
@@ -508,16 +533,9 @@ export default function SettingsPage() {
 
     setIsDeleting(true)
     try {
-      const response = await fetch('/api/auth/delete-account', {
+      await apiRequest('/api/v1/user/delete', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to delete account')
-      }
 
       toast.success("Account deleted", {
         description: "Your account and all data have been permanently deleted.",
@@ -528,18 +546,18 @@ export default function SettingsPage() {
       await supabase.auth.signOut()
       localStorage.clear()
       sessionStorage.clear()
+      setIsDeleteModalOpen(false)
+      setDeleteConfirmText('')
       window.location.href = '/?deleted=true'
 
     } catch (error) {
       reportSettingsMutationError(error, 'delete-account')
       toast.error("Deletion failed", {
-        description: error instanceof Error ? error.message : "There was an error deleting your account.",
+        description: getDeleteAccountErrorDescription(error),
         duration: 5000
       })
     } finally {
       setIsDeleting(false)
-      setIsDeleteModalOpen(false)
-      setDeleteConfirmText("")
     }
   }
 

@@ -26,6 +26,7 @@ import { motion } from 'framer-motion'
 import { Eye, FileText, MoreVertical, Pencil, Plus, Trash2 as Trash, Calendar } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { reportClientError } from '@/lib/observability/report-error'
 import { AddEditModelModal } from './components/add-edit-model-modal'
 import { useTradingModels } from '@/hooks/use-trading-models'
 import { useQueryClient } from '@tanstack/react-query'
@@ -271,6 +272,7 @@ export default function PlaybookPage() {
       toast.success('Model removed from playbook')
       await queryClient.invalidateQueries({ queryKey: ['trading-models'] })
     } catch (error) {
+      reportClientError(error, { operation: 'delete-trading-model', route: '/dashboard/playbook' })
       toast.error(error instanceof Error ? error.message : 'Failed to delete model')
     } finally {
       setDeleteModelId(null)

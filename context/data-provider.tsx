@@ -29,6 +29,7 @@ import type { DataContextType } from './data-provider/types';
 
 export type { Account } from './data-provider/types';
 import { useDataProviderAccountActions } from '@/hooks/use-data-provider-account-actions';
+import { reportClientError } from '@/lib/observability/report-error';
 
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -418,6 +419,7 @@ export const DataProvider: React.FC<{
         // Silent fail to prevent unhandled promise rejections
         
         // Set error state to inform user
+        reportClientError(error, { operation: 'load-dashboard-data', route: '/dashboard' })
         setError('Failed to load data. Please refresh the page.');
         setIsLoading(false);
       }

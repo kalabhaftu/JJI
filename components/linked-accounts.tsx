@@ -20,6 +20,7 @@ import {
   getUserIdentities
 } from '@/server/auth/linked-identities'
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -71,6 +72,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
       setIdentities(identitiesArray)
     } catch (error) {
       setIdentities([])
+      reportClientError(error, { operation: 'load-linked-identities', route: '/dashboard/settings' })
     } finally {
       setLoading(false)
     }
@@ -82,6 +84,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
       const result = await linkDiscordAccount()
       if (result.url) window.location.assign(result.url)
     } catch (error) {
+      reportClientError(error, { operation: 'link-discord-account', route: '/dashboard/settings' })
       toast.error("Failed to link account")
       setLinking(false)
     }
@@ -93,6 +96,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
       const result = await linkGoogleAccount()
       if (result.url) window.location.assign(result.url)
     } catch (error) {
+      reportClientError(error, { operation: 'link-google-account', route: '/dashboard/settings' })
       toast.error("Failed to link account")
       setLinking(false)
     }
@@ -104,6 +108,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
       toast.success("Account unlinked successfully")
       await loadIdentities()
     } catch (error) {
+      reportClientError(error, { operation: 'unlink-account', route: '/dashboard/settings' })
       toast.error(error instanceof Error ? error.message : "Failed to unlink account")
     }
   }

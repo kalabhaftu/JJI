@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect, useMemo, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { useAccounts, clearAccountsCache } from "@/hooks/use-accounts"
 import { useData } from '@/context/data-provider'
 import { useTradesStore } from '@/store/trades-store'
@@ -272,6 +273,7 @@ export default function AccountsPage() {
       await refetchAccounts()
       toast.success("Accounts refreshed")
     } catch (error) {
+      reportClientError(error, { operation: 'refresh-accounts', route: '/dashboard/accounts' })
       toast.error("Failed to refresh accounts")
     } finally {
       setIsRefreshing(false)
@@ -351,6 +353,7 @@ export default function AccountsPage() {
       setDeletingAccount(null)
       setDeleteConfirmText('')
     } catch (error) {
+      reportClientError(error, { operation: 'delete-live-account', route: '/dashboard/accounts' })
       toast.error("Failed to delete account")
     }
   }, [deletingAccount, refetchAccounts, refreshAllData, deleteConfirmText])
@@ -380,6 +383,7 @@ export default function AccountsPage() {
       clearAccountsCache()
       await refetchAccounts()
     } catch (error) {
+      reportClientError(error, { operation: isArchived ? 'restore-account' : 'archive-account', route: '/dashboard/accounts' })
       toast.error("Failed to update account")
     }
   }, [refetchAccounts])

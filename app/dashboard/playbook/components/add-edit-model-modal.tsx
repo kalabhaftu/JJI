@@ -9,6 +9,7 @@ import { LexicalEditor } from '@/components/ui/editor/lexical-editor'
 import { Plus, X, AlertTriangle as Warning, Layers } from 'lucide-react'
 import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { reportClientError } from '@/lib/observability/report-error'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -170,6 +171,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
       toast.success(mode === 'add' ? 'Model created successfully' : 'Model updated successfully')
       onClose()
     } catch (error) {
+      reportClientError(error, { operation: 'save-playbook-model', route: '/api/v1/playbook/models' })
       toast.error(error instanceof Error ? error.message : 'Failed to save model')
     } finally {
       setIsSaving(false)

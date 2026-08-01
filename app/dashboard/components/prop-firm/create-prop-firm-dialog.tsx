@@ -36,6 +36,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2, Building2, AlertCircle, CheckCircle2, PenLine, Check, X } from "lucide-react"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { clearAccountsCache } from "@/hooks/use-accounts"
 
 // Schema for form validation
@@ -133,7 +134,10 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       .then(data => {
         if (data.success) setTemplates(data.data)
       })
-      .catch(() => toast.error('Failed to load templates'))
+      .catch((error) => {
+        reportClientError(error, { operation: 'load-prop-firm-templates', route: '/api/v1/prop-firm-templates' })
+        toast.error('Failed to load templates')
+      })
   }, [])
 
   // Auto-fill when firm/program selected
@@ -221,6 +225,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       onOpenChange(false)
 
     } catch (error) {
+      reportClientError(error, { operation: 'create-prop-firm-account', route: '/api/v1/prop-firm/accounts' })
       toast.error("Failed to create account", {
         description: error instanceof Error ? error.message : "Please try again",
       })

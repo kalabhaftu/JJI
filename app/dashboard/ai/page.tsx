@@ -31,6 +31,28 @@ import { WorkspaceSidebar } from './components/workspace-sidebar'
 import type { ChatMessage, ChatSession, SavedInsight, WeeklyReview, WorkspaceAccount, WorkspaceTab } from './types'
 import { AI_DATA_CONSENT_VERSION } from '@/lib/user-settings'
 import { useAiWorkspaceLoader } from './hooks/use-ai-workspace-loader'
+import { reportClientError } from '@/lib/observability/report-error'
+
+function reportAiResponseFailure(
+  response: Response,
+  payload: any,
+  operation: string,
+  route: string,
+) {
+  const requestId = payload?.requestId ?? response.headers.get('x-request-id') ?? undefined
+  const code = typeof payload?.error === 'object' ? payload.error?.code : undefined
+  const error = Object.assign(
+    new Error(typeof payload?.error === 'object' ? payload.error?.message : 'AI request failed'),
+    { status: response.status, code, requestId },
+  )
+  reportClientError(error, {
+    operation,
+    route,
+    status: response.status,
+    ...(requestId ? { requestId } : {}),
+    extra: { ...(code ? { code } : {}) },
+  })
+}
 
 export default function AIChatWorkspace() {
   const { accounts, isDemoMode } = useData()
@@ -166,7 +188,8 @@ Emotional states directly correlate with performance. Operating under stress or 
         const payload = await response.json()
         setMessages(payload.data?.messages || [])
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'load-ai-chat-messages', route: '/api/v1/ai/chats' })
       toast.error('Failed to load chat history.')
     } finally {
       setIsLoadingMessages(false)
@@ -277,6 +300,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
         if (!response.ok) {
           const payload = await response.json()
+          reportAiResponseFailure(response, payload, 'create-ai-chat', '/api/v1/ai/chats')
           toast.error(payload.error?.message || 'Failed to start conversation.')
           setIsSending(false)
           return
@@ -307,6 +331,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
       if (!response.ok) {
         const payload = await response.json()
+        reportAiResponseFailure(response, payload, 'send-ai-chat-message', `/api/v1/ai/chats/${chatId}/messages`)
         if (response.status === 412 && payload.error?.code === 'AI_DATA_CONSENT_REQUIRED') {
           setAiConsentGranted(false)
           setPendingPrompt({
@@ -353,18 +378,29 @@ With an active workspace, the assistant analyzes your actual trading records. He
       if (reloadRes.ok) {
         const payload = await reloadRes.json()
         setMessages(payload.data?.messages || [])
+      } else {
+        const payload = await reloadRes.json().catch(() => null)
+        reportAiResponseFailure(reloadRes, payload, 'reload-ai-chat-messages', `/api/v1/ai/chats/${chatId}`)
       }
 
       setStreamingText('')
       
       // Update chat title if it was a new chat
       await fetch('/api/v1/ai/chats')
-        .then(res => res.json())
+        .then(async res => {
+          const payload = await res.json()
+          if (!res.ok) {
+            reportAiResponseFailure(res, payload, 'reload-ai-chats', '/api/v1/ai/chats')
+            return
+          }
+          return payload
+        })
         .then(payload => {
-          if (payload.success) setChats(payload.data)
+          if (payload?.success) setChats(payload.data)
         })
 
     } catch (err) {
+      reportClientError(err, { operation: 'send-ai-chat-message', route: '/api/v1/ai/chat' })
       toast.error('An error occurred during response transmission.')
     } finally {
       setIsSending(false)
@@ -388,8 +424,12 @@ With an active workspace, the assistant analyzes your actual trading records. He
       if (response.ok) {
         setChats(prev => prev.map(c => c.id === chat.id ? { ...c, isPinned: !chat.isPinned } : c))
         toast.success(chat.isPinned ? 'Chat unpinned' : 'Chat pinned')
+      } else {
+        reportAiResponseFailure(response, null, 'toggle-ai-chat-pin', `/api/v1/ai/chats/${chat.id}`)
+        toast.error('Failed to pin chat.')
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'toggle-ai-chat-pin', route: '/api/v1/ai/chats' })
       toast.error('Failed to pin chat.')
     }
   }
@@ -414,8 +454,12 @@ With an active workspace, the assistant analyzes your actual trading records. He
           setSelectedChatId(null)
           setMessages([])
         }
+      } else {
+        reportAiResponseFailure(response, null, 'toggle-ai-chat-archive', `/api/v1/ai/chats/${chat.id}`)
+        toast.error('Failed to archive chat.')
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'toggle-ai-chat-archive', route: '/api/v1/ai/chats' })
       toast.error('Failed to archive chat.')
     }
   }
@@ -454,9 +498,11 @@ With an active workspace, the assistant analyzes your actual trading records. He
         }
         toast.success('Conversation deleted')
       } else {
+        reportAiResponseFailure(response, null, 'delete-ai-chat', `/api/v1/ai/chats/${chatId}`)
         toast.error('Failed to delete chat.')
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'delete-ai-chat', route: '/api/v1/ai/chats' })
       toast.error('Failed to delete chat.')
     }
   }
@@ -481,8 +527,12 @@ With an active workspace, the assistant analyzes your actual trading records. He
         setChats(prev => prev.map(c => c.id === chatId ? { ...c, title: renameValue } : c))
         setIsRenameMode(false)
         toast.success('Chat renamed')
+      } else {
+        reportAiResponseFailure(response, null, 'rename-ai-chat', `/api/v1/ai/chats/${chatId}`)
+        toast.error('Failed to rename chat.')
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'rename-ai-chat', route: '/api/v1/ai/chats' })
       toast.error('Failed to rename chat.')
     }
   }
@@ -517,8 +567,12 @@ With an active workspace, the assistant analyzes your actual trading records. He
         const payload = await response.json()
         setSavedInsights(prev => [payload.data, ...prev])
         toast.success('Insight saved to library!')
+      } else {
+        reportAiResponseFailure(response, null, 'save-ai-insight', '/api/v1/ai/insights')
+        toast.error('Failed to save insight.')
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'save-ai-insight', route: '/api/v1/ai/insights' })
       toast.error('Failed to save insight.')
     }
   }
@@ -537,8 +591,12 @@ With an active workspace, the assistant analyzes your actual trading records. He
       if (response.ok) {
         setSavedInsights(prev => prev.filter(i => i.id !== insightId))
         toast.success('Insight removed')
+      } else {
+        reportAiResponseFailure(response, null, 'delete-ai-insight', `/api/v1/ai/insights/${insightId}`)
+        toast.error('Failed to delete insight.')
       }
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'delete-ai-insight', route: '/api/v1/ai/insights' })
       toast.error('Failed to delete insight.')
     }
   }
@@ -602,7 +660,8 @@ With an active workspace, the assistant analyzes your actual trading records. He
       setPendingPrompt(null)
       setIsConsentDialogOpen(false)
       await handleStartChat(request.prompt, request.sources, true)
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'save-ai-data-consent', route: '/api/v1/user/preferences' })
       toast.error('Could not save your AI data preference.')
     } finally {
       setIsSavingConsent(false)

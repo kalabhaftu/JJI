@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePropFirmRealtime } from "@/hooks/use-prop-firm-realtime"
 import { useDatabaseRealtime } from "@/lib/realtime/database-realtime"
@@ -103,6 +104,7 @@ export default function AccountDetailPage() {
       setTradesData(tradesJson.success ? tradesJson.data.trades : [])
       setPayoutsData(payoutsJson.success ? payoutsJson.data : { eligibility: null, history: [] })
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
       setDataError('Failed to load data')
     } finally {
       setIsLoadingData(false)
@@ -287,6 +289,7 @@ export default function AccountDetailPage() {
       setIsEditingName(false)
       await refetch()
     } catch (error) {
+      reportClientError(error, { operation: 'update-prop-firm-account-name', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error("Failed to update name")
     }
   }

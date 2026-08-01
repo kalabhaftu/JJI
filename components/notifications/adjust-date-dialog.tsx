@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar, Loader2 as CircleNotch, Info } from 'lucide-react'
 import { toast } from 'sonner'
 import type { NotificationType, NotificationRow as Notification } from '@/lib/db/schema/users';
+import { reportClientError } from '@/lib/observability/report-error'
 
 
 interface AdjustDateDialogProps {
@@ -62,6 +63,7 @@ export function AdjustDateDialog({
         throw new Error(result.error?.message || 'Failed to adjust date')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'adjust-notification-date', route: '/api/v1/notifications/adjust-date' })
       toast.error('Adjustment failed', {
         description: error instanceof Error ? error.message : 'An error occurred'
       })

@@ -5,6 +5,7 @@ import dynamic from 'next/dynamic'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -56,6 +57,7 @@ export default function NewTradePage() {
         throw new Error(data.error?.message || 'Failed to fetch account details')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-trade-entry-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to fetch account details', {
         description: 'An error occurred while loading account details'
       })

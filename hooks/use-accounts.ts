@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import useSWR, { mutate } from 'swr'
 import { reportError } from '@/lib/observability/report-error'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface UnifiedAccount {
   id: string
@@ -71,7 +72,19 @@ export function clearAccountsCache() {
   mutate(key => typeof key === 'string' && key.startsWith('/api/v1/accounts'))
 }
 
-const fetcher = (url: string) => fetch(url).then(r => r.json())
+const fetcher = async (url: string) => {
+  try {
+    const response = await fetch(url)
+    const payload = await response.json()
+    if (!response.ok) {
+      throw Object.assign(new Error(payload.error?.message || 'Failed to load accounts'), { status: response.status })
+    }
+    return payload
+  } catch (error) {
+    reportClientError(error, { operation: 'load-accounts', route: url })
+    throw error
+  }
+}
 
 export function useAccounts(options: UseAccountsOptions = {}) {
   // Legacy support for older options

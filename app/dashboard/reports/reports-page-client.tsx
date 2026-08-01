@@ -70,6 +70,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { useReportPageController } from './use-report-page-controller'
 import { ReportsNavigation } from './components/reports-navigation'
 import { ReportsSessionSummary } from './components/reports-session-summary'
+import { reportClientError } from '@/lib/observability/report-error'
 
 const DiverseCharts = dynamic(() => import('./components/diverse-charts').then((mod) => mod.DiverseCharts))
 const MonthlyReturnsMatrix = dynamic(() => import('./components/monthly-returns-matrix').then((mod) => mod.MonthlyReturnsMatrix))
@@ -198,7 +199,7 @@ export default function ReportsPageClient({
             URL.revokeObjectURL(url)
             toast.success('Metrics exported successfully!')
         } catch (err) {
-            // Error shown via toast
+            reportClientError(err, { operation: 'export-report-metrics', route: '/dashboard/reports' })
             toast.error('Failed to export metrics')
         } finally {
             setIsExporting(false)
@@ -248,7 +249,7 @@ export default function ReportsPageClient({
                 toast.success('Page snapshot saved!')
             }, 'image/png')
         } catch (err) {
-            // Error shown via toast
+            reportClientError(err, { operation: 'capture-report-snapshot', route: '/dashboard/reports' })
             toast.error('Failed to capture snapshot')
         } finally {
             setIsExporting(false)
@@ -290,7 +291,7 @@ export default function ReportsPageClient({
             await navigator.clipboard.writeText(reportData.url || `${window.location.origin}/reports/shared/${reportData.slug}`)
             toast.success('Shareable link copied to clipboard!')
         } catch (error) {
-            // Error shown via toast
+            reportClientError(error, { operation: 'create-shared-report-link', route: '/api/v1/reports/share' })
             toast.error('Failed to create shareable link.')
         } finally {
             setIsExporting(false)

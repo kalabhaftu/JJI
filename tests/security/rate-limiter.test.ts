@@ -8,6 +8,16 @@ afterEach(() => {
 })
 
 describe('rate limiter production posture', () => {
+  it('classifies account deletion separately from shared auth traffic', async () => {
+    const { classifyApiRoute } = await import('@/lib/api/route-policy')
+    expect(classifyApiRoute('/api/v1/user/delete', 'DELETE')).toBe('account-delete')
+  })
+
+  it('uses three attempts per five minutes for account deletion', async () => {
+    const { accountDeletionLimiter } = await import('@/lib/rate-limiter')
+    expect(accountDeletionLimiter).toEqual({ points: 3, duration: 300, failClosed: true })
+  })
+
   it('fails closed for sensitive limiters in production without KV', async () => {
     process.env.NODE_ENV = 'production'
     delete process.env.KV_REST_API_URL

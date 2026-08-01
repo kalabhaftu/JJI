@@ -2,6 +2,7 @@ import type { NextRequest, NextResponse } from 'next/server'
 
 import {
   adminLimiter,
+  accountDeletionLimiter,
   aiLimiter,
   applyRateLimit,
   authenticatedReadLimiter,
@@ -29,6 +30,7 @@ export type ApiRoutePolicy =
   | 'feedback'
   | 'error-report'
   | 'admin'
+  | 'account-delete'
 
 const TRUSTED_PREFIXES = [
   '/api/cron/',
@@ -69,6 +71,7 @@ export function classifyApiRoute(
     return 'trusted-signed'
   }
   if (pathname.startsWith('/api/admin/')) return 'admin'
+  if (pathname === '/api/v1/user/delete' && normalizedMethod === 'DELETE') return 'account-delete'
   if (pathname.startsWith('/api/auth/')) return 'auth'
   if (pathname.startsWith('/api/v1/ai/')) return 'ai'
   if (
@@ -101,6 +104,8 @@ function limiterForPolicy(policy: ApiRoutePolicy): LimiterConfig | null {
       return null
     case 'auth':
       return authLimiter
+    case 'account-delete':
+      return accountDeletionLimiter
     case 'ai':
       return aiLimiter
     case 'import':

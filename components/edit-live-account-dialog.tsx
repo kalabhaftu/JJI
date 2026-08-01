@@ -20,6 +20,7 @@ import {
 import {
   User
 } from "lucide-react"
+import { reportClientError } from '@/lib/observability/report-error'
 
 const editAccountSchema = z.object({
   name: z.string().min(1, 'Account name is required').max(100, 'Name too long'),
@@ -108,6 +109,7 @@ export function EditLiveAccountDialog({
       onSuccess?.()
 
     } catch (error) {
+      reportClientError(error, { operation: 'update-live-account', route: '/api/v1/accounts' })
       toast('Update Failed', {
         description: error instanceof Error ? error.message : 'Failed to update account',
       })

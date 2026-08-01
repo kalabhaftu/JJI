@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Plus, Minus, DollarSign } from "lucide-react"
+import { reportClientError } from '@/lib/observability/report-error'
 
 const transactionSchema = z.object({
   type: z.enum(['DEPOSIT', 'WITHDRAWAL']),
@@ -94,6 +95,7 @@ export function TransactionDialog({
       setOpen(false)
       onTransactionComplete()
     } catch (error) {
+      reportClientError(error, { operation: 'create-account-transaction', route: '/api/v1/accounts/transactions' })
       toast.error('Transaction Failed', {
         description: error instanceof Error ? error.message : 'An unexpected error occurred'
       })

@@ -5,6 +5,7 @@ import { format, subDays } from 'date-fns'
 import { toast } from 'sonner'
 import { AI_DATA_CONSENT_VERSION } from '@/lib/user-settings'
 import type { ChatSession, SavedInsight, WeeklyReview } from '../types'
+import { reportClientError } from '@/lib/observability/report-error'
 
 const DEMO_CHATS: ChatSession[] = [
   {
@@ -72,7 +73,8 @@ export function useAiWorkspaceLoader(isDemoMode: boolean | undefined) {
         }
       }
       setWeeklyAIReviews(loadedReviews)
-    } catch {
+    } catch (error) {
+      reportClientError(error, { operation: 'load-ai-workspace', route: '/api/v1/ai/workspace' })
       toast.error('Failed to load AI Assistant data.')
     } finally {
       setIsLoadingChats(false)

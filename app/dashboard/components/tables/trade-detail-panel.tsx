@@ -41,6 +41,7 @@ import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { stripTradePreviewImageConfig } from '@/lib/trade-preview-image'
 import { getPnlDisplayLabel, getTradeGrossPnl, getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { parseTradeChartLinks } from '@/lib/trade-core'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface TradeDetailPanelProps {
   trade: TradeType
@@ -64,6 +65,7 @@ async function downloadImage(imageUrl: string, trade: TradeType, imageIndex: num
     document.body.removeChild(a)
     toast.success('Image downloaded')
   } catch (error) {
+    reportClientError(error, { operation: 'download-trade-image', route: '/dashboard/journal' })
     toast.error('Failed to download image')
   }
 }

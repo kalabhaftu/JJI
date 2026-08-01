@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -116,6 +117,7 @@ export default function AccountSettingsPage() {
         throw new Error(data.error?.message || 'Failed to fetch account details')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'load-prop-firm-account-settings', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to fetch account details', {
         description: 'An error occurred while fetching account details'
       })
@@ -195,6 +197,7 @@ export default function AccountSettingsPage() {
         throw new Error(data.error?.message || 'Failed to update account')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'update-prop-firm-account-settings', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to update account', {
         description: 'An error occurred while updating account settings'
       })
@@ -228,6 +231,7 @@ export default function AccountSettingsPage() {
         throw new Error(data.error?.message || 'Failed to delete account')
       }
     } catch (error) {
+      reportClientError(error, { operation: 'delete-prop-firm-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to delete account', {
         description: 'An error occurred while deleting the account'
       })

@@ -9,6 +9,7 @@ import { createChart, ColorType, IChartApi, Time, CandlestickSeries, createSerie
 import { getMarketData } from '@/app/actions/get-market-data'
 import { getTimezoneOffset } from 'date-fns-tz'
 import { Skeleton } from '@/components/ui/skeleton'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface TradeReplayProps {
     trade: {
@@ -163,7 +164,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
             setIsLoading(false)
 
         } catch (err) {
-            // Error is surfaced to user via setError state
+            reportClientError(err, { operation: 'load-trade-replay-market-data', route: '/api/v1/market-data' })
             setError('Failed to load chart')
             setIsLoading(false)
         }

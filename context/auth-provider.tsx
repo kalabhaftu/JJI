@@ -11,6 +11,7 @@ import { useAutoCacheCleanup } from '@/hooks/use-auto-cache-cleanup'
 import { useQueryClient } from '@tanstack/react-query'
 import { mutate } from 'swr'
 import { useTradesStore } from '@/store/trades-store'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface AuthContextType {
   isLoading: boolean
@@ -257,6 +258,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           lastSyncedSessionRef.current = null
         }
       } catch (error) {
+        reportClientError(error, { operation: 'check-auth-session', route: '/api/auth/session' })
         if (isRecoverableSessionError(error)) {
           clearBrowserAuthStorage()
           setSession(null)

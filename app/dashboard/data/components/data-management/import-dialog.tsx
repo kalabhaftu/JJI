@@ -13,6 +13,7 @@ import { useData } from '@/context/data-provider'
 import { useAccounts } from '@/hooks/use-accounts'
 import { FileDropzone } from '@/components/ui/file-dropzone'
 import { apiRequest } from '@/lib/api/client'
+import { reportClientError } from '@/lib/observability/report-error'
 
 interface ImportJobResponse {
   id: string
@@ -102,6 +103,7 @@ export function ImportDialog() { // Kept name for compatibility
       await waitForImportCompletion(createdJob)
 
     } catch (error) {
+      reportClientError(error, { operation: 'restore-user-backup', route: '/api/v1/data/import' })
       toast.error('Restore Failed', {
         description: error instanceof Error ? error.message : 'An unexpected error occurred'
       })
@@ -123,6 +125,7 @@ export function ImportDialog() { // Kept name for compatibility
       setImportJob(response.data.job)
       await waitForImportCompletion(response.data.job)
     } catch (error) {
+      reportClientError(error, { operation: 'resume-user-backup-restore', route: '/api/v1/data/import' })
       toast.error('Resume Failed', {
         description: error instanceof Error ? error.message : 'Unable to resume restore job',
       })
@@ -158,6 +161,7 @@ export function ImportDialog() { // Kept name for compatibility
         description: 'The job is being cancelled. Please wait...'
       })
     } catch (error) {
+      reportClientError(error, { operation: 'cancel-user-backup-restore', route: '/api/v1/data/import' })
       toast.error('Cancel Failed', {
         description: error instanceof Error ? error.message : 'Unable to cancel restore job'
       })

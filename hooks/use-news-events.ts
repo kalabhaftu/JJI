@@ -1,6 +1,7 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
+import { reportClientError } from '@/lib/observability/report-error'
 
 export interface NewsEvent {
   id: string
@@ -13,10 +14,15 @@ export interface NewsEvent {
 }
 
 async function fetchNewsEvents(): Promise<NewsEvent[]> {
-  const res = await fetch('/api/v1/news-events')
-  if (!res.ok) throw new Error('Failed to fetch news events')
-  const payload = await res.json()
-  return payload.data ?? []
+  try {
+    const res = await fetch('/api/v1/news-events')
+    if (!res.ok) throw Object.assign(new Error('Failed to fetch news events'), { status: res.status })
+    const payload = await res.json()
+    return payload.data ?? []
+  } catch (error) {
+    reportClientError(error, { operation: 'load-news-events', route: '/api/v1/news-events' })
+    throw error
+  }
 }
 
 export function useNewsEvents() {

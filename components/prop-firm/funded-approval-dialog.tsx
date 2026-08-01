@@ -26,6 +26,7 @@ import {
   PartyPopper
 } from "lucide-react"
 import { toast } from "sonner"
+import { reportClientError } from '@/lib/observability/report-error'
 import { apiRequest } from '@/lib/api/client'
 import type { NotificationRow } from '@/lib/db/schema/users';
 
@@ -124,6 +125,7 @@ export function FundedApprovalDialog({
       router.refresh()
 
     } catch (error) {
+      reportClientError(error, { operation: 'approve-funded-account', route: '/api/v1/notifications/funded-decision' })
       toast.error('Failed to process approval', {
         description: error instanceof Error ? error.message : 'Please try again'
       })
@@ -170,6 +172,7 @@ export function FundedApprovalDialog({
       router.refresh()
 
     } catch (error) {
+      reportClientError(error, { operation: 'decline-funded-account', route: '/api/v1/notifications/funded-decision' })
       toast.error('Failed to process decline', {
         description: error instanceof Error ? error.message : 'Please try again'
       })

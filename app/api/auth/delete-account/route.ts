@@ -68,7 +68,7 @@ export async function DELETE(request: NextRequest) {
         operation: 'enqueue-account-storage-cleanup',
         route: request.nextUrl.pathname,
         requestId,
-        userId: identity?.internalUserId,
+        ...(identity?.internalUserId ? { userId: identity.internalUserId } : {}),
       })
     }
 

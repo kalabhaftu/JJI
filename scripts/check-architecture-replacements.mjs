@@ -14,6 +14,9 @@ const requiredPaths = [
   'server/trades/mutations.ts',
   'server/import-jobs/preparation.ts',
   'server/import-jobs/execution.ts',
+  'server/import-jobs/lifecycle.ts',
+  'server/import-jobs/processor.ts',
+  'server/import-jobs/serialization.ts',
   'server/import-jobs/state.ts',
   'server/trade-import-jobs/lifecycle.ts',
   'server/trade-import-jobs/execution.ts',
@@ -89,6 +92,11 @@ if (!/export function cn/.test(utils) || utils.split('\n').length > 20) {
 const tradeImportFacade = await readFile('server/trade-import-jobs.ts', 'utf8')
 if (tradeImportFacade.split('\n').length > 10) {
   failures.push('server/trade-import-jobs.ts must remain a compatibility export facade')
+}
+
+const archiveImportFacade = await readFile('server/import-jobs.ts', 'utf8')
+if (archiveImportFacade.split('\n').length > 10) {
+  failures.push('server/import-jobs.ts must remain a compatibility export facade')
 }
 
 const analyticsFacade = await readFile('lib/dashboard/analytics-calculations.ts', 'utf8')

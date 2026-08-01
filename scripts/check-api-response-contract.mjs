@@ -8,6 +8,7 @@ const protocolExemptions = new Set([
   'app/api/v1/market-data/route.ts',
   'app/api/v1/payments/redirect/route.ts',
   'app/api/v1/payments/webhook/route.ts',
+  'app/api/v1/payments/whop-webhook/route.ts',
   'app/api/v1/thor/store/route.ts',
   'app/api/v1/user/data/backup/route.ts',
 ])

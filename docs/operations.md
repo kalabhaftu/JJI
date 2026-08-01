@@ -59,6 +59,16 @@ Confirm zero public browser source maps and review route bundle sizes from the b
 - Registered function count and IDs match source
 - Scheduled functions have current runs
 - Retry and failure behavior is visible
+- Whop webhook, cancellation, and reconciliation functions are registered and current
+
+### Whop
+
+- Preview uses sandbox API, plan, and webhook credentials
+- Production uses production-only credentials and webhook signatures
+- One checkout reaches the success page and its verified webhook reaches Inngest
+- Membership, payment, audit, notification, and request-ID state agree
+- Duplicate delivery is idempotent and a forced processing failure retries
+- Disputes raise manual review without automatic access or ban changes
 
 ### Sentry
 

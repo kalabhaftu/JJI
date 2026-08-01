@@ -1,5 +1,5 @@
 import { relations } from 'drizzle-orm';
-import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json, index } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, boolean, timestamp, jsonb, doublePrecision, json, index, uniqueIndex } from 'drizzle-orm/pg-core';
 import { PromoTypeEnum, PromoApplicabilityEnum, FreeAccessTypeEnum } from './enums';
 import { AdminFeatureFlag, AdminSharingPolicy, User, UserSettings, ImportJob, Notification, Feedback, UserGeoLog, SharedReport, Subscription, Synchronization } from './users';
 
@@ -70,6 +70,60 @@ export const PaymentRecord = pgTable('PaymentRecord', {
 export type PaymentRecordType = typeof PaymentRecord.$inferSelect;
 export type NewPaymentRecord = typeof PaymentRecord.$inferInsert;
 
+export const WhopMembership = pgTable('WhopMembership', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text('userId').notNull().references(() => User.id, { onDelete: 'cascade' }),
+  subscriptionId: text('subscriptionId').notNull().references(() => Subscription.id, { onDelete: 'cascade' }),
+  membershipId: text('membershipId').notNull(),
+  whopUserId: text('whopUserId'),
+  planId: text('planId').notNull(),
+  productId: text('productId'),
+  environment: text('environment').notNull(),
+  status: text('status').notNull(),
+  cancelAtPeriodEnd: boolean('cancelAtPeriodEnd').default(false).notNull(),
+  currentPeriodStart: timestamp('currentPeriodStart', { withTimezone: true, mode: 'date' }),
+  currentPeriodEnd: timestamp('currentPeriodEnd', { withTimezone: true, mode: 'date' }),
+  manageUrl: text('manageUrl'),
+  providerUpdatedAt: timestamp('providerUpdatedAt', { withTimezone: true, mode: 'date' }),
+  createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
+}, (table) => [
+  uniqueIndex('WhopMembership_membershipId_key').on(table.membershipId),
+  index('WhopMembership_userId_idx').on(table.userId),
+  index('WhopMembership_subscriptionId_idx').on(table.subscriptionId),
+]);
+
+export type WhopMembershipType = typeof WhopMembership.$inferSelect;
+export type NewWhopMembership = typeof WhopMembership.$inferInsert;
+
+export const WhopWebhookEvent = pgTable('WhopWebhookEvent', {
+  id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
+  eventId: text('eventId').notNull(),
+  eventType: text('eventType').notNull(),
+  resourceId: text('resourceId'),
+  status: text('status').default('received').notNull(),
+  attemptCount: integer('attemptCount').default(0).notNull(),
+  requestId: text('requestId'),
+  payloadHash: text('payloadHash').notNull(),
+  reviewRequired: boolean('reviewRequired').default(false).notNull(),
+  lastErrorCode: text('lastErrorCode'),
+  workerToken: text('workerToken'),
+  leaseExpiresAt: timestamp('leaseExpiresAt', { withTimezone: true, mode: 'date' }),
+  occurredAt: timestamp('occurredAt', { withTimezone: true, mode: 'date' }),
+  queuedAt: timestamp('queuedAt', { withTimezone: true, mode: 'date' }),
+  processedAt: timestamp('processedAt', { withTimezone: true, mode: 'date' }),
+  createdAt: timestamp('createdAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
+}, (table) => [
+  uniqueIndex('WhopWebhookEvent_eventId_key').on(table.eventId),
+  index('WhopWebhookEvent_status_createdAt_idx').on(table.status, table.createdAt),
+  index('WhopWebhookEvent_resourceId_idx').on(table.resourceId),
+  index('WhopWebhookEvent_requestId_idx').on(table.requestId),
+]);
+
+export type WhopWebhookEventType = typeof WhopWebhookEvent.$inferSelect;
+export type NewWhopWebhookEvent = typeof WhopWebhookEvent.$inferInsert;
+
 export const PromoCode = pgTable('PromoCode', {
   id: text('id').primaryKey().$defaultFn(() => crypto.randomUUID()),
   code: text('code').notNull().unique(),
@@ -134,6 +188,17 @@ export const PaymentRecordRelations = relations(PaymentRecord, ({ one, many }) =
   PromoCode: one(PromoCode, {
     fields: [PaymentRecord.promoCodeId],
     references: [PromoCode.id]
+  }),
+}));
+
+export const WhopMembershipRelations = relations(WhopMembership, ({ one }) => ({
+  User: one(User, {
+    fields: [WhopMembership.userId],
+    references: [User.id],
+  }),
+  Subscription: one(Subscription, {
+    fields: [WhopMembership.subscriptionId],
+    references: [Subscription.id],
   }),
 }));
 

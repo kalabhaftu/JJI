@@ -43,6 +43,12 @@
       "dataset": "errors",
       "query": "is:regressed",
       "trigger": "regression"
+    },
+    {
+      "id": "whop-billing-failure",
+      "dataset": "errors",
+      "query": "operation:process-whop-webhook OR operation:enqueue-whop-webhook OR operation:whop-billing-manual-review",
+      "trigger": "first_seen_or_regression"
     }
   ]
 }

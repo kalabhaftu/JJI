@@ -38,6 +38,7 @@ const TRUSTED_PREFIXES = [
 
 const SIGNED_WEBHOOK_PATHS = new Set([
   '/api/v1/payments/webhook',
+  '/api/v1/payments/whop-webhook',
   '/api/v1/import/webhook/tradingview',
 ])
 

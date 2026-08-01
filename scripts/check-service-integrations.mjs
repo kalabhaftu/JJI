@@ -55,6 +55,30 @@ const requirements = [
       ['single capture path', /Sentry\.captureException/],
     ],
   },
+  {
+    file: 'lib/services/whop/client.ts',
+    patterns: [
+      ['Whop SDK', /@whop\/sdk/],
+      ['lazy API client', /getWhopClient/],
+      ['bounded provider timeout', /timeout:\s*15_000/],
+    ],
+  },
+  {
+    file: 'app/api/v1/payments/whop-webhook/route.ts',
+    patterns: [
+      ['verified raw webhook', /unwrapWhopWebhook/],
+      ['durable Inngest enqueue', /enqueueWhopWebhook/],
+      ['request correlation', /requestId/],
+      ['canonical failure reporting', /reportError/],
+    ],
+  },
+  {
+    file: 'lib/inngest/functions/process-whop-webhook.ts',
+    patterns: [
+      ['typed Whop event', /jji\/billing\.whop-webhook/],
+      ['durable step', /step\.run/],
+    ],
+  },
 ]
 
 const failures = []

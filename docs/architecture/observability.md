@@ -31,6 +31,7 @@ Configure native alerts using existing Sentry notification destinations:
 - `operation:rate-limit-backend`;
 - cron/background-job failures;
 - release regressions.
+- Whop processing failures and dispute/manual-review events.
 
 The reviewable source manifest is `config/sentry-alerts.json`. It intentionally
 contains no destination identifiers or credentials and declares

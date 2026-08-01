@@ -20,6 +20,7 @@ for (const file of await walk('app/api')) {
   const source = await readFile(file, 'utf8')
   const trustedProtocol = file.includes('app/api/cron/')
     || file.endsWith('app/api/v1/payments/webhook/route.ts')
+    || file.endsWith('app/api/v1/payments/whop-webhook/route.ts')
     || file.endsWith('app/api/v1/thor/store/route.ts')
   if (mutations.test(source) && !trustedProtocol && !classified.test(source)) {
     violations.push(relative(process.cwd(), file))

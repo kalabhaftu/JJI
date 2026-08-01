@@ -24,6 +24,10 @@ const requiredPaths = [
   'lib/dashboard/analytics/overview.ts',
   'lib/dashboard/analytics/strategy.ts',
   'lib/dashboard/analytics/behavior.ts',
+  'server/ai/journal-analysis/preparation.ts',
+  'server/ai/journal-analysis/prompt.ts',
+  'server/ai/journal-analysis/provider.ts',
+  'server/ai/journal-analysis/fallback.ts',
   'server/dashboard-templates-domain.ts',
   'server/weekly-review-domain.ts',
   'server/integrations/dxfeed.ts',
@@ -85,6 +89,11 @@ if (tradeImportFacade.split('\n').length > 10) {
 const analyticsFacade = await readFile('lib/dashboard/analytics-calculations.ts', 'utf8')
 if (analyticsFacade.split('\n').length > 10) {
   failures.push('lib/dashboard/analytics-calculations.ts must remain an analytics export facade')
+}
+
+const journalAnalysisOrchestrator = await readFile('server/ai/journal-analysis.ts', 'utf8')
+if (journalAnalysisOrchestrator.split('\n').length > 100) {
+  failures.push('server/ai/journal-analysis.ts must remain a thin analysis orchestrator')
 }
 
 if (failures.length > 0) {

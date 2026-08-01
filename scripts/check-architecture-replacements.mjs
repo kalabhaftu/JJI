@@ -15,6 +15,10 @@ const requiredPaths = [
   'server/import-jobs/preparation.ts',
   'server/import-jobs/execution.ts',
   'server/import-jobs/state.ts',
+  'server/trade-import-jobs/lifecycle.ts',
+  'server/trade-import-jobs/execution.ts',
+  'server/trade-import-jobs/normalization.ts',
+  'server/trade-import-jobs/types.ts',
   'server/dashboard-templates-domain.ts',
   'server/weekly-review-domain.ts',
   'server/integrations/dxfeed.ts',
@@ -66,6 +70,11 @@ for (const root of ['app', 'components', 'context', 'hooks', 'lib', 'server', 's
 const utils = await readFile('lib/utils.ts', 'utf8')
 if (!/export function cn/.test(utils) || utils.split('\n').length > 20) {
   failures.push('lib/utils.ts must remain the focused class-name helper')
+}
+
+const tradeImportFacade = await readFile('server/trade-import-jobs.ts', 'utf8')
+if (tradeImportFacade.split('\n').length > 10) {
+  failures.push('server/trade-import-jobs.ts must remain a compatibility export facade')
 }
 
 if (failures.length > 0) {

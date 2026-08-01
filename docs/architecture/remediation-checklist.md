@@ -295,5 +295,6 @@ until its old implementation is gone.
 - [x] Move all static tour definitions and public tour types out of the context.
 - [ ] Move Rithmic protocol handling and synchronization orchestration out of the context provider.
 - [x] Extract the Rithmic credential contract and rate-limit response parser.
-- [ ] Finish the archive-import facade and trade-import job split without duplicate lifecycle paths.
+- [x] Split trade-import lifecycle, normalization, serialization, and chunk execution behind a two-line compatibility facade.
+- [ ] Finish reducing the archive-import facade without duplicate lifecycle paths.
 - [ ] Add a source guard preventing these compatibility entrypoints from regrowing.

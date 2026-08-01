@@ -23,7 +23,7 @@ Legend:
 - [x] Inventory four Drizzle-journaled entries and nineteen timestamped Supabase migrations without rewriting history.
 - [x] Record pre-existing dependency/build/test failures for the final validation gate.
 - [x] Repair the local dependency installation and synchronize the Bun lockfile.
-- [ ] Establish a clean full-build baseline after the recorded repository TypeScript backlog is repaired.
+- [x] Establish a clean full-build baseline after the recorded repository TypeScript backlog is repaired.
 - [x] Create a remote database migration-list snapshot and reconcile it without rewriting history.
 
 ## 2. Error reporting and Sentry
@@ -274,7 +274,7 @@ Legend:
 - [x] Repair the recorded non-Whop TypeScript backlog so the repository-wide type-check exits cleanly.
 - [ ] Run lint once.
 - [ ] Run the full unit/integration suite once.
-- [ ] Run the production build once.
+- [x] Run the production build once.
 - [ ] Run migration dry-run and advisor checks once.
 - [ ] Run secret/security scans once.
 - [ ] Run final bundle analysis once.
@@ -346,6 +346,9 @@ Legend:
 - [x] Isolate sandbox and production membership lookups by provider environment.
 - [x] Replace JJI Admin's legacy v2, fire-and-forget cancellation with the pinned official Whop SDK.
 - [x] Make Admin sync, cancel, expire, extend, ban, delete, and approved-refund flows call Whop authoritatively.
+- [x] Route legacy cancellation through Whop before local state and keep the local-only fallback limited to non-Whop billing.
+- [x] Isolate legacy NOWPayments reconciliation and due-date maintenance from Whop records in both deployments.
+- [x] Make Admin single-payment and user-wide synchronization provider-aware.
 - [x] Keep ban/delete enforcement durable through the shared retryable cancellation inbox when Whop is unavailable.
 - [x] Prevent failed Supabase Auth deletion from silently deleting the remaining database owner record.
 - [x] Configure sandbox Whop only on both Preview deployments; keep Production card billing disabled pending real credentials.

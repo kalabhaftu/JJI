@@ -147,6 +147,11 @@ if (weeklyModal.split('\n').length > 550) {
   failures.push('weekly-modal.tsx must remain focused on review lifecycle orchestration')
 }
 
+const calendarWidget = await readFile('app/dashboard/components/calendar/calendar-widget.tsx', 'utf8')
+if (/import\s+\{\s*WeeklyModal\s*\}\s+from\s+['"]\.\/weekly-modal['"]/.test(calendarWidget)) {
+  failures.push('calendar-widget.tsx must interaction-gate the heavy weekly review modal')
+}
+
 if (failures.length > 0) {
   console.error('Architecture replacement check failed:')
   for (const failure of failures) console.error(`- ${failure}`)

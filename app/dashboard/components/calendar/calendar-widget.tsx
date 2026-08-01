@@ -1,5 +1,6 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react"
 import { format, addMonths, subMonths, getYear } from "date-fns"
 import { enUS } from 'date-fns/locale'
@@ -12,9 +13,9 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
+import { Spinner } from '@/components/ui/spinner'
 import { cn } from "@/lib/utils"
 import { CalendarModal } from "./daily-modal"
-import { WeeklyModal } from "./weekly-modal"
 import { CalendarSettings } from "./calendar-settings"
 import { useCalendarViewStore } from "@/store/calendar-view-store"
 import { useUserStore } from "@/store/user-store"
@@ -39,6 +40,25 @@ import MonthlyView from "./monthly-view"
 import YearlyView from "./yearly-view"
 import { Logo } from "@/components/logo"
 import { reportError } from '@/lib/observability/report-error'
+
+const WeeklyModal = dynamic(
+  () => import('./weekly-modal').then((module) => module.WeeklyModal),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        role="status"
+        aria-live="polite"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+      >
+        <div className="flex items-center gap-2 rounded-xl border border-border/50 bg-card px-4 py-3 text-sm text-muted-foreground shadow-lg">
+          <Spinner className="h-4 w-4" />
+          Loading weekly review…
+        </div>
+      </div>
+    ),
+  },
+)
 
 const formatCompact = (value: number) => {
   if (Math.abs(value) >= 1000) return `$${(value / 1000).toFixed(1)}k`
@@ -392,13 +412,15 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
         </div>
       </WidgetCard>
 
-      <WeeklyModal
-        isOpen={showWeeklyModal}
-        onOpenChange={setShowWeeklyModal}
-        selectedDate={selectedWeekDate || new Date()}
-        calendarData={localCalendarData}
-        isLoading={isLoading}
-      />
+      {showWeeklyModal ? (
+        <WeeklyModal
+          isOpen
+          onOpenChange={setShowWeeklyModal}
+          selectedDate={selectedWeekDate || new Date()}
+          calendarData={localCalendarData}
+          isLoading={isLoading}
+        />
+      ) : null}
     </div>
   )
 })

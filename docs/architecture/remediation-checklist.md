@@ -271,7 +271,7 @@ Legend:
 - [x] Keep database, provider, alert, push, and deployment operations local/pending.
 - [x] Repair the dependency installation.
 - [x] Run the repository type-check and confirm no errors remain in the new Whop modules, routes, jobs, schema, or deletion integration.
-- [ ] Repair the recorded non-Whop TypeScript backlog so the repository-wide type-check exits cleanly.
+- [x] Repair the recorded non-Whop TypeScript backlog so the repository-wide type-check exits cleanly.
 - [ ] Run lint once.
 - [ ] Run the full unit/integration suite once.
 - [ ] Run the production build once.
@@ -350,6 +350,9 @@ Legend:
 - [x] Prevent failed Supabase Auth deletion from silently deleting the remaining database owner record.
 - [x] Configure sandbox Whop only on both Preview deployments; keep Production card billing disabled pending real credentials.
 - [x] Remove the unsafe rate-limit bypass environment variable from both applications.
+- [x] Verify the configured sandbox plan is readable, recurring every 30 days, and resolves to the sandbox Whop host.
+- [x] Verify the configured Upstash backend accepts a read-only connectivity check.
+- [ ] Grant the sandbox key `company:basic:read` and `developer:manage_webhook`, then inspect the provider webhook registration; the current key cannot read that control plane.
 - [ ] Verify sandbox checkout, locked email, billing portal, cancellation, admin termination, refund, webhook retry, Resend, and Sentry flow.
 - [ ] Fast-forward both repositories to production only after green Preview deployment and sandbox verification.
 

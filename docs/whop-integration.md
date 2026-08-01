@@ -48,9 +48,14 @@ Webhook URL: `https://<environment-host>/api/v1/payments/whop-webhook`.
 Use Whop API version `v1` and subscribe to membership, payment, refund,
 dispute, dispute-alert, and resolution-center lifecycle events.
 
-Required key permissions: checkout configuration creation, membership read and
-cancellation, payment read, and refund read. Use the narrowest Whop role that
-provides those permissions.
+Required runtime permissions: checkout configuration creation;
+`member:basic:read`; `member:email:read`; `membership:cancel`;
+`member:manage` for Admin extensions; `payment:basic:read`; and
+`payment:manage` for approved Admin refunds, plus the related plan, access-pass,
+promo, dispute, resolution-case, and member read scopes required by Whop's
+payment API. Provider-side webhook inspection or management additionally needs
+`company:basic:read` and `developer:manage_webhook`. Use the narrowest Whop role
+that covers the deployed surface.
 
 ## Verification and rollout
 

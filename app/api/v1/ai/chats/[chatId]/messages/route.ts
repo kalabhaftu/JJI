@@ -385,7 +385,7 @@ export async function POST(
     // Check general AI Access and Limits
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
-      return createErrorResponse(aiGuard.reason, 403, undefined, 'PAYWALL', requestId)
+      return createErrorResponse(aiGuard.reason ?? 'AI access is unavailable.', 403, undefined, 'PAYWALL', requestId)
     }
 
     const dailyLimit = Number(aiGuard.settings?.maxMessagesPerDay ?? 0)

@@ -34,7 +34,7 @@ export async function GET(request: NextRequest) {
     // Check general AI access
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
-      return createErrorResponse(aiGuard.reason, 403, undefined, 'PAYWALL', requestId)
+      return createErrorResponse(aiGuard.reason ?? 'AI access is unavailable.', 403, undefined, 'PAYWALL', requestId)
     }
 
     const chats = await db.query.AIChat.findMany({
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     // Check AI access
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
-      return createErrorResponse(aiGuard.reason, 403, undefined, 'PAYWALL', requestId)
+      return createErrorResponse(aiGuard.reason ?? 'AI access is unavailable.', 403, undefined, 'PAYWALL', requestId)
     }
 
     if (!(await hasCurrentAiDataConsent(userId))) {

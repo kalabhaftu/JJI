@@ -1334,7 +1334,7 @@ export async function getTradovateTrades(
       return { processedTrades: [], savedCount: 0 }
     }
 
-    const saveResult = await saveTradesForUser(internalUserId, processedTrades)
+    const saveResult = await saveTradesForUser(userId, processedTrades)
     
     if (saveResult.error) {
       if (saveResult.error === "DUPLICATE_TRADES") {

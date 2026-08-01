@@ -19,12 +19,16 @@ export async function getWeeklyReview(startDate: Date) {
   return response.data
 }
 
-export async function saveWeeklyReview(data: Record<string, unknown>) {
+export async function saveWeeklyReview(data: Record<string, unknown>): Promise<
+  | { success: true; data: WeeklyReviewData }
+  | { success: false; error: string }
+> {
   try {
     const response = await apiRequest<WeeklyReviewData>('/api/v1/weekly-journal', {
       method: 'PUT',
       body: JSON.stringify(data),
     })
+    if (!response.data) throw new Error('Weekly review save returned no data')
     return { success: true, data: response.data }
   } catch (error) {
     return {

@@ -29,7 +29,7 @@ type SettingsUser = {
 
 type SettingsProfileSectionProps = {
   user: SettingsUser
-  avatarUrl?: string
+  avatarUrl?: string | undefined
   profileData: SettingsProfileData
   setProfileData: Dispatch<SetStateAction<SettingsProfileData>>
   isEditingProfile: boolean
@@ -91,7 +91,7 @@ export function SettingsProfileSection({
             <Avatar className="h-12 w-12 shrink-0 border border-border/25">
               <AvatarImage key={avatarUrl ?? 'settings-avatar-fallback'} src={avatarUrl} referrerPolicy="no-referrer" />
               <AvatarFallback className="text-lg">
-                {user?.email?.[0].toUpperCase()}
+                {(user?.email?.[0] ?? '?').toUpperCase()}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">

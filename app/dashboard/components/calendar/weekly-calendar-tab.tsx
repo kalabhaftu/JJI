@@ -68,7 +68,7 @@ export function WeeklyCalendarTab({
                       <div className="relative w-full h-full flex items-center justify-center p-4">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
-                          src={imagePreview || reviewData?.calendarImage}
+                          src={imagePreview ?? reviewData?.calendarImage ?? undefined}
                           alt="Economic Calendar"
                           className="w-full h-full object-contain max-h-[500px] rounded-lg"
                           onError={(e) => {

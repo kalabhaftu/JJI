@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
               route: request.nextUrl.pathname,
               requestId,
               userId: internalUserId,
-              entityId: notification?.id,
+              ...(notification?.id ? { entityId: notification.id } : {}),
             })
           })
         }
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
         route: request.nextUrl.pathname,
         requestId,
         userId: internalUserId,
-        entityId: notification?.id,
+        ...(notification?.id ? { entityId: notification.id } : {}),
       })
     }
 

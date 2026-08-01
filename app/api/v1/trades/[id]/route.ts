@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { db } from '@/lib/db/client'
+import { Trade } from '@/lib/db/schema'
 import { isDomainError } from '@/lib/domain-error'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
@@ -101,7 +102,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     const { existing, updated } = await updateTradeForUser(
       identity.internalUserId,
       id,
-      body,
+      body as Partial<typeof Trade.$inferInsert>,
       {
         requestId,
         ipAddress: getClientIp(request.headers),

@@ -120,6 +120,7 @@ export async function resumeImportJob(
       status: 409 as const,
     }
   }
+  const resumableStatus = current.status
 
   const persistedState = current.state && typeof current.state === 'object'
     ? current.state as Record<string, unknown>
@@ -145,7 +146,7 @@ export async function resumeImportJob(
     }).where(and(
       eq(schema.ImportJob.id, jobId),
       eq(schema.ImportJob.userId, internalUserId),
-      eq(schema.ImportJob.status, current.status),
+      eq(schema.ImportJob.status, resumableStatus),
     )).returning()
     if (!resumed) {
       throw new Error('Import job changed before it could be resumed')

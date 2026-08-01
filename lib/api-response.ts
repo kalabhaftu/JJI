@@ -164,7 +164,7 @@ export const ErrorResponses = {
     { retryAfterSeconds },
     'RATE_LIMIT_EXCEEDED',
     requestId,
-    { headers },
+    headers ? { headers } : {},
   ),
   rateLimitUnavailable: (requestId: string) => createErrorResponse(
     'Service temporarily unavailable',

@@ -113,6 +113,7 @@ export async function POST(
         amount: transactionAmount,
         description: typeof description === 'string' ? description.slice(0, 500) : null,
       }).returning())[0]
+      if (!created) throw new Error('Live account transaction insert returned no record')
       await recordAuditEvent({
         userId,
         action: `LIVE_ACCOUNT_${type}`,

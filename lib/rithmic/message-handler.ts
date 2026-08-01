@@ -57,11 +57,11 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
               });
             } else {
               logger.warn(
-                "No matching account found for setting total days:",
                 {
                   totalDays,
                   message: message.message,
-                }
+                },
+                "No matching account found for setting total days"
               );
             }
           }

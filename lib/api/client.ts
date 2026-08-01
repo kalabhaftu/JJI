@@ -20,7 +20,7 @@ interface ApiSuccessEnvelope<T> {
 export class ApiClientError extends Error {
   readonly status: number
   readonly code: string
-  readonly requestId?: string
+  readonly requestId: string | undefined
   readonly details?: unknown
 
   constructor(input: {
@@ -82,6 +82,7 @@ export async function apiRequest<T>(
     const errorBody = payload && payload.success === false
       ? payload.error
       : null
+    const responseRequestId = payload?.requestId ?? requestId
     throw new ApiClientError({
       message: typeof errorBody === 'string'
         ? errorBody
@@ -90,13 +91,15 @@ export async function apiRequest<T>(
       code: typeof errorBody === 'object' && errorBody?.code
         ? errorBody.code
         : 'REQUEST_FAILED',
-      requestId: payload?.requestId ?? requestId,
+      ...(responseRequestId ? { requestId: responseRequestId } : {}),
       details: typeof errorBody === 'object' ? errorBody?.details : undefined,
     })
   }
 
   return {
     ...payload,
-    requestId: payload.requestId ?? requestId,
+    ...((payload.requestId ?? requestId)
+      ? { requestId: (payload.requestId ?? requestId)! }
+      : {}),
   }
 }

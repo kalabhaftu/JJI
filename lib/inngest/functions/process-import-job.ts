@@ -69,7 +69,12 @@ export const processImportJob = inngest.createFunction(
       if (!result.done && result.status === 200) {
         await step.sendEvent('schedule-next-import-chunk', {
           name: 'jji/import.process',
-          data: { jobId, internalUserId, kind, requestId },
+          data: {
+            jobId,
+            internalUserId,
+            kind,
+            ...(requestId ? { requestId } : {}),
+          },
         })
       }
 

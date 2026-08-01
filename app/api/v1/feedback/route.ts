@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
            operation: 'upload-feedback-attachment',
            route: req.nextUrl.pathname,
            requestId,
-           userId: identity?.internalUserId,
+           ...(identity?.internalUserId ? { userId: identity.internalUserId } : {}),
            extra: { fileType: file.type, fileSize: file.size },
          })
          logger.warn(`Feedback attachment upload failed (type: ${file.type}, size: ${file.size})`)

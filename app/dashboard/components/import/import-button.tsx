@@ -241,7 +241,7 @@ export default function ImportButton() {
 
       if (result.isDuplicate) {
         toast.info("No New Trades", {
-          description: 'message' in result ? result.message : `All ${result.totalTrades} trades already exist`,
+          description: result.message ?? `All ${result.totalTrades} trades already exist`,
           duration: 5000,
         })
         return

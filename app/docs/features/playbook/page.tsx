@@ -28,7 +28,7 @@ export default function PlaybookDocsPage() {
         </ul>
       </DocsSection>
 
-      <DocsCallout title="Workflow Tip" tone="info">
+      <DocsCallout title="Workflow Tip" tone="default">
         The strongest playbook workflow: define your setups → trade them live (or log them as Ghost Setups) → review performance in the dashboard filtering by Trade Type → refine the setup rules.
       </DocsCallout>
     </DocsPage>

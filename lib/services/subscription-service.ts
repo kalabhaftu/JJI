@@ -14,7 +14,6 @@ export {
 export { validatePromoCode } from '@/lib/services/subscription/promotions'
 export {
   NotificationPriority,
-  type NotificationPriority,
   type NotificationType,
   type SubscriptionStatus,
 } from '@/lib/services/subscription/types'

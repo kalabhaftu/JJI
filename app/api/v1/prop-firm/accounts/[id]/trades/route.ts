@@ -119,6 +119,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     const trade = await db.transaction(async (tx) => {
       const createdTrade = (await tx.insert(schema.Trade).values(tradePayload as any).returning())[0]
+      if (!createdTrade) throw new Error('Prop-firm trade insert returned no record')
 
       await tx.insert(schema.TradeExecution).values(buildSyntheticExecutionsFromTrade(tradePayload as any) as any)
       await recordAuditEvent({

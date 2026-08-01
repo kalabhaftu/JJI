@@ -435,7 +435,7 @@ export async function getDxFeedTrades(
     }
 
     dxLogger.info(`Saving ${allTrades.length} trades...`)
-    const saveResult = await saveTradesForUser(internalUserId, allTrades)
+    const saveResult = await saveTradesForUser(userId, allTrades)
 
     if (saveResult.error) {
       if (saveResult.error === 'DUPLICATE_TRADES') {

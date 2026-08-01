@@ -3,6 +3,7 @@ import { and, desc, eq, inArray, or } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { PaymentRecord, Subscription } from '@/lib/db/schema'
 import logger from '@/lib/logger'
+import { reportError } from '@/lib/observability/report-error'
 import {
   createInvoice,
   getMinAmount,

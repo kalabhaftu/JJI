@@ -13,8 +13,11 @@ export const resetDailyAnchors = inngest.createFunction(
     { cron: 'TZ=UTC 5 0 * * *' },
   ],
   async ({ event, step }) => {
-    const requestId = typeof event.data?.requestId === 'string'
-      ? event.data.requestId
+    const eventData = event?.data && 'requestId' in event.data
+      ? event.data
+      : undefined
+    const requestId = typeof eventData?.requestId === 'string'
+      ? eventData.requestId
       : undefined
     const results = await step.run('create-daily-anchors', createAllDailyAnchors)
 

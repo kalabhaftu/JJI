@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
-import { createChart, IChartApi, ISeriesApi, CandlestickSeries, Time } from 'lightweight-charts'
+import { createChart, createSeriesMarkers, IChartApi, ISeriesApi, CandlestickSeries, type SeriesMarker, Time } from 'lightweight-charts'
 import { useTheme } from 'next-themes'
 import { ExtendedTrade } from '../tables/trade-table-review'
 import { Spinner } from '@/components/ui/spinner'
@@ -103,7 +103,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     seriesRef.current = candlestickSeries
     
     // Add markers for entry/exit
-    const markers: Parameters<typeof candlestickSeries.setMarkers>[0] = [] as any
+    const markers: SeriesMarker<Time>[] = []
     
     // Find closest candle to entry time
     const entryCandle = marketData.find(d => d.time >= entryTime)
@@ -131,7 +131,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     // Set initial data up to replay index
     const initialData = replayIndex > 0 ? marketData.slice(0, replayIndex) : marketData
     candlestickSeries.setData(initialData)
-    candlestickSeries.setMarkers(markers)
+    createSeriesMarkers(candlestickSeries, markers)
     
     chart.timeScale().fitContent()
 

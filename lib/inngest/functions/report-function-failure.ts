@@ -23,8 +23,8 @@ export const reportInngestFunctionFailure = inngest.createFunction(
     const failure = data.error && typeof data.error === 'object'
       ? data.error as { message?: unknown; name?: unknown }
       : undefined
-    const requestId = normalizeRequestId(originalEvent?.data?.requestId)
-      ?? normalizeRequestId(data.requestId)
+    const requestId = normalizeRequestId(safeString(originalEvent?.data?.requestId))
+      ?? normalizeRequestId(safeString(data.requestId))
     const functionId = safeString(data.function_id)
       ?? safeString(data.functionId)
       ?? 'unknown'

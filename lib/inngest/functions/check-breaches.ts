@@ -15,15 +15,18 @@ export const checkBreaches = inngest.createFunction(
   ],
   async ({ event, step }) => {
     return await step.run('evaluate-breaches', async () => {
-      const requestId = normalizeRequestId(event?.data?.requestId)
+      const eventData = event?.data && 'source' in event.data
+        ? event.data
+        : undefined
+      const requestId = normalizeRequestId(eventData?.requestId)
         ?? (typeof event?.id === 'string' ? event.id : undefined)
       logger.info({
-        source: event?.data?.source ?? 'scheduled',
+        source: eventData?.source ?? 'scheduled',
         requestId,
       }, 'Evaluating prop firm breaches')
       const result = await evaluateAllActivePhases({
-        ...(event?.data?.masterAccountId ? { masterAccountId: event.data.masterAccountId } : {}),
-        ...(event?.data?.phaseAccountId ? { phaseAccountId: event.data.phaseAccountId } : {}),
+        ...(eventData?.masterAccountId ? { masterAccountId: eventData.masterAccountId } : {}),
+        ...(eventData?.phaseAccountId ? { phaseAccountId: eventData.phaseAccountId } : {}),
         ...(requestId ? { requestId } : {}),
       })
       return {

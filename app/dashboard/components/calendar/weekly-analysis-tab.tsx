@@ -104,10 +104,10 @@ export function WeeklyAnalysisTab({
                                     ...savedData,
                                     expectation: savedExpectation, // Always use the saved value
                                     // Preserve local changes if they exist in prev (including falsy values)
-                                    actualOutcome: 'actualOutcome' in prev ? prev.actualOutcome : (savedData?.actualOutcome ?? undefined),
-                                    isCorrect: 'isCorrect' in prev ? prev.isCorrect : (savedData?.isCorrect ?? undefined),
-                                    notes: 'notes' in prev ? prev.notes : (savedData?.notes ?? undefined),
-                                    calendarImage: 'calendarImage' in prev ? prev.calendarImage : (savedData?.calendarImage ?? undefined)
+                                    actualOutcome: 'actualOutcome' in prev ? (prev.actualOutcome ?? null) : (savedData.actualOutcome ?? null),
+                                    isCorrect: 'isCorrect' in prev ? (prev.isCorrect ?? null) : (savedData.isCorrect ?? null),
+                                    notes: 'notes' in prev ? (prev.notes ?? null) : (savedData.notes ?? null),
+                                    calendarImage: 'calendarImage' in prev ? (prev.calendarImage ?? null) : (savedData.calendarImage ?? null)
                                   }
                                 })
                               }
@@ -241,7 +241,7 @@ export function WeeklyAnalysisTab({
                         <Label className="text-xs text-muted-foreground">Actual Market Behavior</Label>
                         <Select
                           value={reviewData?.actualOutcome || ''}
-                          onValueChange={(val) => setReviewData({ ...reviewData, actualOutcome: val })}
+                          onValueChange={(val) => setReviewData({ ...reviewData, actualOutcome: val as WeeklyExpectation })}
                         >
                           <SelectTrigger className="h-12 rounded-xl border border-border/40 bg-card/45">
                             <SelectValue placeholder="Select actual outcome" />

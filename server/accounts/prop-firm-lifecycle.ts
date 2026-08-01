@@ -25,13 +25,13 @@ export interface CreatePropFirmAccountCommand {
   phase1TimeLimitDays: number | null
   phase1MaxDrawdownType: 'static' | 'trailing'
   phase1ConsistencyRulePercent: number
-  phase2ProfitTargetPercent?: number
-  phase2DailyDrawdownPercent?: number
-  phase2MaxDrawdownPercent?: number
-  phase2MinTradingDays?: number
-  phase2TimeLimitDays?: number | null
-  phase2MaxDrawdownType?: 'static' | 'trailing'
-  phase2ConsistencyRulePercent?: number
+  phase2ProfitTargetPercent?: number | undefined
+  phase2DailyDrawdownPercent?: number | undefined
+  phase2MaxDrawdownPercent?: number | undefined
+  phase2MinTradingDays?: number | undefined
+  phase2TimeLimitDays?: number | null | undefined
+  phase2MaxDrawdownType?: 'static' | 'trailing' | undefined
+  phase2ConsistencyRulePercent?: number | undefined
   fundedDailyDrawdownPercent: number
   fundedMaxDrawdownPercent: number
   fundedMaxDrawdownType: 'static' | 'trailing'
@@ -160,9 +160,9 @@ export async function updatePropFirmAccountForUser(
   userId: string,
   masterAccountId: string,
   command: {
-    accountName?: string
-    status?: 'active' | 'funded' | 'failed'
-    isArchived?: boolean
+    accountName?: string | undefined
+    status?: 'active' | 'funded' | 'failed' | undefined
+    isArchived?: boolean | undefined
   },
   context: PropFirmLifecycleContext,
 ) {

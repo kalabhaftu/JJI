@@ -1,4 +1,60 @@
-export function buildJournalAnalysisPrompt(context: Record<string, any>) {
+type PerformanceBreakdown = {
+  trades: number
+  pnl: number
+}
+
+type WinPerformanceBreakdown = PerformanceBreakdown & {
+  wins: number
+}
+
+type EmotionPerformanceBreakdown = Pick<PerformanceBreakdown, 'trades'> & { totalPnL: number }
+type BiasPerformanceBreakdown = WinPerformanceBreakdown & { alignedWithSide: number }
+type NewsPerformanceBreakdown = WinPerformanceBreakdown & { tradedDuring: number }
+
+type JournalAnalysisPromptContext = Record<string, any> & {
+  journals: Array<{ date: string | Date }>
+  propFirmAccounts: Array<{ status: string }>
+  userTags: Array<{ name: string }>
+  tradingModels: Array<{ name: string }>
+  weeklyReviews: Array<{
+    startDate: string | Date
+    expectation?: string | null
+    actualOutcome?: string | null
+    isCorrect?: boolean | null
+    notes?: string | null
+  }>
+  topRules: Array<[string, number]>
+  topSetups: Array<[string, WinPerformanceBreakdown]>
+  topAccounts: Array<[string, PerformanceBreakdown]>
+  topInstruments: Array<[string, WinPerformanceBreakdown]>
+  pnlByStrategy: Record<string, WinPerformanceBreakdown>
+  pnlByWeekday: Record<string, PerformanceBreakdown>
+  bestHours: Array<{ hour: number; trades: number; pnl: number }>
+  worstHours: Array<{ hour: number; trades: number; pnl: number }>
+  emotionCounts: Record<string, number>
+  emotionPerformance: Record<string, EmotionPerformanceBreakdown>
+  biasPerformance: Record<string, BiasPerformanceBreakdown>
+  newsEventsTrade: Record<string, NewsPerformanceBreakdown>
+  usedTimeframes: Array<[string, WinPerformanceBreakdown]>
+  usedOrderTypes: Array<[string, WinPerformanceBreakdown]>
+  usedSessions: Array<[string, WinPerformanceBreakdown]>
+  journalSummary: Array<{
+    date: string | Date
+    emotion?: string | null
+    note: string
+    account: string
+  }>
+  tradeNotes: Array<{
+    date: string | Date
+    instrument: string
+    side: string
+    pnl: number
+    duration: number
+    note: string
+  }>
+}
+
+export function buildJournalAnalysisPrompt(context: JournalAnalysisPromptContext) {
   const {
     accountStatusSummary,
     averagePartialsPerGroupedTrade,
@@ -63,6 +119,8 @@ export function buildJournalAnalysisPrompt(context: Record<string, any>) {
     weeklyReviews,
     worstHours,
   } = context
+  const firstJournal = journals[0]
+  const lastJournal = journals[journals.length - 1]
 
   return `You are The Trading Accountability Coach. Not a cheerleader. Not a therapist. A straight-shooting performance analyst who tells traders EXACTLY what they need to hear, not what they want to hear.
 
@@ -121,7 +179,7 @@ OUTPUT REQUIREMENTS:
 
     THE DATA (Study this carefully):
 
-    **Time Period**: ${journals.length > 0 ? `${new Date(journals[0].date).toLocaleDateString()} to ${new Date(journals[journals.length - 1].date).toLocaleDateString()}` : 'No data'}
+    **Time Period**: ${firstJournal && lastJournal ? `${new Date(firstJournal.date).toLocaleDateString()} to ${new Date(lastJournal.date).toLocaleDateString()}` : 'No data'}
 
     **FUNDED ACCOUNT STATUS (CRITICAL - Failures mean real money lost)**:
     ${accountStatusSummary}

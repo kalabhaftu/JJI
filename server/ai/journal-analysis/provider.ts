@@ -58,7 +58,10 @@ Your approach:
   if (!jsonMatch) return null
 
   try {
-    return cleanContent(JSON.parse(jsonMatch[0]))
+    const cleaned = cleanContent(JSON.parse(jsonMatch[0]))
+    return cleaned && typeof cleaned === 'object' && !Array.isArray(cleaned)
+      ? cleaned as Record<string, unknown>
+      : null
   } catch (error) {
     reportError(error, {
       surface: 'server',

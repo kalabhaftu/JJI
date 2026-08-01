@@ -2,11 +2,21 @@
 
 import { useEffect } from 'react'
 import { reportError } from '@/lib/observability/report-error'
+import { isDemoHost, isDocsHost } from '@/lib/public-surface-routing'
 
 export function ServiceWorkerRegister() {
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
     if (process.env.NODE_ENV !== 'production') return
+    const { hostname, pathname } = window.location
+    if (
+      isDocsHost(hostname)
+      || isDemoHost(hostname)
+      || pathname === '/docs'
+      || pathname.startsWith('/docs/')
+      || pathname === '/demo'
+      || pathname.startsWith('/demo/')
+    ) return
 
     let active = true
 
@@ -19,14 +29,18 @@ export function ServiceWorkerRegister() {
 
         if (!active) return
 
-        if (registration?.waiting) {
-          registration.waiting.postMessage({ type: 'SKIP_WAITING' })
+        const waitingWorker = registration.waiting
+        if (waitingWorker) {
+          waitingWorker.postMessage({ type: 'SKIP_WAITING' })
         }
       } catch (error) {
         reportError(error, {
           surface: 'client',
           operation: 'register-service-worker',
           route: '/sw.js',
+          // Privacy tools and browser policies commonly reject this optional
+          // enhancement. The app deliberately continues without offline mode.
+          expected: true,
         })
         // The app should still work even if service worker registration fails.
       }

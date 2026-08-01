@@ -4,7 +4,6 @@ import { runSubscriptionChecks, reconcilePendingPayments } from '@/lib/services/
 import { createAllDailyAnchors } from '@/lib/services/anchor-service'
 import { runDailyMaintenance } from '@/lib/services/maintenance-service'
 import { logger } from '@/lib/logger'
-import { inngest } from '@/lib/inngest/client'
 import { reportError } from '@/lib/observability/report-error'
 
 /**
@@ -34,17 +33,13 @@ export async function GET(request: NextRequest) {
     logger.info('[Maintenance Cron] Task: Subscription Checks')
     results.tasks.subscriptions = await runSubscriptionChecks()
 
-    // 3. Phase Evaluation (Prop firm breaches/passes)
-    logger.info('[Maintenance Cron] Task: Phase Evaluation')
-    await inngest.send({
-      name: 'jji/phase.evaluate',
-      data: {
-        source: 'maintenance-cron',
-        requestedAt: timestamp,
-        ...(requestId ? { requestId } : {}),
-      },
-    })
-    results.tasks.phaseEvaluation = { queued: true }
+    // 3. Phase Evaluation is scheduled independently by Inngest every 15
+    // minutes. Do not enqueue a duplicate event here: an event-key outage must
+    // not prevent daily anchors and cleanup from running.
+    results.tasks.phaseEvaluation = {
+      scheduler: 'inngest',
+      schedule: '*/15 * * * *',
+    }
 
     // 4. Daily Anchors (Equity snapshots)
     logger.info('[Maintenance Cron] Task: Daily Anchors')

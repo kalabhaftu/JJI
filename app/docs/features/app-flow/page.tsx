@@ -17,13 +17,13 @@ export default function AppFlowDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={ArrowRight}
+            icon={<ArrowRight />}
             title="Magic link sign-in"
             description="The user enters their email and receives a one-time link. Clicking it creates or resumes a Supabase session. The browser redirects to /dashboard with a persistent cookie."
             items={['No password database to compromise', 'Session lasts up to 30 days of inactivity before requiring re-auth', 'Works across devices - sign in on mobile with the same email']}
           />
           <DocsInfoCard
-            icon={Shield}
+            icon={<Shield />}
             title="OAuth & session restoration"
             description="OAuth via Google, GitHub, or Discord redirects to the provider, then back with an access token. Session tokens are stored in an HTTP-only cookie and refreshed automatically by Supabase."
             items={['OAuth identity is linked to the workspace on first login', 'Cold opens (e.g. installed PWA, browser restart) restore the session silently', 'Sign-out clears the client-side session; data remains on the server']}
@@ -39,19 +39,19 @@ export default function AppFlowDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={LayoutDashboard}
+            icon={<LayoutDashboard />}
             title="Sidebar & navbar"
             description="The left sidebar lists all major sections: Dashboard, Reports, Trades, Journal, Playbook, Accounts, Backtesting, Data, Challenges, and Settings. The top navbar includes global search, quick-add (trade, journal entry, account), notifications, and the user menu."
             items={['Sidebar collapses to icons on smaller viewports', 'Navbar breadcrumbs show the current page context', 'Quick-add buttons open inline modals without leaving the current page']}
           />
           <DocsInfoCard
-            icon={LayoutDashboard}
+            icon={<LayoutDashboard />}
             title="Filters & command palette"
             description="The filter bar sits below the navbar and controls data scoping across dashboard, trades, reports, and journal views. The command palette (<kbd>Cmd+K</kbd>) provides keyboard-driven navigation and actions."
             items={['Account, date range, symbol, strategy, and tag filters', 'Filter presets can be saved and shared across sessions', 'Command palette: type to search pages, jump to trades, or run actions']}
           />
           <DocsInfoCard
-            icon={LayoutDashboard}
+            icon={<LayoutDashboard />}
             title="Routing model"
             description="Authenticated routes follow a flat hierarchy under /dashboard/*. Each section is a separate route: /dashboard, /dashboard/reports, /dashboard/trades, /dashboard/journal, etc. Public routes (/docs/*, /faq, /feedback) remain accessible without auth."
             items={['Public CTA changes to "Back to App" when a session is detected', '/dashboard is the post-auth landing and the primary app entry point', 'Direct navigation to a protected route redirects to sign-in if unauthenticated']}
@@ -67,19 +67,19 @@ export default function AppFlowDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={Smartphone}
+            icon={<Smartphone />}
             title="Bottom tab structure"
             description="Five tabs: Dashboard (KPI summary and mini-charts), Trades (paginated trade list with symbol/date/strategy filters), Journal (day-level journaling with voice-to-text), Challenges (prop-firm tracking), and More (settings, AI chat, support, subscription)."
             items={['Tabs persist their scroll position when switching', 'Pull-to-refresh triggers a data sync from Supabase', 'Push notifications surface trade alerts and daily reminders']}
           />
           <DocsInfoCard
-            icon={Smartphone}
+            icon={<Smartphone />}
             title="Real-time sync"
             description="Both platforms subscribe to the same Supabase channels. A trade imported on the web appears in the mobile app within milliseconds. Changes to settings, journal entries, or challenge progress sync automatically."
             items={['Supabase Realtime pushes row-level changes to active clients', 'Offline-capable reads from a local cache when connectivity is intermittent', 'Conflicts are last-write-wins; the same user cannot create conflicting edits']}
           />
           <DocsInfoCard
-            icon={Smartphone}
+            icon={<Smartphone />}
             title="Cross-platform consistency"
             description="The mobile app renders the same computed metrics (win rate, profit factor, Sharpe ratio, etc.) as the web dashboard because they derive from the same trade data and server-side calculations."
             items={['Filter scoping works identically: account, date, symbol, strategy', 'Journal images are uploaded to Supabase Storage and accessible from both platforms', 'AI chat history is shared; conversations started on one device appear on the other']}
@@ -95,25 +95,25 @@ export default function AppFlowDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={ArrowRight}
+            icon={<ArrowRight />}
             title="Import → Dashboard"
             description="Trades are imported via CSV, webhook, or sync source. The import confirmation screen links directly to the dashboard so the user can immediately see updated KPIs."
             items={['Bulk imports process in the background; the dashboard polls for completion', 'New trades are tagged with the current date as the import date', 'Duplicate detection prevents re-importing the same trade']}
           />
           <DocsInfoCard
-            icon={BookOpen}
+            icon={<BookOpen />}
             title="Dashboard → Journal"
             description="From the dashboard calendar, click a trading day to open the day review modal. The journal tab shows all notes, screenshots, and tags attached to that day."
             items={['Calendar heatmap colors days by P&L intensity', 'Day review modal includes the trade list for that day', 'Journal entries can reference specific trades or the day as a whole']}
           />
           <DocsInfoCard
-            icon={ArrowRight}
+            icon={<ArrowRight />}
             title="Journal → Reports"
             description="After journaling, users often generate reports to share or reflect. Reports aggregate filtered trade data into shareable analytics views."
             items={['Reports include equity curve, drawdown chart, monthly P&L, and trade distribution', 'Reports can be exported as PDF or shared via a public link', 'Report parameters inherit the current filter scope']}
           />
           <DocsInfoCard
-            icon={ArrowRight}
+            icon={<ArrowRight />}
             title="Reports → Adjust"
             description="Based on report insights, users tune their strategy, update their playbook, or revisit settings. The playbook builder documents setups, rules, and tagged examples."
             items={['Playbook entries can link to specific trades as reference examples', 'Strategy tags on trades feed into filterable strategy performance views', 'Settings changes (e.g. break-even threshold) reclassify existing trade outcomes retroactively']}

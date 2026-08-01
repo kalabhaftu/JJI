@@ -2,7 +2,6 @@
 
 import { ReactNode } from 'react'
 import Link from 'next/link'
-import { type LucideIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -81,22 +80,22 @@ export function DocsCardGrid({
 export function DocsInfoCard({
   title,
   description,
-  icon: Icon,
+  icon,
   items,
   footer,
 }: {
   title: string
   description: string
-  icon?: LucideIcon
+  icon?: ReactNode
   items?: string[]
   footer?: ReactNode
 }) {
   return (
     <Card className="border-border/70 bg-card/55">
       <CardHeader className="space-y-3">
-        {Icon && (
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-            <Icon className="h-5 w-5 text-primary" />
+        {icon && (
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 [&_svg]:h-5 [&_svg]:w-5 [&_svg]:text-primary">
+            {icon}
           </div>
         )}
         <div className="space-y-1">

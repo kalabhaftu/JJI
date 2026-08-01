@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { ReactNode } from 'react'
+import { DIRECT_SYNC_STATUS } from '@/lib/integrations/direct-sync-status'
 
 const LazyTradovateProvider = dynamic(
   () => import('@/context/tradovate-sync-context').then(m => ({ default: m.TradovateSyncContextProvider })),
@@ -18,9 +19,9 @@ const LazyRithmicProvider = dynamic(
 
 export function SyncContextWrapper({ children }: { children: ReactNode }) {
   return (
-    <LazyTradovateProvider>
-      <LazyDxFeedProvider>
-        <LazyRithmicProvider>
+    <LazyTradovateProvider disabled={DIRECT_SYNC_STATUS.isPaused}>
+      <LazyDxFeedProvider disabled={DIRECT_SYNC_STATUS.isPaused}>
+        <LazyRithmicProvider disabled={DIRECT_SYNC_STATUS.isPaused}>
           {children}
         </LazyRithmicProvider>
       </LazyDxFeedProvider>

@@ -15,13 +15,13 @@ export default function GettingStartedDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title="Email magic link"
             description="Enter your email address and click Continue. A one-time sign-in link is sent to your inbox - no password required. Click the link and your session starts immediately."
             items={['Check spam if the email does not arrive within 60 seconds', 'The link expires after 15 minutes; request a new one if needed', 'No password to remember or reset']}
           />
           <DocsInfoCard
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title="OAuth sign-up"
             description="Choose Google, GitHub, or Discord from the sign-in page. You are redirected to the provider, asked to consent, and returned to JJI with an active session."
             items={['Uses your existing provider account', 'No additional credentials to manage', 'Profile info (name, avatar) syncs from the provider']}
@@ -41,13 +41,13 @@ export default function GettingStartedDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={Settings}
+            icon={<Settings />}
             title="How to subscribe"
             description="Go to Settings → Subscription. Select the monthly plan, choose your preferred crypto payment method, and complete the transaction on the payment screen."
             items={['Supported cryptocurrencies are listed at checkout', 'The subscription activates immediately after confirmation', 'Your workspace remains active as long as the subscription is current']}
           />
           <DocsInfoCard
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title="Grace period & lapses"
             description="If a subscription payment lapses, you have a 7-day grace period to renew before data access is restricted. No data is ever deleted."
             items={['You can re-subscribe at any time to restore access', 'Historical data is preserved during lapses', 'Contact support via the feedback page for billing issues']}
@@ -62,13 +62,13 @@ export default function GettingStartedDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={Import}
+            icon={<Import />}
             title="CSV import"
             description="Download a broker export as CSV and upload it directly. A mapping preview lets you verify columns before saving."
             items={['Upload broker exports and generic CSV formats', 'Map your columns to JJI fields in the preview step', 'Choose an existing account or create a new one during import']}
           />
           <DocsInfoCard
-            icon={Import}
+            icon={<Import />}
             title="Webhooks & sync sources"
             description="For live automation, configure a TradingView webhook or Thor sync. Tradovate, DxFeed, and Rithmic live broker sync are currently under development."
             items={['TradingView webhooks: copy the webhook URL from Settings -> Integrations', 'Thor sync remains available where configured', 'Tradovate, DxFeed, and Rithmic files can still be imported through CSV flows']}
@@ -88,13 +88,13 @@ export default function GettingStartedDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={LayoutDashboard}
+            icon={<LayoutDashboard />}
             title="KPI cards & widgets"
             description="The top row shows key metrics: total trades, win rate, profit factor, average RR, net P&L, and Sharpe ratio. Below the KPIs, widget panels display equity curves, daily P&L bars, trade distribution, and more."
             items={['KPI values update automatically as you change filters', 'Widgets can be added, removed, resized, and rearranged', 'Dashboard templates let you save multiple layouts for different review modes']}
           />
           <DocsInfoCard
-            icon={LayoutDashboard}
+            icon={<LayoutDashboard />}
             title="Filters & date range"
             description="Use the filter bar to scope data by account, date range, symbol, strategy, and tags. All dashboard components respond to the active filter set."
             items={['Date presets: Today, This Week, This Month, This Quarter, This Year, All Time', 'Account filters default to all accounts; toggle individual accounts on/off', 'Saved filter presets are available for quick switching']}
@@ -109,13 +109,13 @@ export default function GettingStartedDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={Settings}
+            icon={<Settings />}
             title="Profile & display"
             description="Set your timezone, date and time format, and theme (light, dark, or system). The timezone affects how trades are grouped into trading days."
             items={['Timezone defaults to browser detection; override for consistent day boundaries', 'Theme applies to both web and mobile after sync', 'Display name and avatar sync from your OAuth provider or can be set manually']}
           />
           <DocsInfoCard
-            icon={Settings}
+            icon={<Settings />}
             title="Trading defaults"
             description="Configure the break-even threshold (used to classify trades as winners, losers, or break-even) and default account settings."
             items={['Break-even threshold: trades within ±X% or ±X ticks of zero are classified as break-even', 'Default commission and fee rates apply to imported trades that lack cost data', 'Linked accounts support available sync sources and saved import settings']}
@@ -130,13 +130,13 @@ export default function GettingStartedDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={Smartphone}
+            icon={<Smartphone />}
             title="Download & sign in"
             description="Download JJI from the Google Play Store or Apple App Store. Open the app and sign in using the same email magic link or OAuth provider you used on the web."
             items={['No separate registration - your web account works directly', 'After sign-in, the app loads your dashboard, trades, journal, and challenges', 'Push notifications are enabled by default for trade alerts']}
           />
           <DocsInfoCard
-            icon={Smartphone}
+            icon={<Smartphone />}
             title="Mobile navigation"
             description="The mobile app uses bottom tab navigation: Dashboard, Trades, Journal, Challenges, and More. All data is synced from the same Supabase backend."
             items={['Dashboard tab: KPI summary and charts optimized for mobile', 'Trades tab: searchable trade list with filters', 'Journal tab: voice-to-text journaling and day review', 'Challenges tab: prop-firm challenge tracking', 'More tab: settings, AI chat, and support']}
@@ -151,25 +151,25 @@ export default function GettingStartedDocsPage() {
         </p>
         <DocsCardGrid>
           <DocsInfoCard
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title="Journal & trade review"
             description="Open the journal to add notes and screenshots to each trading day. Use the calendar to navigate between days and review individual trades."
             items={['Attach screenshots with automatic cropping', 'Tag trades with custom labels for later filtering', 'Voice-to-text journaling available on mobile']}
           />
           <DocsInfoCard
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title="Prop-firm challenges"
             description="Track prop-firm challenge progress: set up challenge accounts, monitor rule compliance (profit targets, drawdown limits, trading days), and manage payouts."
             items={['Configure challenge rules per firm', 'Live tracking of profit targets and max drawdown', 'Phase transition logging (simulated → funded → payout)']}
           />
           <DocsInfoCard
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title="AI chat & insights"
             description="Chat with the AI assistant to analyze your trading data. Ask questions like 'What is my win rate this month?' or 'Show me my worst trades by R multiple.'"
             items={['Natural language queries over your trade data', 'Risk audits and strategy performance reviews', 'Pattern detection for common mistakes']}
           />
           <DocsInfoCard
-            icon={CheckCircle2}
+            icon={<CheckCircle2 />}
             title="Reports & backtesting"
             description="Generate detailed analytics reports with chart views and shareable links. Use the backtesting module to test strategies against historical trade data."
             items={['Export reports as PDF or share via public link', 'Backtesting supports custom entry/exit rules', 'Playbook builder for documenting and reusing trade setups']}

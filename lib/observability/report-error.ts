@@ -2,6 +2,7 @@ import * as Sentry from '@sentry/nextjs'
 
 import logger from '@/lib/logger'
 import { isExpectedError, type ErrorPolicyContext } from '@/lib/observability/error-policy'
+import { normalizeRequestId } from '@/lib/observability/request-id'
 import { scrubSentryContext } from '@/lib/observability/sentry-scrub'
 
 export type ErrorSurface =
@@ -30,6 +31,13 @@ const reportedErrors = new WeakSet<Error>()
 const EMAIL_VALUE = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi
 const SECRET_VALUE = /\b(?:bearer\s+)?[A-Za-z0-9_-]{24,}\b/gi
 const URL_QUERY = /([?&](?:token|key|secret|signature|code)=)[^&\s]+/gi
+const SAFE_IDENTIFIER_TAGS = new Set([
+  'requestId',
+  'jobId',
+  'entityId',
+  'userId',
+  'release',
+])
 
 export function normalizeError(error: unknown): Error {
   if (error instanceof Error) return error
@@ -64,29 +72,50 @@ export function getSafeErrorMessage(
 
 function compactTags(context: ReportErrorContext): Record<string, string> {
   const rawTags: Record<string, string | number | boolean | null | undefined> = {
+    ...context.tags,
     surface: context.surface,
     operation: context.operation,
     route: context.route,
-    requestId: context.requestId,
+    requestId: normalizeRequestId(context.requestId),
+    userId: context.userId,
     jobId: context.jobId,
     entityId: context.entityId,
     release: process.env.SENTRY_RELEASE ?? process.env.VERCEL_GIT_COMMIT_SHA,
     environment: process.env.VERCEL_ENV ?? process.env.NODE_ENV,
-    ...context.tags,
   }
 
   return Object.fromEntries(
     Object.entries(rawTags)
       .filter((entry) => entry[1] !== null && entry[1] !== undefined)
-      .map(([key, value]) => [
-        key,
-        String(value)
+      .map(([key, value]) => {
+        let safeValue = String(value)
           .replace(EMAIL_VALUE, '[redacted-email]')
           .replace(URL_QUERY, '$1[redacted]')
-          .replace(SECRET_VALUE, '[redacted-secret]')
-          .slice(0, 200),
-      ]),
+        if (!SAFE_IDENTIFIER_TAGS.has(key)) {
+          safeValue = safeValue.replace(SECRET_VALUE, '[redacted-secret]')
+        }
+        return [key, safeValue.slice(0, 200)]
+      }),
   )
+}
+
+function getSafeCause(error: Error): Record<string, string> | undefined {
+  const cause = error.cause
+  if (!cause) return undefined
+
+  if (cause instanceof Error) {
+    const safeCause = safeErrorForReporting(cause)
+    const code = 'code' in cause && typeof cause.code === 'string'
+      ? cause.code.slice(0, 80)
+      : undefined
+    return {
+      name: safeCause.name.slice(0, 80),
+      message: safeCause.message,
+      ...(code ? { code } : {}),
+    }
+  }
+
+  return { name: 'NonErrorCause', message: 'Unexpected non-error cause' }
 }
 
 /**
@@ -106,7 +135,11 @@ export function reportError(
   const safeError = safeErrorForReporting(normalized)
 
   const tags = compactTags(context)
-  const extra = scrubSentryContext(context.extra ?? {})
+  const cause = getSafeCause(normalized)
+  const extra = scrubSentryContext({
+    ...(context.extra ?? {}),
+    ...(cause ? { cause } : {}),
+  })
 
   logger.error(
     {

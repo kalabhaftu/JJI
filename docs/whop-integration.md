@@ -32,6 +32,11 @@ Configure separate Whop projects and credentials for preview and production.
 Never accept sandbox signatures in production or mix a sandbox API key with the
 production API URL.
 
+The subscribe page derives card-checkout availability on the server from a
+complete, valid Whop configuration. Empty or cross-environment variables hide
+only the card option; NOWPayments remains available while provider setup is
+repaired.
+
 | Variable | Meaning |
 |---|---|
 | `WHOP_API_KEY` | Server-only company API key for the selected environment |

@@ -12,20 +12,22 @@ import { Input } from '@/components/ui/input'
 import { useAuth } from '@/context/auth-provider'
 import { reportError } from '@/lib/observability/report-error'
 
-const FEATURES = [
-  { icon: BarChart3, text: 'Advanced analytics & performance tracking' },
-  { icon: Zap, text: 'Real-time trade journaling with AI insights' },
-  { icon: Shield, text: 'Prop firm phase management & risk alerts' },
-  { icon: CreditCard, text: 'Card and cryptocurrency payment options' },
-]
-
-export function SubscribeClient() {
+export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
   const router = useRouter()
   const [promoCode, setPromoCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [isWhopLoading, setIsWhopLoading] = useState(false)
   const [promoValidation, setPromoValidation] = useState<{ valid: boolean; description?: string } | null>(null)
+  const features = [
+    { icon: BarChart3, text: 'Advanced analytics & performance tracking' },
+    { icon: Zap, text: 'Real-time trade journaling with AI insights' },
+    { icon: Shield, text: 'Prop firm phase management & risk alerts' },
+    {
+      icon: CreditCard,
+      text: whopEnabled ? 'Card and cryptocurrency payment options' : 'Secure cryptocurrency payment',
+    },
+  ]
 
   useEffect(() => {
     if (!isAuthLoading && !isAuthenticated) {
@@ -152,7 +154,7 @@ export function SubscribeClient() {
 
           {/* Features */}
           <div className="space-y-3 mb-6">
-            {FEATURES.map((feature, i) => (
+            {features.map((feature, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
@@ -191,33 +193,37 @@ export function SubscribeClient() {
           </div>
 
           <div className="space-y-3">
-            <Button
-              onClick={handleWhopSubscribe}
-              disabled={isLoading || isWhopLoading}
-              className="w-full h-11 text-sm font-medium"
-            >
-              {isWhopLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating checkout...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="mr-2 h-4 w-4" />
-                  Pay with Card
-                </>
-              )}
-            </Button>
+            {whopEnabled && (
+              <>
+                <Button
+                  onClick={handleWhopSubscribe}
+                  disabled={isLoading || isWhopLoading}
+                  className="w-full h-11 text-sm font-medium"
+                >
+                  {isWhopLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating checkout...
+                    </>
+                  ) : (
+                    <>
+                      <CreditCard className="mr-2 h-4 w-4" />
+                      Pay with Card
+                    </>
+                  )}
+                </Button>
 
-            <div className="relative" aria-hidden="true">
-              <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/40" /></div>
-              <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
-            </div>
+                <div className="relative" aria-hidden="true">
+                  <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-border/40" /></div>
+                  <div className="relative flex justify-center text-[10px] uppercase"><span className="bg-card px-2 text-muted-foreground">or</span></div>
+                </div>
+              </>
+            )}
 
             <Button
               onClick={handleSubscribe}
               disabled={isLoading || isWhopLoading}
-              variant="outline"
+              variant={whopEnabled ? 'outline' : 'default'}
               className="w-full h-11 text-sm font-medium"
             >
               {isLoading ? (
@@ -235,7 +241,9 @@ export function SubscribeClient() {
           </div>
 
           <p className="text-[10px] text-muted-foreground/60 text-center mt-3">
-            Secure payment via Whop or NOWPayments. Manage card subscriptions through Whop.
+            {whopEnabled
+              ? 'Secure payment via Whop or NOWPayments. Manage card subscriptions through Whop.'
+              : 'Secure cryptocurrency payment powered by NOWPayments.'}
           </p>
         </motion.div>
 

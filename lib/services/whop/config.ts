@@ -55,3 +55,12 @@ export function getWhopConfig() {
     planIds: { pro: planId } satisfies Record<WhopPlanKey, string>,
   }
 }
+
+export function isWhopCheckoutConfigured(): boolean {
+  try {
+    getWhopConfig()
+    return true
+  } catch {
+    return false
+  }
+}

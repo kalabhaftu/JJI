@@ -1,4 +1,5 @@
 import { SubscribeClient } from './subscribe-client'
+import { isWhopCheckoutConfigured } from '@/lib/services/whop/config'
 
 export const metadata = {
   title: 'Subscribe | JJI Pro',
@@ -6,5 +7,5 @@ export const metadata = {
 }
 
 export default function SubscribePage() {
-  return <SubscribeClient />
+  return <SubscribeClient whopEnabled={isWhopCheckoutConfigured()} />
 }

@@ -1,6 +1,6 @@
 # Production architecture remediation checklist
 
-Status date: 2026-07-29
+Status date: 2026-08-01
 
 Branch: `preview`
 
@@ -33,6 +33,7 @@ Legend:
 - [x] Centralize expected-error classification.
 - [x] Prevent duplicate capture of the same Error instance.
 - [x] Remove direct application `Sentry.captureException` calls outside the canonical reporter.
+- [x] Remove the legacy error-logger adapter so callers report the original error and request context.
 - [x] Repair root and global error experiences with safe production messages.
 - [x] Add reusable accessible application and segment error presentations.
 - [x] Add inherited boundaries for dashboard, docs, reports, and subscribe surfaces.
@@ -63,6 +64,7 @@ Legend:
 - [x] Propagate request IDs through account, trade, payout, audit, phase, and import operations.
 - [x] Propagate request IDs through Inngest phase and import events.
 - [x] Propagate request IDs through daily-anchor and storage-cleanup Inngest events.
+- [x] Bind job, phase, cleanup, and anchor payloads to shared Inngest event schemas.
 - [x] Add route and operation tags without private request payloads.
 - [ ] Verify one deployed response through logs, Sentry, and its durable audit row.
 
@@ -120,10 +122,12 @@ Legend:
 - [x] Preserve optimistic state, invalidation, toasts, redirects, and loading behavior in migrated clients.
 - [x] Delete obsolete mutation actions.
 - [x] Add a source guard preventing client imports of server mutation modules.
+- [x] Keep API handlers off Server Action facades and import server-only domain modules directly.
 
 ## 6. Rate-limit hardening
 
 - [x] Add centralized route classification and policy selection.
+- [x] Move every ordinary API route off direct limiter calls and through the route-policy registry.
 - [x] Require every mutation route to contain a limiter or trusted-protocol classification.
 - [x] Classify sensitive, authenticated-read, public-read, auth, AI, import, payment, upload, feedback, admin, and signed/trusted traffic.
 - [x] Fail closed for sensitive production mutations when Redis is unavailable.
@@ -134,8 +138,11 @@ Legend:
 - [x] Return stable limiter error codes and request IDs.
 - [x] Cover limiter success, rejection, timeout, failure, fail-closed, fail-open read, and trusted-exemption decisions in focused tests.
 - [x] Add CI route-policy enforcement.
+- [x] Cover function and `export const` mutations and reject new direct route-level limiter calls.
 - [x] Emit rate-backend failure and sustained fail-open telemetry.
 - [x] Apply an explicit Upstash SDK timeout and map timeouts through the reviewed fail-open/fail-closed policy.
+- [x] Enforce source-level Redis, Upstash, Inngest, Resend, and Sentry integration requirements.
+- [x] Sanitize provider/cache fallback warnings before ordinary log emission.
 - [ ] Configure the corresponding Sentry provider alert.
 
 ## 7. Account monolith
@@ -229,6 +236,7 @@ Legend:
 - [x] Record a before-change analyzer snapshot.
 - [x] Identify static route-local Recharts and Framer Motion surfaces.
 - [x] Lazy-load route-local chart widgets behind dimension-preserving skeletons.
+- [x] Interaction-gate the weekly review editor so Recharts, Lexical, and image compression stay out of dashboard startup code.
 - [x] Keep Lexical surfaces unchanged where already dynamically isolated.
 - [x] Avoid blanket dynamic imports and shared-primitive chunk fragmentation.
 - [x] Leave database pool `max: 1` unchanged without profiling evidence.

@@ -1,96 +1,40 @@
 import { Button } from '@/components/ui/button'
 import type { TourId } from '@/lib/tours/types'
-import { LayoutGrid, Settings, Sparkles, TrendingUp } from 'lucide-react'
+import { BookOpen, Briefcase, CalendarDays, Database, FlaskConical, LayoutGrid, ListTodo, MessageSquare, Settings, Target, TrendingUp } from 'lucide-react'
+
+const TOUR_CARDS: Array<{ id: Exclude<TourId, 'onboarding' | 'dashboard' | 'analytics'>; title: string; description: string; icon: typeof LayoutGrid }> = [
+  { id: 'overview', title: 'Overview', description: 'Daily performance, account filters, widgets, and quick actions.', icon: LayoutGrid },
+  { id: 'accounts', title: 'Accounts and import', description: 'Create portfolios and bring in broker or CSV history.', icon: Briefcase },
+  { id: 'trades', title: 'Trades', description: 'Review the ledger and inspect individual execution details.', icon: ListTodo },
+  { id: 'journal', title: 'Journal', description: 'Review decisions and patterns by trading day.', icon: CalendarDays },
+  { id: 'reports', title: 'Reports', description: 'Compare performance, risk, sessions, and detailed evidence.', icon: TrendingUp },
+  { id: 'playbook', title: 'Playbook', description: 'Connect models and rules to the trades they describe.', icon: BookOpen },
+  { id: 'backtesting', title: 'Backtesting', description: 'Test rule sets against historical data.', icon: FlaskConical },
+  { id: 'goals', title: 'Goals', description: 'Set and track measurable review targets.', icon: Target },
+  { id: 'assistant', title: 'Assistant', description: 'Ask questions against selected workspace evidence.', icon: MessageSquare },
+  { id: 'data', title: 'Data', description: 'Export and manage stored workspace data.', icon: Database },
+  { id: 'settings', title: 'Settings', description: 'Manage preferences, connections, security, and help.', icon: Settings },
+]
 
 export function SettingsHelpSection({ startTour }: { startTour: (tourId: TourId) => void }) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-lg font-semibold text-heading-text">Help</h2>
-          <p className="text-xs text-muted-foreground/85">Restart interactive system tours to learn more about the platform</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-xl border border-border/40 bg-card/45 p-5 space-y-3 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-                <Sparkles className="h-4 w-4 text-primary" />
-                Core Onboarding Tour
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Take a quick walkthrough of the core platform layout, configure your timezone/theme in settings, and log a sample trade.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs"
-              onClick={() => startTour('onboarding')}
-            >
-              Start Onboarding Tour
-            </Button>
-          </div>
-
-          <div className="rounded-xl border border-border/40 bg-card/45 p-5 space-y-3 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-                <LayoutGrid className="h-4 w-4 text-primary" />
-                Trading Dashboard Tour
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Learn how to filter your data by specific trading accounts, customize and resize widgets on the dashboard canvas.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs"
-              onClick={() => startTour('dashboard')}
-            >
-              Start Dashboard Tour
-            </Button>
-          </div>
-
-          <div className="rounded-xl border border-border/40 bg-card/45 p-5 space-y-3 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-primary" />
-                Performance Analytics Tour
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Explore the reports view, analyze win-rates, profit factor metrics, trade duration stats, and weekly journal calendars.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs"
-              onClick={() => startTour('analytics')}
-            >
-              Start Analytics Tour
-            </Button>
-          </div>
-
-          <div className="rounded-xl border border-border/40 bg-card/45 p-5 space-y-3 flex flex-col justify-between">
-            <div className="space-y-1.5">
-              <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-                <Settings className="h-4 w-4 text-primary" />
-                Settings & Customization Tour
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                Understand how to modify preferences, toggle light/dark modes, add API credentials, and sync broker accounts.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="w-full text-xs"
-              onClick={() => startTour('settings')}
-            >
-              Start Settings Tour
-            </Button>
-          </div>
-        </div>
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-heading-text">Help and tours</h2>
+        <p className="text-sm text-muted-foreground">Restart any section walkthrough. Completed steps stay completed when you resume.</p>
       </div>
-    )
-  }
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+        {TOUR_CARDS.map(({ id, title, description, icon: Icon }) => (
+          <div key={id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
+            <Icon className="h-5 w-5 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1">
+              <h3 className="text-sm font-semibold">{title}</h3>
+              <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
+            </div>
+            <Button variant="outline" size="sm" onClick={() => startTour(id)}>Start</Button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}

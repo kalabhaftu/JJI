@@ -18,6 +18,7 @@ import { TemplateSelector } from './template-selector'
 import { DashboardDisplayModeSelector } from './navbar-display-mode'
 import { signOut } from '@/server/auth/providers'
 import { Settings, LogOut, Wallet, Plus, SlidersHorizontal } from 'lucide-react'
+import { emitTourEvent } from '@/lib/tours/events'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import {
   DropdownMenu,
@@ -99,8 +100,9 @@ export default function Navbar() {
             variant="ghost"
             size="icon"
             className="h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:hidden"
-            onClick={() => setMobileAccountsOpen(true)}
+            onClick={() => { setMobileAccountsOpen(true); emitTourEvent('account-filter.changed') }}
             aria-label="Select accounts"
+            data-tour="navbar-accounts-btn"
           >
             <Wallet className="h-4 w-4" />
           </Button>
@@ -115,7 +117,10 @@ export default function Navbar() {
           </Button>
 
           {/* Account Selector */}
-          <Popover open={!isMobile && accountPopoverOpen} onOpenChange={setAccountPopoverOpen}>
+          <Popover open={!isMobile && accountPopoverOpen} onOpenChange={(open) => {
+            setAccountPopoverOpen(open)
+            if (open) emitTourEvent('account-filter.changed')
+          }}>
             <PopoverTrigger asChild>
               <Button variant="ghost" size="icon" data-tour="navbar-accounts-btn" className="hidden h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:flex" aria-label="Trading accounts">
                 <Wallet className="h-4 w-4" />
@@ -154,7 +159,7 @@ export default function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => useQuickAddStore.getState().openQuickAdd()}
+            onClick={() => { useQuickAddStore.getState().openQuickAdd(); emitTourEvent('trade.quick-add.opened') }}
             data-tour="quick-add-btn"
             className="hidden h-8 w-8 text-muted-foreground hover:bg-muted/40 hover:text-foreground sm:flex items-center justify-center rounded-lg"
             title="Quick Add Trade"

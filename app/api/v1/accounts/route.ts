@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
         currentPhase: null,
         createdAt: acc.createdAt,
         isArchived: acc.isArchived || false,
+        isOnboardingSample: acc.isOnboardingSample,
         currentPhaseDetails: null,
       })
     })
@@ -307,7 +308,8 @@ export async function POST(request: NextRequest) {
       {
         ...account,
         accountType: 'live',
-        displayName: account.name || account.number
+        displayName: account.name || account.number,
+        isOnboardingSample: account.isOnboardingSample,
       },
       undefined,
       undefined,

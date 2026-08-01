@@ -1,9 +1,8 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
-
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type { TourId, TourStep } from '@/lib/tours/types'
+import { TOUR_EVENT } from '@/lib/tours/events'
 
 interface TourTargetInput {
   activeTour: TourId | null
@@ -14,7 +13,6 @@ interface TourTargetInput {
   stepIndex: number
   navigate: (route: string) => void
   nextStep: () => void
-  prevStep: () => void
   pauseTour: () => void
 }
 
@@ -25,15 +23,19 @@ export function useTourTargetVisibility(input: TourTargetInput) {
     paused,
     pathname,
     isMobile,
-    stepIndex,
     navigate,
-    nextStep,
-    prevStep,
-    pauseTour,
   } = input
   const [isTargetVisible, setIsTargetVisible] = useState(false)
   const [isLoadingTarget, setIsLoadingTarget] = useState(false)
+  const [targetMissing, setTargetMissing] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
   const checkInterval = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const retryTarget = useCallback(() => {
+    setTargetMissing(false)
+    setIsTargetVisible(false)
+    setRetryCount((count) => count + 1)
+  }, [])
 
   useEffect(() => {
     if (!activeTour || !currentStep || paused) {
@@ -41,52 +43,54 @@ export function useTourTargetVisibility(input: TourTargetInput) {
       setIsLoadingTarget(false)
       return
     }
+
     if (currentStep.route && pathname !== currentStep.route) {
       setIsLoadingTarget(true)
+      setTargetMissing(false)
       navigate(currentStep.route)
       return
     }
+
     if (currentStep.desktopOnly && isMobile) {
-      nextStep()
-      return
-    }
-    if (!currentStep.targetSelector) {
       setIsTargetVisible(true)
       setIsLoadingTarget(false)
       return
     }
 
+    if (!currentStep.targetSelector) {
+      setIsTargetVisible(true)
+      setIsLoadingTarget(false)
+      setTargetMissing(false)
+      return
+    }
+
     setIsTargetVisible(false)
     setIsLoadingTarget(true)
+    setTargetMissing(false)
     let attempts = 0
     checkInterval.current = setInterval(() => {
-      attempts++
+      attempts += 1
       if (document.querySelector(currentStep.targetSelector!)) {
         setIsTargetVisible(true)
         setIsLoadingTarget(false)
+        setTargetMissing(false)
         if (checkInterval.current) clearInterval(checkInterval.current)
         checkInterval.current = null
-      } else if (attempts >= 15) {
+      } else if (attempts >= 30) {
         if (checkInterval.current) clearInterval(checkInterval.current)
         checkInterval.current = null
         setIsLoadingTarget(false)
-        if (stepIndex > 0) {
-          prevStep()
-          toast.info('Dropdown closed or target not found. Rewinding one step. Please click the trigger again to continue the tour.', { duration: 4000 })
-        } else {
-          pauseTour()
-          toast.info('Tour paused. Click the resume widget to continue when ready.', { duration: 4000 })
-        }
+        setTargetMissing(true)
       }
-    }, 500)
+    }, 300)
 
     return () => {
       if (checkInterval.current) clearInterval(checkInterval.current)
       checkInterval.current = null
     }
-  }, [activeTour, currentStep, paused, pathname, isMobile, stepIndex, navigate, nextStep, prevStep, pauseTour])
+  }, [activeTour, currentStep, paused, pathname, isMobile, navigate, retryCount])
 
-  return { isTargetVisible, isLoadingTarget }
+  return { isTargetVisible, isLoadingTarget, targetMissing, retryTarget }
 }
 
 export function useTourActionAdvance(input: {
@@ -97,25 +101,45 @@ export function useTourActionAdvance(input: {
   nextStep: () => void
 }) {
   const { activeTour, currentStep, paused, isTargetVisible, nextStep } = input
-  useEffect(() => {
-    if (!activeTour || !currentStep || paused || !isTargetVisible) return
-    const { actionType, actionTarget } = currentStep
-    if (!actionType || !actionTarget) return
 
+  useEffect(() => {
+    if (!activeTour || !currentStep || paused || !isTargetVisible || !currentStep.completion) return
+    if (currentStep.completion.type === 'route') return
+
+    const { type, key } = currentStep.completion
     let fired = false
-    const handleAction = (event: Event) => {
+
+    const handleTourEvent = (event: Event) => {
       if (fired) return
-      const target = event.target as Element | null
-      if (!target?.closest(actionTarget)) return
+      const detail = (event as CustomEvent<{ key?: string }>).detail
+      if (detail?.key !== key) return
       fired = true
-      setTimeout(nextStep, 305)
+      window.setTimeout(nextStep, 180)
     }
-    const events = actionType === 'click'
-      ? ['click', 'mousedown', 'pointerdown']
-      : ['input']
-    for (const event of events) document.addEventListener(event, handleAction, { capture: true })
+
+    const handleInput = (event: Event) => {
+      if (type !== 'value' || fired) return
+      const target = event.target as HTMLInputElement | null
+      if (!target || !target.matches(key) || !target.value.trim()) return
+      fired = true
+      window.setTimeout(nextStep, 180)
+    }
+
+    const handleSelectorClick = (event: Event) => {
+      if (type !== 'selector' || fired) return
+      const target = event.target as Element | null
+      if (!target?.closest(key)) return
+      fired = true
+      window.setTimeout(nextStep, 180)
+    }
+
+    document.addEventListener(TOUR_EVENT, handleTourEvent)
+    document.addEventListener('input', handleInput, true)
+    document.addEventListener('click', handleSelectorClick, true)
     return () => {
-      for (const event of events) document.removeEventListener(event, handleAction, { capture: true })
+      document.removeEventListener(TOUR_EVENT, handleTourEvent)
+      document.removeEventListener('input', handleInput, true)
+      document.removeEventListener('click', handleSelectorClick, true)
     }
   }, [activeTour, currentStep, paused, isTargetVisible, nextStep])
 }
@@ -134,6 +158,7 @@ export function useTourAccountCreatedEvent(input: {
     setCreatedAccountId,
     setCreatedAccountType,
   } = input
+
   useEffect(() => {
     const handleAccountCreated = (event: Event) => {
       const detail = (event as CustomEvent).detail as {
@@ -143,7 +168,7 @@ export function useTourAccountCreatedEvent(input: {
       if (!detail?.id || !detail.type || createdAccountId) return
       setCreatedAccountId(detail.id)
       setCreatedAccountType(detail.type)
-      if (currentStep?.id === 'submit-account') nextStep()
+      if (currentStep?.completion?.key === 'account.created') nextStep()
     }
     document.addEventListener('jji-account-created', handleAccountCreated)
     return () => document.removeEventListener('jji-account-created', handleAccountCreated)

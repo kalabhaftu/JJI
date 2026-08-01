@@ -1,5 +1,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { emitTourEvent } from '@/lib/tours/events'
 import { Checkbox } from '@/components/ui/checkbox'
 import { ColumnConfigDialog } from '@/components/ui/column-config-dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
@@ -408,7 +409,7 @@ const useTradeTableColumns = ({
 
         return (
           <div className="flex items-center justify-center space-x-1.5">
-            <Button variant='secondary' size='sm' className="h-7 px-2 text-[11px]" data-tour="view-trade-btn" onClick={() => onViewDetails(trade as ExtendedTrade)}>
+            <Button variant='secondary' size='sm' className="h-7 px-2 text-[11px]" data-tour="view-trade-btn" onClick={() => { onViewDetails(trade as ExtendedTrade); emitTourEvent('trade.detail.opened') }}>
               View
             </Button>
             <Button variant='ghost' size='sm' className="h-7 px-2 text-[11px]" data-tour="edit-trade-btn" onClick={() => onEditTrade(tradeToEdit as ExtendedTrade)}>

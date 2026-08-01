@@ -10,6 +10,7 @@ import {
   Webhook,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { PageHeader } from '@/components/ui/page-header'
 import { useAuth } from '@/context/auth-provider'
@@ -42,6 +43,7 @@ function reportSettingsMutationError(error: unknown, operation: string) {
 }
 
 export default function SettingsPage() {
+  const searchParams = useSearchParams()
   const { theme, accentPack, widgetStyle, chartStyle } = useTheme()
   const {
     handleThemeChange,
@@ -554,6 +556,11 @@ export default function SettingsPage() {
 
 
   const [activeTab, setActiveTab] = useState<SettingsSectionId>('profile')
+
+  useEffect(() => {
+    const tab = searchParams.get('tab')
+    if (tab === 'help') setActiveTab('help')
+  }, [searchParams])
 
   const categories = [
     { id: 'profile' as const, label: 'Profile & Plan', icon: User },

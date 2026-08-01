@@ -26,7 +26,8 @@ import {
   Info,
   Sparkles,
   FileSpreadsheet,
-  Wand2
+  Wand2,
+  RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -354,11 +355,14 @@ export default function UniversalProcessor({
           {processedTrades.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <AlertTriangle className="h-10 w-10 text-amber-500 mb-3" />
-              <h3 className="font-semibold text-lg mb-1">No Trades Found</h3>
+              <h3 className="font-semibold text-lg mb-1">No valid trades found</h3>
               <p className="text-sm text-muted-foreground max-w-md">
-                Could not extract any valid trades from the CSV. Please ensure your file contains 
-                the required columns (Symbol/Instrument, Entry Date) and try again.
+                We could not validate a trade in this file. Check that it includes Symbol or Instrument and Entry Date, then retry the check.
               </p>
+              <Button className="mt-4" variant="outline" size="sm" onClick={() => void processWithAI()} disabled={isUsingAI}>
+                {isUsingAI ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                Retry trade check
+              </Button>
             </div>
           ) : (
             <div className="flex-1 overflow-auto">

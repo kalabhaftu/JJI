@@ -46,6 +46,7 @@ import { useUserStore } from '@/store/user-store'
 import { motion, AnimatePresence } from 'framer-motion'
 import { PhaseTransitionDialog } from '@/app/dashboard/components/prop-firm/phase-transition-dialog'
 import { Progress } from '@/components/ui/progress'
+import { emitTourEvent } from '@/lib/tours/events'
 
 export type Step =
   | 'select-import-type'
@@ -90,7 +91,10 @@ export default function ImportButton() {
   
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
-      const handleOpen = () => setIsOpen(true)
+      const handleOpen = () => {
+        setIsOpen(true)
+        emitTourEvent('import.opened')
+      }
       window.addEventListener('open-import-modal', handleOpen)
       return () => window.removeEventListener('open-import-modal', handleOpen)
     }
@@ -233,6 +237,8 @@ export default function ImportButton() {
 
       setIsOpen(false)
       resetImportState()
+      emitTourEvent('import.succeeded')
+      if (typeof document !== 'undefined') document.dispatchEvent(new Event('jji-import-completed'))
 
       // Refresh data
       await refreshTrades()
@@ -590,7 +596,10 @@ export default function ImportButton() {
 
       <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
         <Button
-          onClick={() => setIsOpen(true)}
+          onClick={() => {
+            setIsOpen(true)
+            emitTourEvent('import.opened')
+          }}
           variant="outline"
           className="justify-start text-left font-medium w-full transition-all duration-200 hover:bg-muted/50 border-border/50"
           id="import-data"
@@ -618,6 +627,7 @@ export default function ImportButton() {
 
           setIsOpen(false)
           resetImportState()
+          if (typeof document !== 'undefined') document.dispatchEvent(new Event('jji-import-closed'))
         }}
       >
         <DialogContent
@@ -783,6 +793,7 @@ export default function ImportButton() {
                 setShowCloseConfirm(false)
                 setIsOpen(false)
                 resetImportState()
+                if (typeof document !== 'undefined') document.dispatchEvent(new Event('jji-import-closed'))
               }}
             >
               Discard & Close

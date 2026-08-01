@@ -17,6 +17,7 @@ export const Account = pgTable('Account', {
   updatedAt: timestamp('updatedAt', { withTimezone: true, mode: 'date' }).defaultNow().notNull().$onUpdateFn(() => new Date()),
   isArchived: boolean('isArchived').default(false),
   isConfigured: boolean('isConfigured').default(false),
+  isOnboardingSample: boolean('isOnboardingSample').default(false).notNull(),
 }, (table) => ({
   userNumberIdx: index('account_user_number_idx').on(table.userId, table.number),
 }));

@@ -24,6 +24,7 @@ import { toast } from 'sonner'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { emitTourEvent } from '@/lib/tours/events'
 
 interface QuickAddFABProps {
     className?: string
@@ -95,7 +96,10 @@ export function QuickAddFAB({ className }: QuickAddFABProps) {
             <Button
                 type="button"
                 size="icon"
-                onClick={openQuickAdd}
+                onClick={() => {
+                    openQuickAdd()
+                    emitTourEvent('trade.quick-add.opened')
+                }}
                 data-tour="quick-add-btn"
                 className={cn(
                     "fixed bottom-28 right-6 h-14 w-14 rounded-full shadow-md z-[60]",

@@ -1,22 +1,23 @@
 'use client'
 
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
-import { useUserStore } from '@/store/user-store'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { useData } from '@/context/data-provider'
+import { useUserStore } from '@/store/user-store'
 import { clearAccountsCache } from '@/hooks/use-accounts'
 import { reportError } from '@/lib/observability/report-error'
+import { TOURS } from '@/lib/tours/definitions'
 import {
-  useTourAccountCreatedEvent,
+  mergeOnboardingStatus,
+  normalizeOnboardingStatus,
+  persistOnboardingStatus,
+  updateTourProgress,
+} from '@/lib/tours/persistence'
+import type { OnboardingSetupMode, OnboardingStatus, TourId, TourStep } from '@/lib/tours/types'
+import {
   useTourActionAdvance,
   useTourTargetVisibility,
 } from '@/hooks/use-tour-interactions'
-
-import { TOURS } from '@/lib/tours/definitions'
-import { mergeOnboardingStatus, persistOnboardingStatus } from '@/lib/tours/persistence'
-import { downloadSampleTradesCsv } from '@/lib/tours/sample-csv'
-import type { OnboardingStatus, TourId, TourStep } from '@/lib/tours/types'
 
 interface TourContextType {
   activeTour: TourId | null
@@ -24,25 +25,34 @@ interface TourContextType {
   currentStep: TourStep | null
   paused: boolean
   onboardingStatus: OnboardingStatus | null
+  onboardingOpen: boolean
+  cleanupError: string | null
   startTour: (tourId: TourId) => void
+  startSetup: () => void
+  setSetupMode: (mode: OnboardingSetupMode) => void
+  setSampleAccountId: (accountId: string | null) => Promise<void>
+  completeSetup: (mode: OnboardingSetupMode, sampleAccountId?: string | null) => Promise<void>
+  skipSetup: () => Promise<void>
   nextStep: () => void
   prevStep: () => void
-  skipTour: () => void
-  completeTour: () => void
+  skipTour: () => Promise<void>
+  completeTour: () => Promise<void>
   resumeTour: () => void
   pauseTour: () => void
+  retryTarget: () => void
+  retrySampleCleanup: () => Promise<void>
   isTargetVisible: boolean
   isLoadingTarget: boolean
+  targetMissing: boolean
   totalSteps: number
 }
 
 const TourContext = createContext<TourContextType | undefined>(undefined)
 
-const DEFAULT_ONBOARDING_STATUS: OnboardingStatus = {
-  core_onboarding_completed: false,
-  dashboard_tour_completed: false,
-  analytics_tour_completed: false,
-  settings_tour_completed: false,
+function canonicalTourId(tourId: TourId): TourId {
+  if (tourId === 'dashboard') return 'overview'
+  if (tourId === 'analytics') return 'reports'
+  return tourId
 }
 
 export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,237 +61,216 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const storeUser = useUserStore((state) => state.user)
   const setDbUser = useUserStore((state) => state.setUser)
   const isMobile = useUserStore((state) => state.isMobile)
-  const { accounts } = useData()
 
   const [activeTour, setActiveTour] = useState<TourId | null>(null)
-  const [stepIndex, setStepIndex] = useState<number>(0)
-  const [paused, setPaused] = useState<boolean>(false)
+  const [stepIndex, setStepIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
   const [onboardingStatus, setOnboardingStatus] = useState<OnboardingStatus | null>(null)
+  const [cleanupError, setCleanupError] = useState<string | null>(null)
 
-  // Track the created demo account during the onboarding tour
-  const initialAccountIds = useRef<string[]>([])
-  const [createdAccountId, setCreatedAccountId] = useState<string | null>(null)
-  const [createdAccountType, setCreatedAccountType] = useState<'live' | 'prop-firm' | null>(null)
-
-  const currentSteps = activeTour ? TOURS[activeTour] : []
+  const currentSteps = useMemo(() => activeTour ? TOURS[activeTour] : [], [activeTour])
   const currentStep = activeTour && currentSteps[stepIndex] ? currentSteps[stepIndex] : null
 
-  // Fetch onboarding status from Zustand store / User data
   useEffect(() => {
-    if (storeUser) {
-      const dbStatus = (storeUser as any).onboardingStatus
-      if (dbStatus && typeof dbStatus === 'object') {
-        setOnboardingStatus({
-          core_onboarding_completed: !!dbStatus.core_onboarding_completed,
-          dashboard_tour_completed: !!dbStatus.dashboard_tour_completed,
-          analytics_tour_completed: !!dbStatus.analytics_tour_completed,
-          settings_tour_completed: !!dbStatus.settings_tour_completed,
-          last_updated: dbStatus.last_updated,
-        })
-      } else {
-        setOnboardingStatus(DEFAULT_ONBOARDING_STATUS)
-      }
+    if (!storeUser) {
+      setOnboardingStatus(null)
+      return
     }
-  }, [storeUser])
 
-  // Action methods
-  const startTour = useCallback((tourId: TourId) => {
-    setActiveTour(tourId)
-    setStepIndex(0)
-    setPaused(false)
-    if (tourId === 'onboarding') {
-      setCreatedAccountId(null)
-      setCreatedAccountType(null)
-      initialAccountIds.current = accounts ? accounts.map((a: any) => a.id) : []
+    const rawStatus = (storeUser as any).onboardingStatus
+    const normalized = normalizeOnboardingStatus(rawStatus, Boolean(storeUser.isFirstConnection))
+    setOnboardingStatus(normalized)
+    if (!rawStatus) {
+      void persistOnboardingStatus(normalized)
+        .then((updatedUser) => { if (updatedUser) setDbUser(updatedUser) })
+        .catch((error) => reportError(error, { surface: 'client', operation: 'migrate-onboarding-status', route: '/api/auth/profile' }))
     }
-  }, [accounts])
+  }, [setDbUser, storeUser])
 
-  // Automatically trigger onboarding for new users on main dashboard page
-  useEffect(() => {
-    if (
-      onboardingStatus &&
-      onboardingStatus.core_onboarding_completed === false &&
-      activeTour === null &&
-      pathname === '/dashboard' &&
-      !paused
-    ) {
-      const timer = setTimeout(() => {
-        startTour('onboarding')
-      }, 1500)
-      return () => clearTimeout(timer)
-    }
-  }, [onboardingStatus, activeTour, pathname, paused, startTour])
-
-  // Save onboarding status to DB
-  const saveOnboardingStatus = useCallback(async (updatedStatus: Partial<OnboardingStatus>) => {
+  const saveOnboardingStatus = useCallback(async (update: Partial<OnboardingStatus>) => {
     if (!storeUser) return
-
-    const nextStatus = mergeOnboardingStatus(onboardingStatus, updatedStatus)
+    const nextStatus = mergeOnboardingStatus(onboardingStatus, update)
     setOnboardingStatus(nextStatus)
 
     try {
       const updatedUser = await persistOnboardingStatus(nextStatus)
       if (updatedUser) setDbUser(updatedUser)
     } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'save-tour-status',
-        route: '/api/auth/profile',
-      })
+      reportError(error, { surface: 'client', operation: 'save-tour-status', route: '/api/auth/profile' })
     }
-  }, [storeUser, onboardingStatus, setDbUser])
+  }, [onboardingStatus, setDbUser, storeUser])
 
-  const skipTour = async () => {
-    if (!activeTour) return
+  const startTour = useCallback((requestedTourId: TourId) => {
+    const tourId = canonicalTourId(requestedTourId)
+    if (!TOURS[tourId]?.length) return
+    const savedStepId = onboardingStatus?.tours[tourId as keyof typeof onboardingStatus.tours]?.currentStepId
+    const savedIndex = savedStepId ? TOURS[tourId].findIndex((step) => step.id === savedStepId) : -1
+    setActiveTour(tourId)
+    setStepIndex(savedIndex >= 0 ? savedIndex : 0)
+    setPaused(false)
+    setCleanupError(null)
+    void saveOnboardingStatus({
+      current_tour: tourId,
+      current_step_id: savedIndex >= 0 ? TOURS[tourId][savedIndex]?.id ?? null : TOURS[tourId][0]?.id ?? null,
+      tours: {
+        [tourId]: {
+          state: 'in_progress',
+          currentStepId: savedIndex >= 0 ? TOURS[tourId][savedIndex]?.id : TOURS[tourId][0]?.id,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    })
+  }, [onboardingStatus, saveOnboardingStatus])
 
-    const keyMap: Record<TourId, keyof OnboardingStatus> = {
-      onboarding: 'core_onboarding_completed',
-      dashboard: 'dashboard_tour_completed',
-      analytics: 'analytics_tour_completed',
-      settings: 'settings_tour_completed',
-    }
-
-    // Clean up created demo account on skip
-    if (activeTour === 'onboarding' && createdAccountId) {
-      try {
-        const endpoint = createdAccountType === 'prop-firm'
-          ? `/api/v1/prop-firm/accounts/${createdAccountId}`
-          : `/api/v1/accounts/${createdAccountId}`
-
-        await fetch(endpoint, { method: 'DELETE' })
-        clearAccountsCache()
-      } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'delete-onboarding-account-on-skip',
-        })
-      }
-    }
-
-    saveOnboardingStatus({ [keyMap[activeTour]]: true })
+  const startSetup = useCallback(() => {
     setActiveTour(null)
     setPaused(false)
-    toast.success('Tour skipped. You can restart it anytime from settings.')
-  }
+    void saveOnboardingStatus({ setup: 'in_progress' })
+  }, [saveOnboardingStatus])
+
+  const setSetupMode = useCallback((mode: OnboardingSetupMode) => {
+    void saveOnboardingStatus({ setup: 'in_progress', setup_mode: mode })
+  }, [saveOnboardingStatus])
+
+  const setSampleAccountId = useCallback(async (accountId: string | null) => {
+    await saveOnboardingStatus({ setup: 'in_progress', sample_account_id: accountId })
+  }, [saveOnboardingStatus])
+
+  const completeSetup = useCallback(async (mode: OnboardingSetupMode, sampleAccountId?: string | null) => {
+    await saveOnboardingStatus({
+      setup: 'completed',
+      setup_mode: mode,
+      sample_account_id: sampleAccountId ?? onboardingStatus?.sample_account_id ?? null,
+      current_tour: null,
+      current_step_id: null,
+    })
+    startTour('onboarding')
+  }, [onboardingStatus?.sample_account_id, saveOnboardingStatus, startTour])
+
+  const cleanupSampleWorkspace = useCallback(async () => {
+    const sampleAccountId = onboardingStatus?.sample_account_id
+    if (!sampleAccountId) return true
+
+    try {
+      const response = await fetch('/api/v1/onboarding/sample-workspace', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId: sampleAccountId }),
+      })
+      if (!response.ok) throw new Error('Sample workspace cleanup failed')
+      clearAccountsCache()
+      setCleanupError(null)
+      await saveOnboardingStatus({ sample_account_id: null })
+      return true
+    } catch (error) {
+      setCleanupError('The sample workspace could not be removed yet.')
+      reportError(error, { surface: 'client', operation: 'cleanup-onboarding-sample-workspace' })
+      return false
+    }
+  }, [onboardingStatus?.sample_account_id, saveOnboardingStatus])
+
+  const retrySampleCleanup = useCallback(async () => {
+    await cleanupSampleWorkspace()
+  }, [cleanupSampleWorkspace])
+
+  const skipSetup = useCallback(async () => {
+    const cleanupSucceeded = await cleanupSampleWorkspace()
+    await saveOnboardingStatus({
+      setup: 'skipped',
+      current_tour: null,
+      current_step_id: null,
+      ...(cleanupSucceeded ? { sample_account_id: null } : {}),
+    })
+  }, [cleanupSampleWorkspace, saveOnboardingStatus])
+
+  const skipTour = useCallback(async () => {
+    if (!activeTour) return
+    const tourId = canonicalTourId(activeTour)
+    const isCore = tourId === 'onboarding'
+
+    const cleanupSucceeded = isCore ? await cleanupSampleWorkspace() : true
+    if (tourId === 'onboarding') {
+      await saveOnboardingStatus({
+        setup: 'skipped',
+        current_tour: null,
+        current_step_id: null,
+        ...(cleanupSucceeded ? { sample_account_id: null } : {}),
+      })
+    } else {
+      const next = updateTourProgress(onboardingStatus, tourId as Exclude<TourId, 'onboarding'>, 'skipped')
+      await saveOnboardingStatus(next)
+    }
+    setActiveTour(null)
+    setPaused(false)
+    toast.success('Tour paused. You can resume it from the getting-started checklist.')
+  }, [activeTour, cleanupSampleWorkspace, onboardingStatus, saveOnboardingStatus])
 
   const completeTour = useCallback(async () => {
     if (!activeTour) return
-
-    const keyMap: Record<TourId, keyof OnboardingStatus> = {
-      onboarding: 'core_onboarding_completed',
-      dashboard: 'dashboard_tour_completed',
-      analytics: 'analytics_tour_completed',
-      settings: 'settings_tour_completed',
+    const tourId = canonicalTourId(activeTour)
+    if (tourId === 'onboarding') {
+      const cleanupSucceeded = await cleanupSampleWorkspace()
+      await saveOnboardingStatus({
+        setup: 'completed',
+        current_tour: null,
+        current_step_id: null,
+        ...(cleanupSucceeded ? { sample_account_id: null } : {}),
+      })
+    } else {
+      const next = updateTourProgress(onboardingStatus, tourId as Exclude<TourId, 'onboarding'>, 'completed')
+      await saveOnboardingStatus(next)
     }
-
-    // Clean up created demo account on complete
-    if (activeTour === 'onboarding' && createdAccountId) {
-      const toastId = toast.loading('Completing onboarding and cleaning up demo portfolio...')
-      try {
-        const endpoint = createdAccountType === 'prop-firm'
-          ? `/api/v1/prop-firm/accounts/${createdAccountId}`
-          : `/api/v1/accounts/${createdAccountId}`
-
-        const response = await fetch(endpoint, { method: 'DELETE' })
-        if (response.ok) {
-          clearAccountsCache()
-          toast.success('Demo account deleted to keep workspace clean!', { id: toastId })
-        } else {
-          toast.error('Failed to clean up demo account.', { id: toastId })
-        }
-      } catch (error) {
-        reportError(error, {
-          surface: 'client',
-          operation: 'delete-onboarding-account-on-complete',
-        })
-        toast.error('Error cleaning up demo account.', { id: toastId })
-      }
-    }
-
-    saveOnboardingStatus({ [keyMap[activeTour]]: true })
     setActiveTour(null)
     setPaused(false)
-
-    if (activeTour === 'onboarding') {
-      router.push('/dashboard')
-    } else {
-      toast.success('Tour completed.')
-    }
-  }, [activeTour, createdAccountId, createdAccountType, router, saveOnboardingStatus])
+    toast.success(tourId === 'onboarding' ? 'Setup complete.' : 'Tour complete.')
+  }, [activeTour, cleanupSampleWorkspace, onboardingStatus, saveOnboardingStatus])
 
   const nextStep = useCallback(() => {
-    if (!activeTour) return
-
-    if (stepIndex < currentSteps.length - 1) {
-      setStepIndex((prev) => prev + 1)
+    if (!activeTour || !currentSteps.length) return
+    const nextIndex = stepIndex + 1
+    if (nextIndex < currentSteps.length) {
+      setStepIndex(nextIndex)
+      void saveOnboardingStatus({
+        current_tour: activeTour,
+        current_step_id: currentSteps[nextIndex]?.id ?? null,
+        tours: {
+          [activeTour]: {
+            state: 'in_progress',
+            currentStepId: currentSteps[nextIndex]?.id,
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      })
     } else {
-      completeTour()
+      void completeTour()
     }
-  }, [activeTour, stepIndex, currentSteps.length, completeTour])
+  }, [activeTour, completeTour, currentSteps, saveOnboardingStatus, stepIndex])
 
   const prevStep = useCallback(() => {
-    if (stepIndex > 0) {
-      setStepIndex((prev) => prev - 1)
-    }
-  }, [stepIndex])
+    if (!activeTour || stepIndex <= 0) return
+    const previousStep = currentSteps[stepIndex - 1]
+    setStepIndex(stepIndex - 1)
+    void saveOnboardingStatus({
+      current_tour: activeTour,
+      current_step_id: previousStep?.id ?? null,
+      tours: {
+        [activeTour]: {
+          state: 'in_progress',
+          currentStepId: previousStep?.id,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    })
+  }, [activeTour, currentSteps, saveOnboardingStatus, stepIndex])
 
-  const pauseTour = useCallback(() => {
-    setPaused(true)
-  }, [])
-
+  const pauseTour = useCallback(() => setPaused(true), [])
   const resumeTour = useCallback(() => {
     setPaused(false)
-    if (currentStep?.route && pathname !== currentStep.route) {
-      router.push(currentStep.route as any)
-    }
-  }, [currentStep, pathname, router])
+    if (currentStep?.route && pathname !== currentStep.route) router.push(currentStep.route)
+  }, [currentStep?.route, pathname, router])
 
-  useTourAccountCreatedEvent({
-    createdAccountId,
-    currentStep,
-    nextStep,
-    setCreatedAccountId,
-    setCreatedAccountType,
-  })
-
-  // Fallback: Detect newly created account in onboarding via list diffing
-  useEffect(() => {
-    if (activeTour === 'onboarding' && accounts && accounts.length > 0) {
-      const newAcc = accounts.find((a: any) => !initialAccountIds.current.includes(a.id))
-      if (newAcc && !createdAccountId) {
-        setCreatedAccountId(newAcc.id)
-        setCreatedAccountType(newAcc.accountType || 'live')
-        
-        // Auto-advance if we are on the submit-account step
-        if (currentStep?.id === 'submit-account') {
-          nextStep()
-        }
-      }
-    }
-  }, [accounts, activeTour, createdAccountId, currentStep, nextStep])
-
-  // Trigger sample CSV download automatically on the csv-download step
-  useEffect(() => {
-    if (activeTour === 'onboarding' && currentStep?.id === 'csv-download') {
-      const timer = setTimeout(() => {
-        try {
-          downloadSampleTradesCsv()
-          toast.success('Sample CSV file downloaded successfully!')
-        } catch (error) {
-          reportError(error, {
-            surface: 'client',
-            operation: 'generate-onboarding-sample-csv',
-          })
-        }
-      }, 500)
-      return () => clearTimeout(timer)
-    }
-  }, [activeTour, currentStep])
-
-  const navigateForTour = useCallback((route: string) => {
-    router.push(route as any)
-  }, [router])
-  const { isTargetVisible, isLoadingTarget } = useTourTargetVisibility({
+  const navigateForTour = useCallback((route: string) => router.push(route), [router])
+  const target = useTourTargetVisibility({
     activeTour,
     currentStep,
     paused,
@@ -290,46 +279,62 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     stepIndex,
     navigate: navigateForTour,
     nextStep,
-    prevStep,
     pauseTour,
   })
   useTourActionAdvance({
     activeTour,
     currentStep,
     paused,
-    isTargetVisible,
+    isTargetVisible: target.isTargetVisible,
     nextStep,
   })
 
-  return (
-    <TourContext.Provider
-      value={{
-        activeTour,
-        stepIndex,
-        currentStep,
-        paused,
-        onboardingStatus,
-        startTour,
-        nextStep,
-        prevStep,
-        skipTour,
-        completeTour,
-        resumeTour,
-        pauseTour,
-        isTargetVisible,
-        isLoadingTarget,
-        totalSteps: currentSteps.length,
-      }}
-    >
-      {children}
-    </TourContext.Provider>
+  const onboardingOpen = Boolean(
+    pathname === '/dashboard' &&
+    onboardingStatus &&
+    onboardingStatus.setup !== 'completed' &&
+    onboardingStatus.setup !== 'skipped' &&
+    activeTour === null,
   )
+
+  const value = useMemo<TourContextType>(() => ({
+    activeTour,
+    stepIndex,
+    currentStep,
+    paused,
+    onboardingStatus,
+    onboardingOpen,
+    cleanupError,
+    startTour,
+    startSetup,
+    setSetupMode,
+    setSampleAccountId,
+    completeSetup,
+    skipSetup,
+    nextStep,
+    prevStep,
+    skipTour,
+    completeTour,
+    resumeTour,
+    pauseTour,
+    retryTarget: target.retryTarget,
+    retrySampleCleanup,
+    isTargetVisible: target.isTargetVisible,
+    isLoadingTarget: target.isLoadingTarget,
+    targetMissing: target.targetMissing,
+    totalSteps: currentSteps.length,
+  }), [
+    activeTour, cleanupError, completeSetup, completeTour, currentStep, currentSteps.length,
+    onboardingOpen, onboardingStatus, paused, nextStep, pauseTour, prevStep, retrySampleCleanup,
+    resumeTour, setSetupMode, skipSetup, skipTour, startSetup, startTour, stepIndex,
+    setSampleAccountId, target.isLoadingTarget, target.isTargetVisible, target.retryTarget, target.targetMissing,
+  ])
+
+  return <TourContext.Provider value={value}>{children}</TourContext.Provider>
 }
 
 export const useTour = () => {
   const context = useContext(TourContext)
-  if (context === undefined) {
-    throw new Error('useTour must be used within a TourProvider')
-  }
+  if (!context) throw new Error('useTour must be used within a TourProvider')
   return context
 }

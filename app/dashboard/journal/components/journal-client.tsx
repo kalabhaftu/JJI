@@ -23,6 +23,7 @@ import {
   Calendar as CalendarIcon
 } from "lucide-react"
 import { Button } from '@/components/ui/button'
+import { emitTourEvent } from '@/lib/tours/events'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent } from '@/components/ui/card'
 import { Spinner } from '@/components/ui/spinner'
@@ -392,7 +393,10 @@ export function JournalClient() {
           size="sm"
           className="h-8 gap-2 rounded-lg"
           data-tour="journal-view-cards-btn"
-          onClick={() => setViewMode('grid')}
+          onClick={() => {
+            setViewMode('grid')
+            emitTourEvent('journal.view.cards')
+          }}
         >
           <LayoutGrid className="h-4 w-4" />
           <span className="text-[10px] uppercase font-black tracking-widest">Cards</span>
@@ -402,7 +406,10 @@ export function JournalClient() {
           size="sm"
           className="h-8 gap-2 rounded-lg"
           data-tour="journal-view-calendar-btn"
-          onClick={() => setViewMode('calendar')}
+          onClick={() => {
+            setViewMode('calendar')
+            emitTourEvent('journal.view.calendar')
+          }}
         >
           <CalendarIcon className="h-4 w-4" />
           <span className="text-[10px] uppercase font-black tracking-widest">Calendar</span>

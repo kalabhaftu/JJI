@@ -12,6 +12,7 @@ export type MagicTabItem = {
   label: React.ReactNode;
   /** Disable this tab — not selectable or focusable */
   disabled?: boolean;
+  dataTour?: string;
 };
 
 export type MagicTabProps = Omit<
@@ -275,6 +276,7 @@ const MagicTab = React.forwardRef<HTMLDivElement, MagicTabProps>(
               aria-selected={selected}
               disabled={item.disabled}
               data-selected={selected ? "true" : undefined}
+              data-tour={item.dataTour}
               tabIndex={item.value === rovingValue ? 0 : -1}
               onClick={() => {
                 setFocusValue(item.value);

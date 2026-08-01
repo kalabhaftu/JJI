@@ -37,6 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Loader2, User, AlertCircle, CheckCircle2, Building2, DollarSign } from "lucide-react"
 import { toast } from "sonner"
 import { clearAccountsCache } from "@/hooks/use-accounts"
+import { emitTourEvent } from '@/lib/tours/events'
 
 // Popular brokers
 const POPULAR_BROKERS = [
@@ -141,6 +142,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
             detail: { id: result.data.id, type: 'live' }
           })
         )
+        emitTourEvent('account.created', { id: result.data.id })
       }
 
       clearAccountsCache()

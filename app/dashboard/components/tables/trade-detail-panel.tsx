@@ -36,6 +36,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { TransformComponent, TransformWrapper } from 'react-zoom-pan-pinch'
 import { toast } from 'sonner'
+import { emitTourEvent } from '@/lib/tours/events'
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { stripTradePreviewImageConfig } from '@/lib/trade-preview-image'
 import { getPnlDisplayLabel, getTradeGrossPnl, getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
@@ -188,7 +189,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
         <div className="px-4 sm:px-6 py-3 border-b border-border/40 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <Button variant="ghost" size="sm" onClick={onClose} data-tour="close-trade-detail" className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
+              <Button variant="ghost" size="sm" onClick={() => { onClose(); emitTourEvent('trade.detail.closed') }} data-tour="close-trade-detail" className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
                 <ArrowLeft className="mr-1 h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Back</span>
               </Button>

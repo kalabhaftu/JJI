@@ -50,6 +50,7 @@ export interface Account extends Omit<AccountType, 'payouts'> {
   accountType?: 'live' | 'prop-firm'
   displayName?: string
   propfirm?: string
+  isOnboardingSample: boolean
   currentPhaseDetails?: { masterAccountId?: string }
 }
 

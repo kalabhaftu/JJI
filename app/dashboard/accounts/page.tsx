@@ -8,6 +8,7 @@ import { useAccounts, clearAccountsCache } from "@/hooks/use-accounts"
 import { useData } from '@/context/data-provider'
 import { useTradesStore } from '@/store/trades-store'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
+import { emitTourEvent } from '@/lib/tours/events'
 import { useUserStore } from '@/store/user-store'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
@@ -488,13 +489,13 @@ export default function AccountsPage() {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button className="h-9 gap-2" data-tour="add-account-btn">
+                      <Button className="h-9 gap-2" data-tour="add-account-btn" onClick={() => emitTourEvent('account.create.started')}>
                         <Plus className="h-4 w-4" />
                         <span className="hidden sm:inline">New Account</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
-                      <DropdownMenuItem onClick={() => setCreateLiveDialogOpen(true)} className="gap-3 py-2.5" data-tour="create-live-item">
+                      <DropdownMenuItem onClick={() => { setCreateLiveDialogOpen(true); emitTourEvent('account.create.form.opened') }} className="gap-3 py-2.5" data-tour="create-live-item">
                         <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
                           <User  className="h-4 w-4 text-muted-foreground" />
                         </div>
@@ -503,7 +504,7 @@ export default function AccountsPage() {
                           <div className="text-xs text-muted-foreground">Personal trading</div>
                         </div>
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => setCreatePropFirmDialogOpen(true)} className="gap-3 py-2.5" data-tour="create-prop-item">
+                      <DropdownMenuItem onClick={() => { setCreatePropFirmDialogOpen(true); emitTourEvent('account.create.form.opened') }} className="gap-3 py-2.5" data-tour="create-prop-item">
                         <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
                           <Buildings className="h-4 w-4 text-muted-foreground"  />
                         </div>
@@ -662,6 +663,7 @@ export default function AccountsPage() {
                   {serverAccounts.map((account, index) => (
                     <motion.div
                       key={account.id}
+                      data-tour="account-card"
                       layout
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}

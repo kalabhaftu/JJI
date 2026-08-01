@@ -11,6 +11,7 @@ import { useAccounts } from "@/hooks/use-accounts"
 import { useRealtimeAccounts } from "@/hooks/use-realtime-accounts"
 import { OptimizedAccountSelectionLoading } from "@/components/ui/optimized-loading"
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
+import { useRouter } from 'next/navigation'
 
 // Temporary translation function
 const useTranslations = () => {
@@ -73,6 +74,7 @@ export default function AccountSelection({
   selectedAccountId,
   setSelectedAccountId
 }: AccountSelectionProps) {
+  const router = useRouter()
   const { accounts, isLoading, error, refetch } = useAccounts({
     status: 'all',
     type: 'all',
@@ -204,9 +206,9 @@ export default function AccountSelection({
                 <span>Retry</span>
               </Button>
             ) : (
-              <p className="text-xs text-primary font-medium">
-                Go to the Accounts section to initialize one.
-              </p>
+              <Button size="sm" onClick={() => router.push('/dashboard/accounts')}>
+                Create trading account
+              </Button>
             )}
           </Card>
         </div>

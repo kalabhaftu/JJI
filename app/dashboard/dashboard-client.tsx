@@ -8,6 +8,7 @@ import { DashboardErrorBoundary, ErrorBoundaryWrapper } from '@/components/error
 import { TemplateAwareDashboardSkeleton } from '@/components/ui/dashboard-skeleton'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
+import { GettingStartedChecklist } from './components/getting-started-checklist'
 
 const loadingLayout = cloneDefaultTemplateLayout()
 const loadingLayouts = buildResponsiveDashboardLayouts(loadingLayout, false)
@@ -94,6 +95,7 @@ export function DashboardClient() {
         <EditModeControls />
         <ErrorBoundaryWrapper context="Widgets">
           <div className="px-4 pb-24 lg:pb-0 dashboard-page-content">
+            <GettingStartedChecklist />
             <WidgetCanvas />
           </div>
         </ErrorBoundaryWrapper>

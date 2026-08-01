@@ -230,15 +230,19 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   // Use contextAccounts first, fall back to checking if trades exist (imported trades don't need a live broker)
   const hasAccounts = (contextAccounts && contextAccounts.length > 0) || formattedTrades.length > 0
   const settingsReady = !isLoadingAccountFilterSettings
-  const hasNoSelectedAccounts = settingsReady
-    && accountNumbers.length === 0
-    && (!accountFilterSettings?.selectedPhaseAccountIds || accountFilterSettings.selectedPhaseAccountIds.length === 0)
+  const hasSelectedScope = accountNumbers.length > 0
+    || (accountFilterSettings?.selectedPhaseAccountIds?.length ?? 0) > 0
 
   const showEmptyTradeState = !isEditMode && !isLoading && !hasAccounts
-  const showEmptyAccountState = !isEditMode && !isLoading && settingsReady && hasAccounts && hasNoSelectedAccounts && !showEmptyTradeState
+  const showNoTradesState = !isEditMode && !isLoading && settingsReady && hasAccounts && formattedTrades.length === 0
+  const showEmptyAccountState = !isEditMode && !isLoading && settingsReady && hasAccounts && !hasSelectedScope && formattedTrades.length > 0 && !showEmptyTradeState
 
   if (showEmptyTradeState) {
-    return <EmptyTradeState />
+    return <EmptyTradeState variant="no-account" />
+  }
+
+  if (showNoTradesState) {
+    return <EmptyTradeState variant={hasSelectedScope ? 'filtered' : 'no-trades'} />
   }
 
   if (showEmptyAccountState) {

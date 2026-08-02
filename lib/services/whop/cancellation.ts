@@ -5,7 +5,7 @@ import { and, desc, eq } from 'drizzle-orm'
 import { db } from '@/lib/db/client'
 import { WhopMembership } from '@/lib/db/schema'
 import { cancelWhopMembershipAtPeriodEnd } from '@/lib/services/whop/client'
-import { getWhopEnvironment } from '@/lib/services/whop/config'
+import { getConfiguredWhopEnvironment } from '@/lib/services/whop/config'
 import { syncWhopMembership } from '@/lib/services/whop/membership-sync'
 
 export class WhopMembershipNotFoundError extends Error {
@@ -19,10 +19,13 @@ export async function cancelOwnedWhopMembershipAtPeriodEnd(input: {
   userId: string
   requestId: string
 }) {
+  const environment = getConfiguredWhopEnvironment()
+  if (!environment) throw new WhopMembershipNotFoundError()
+
   const membership = await db.query.WhopMembership.findFirst({
     where: and(
       eq(WhopMembership.userId, input.userId),
-      eq(WhopMembership.environment, getWhopEnvironment()),
+      eq(WhopMembership.environment, environment),
     ),
     orderBy: [desc(WhopMembership.updatedAt)],
   })

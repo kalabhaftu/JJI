@@ -286,7 +286,6 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     activeTour,
     currentStep,
     paused,
-    isTargetVisible: target.isTargetVisible,
     nextStep,
   })
 

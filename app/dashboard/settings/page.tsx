@@ -650,7 +650,7 @@ export default function SettingsPage() {
               />
             )}
             {activeTab === 'integrations' && <SettingsIntegrations token={webhookToken} loading={isLoadingWebhook} copied={webhookCopied} regenerating={isRegeneratingWebhook} onCopyUrl={copyWebhookUrl} onRegenerate={() => setIsRegenerateWebhookDialogOpen(true)} />}
-            {activeTab === 'connections' && <SettingsConnections webhook={{ token: webhookToken, loading: isLoadingWebhook, copied: webhookCopied, regenerating: isRegeneratingWebhook, onCopyUrl: copyWebhookUrl, onRegenerate: () => setIsRegenerateWebhookDialogOpen(true) }} />}
+            {activeTab === 'connections' && <SettingsConnections />}
             {activeTab === 'security' && <SettingsSecurity editingProfile={isEditingProfile} onSignOutPrompt={() => { if (isEditingProfile) setIsSignOutDialogOpen(true); else { localStorage.removeItem('jji_user_data'); void signOut() } }} onDelete={() => setIsDeleteModalOpen(true)} />}
             {activeTab === 'help' && <SettingsHelpSection startTour={startTour} />}
           </motion.div>

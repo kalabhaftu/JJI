@@ -76,7 +76,7 @@ export function useTourTargetVisibility(input: TourTargetInput) {
         setTargetMissing(false)
         if (checkInterval.current) clearInterval(checkInterval.current)
         checkInterval.current = null
-      } else if (attempts >= 30) {
+      } else if (attempts >= 100) {
         if (checkInterval.current) clearInterval(checkInterval.current)
         checkInterval.current = null
         setIsLoadingTarget(false)
@@ -97,13 +97,12 @@ export function useTourActionAdvance(input: {
   activeTour: TourId | null
   currentStep: TourStep | null
   paused: boolean
-  isTargetVisible: boolean
   nextStep: () => void
 }) {
-  const { activeTour, currentStep, paused, isTargetVisible, nextStep } = input
+  const { activeTour, currentStep, paused, nextStep } = input
 
   useEffect(() => {
-    if (!activeTour || !currentStep || paused || !isTargetVisible || !currentStep.completion) return
+    if (!activeTour || !currentStep || paused || !currentStep.completion) return
     if (currentStep.completion.type === 'route') return
 
     const { type, key } = currentStep.completion
@@ -141,7 +140,7 @@ export function useTourActionAdvance(input: {
       document.removeEventListener('input', handleInput, true)
       document.removeEventListener('click', handleSelectorClick, true)
     }
-  }, [activeTour, currentStep, paused, isTargetVisible, nextStep])
+  }, [activeTour, currentStep, paused, nextStep])
 }
 
 export function useTourAccountCreatedEvent(input: {

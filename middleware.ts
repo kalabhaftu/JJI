@@ -12,7 +12,7 @@ export async function middleware(request: NextRequest) {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com${isDevelopment ? " 'unsafe-eval'" : ''}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://*.googleusercontent.com https://cdn.discordapp.com",
     "font-src 'self'",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.sentry.io https://api.vercel.com https://vitals.vercel-insights.com https://*.vercel-insights.com",
     "worker-src 'self' blob:",

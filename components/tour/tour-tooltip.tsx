@@ -141,7 +141,10 @@ export const TourTooltip: React.FC = () => {
                 ) : (currentStep.desktopOnly && isNarrowViewport) || !currentStep.completion || currentStep.completion.type === 'route' ? (
                   <Button size="sm" onClick={nextStep}>Next <ArrowRight className="ml-1 h-3.5 w-3.5" /></Button>
                 ) : (
-                  <span className="text-xs font-medium text-primary">Complete the highlighted action</span>
+                  <>
+                    <span className="text-xs font-medium text-primary">Complete the highlighted action</span>
+                    <Button variant="ghost" size="sm" onClick={nextStep}>Skip step</Button>
+                  </>
                 )}
               </div>
             </div>

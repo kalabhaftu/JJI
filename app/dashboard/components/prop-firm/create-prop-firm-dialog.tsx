@@ -38,6 +38,7 @@ import { Loader2, Building2, AlertCircle, CheckCircle2, PenLine, Check, X } from
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
 import { clearAccountsCache } from "@/hooks/use-accounts"
+import { emitTourEvent } from '@/lib/tours/events'
 
 // Schema for form validation
 const propFirmSchema = z.object({
@@ -216,6 +217,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
               detail: { id: activeId, type: 'prop-firm' }
             })
           )
+          emitTourEvent('account.created', { id: activeId })
         }
       }
 
@@ -273,7 +275,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       </AlertDialog>
 
       <Dialog open={open} onOpenChange={handleDialogClose}>
-        <DialogContent className="w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="w-full max-w-3xl max-h-[90vh] overflow-y-auto" data-tour="create-account-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Building2 className="h-5 w-5" />
@@ -305,6 +307,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                   <Label htmlFor="accountName">Account Name *</Label>
                   <Input
                     id="accountName"
+                    data-tour="account-name-input"
                     {...register('accountName')}
                     placeholder="e.g., FTMO 100K Challenge"
                   />
@@ -321,7 +324,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                       control={control}
                       render={({ field }) => (
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <SelectTrigger>
+                          <SelectTrigger data-tour="account-broker-select">
                             <SelectValue placeholder="Select firm" />
                           </SelectTrigger>
                           <SelectContent>

@@ -196,7 +196,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
       </AlertDialog>
 
       <Dialog open={open} onOpenChange={handleDialogClose}>
-        <DialogContent className="w-full max-w-2xl">
+        <DialogContent className="w-full max-w-2xl" data-tour="create-account-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
@@ -226,6 +226,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
                   <Label htmlFor="name">Account Name *</Label>
                   <Input
                     id="name"
+                    data-tour="account-name-input"
                     {...register('name')}
                     placeholder="e.g., Main Trading Account"
                   />
@@ -253,7 +254,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
                     control={control}
                     render={({ field }) => (
                       <Select onValueChange={field.onChange} value={field.value}>
-                        <SelectTrigger>
+                        <SelectTrigger data-tour="account-broker-select">
                           <SelectValue placeholder="Select your broker" />
                         </SelectTrigger>
                         <SelectContent className="max-h-[300px]">

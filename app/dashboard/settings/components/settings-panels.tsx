@@ -34,8 +34,8 @@ export function SettingsIntegrations({ token, loading, copied, regenerating, onC
   </section>
 }
 
-export function SettingsConnections({ webhook }: { webhook: WebhookProps }) {
-  return <section className="flex flex-col gap-8" aria-labelledby="settings-connections-heading"><header><h2 id="settings-connections-heading" className="text-lg font-semibold text-heading-text">Connections</h2><p className="text-xs text-muted-foreground/85">Manage imports, webhooks, and sign-in providers</p></header><SettingsIntegrations {...webhook} /><section className="flex flex-col gap-3"><header><h3 className="text-sm font-semibold text-heading-text">Linked accounts</h3><p className="text-xs text-muted-foreground/85">Manage the providers that can sign you in.</p></header><div data-tour="settings-card-connections"><LinkedAccounts plain /></div></section></section>
+export function SettingsConnections() {
+  return <section className="flex flex-col gap-6" aria-labelledby="settings-connections-heading"><header><h2 id="settings-connections-heading" className="text-lg font-semibold text-heading-text">Connections</h2><p className="text-xs text-muted-foreground/85">Manage the providers that can sign you in</p></header><div data-tour="settings-card-connections"><LinkedAccounts plain /></div></section>
 }
 
 type SecurityProps = { editingProfile: boolean; onSignOutPrompt: () => void; onDelete: () => void }

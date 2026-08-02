@@ -66,6 +66,34 @@ export const TOURS: Record<TourId, TourStep[]> = {
   accounts: [
     routeStep('accounts-start', 'Accounts', 'Keep each portfolio separate so its results and risk stay meaningful.', '/dashboard/accounts'),
     actionStep('accounts-create', 'Create a portfolio', 'Use New Account for personal trading or a prop-firm challenge.', '/dashboard/accounts', '[data-tour="add-account-btn"]', 'account.create.started'),
+    actionStep('accounts-choose', 'Choose the account type', 'Pick Live Account for personal trading, or Prop Firm for a funded challenge.', '/dashboard/accounts', '[data-tour="create-live-item"], [data-tour="create-prop-item"]', 'account.create.form.opened'),
+    {
+      id: 'accounts-name',
+      title: 'Name the account',
+      content: 'Give the account a recognizable name in the form.',
+      route: '/dashboard/accounts',
+      targetSelector: '[data-tour="account-name-input"]',
+      placement: 'bottom',
+      completion: { type: 'value', key: '[data-tour="account-name-input"]' },
+    },
+    {
+      id: 'accounts-broker',
+      title: 'Pick your broker',
+      content: 'Select the broker or prop firm from the dropdown.',
+      route: '/dashboard/accounts',
+      targetSelector: '[data-tour="account-broker-select"]',
+      placement: 'bottom',
+      completion: { type: 'selector', key: '[data-tour="account-broker-select"]' },
+    },
+    {
+      id: 'accounts-save',
+      title: 'Create the account',
+      content: 'Fill in the remaining details, then save. The tour continues as soon as the account is created.',
+      route: '/dashboard/accounts',
+      targetSelector: '[data-tour="create-account-submit"]',
+      placement: 'bottom',
+      completion: { type: 'event', key: 'account.created' },
+    },
     actionStep('accounts-import', 'Import from here', 'Import Trades is available from the shared navigation when you are ready.', '/dashboard/accounts', '[data-tour="import-nav-btn"]', 'import.opened'),
     routeStep('accounts-review', 'Review account health', 'Account cards show balance, trade count, and the state of each portfolio.', '/dashboard/accounts', '[data-tour="account-card"]'),
   ],
@@ -112,7 +140,7 @@ export const TOURS: Record<TourId, TourStep[]> = {
   settings: [
     routeStep('settings-start', 'Settings', 'Settings keeps profile, preferences, connections, security, and help together.', '/dashboard/settings'),
     actionStep('settings-preferences', 'Tune preferences', 'Set the choices that make daily review comfortable and consistent.', '/dashboard/settings', '[data-tour="settings-tab-preferences"]', 'settings.tab.preferences'),
-    actionStep('settings-integrations', 'Manage connections', 'Review broker, webhook, and sign-in connections from Integrations.', '/dashboard/settings', '[data-tour="settings-tab-integrations"]', 'settings.tab.integrations'),
+    actionStep('settings-integrations', 'Manage connections', 'Review broker and webhook connections from Integrations, and sign-in providers from Connections.', '/dashboard/settings', '[data-tour="settings-tab-integrations"]', 'settings.tab.integrations'),
     actionStep('settings-help', 'Find the tour checklist', 'Return to Help whenever you want to restart or choose another section tour.', '/dashboard/settings', '[data-tour="settings-tab-help"]', 'settings.tab.help'),
   ],
 }

@@ -1,8 +1,3 @@
-/**
- * Major Economic News Events and Bank Holidays
- * Based on ForexFactory high-impact (red folder) news events
- * These are recurring events that significantly impact forex markets
- */
 
 export interface NewsEvent {
   id: string
@@ -10,13 +5,11 @@ export interface NewsEvent {
   category: 'employment' | 'inflation' | 'gdp' | 'interest-rate' | 'pmi' | 'retail' | 'housing' | 'bank-holiday' | 'trade' | 'manufacturing' | 'other'
   country: 'US' | 'EUR' | 'UK' | 'JP' | 'AU' | 'CA' | 'NZ' | 'CH' | 'GLOBAL'
   description: string
-  isRedFolder?: boolean // High-impact (red folder) news from ForexFactory
-  impact?: 'high' | 'medium' | 'low' // Impact level for market volatility
+  isRedFolder?: boolean
+  impact?: 'high' | 'medium' | 'low'
 }
 
 export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
-  // ========== US EVENTS ==========
-  // Employment (RED FOLDER - High Impact)
   {
     id: 'us-nfp',
     name: 'Non-Farm Payrolls (NFP)',
@@ -52,8 +45,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Weekly initial jobless claims',
     impact: 'medium'
   },
-  
-  // Inflation (RED FOLDER - High Impact)
+
   {
     id: 'us-cpi',
     name: 'Consumer Price Index (CPI)',
@@ -90,8 +82,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     isRedFolder: true,
     impact: 'high'
   },
-  
-  // Interest Rates & Central Bank (RED FOLDER - High Impact)
+
   {
     id: 'us-fomc-rate',
     name: 'FOMC Interest Rate Decision',
@@ -127,8 +118,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     isRedFolder: true,
     impact: 'high'
   },
-  
-  // GDP (RED FOLDER - High Impact)
+
   {
     id: 'us-gdp',
     name: 'GDP (Gross Domestic Product)',
@@ -147,8 +137,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     isRedFolder: true,
     impact: 'high'
   },
-  
-  // PMI & Manufacturing (RED FOLDER - High Impact)
+
   {
     id: 'us-ism-manufacturing',
     name: 'ISM Manufacturing PMI',
@@ -167,8 +156,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     isRedFolder: true,
     impact: 'high'
   },
-  
-  // Retail & Consumer (RED FOLDER - High Impact)
+
   {
     id: 'us-retail-sales',
     name: 'Retail Sales',
@@ -186,8 +174,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Consumer sentiment index',
     impact: 'medium'
   },
-  
-  // Trade & Manufacturing (RED FOLDER - High Impact)
+
   {
     id: 'us-durable-goods',
     name: 'Durable Goods Orders',
@@ -231,8 +218,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'New orders for manufactured goods',
     impact: 'medium'
   },
-  
-  // Housing (RED FOLDER - High Impact)
+
   {
     id: 'us-housing-starts',
     name: 'Housing Starts',
@@ -267,8 +253,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Sales of newly constructed homes',
     impact: 'medium'
   },
-  
-  // Additional Important US Events
+
   {
     id: 'us-current-account',
     name: 'Current Account',
@@ -362,8 +347,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Signed contracts for existing homes',
     impact: 'medium'
   },
-  
-  // ========== EUROZONE EVENTS ==========
+
   {
     id: 'ecb-rate',
     name: 'ECB Interest Rate Decision',
@@ -452,8 +436,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Eurozone exports vs imports',
     impact: 'medium'
   },
-  
-  // ========== UK EVENTS ==========
+
   {
     id: 'boe-rate',
     name: 'BOE Interest Rate Decision',
@@ -525,8 +508,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'UK exports vs imports',
     impact: 'medium'
   },
-  
-  // ========== JAPAN EVENTS ==========
+
   {
     id: 'boj-rate',
     name: 'BOJ Interest Rate Decision',
@@ -588,8 +570,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Japan consumer spending',
     impact: 'medium'
   },
-  
-  // ========== AUSTRALIA EVENTS ==========
+
   {
     id: 'rba-rate',
     name: 'RBA Interest Rate Decision',
@@ -644,8 +625,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     isRedFolder: true,
     impact: 'high'
   },
-  
-  // ========== CANADA EVENTS ==========
+
   {
     id: 'boc-rate',
     name: 'BOC Interest Rate Decision',
@@ -699,8 +679,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Canada exports vs imports',
     impact: 'medium'
   },
-  
-  // ========== NEW ZEALAND EVENTS ==========
+
   {
     id: 'rbnz-rate',
     name: 'RBNZ Interest Rate Decision',
@@ -745,8 +724,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'New Zealand exports vs imports',
     impact: 'medium'
   },
-  
-  // ========== SWITZERLAND EVENTS ==========
+
   {
     id: 'snb-rate',
     name: 'SNB Interest Rate Decision',
@@ -773,9 +751,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     description: 'Switzerland economic growth',
     impact: 'medium'
   },
-  
-  // ========== BANK HOLIDAYS ==========
-  // US Bank Holidays
+
   {
     id: 'holiday-us-new-year',
     name: 'US New Year\'s Day',
@@ -853,8 +829,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'US',
     description: 'December 25 - US markets closed'
   },
-  
-  // UK Bank Holidays
+
   {
     id: 'holiday-uk-new-year',
     name: 'UK New Year\'s Day',
@@ -911,8 +886,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'UK',
     description: 'December 26 - UK markets closed'
   },
-  
-  // Eurozone Bank Holidays
+
   {
     id: 'holiday-eur-new-year',
     name: 'Eurozone New Year\'s Day',
@@ -990,8 +964,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'EUR',
     description: 'December 26 - Some European markets closed'
   },
-  
-  // Japan Bank Holidays
+
   {
     id: 'holiday-jp-new-year',
     name: 'Japan New Year\'s Day',
@@ -1083,8 +1056,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'JP',
     description: 'February 23'
   },
-  
-  // Australia Bank Holidays
+
   {
     id: 'holiday-au-new-year',
     name: 'Australia New Year\'s Day',
@@ -1148,8 +1120,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'AU',
     description: 'December 26 - Australia markets closed'
   },
-  
-  // Canada Bank Holidays
+
   {
     id: 'holiday-ca-new-year',
     name: 'Canada New Year\'s Day',
@@ -1220,8 +1191,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'CA',
     description: 'December 26 - Canada markets closed'
   },
-  
-  // New Zealand Bank Holidays
+
   {
     id: 'holiday-nz-new-year',
     name: 'New Zealand New Year\'s Day',
@@ -1292,8 +1262,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'NZ',
     description: 'December 26 - New Zealand markets closed'
   },
-  
-  // Switzerland Bank Holidays
+
   {
     id: 'holiday-ch-new-year',
     name: 'Switzerland New Year\'s Day',
@@ -1364,8 +1333,7 @@ export const MAJOR_NEWS_EVENTS: NewsEvent[] = [
     country: 'CH',
     description: 'December 26'
   },
-  
-  // ========== OTHER HIGH-IMPACT EVENTS ==========
+
   {
     id: 'geopolitical-crisis',
     name: 'Geopolitical Crisis/War',

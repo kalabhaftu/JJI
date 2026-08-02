@@ -1,11 +1,11 @@
 'use client'
 
-import { useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { toast } from 'sonner'
 
 import logger from '@/lib/logger'
 import { reportError } from '@/lib/observability/report-error'
-import { getRithmicData, updateLastSyncTime } from '@/lib/rithmic-storage'
+import { getAllRithmicData, getRithmicData, updateLastSyncTime } from '@/lib/rithmic-storage'
 import { parseRithmicRateLimitMessage, type RithmicCredentials } from '@/lib/rithmic/sync-contract'
 import { useUserStore } from '@/store/user-store'
 
@@ -165,6 +165,7 @@ const performSyncForCredential = useCallback(
 
       connect(wsUrl, data.token, accountsToSync, startDate);
       updateLastSyncTime(credentialId);
+      scheduleNextSyncRef.current();
 
       handleMessage({
         type: "log",
@@ -327,9 +328,40 @@ const calculateStartDate = useCallback(
   [trades]
 );
 
+const checkAndPerformSyncsRef = useRef<() => void>(() => {});
+const nextSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+const clearNextSyncTimer = useCallback(() => {
+  if (nextSyncTimerRef.current) {
+    clearTimeout(nextSyncTimerRef.current);
+    nextSyncTimerRef.current = null;
+  }
+}, []);
+
+const scheduleNextSync = useCallback(() => {
+  clearNextSyncTimer();
+  if (disabled) return;
+
+  const dueAt = Object.values(getAllRithmicData()).map(
+    (credentialSet) =>
+      new Date(credentialSet.lastSyncTime).getTime() + syncInterval * 60 * 1000
+  );
+
+  if (dueAt.length === 0) return;
+
+  const delay = Math.max(0, Math.min(...dueAt) - Date.now());
+  nextSyncTimerRef.current = setTimeout(() => {
+    void checkAndPerformSyncsRef.current();
+  }, Math.min(delay, 2_147_000_000));
+}, [disabled, syncInterval, clearNextSyncTimer]);
+
+const scheduleNextSyncRef = useRef(scheduleNextSync);
+scheduleNextSyncRef.current = scheduleNextSync;
+
 const checkAndPerformSyncs = useCallback(async () => {
   if (isLoading) return;
   if (isAutoSyncing) return;
+  if (document.visibilityState === 'hidden') return;
   try {
     // Call API route instead of server action
     const response = await fetch("/api/v1/rithmic/synchronizations", {
@@ -363,21 +395,35 @@ const checkAndPerformSyncs = useCallback(async () => {
       extra: { fallbackUsed: true },
     })
   }
-}, [syncInterval, isAutoSyncing, performSyncForCredential, isLoading]);
+  scheduleNextSync();
+}, [syncInterval, isAutoSyncing, performSyncForCredential, isLoading, scheduleNextSync]);
 
+checkAndPerformSyncsRef.current = checkAndPerformSyncs;
+
+// Schedule the next check for when a credential set actually becomes due
 useEffect(() => {
   if (disabled) return;
+  scheduleNextSync();
+  return clearNextSyncTimer;
+}, [disabled, scheduleNextSync, clearNextSyncTimer]);
 
-  const intervalMs = 1 * 60 * 1000; // 1 minute
+// Re-check when the tab regains focus or the network comes back
+useEffect(() => {
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') void checkAndPerformSyncsRef.current();
+  };
+  const handleOnline = () => {
+    void checkAndPerformSyncsRef.current();
+  };
 
-  const intervalId = setInterval(() => {
-    checkAndPerformSyncs();
-  }, intervalMs);
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  window.addEventListener('online', handleOnline);
 
   return () => {
-    clearInterval(intervalId);
+    document.removeEventListener('visibilitychange', handleVisibilityChange);
+    window.removeEventListener('online', handleOnline);
   };
-}, [disabled, syncInterval, checkAndPerformSyncs]);
+}, []);
 
   return {
     performSyncForCredential,

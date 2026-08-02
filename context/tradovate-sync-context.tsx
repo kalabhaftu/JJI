@@ -1,11 +1,13 @@
 'use client'
 
-import { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react'
 import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
 import { reportError } from '@/lib/observability/report-error'
 import { type SynchronizationType } from '@/lib/db/schema'
 import { DEFAULT_INCLUDED_FEE_TYPES } from '@/app/dashboard/components/import/tradovate/sync/fee-types'
+import { useUserStore } from '@/store/user-store'
+import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import logger from '@/lib/logger'
 
 interface TradovateSyncContextType {
@@ -39,6 +41,10 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
   const [accounts, setAccounts] = useState<SynchronizationType[]>([])
   const [syncInterval, setSyncInterval] = useState(15) // 15 minutes default
   const [enableAutoSync, setEnableAutoSync] = useState(false)
+
+  const user = useUserStore((state) => state.user)
+  const nextSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const checkAndPerformSyncsRef = useRef<() => void>(() => {})
 
   const getIncludedFeeTypesForAccount = useCallback((accountId: string) => {
     const account = accounts.find((a) => a.accountId === accountId)
@@ -240,9 +246,34 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
   }, [disabled, isAutoSyncing, accounts, performSyncForAccount])
 
+  // Schedule the next auto-sync check for when a connection actually becomes due
+  const clearNextSyncTimer = useCallback(() => {
+    if (nextSyncTimerRef.current) {
+      clearTimeout(nextSyncTimerRef.current)
+      nextSyncTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleNextSync = useCallback(() => {
+    clearNextSyncTimer()
+    if (!enableAutoSync) return
+
+    const dueAt = accounts
+      .filter((account) => account.lastSyncedAt)
+      .map((account) => new Date(account.lastSyncedAt).getTime() + syncInterval * 60 * 1000)
+
+    if (dueAt.length === 0) return
+
+    const delay = Math.max(0, Math.min(...dueAt) - Date.now())
+    nextSyncTimerRef.current = setTimeout(() => {
+      void checkAndPerformSyncsRef.current()
+    }, Math.min(delay, 2_147_000_000))
+  }, [accounts, enableAutoSync, syncInterval, clearNextSyncTimer])
+
   // Auto-sync checking
   const checkAndPerformSyncs = useCallback(async () => {
     if (disabled) return
+    if (document.visibilityState === 'hidden') return
     if (!enableAutoSync || isAutoSyncing) return
 
     try {
@@ -264,23 +295,44 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     } catch (error) {
       reportError(error, { surface: 'client', operation: 'check-tradovate-auto-sync', route: '/dashboard' })
     }
-  }, [disabled, enableAutoSync, isAutoSyncing, accounts, syncInterval, performSyncForAccount]);
 
-  // Auto-sync checking interval
+    scheduleNextSync()
+  }, [disabled, enableAutoSync, isAutoSyncing, accounts, syncInterval, performSyncForAccount, scheduleNextSync]);
+
+  checkAndPerformSyncsRef.current = checkAndPerformSyncs
+
+  // Trigger an immediate check when a synchronization row is updated elsewhere
+  useDatabaseRealtime({
+    userId: user?.id,
+    enabled: enableAutoSync && !disabled,
+    onSynchronizationChange: (change) => {
+      if (change.event === 'UPDATE') void checkAndPerformSyncsRef.current()
+    },
+  })
+
+  // Re-check when the tab regains focus or the network comes back
   useEffect(() => {
-    if (!enableAutoSync) return
-
-    const intervalMs = 1 * 60 * 1000  // 1 minute
-
-    const intervalId = setInterval(() => {
-      checkAndPerformSyncs()
-    }, intervalMs)
-
-    // Cleanup on unmount
-    return () => {
-      clearInterval(intervalId)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void checkAndPerformSyncsRef.current()
     }
-  }, [enableAutoSync, checkAndPerformSyncs])
+    const handleOnline = () => {
+      void checkAndPerformSyncsRef.current()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('online', handleOnline)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('online', handleOnline)
+    }
+  }, [])
+
+  // Reschedule whenever accounts, the toggle, or the interval change
+  useEffect(() => {
+    scheduleNextSync()
+    return clearNextSyncTimer
+  }, [scheduleNextSync, clearNextSyncTimer])
 
   // Load accounts on mount
   useEffect(() => {

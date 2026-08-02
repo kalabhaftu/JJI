@@ -32,4 +32,28 @@ describe('client polling contracts', () => {
     expect(realtime).toContain("'Synchronization'")
     expect(realtime).toContain('onSynchronizationChange')
   })
+
+  it('runs auto-sync checks on demand instead of a fixed 1-minute interval', () => {
+    for (const file of [
+      'context/tradovate-sync-context.tsx',
+      'context/dxfeed-sync-context.tsx',
+      'hooks/use-rithmic-synchronization.ts',
+    ]) {
+      const ctx = source(file)
+
+      expect(ctx).not.toContain('setInterval')
+      expect(ctx).toContain('scheduleNextSync')
+      expect(ctx).toContain("document.visibilityState === 'hidden'")
+      expect(ctx).toContain("window.addEventListener('online'")
+    }
+  })
+
+  it('triggers sync checks when the Synchronization row is updated via realtime', () => {
+    for (const file of ['context/tradovate-sync-context.tsx', 'context/dxfeed-sync-context.tsx']) {
+      const ctx = source(file)
+
+      expect(ctx).toContain('useDatabaseRealtime({')
+      expect(ctx).toContain('onSynchronizationChange')
+    }
+  })
 })

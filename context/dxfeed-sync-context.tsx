@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useState, useRef, useCallback, Re
 import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
 import { reportError } from '@/lib/observability/report-error'
+import { useUserStore } from '@/store/user-store'
+import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 
 /** Client-safe subset of Synchronization (token stripped, replaced with hasToken) */
 export interface DxFeedSyncAccount {
@@ -41,6 +43,10 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
   const [accounts, setAccounts] = useState<DxFeedSyncAccount[]>([])
   const [syncInterval, setSyncInterval] = useState(15)
   const [enableAutoSync, setEnableAutoSync] = useState(false)
+
+  const user = useUserStore((state) => state.user)
+  const nextSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const checkAndPerformSyncsRef = useRef<() => void>(() => {})
 
   const { refreshTrades } = useData()
 
@@ -196,8 +202,33 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
     }
   }, [accounts, disabled, performSyncForAccount])
 
+  // Schedule the next auto-sync check for when a connection actually becomes due
+  const clearNextSyncTimer = useCallback(() => {
+    if (nextSyncTimerRef.current) {
+      clearTimeout(nextSyncTimerRef.current)
+      nextSyncTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleNextSync = useCallback(() => {
+    clearNextSyncTimer()
+    if (!enableAutoSync) return
+
+    const dueAt = accounts
+      .filter((account) => account.lastSyncedAt)
+      .map((account) => new Date(account.lastSyncedAt).getTime() + syncInterval * 60 * 1000)
+
+    if (dueAt.length === 0) return
+
+    const delay = Math.max(0, Math.min(...dueAt) - Date.now())
+    nextSyncTimerRef.current = setTimeout(() => {
+      void checkAndPerformSyncsRef.current()
+    }, Math.min(delay, 2_147_000_000))
+  }, [accounts, enableAutoSync, syncInterval, clearNextSyncTimer])
+
   const checkAndPerformSyncs = useCallback(async () => {
     if (disabled) return
+    if (document.visibilityState === 'hidden') return
     if (!enableAutoSync || isAutoSyncingRef.current) return
 
     isAutoSyncingRef.current = true
@@ -221,22 +252,44 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
     } finally {
       isAutoSyncingRef.current = false
       setIsAutoSyncing(false)
+      scheduleNextSync()
     }
-  }, [disabled, enableAutoSync, accounts, syncInterval, performSyncForAccount])
+  }, [disabled, enableAutoSync, accounts, syncInterval, performSyncForAccount, scheduleNextSync])
 
+  checkAndPerformSyncsRef.current = checkAndPerformSyncs
+
+  // Trigger an immediate check when a synchronization row is updated elsewhere
+  useDatabaseRealtime({
+    userId: user?.id,
+    enabled: enableAutoSync && !disabled,
+    onSynchronizationChange: (change) => {
+      if (change.event === 'UPDATE') void checkAndPerformSyncsRef.current()
+    },
+  })
+
+  // Re-check when the tab regains focus or the network comes back
   useEffect(() => {
-    if (!enableAutoSync) return
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') void checkAndPerformSyncsRef.current()
+    }
+    const handleOnline = () => {
+      void checkAndPerformSyncsRef.current()
+    }
 
-    const intervalMs = 1 * 60 * 1000
-
-    const intervalId = setInterval(() => {
-      checkAndPerformSyncs()
-    }, intervalMs)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('online', handleOnline)
 
     return () => {
-      clearInterval(intervalId)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('online', handleOnline)
     }
-  }, [enableAutoSync, checkAndPerformSyncs])
+  }, [])
+
+  // Reschedule whenever accounts, the toggle, or the interval change
+  useEffect(() => {
+    scheduleNextSync()
+    return clearNextSyncTimer
+  }, [scheduleNextSync, clearNextSyncTimer])
 
   useEffect(() => {
     loadAccounts()

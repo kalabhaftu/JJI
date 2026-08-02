@@ -10,11 +10,11 @@ export async function middleware(request: NextRequest) {
   const isDevelopment = process.env.NODE_ENV === 'development'
   const csp = [
     "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isDevelopment ? " 'unsafe-eval'" : ''}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://va.vercel-scripts.com${isDevelopment ? " 'unsafe-eval'" : ''}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://*.supabase.co https://lh3.googleusercontent.com",
     "font-src 'self'",
-    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.sentry.io https://vitals.vercel-insights.com https://*.vercel-insights.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.ingest.sentry.io https://api.vercel.com https://vitals.vercel-insights.com https://*.vercel-insights.com",
     "worker-src 'self' blob:",
     "object-src 'none'",
     "base-uri 'self'",

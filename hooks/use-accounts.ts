@@ -66,16 +66,19 @@ function subscribeToAccountsUpdates(callback: () => void) {
   return () => realtimeSubscribers.delete(callback)
 }
 
+const ACCOUNTS_CACHE_PREFIXES = ['/api/v1/accounts', '/api/v1/data-management/accounts']
+const TRADES_CACHE_PREFIXES = ['/api/v1/trades', '/api/v1/data-management/trades']
+
 export function invalidateAccountsCache(_reason?: string) {
   clearAccountsCache()
 }
 
 export function clearAccountsCache() {
-  mutate(key => typeof key === 'string' && key.startsWith('/api/v1/accounts'))
+  mutate(key => typeof key === 'string' && ACCOUNTS_CACHE_PREFIXES.some(prefix => key.startsWith(prefix)))
 }
 
 export function clearTradesCache() {
-  mutate(key => typeof key === 'string' && key.startsWith('/api/v1/trades'))
+  mutate(key => typeof key === 'string' && TRADES_CACHE_PREFIXES.some(prefix => key.startsWith(prefix)))
 }
 
 const fetcher = async (url: string) => {

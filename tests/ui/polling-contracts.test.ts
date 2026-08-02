@@ -62,8 +62,19 @@ describe('client polling contracts', () => {
     const realtimeHook = source('hooks/use-data-provider-realtime.ts')
 
     expect(accountsHook).toContain("export function invalidateAccountsCache(_reason?: string) {\n  clearAccountsCache()")
-    expect(accountsHook).toContain("key.startsWith('/api/v1/trades')")
+    expect(accountsHook).toContain("'/api/v1/accounts', '/api/v1/data-management/accounts'")
+    expect(accountsHook).toContain("'/api/v1/trades', '/api/v1/data-management/trades'")
     expect(realtimeHook).toContain("clearTradesCache()")
     expect(realtimeHook).toContain("clearAccountsCache()")
+  })
+
+  it('checks for new deployments only while visible and stops after detection', () => {
+    const hook = source('hooks/use-deployment-check.ts')
+    const route = source('app/api/build-id/route.ts')
+
+    expect(hook).toContain('process.env.NEXT_PUBLIC_BUILD_ID')
+    expect(hook).toContain("if (document.visibilityState === 'hidden') return")
+    expect(hook).toContain("window.addEventListener('focus'")
+    expect(route).toContain("dynamic = 'force-static'")
   })
 })

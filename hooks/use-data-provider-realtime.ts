@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from 'react'
 import { QueryClient } from '@tanstack/react-query'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
+import { clearAccountsCache, clearTradesCache } from '@/hooks/use-accounts'
 
 interface UseDataProviderRealtimeOptions {
   userId: string | undefined
@@ -29,6 +30,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   const runRealtimeRefresh = useCallback((scope: RefreshScope) => {
     // Trade updates should only touch trade/report query domains.
     if (scope === 'trades') {
+      clearTradesCache()
       queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
       queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
       queryClient.invalidateQueries({ queryKey: ['report-stats'] })
@@ -38,6 +40,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
 
     // Account-level changes require bootstrap reload for account store consumers,
     // plus targeted stats invalidation.
+    clearAccountsCache()
     queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     queryClient.invalidateQueries({ queryKey: ['report-stats'] })
     queryClient.invalidateQueries({ queryKey: ['propfirm-stats'] })

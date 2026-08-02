@@ -56,4 +56,14 @@ describe('client polling contracts', () => {
       expect(ctx).toContain('onSynchronizationChange')
     }
   })
+
+  it('invalidates SWR caches on realtime refresh', () => {
+    const accountsHook = source('hooks/use-accounts.ts')
+    const realtimeHook = source('hooks/use-data-provider-realtime.ts')
+
+    expect(accountsHook).toContain("export function invalidateAccountsCache(_reason?: string) {\n  clearAccountsCache()")
+    expect(accountsHook).toContain("key.startsWith('/api/v1/trades')")
+    expect(realtimeHook).toContain("clearTradesCache()")
+    expect(realtimeHook).toContain("clearAccountsCache()")
+  })
 })

@@ -66,10 +66,16 @@ function subscribeToAccountsUpdates(callback: () => void) {
   return () => realtimeSubscribers.delete(callback)
 }
 
-export function invalidateAccountsCache(_reason?: string) { }
+export function invalidateAccountsCache(_reason?: string) {
+  clearAccountsCache()
+}
 
 export function clearAccountsCache() {
   mutate(key => typeof key === 'string' && key.startsWith('/api/v1/accounts'))
+}
+
+export function clearTradesCache() {
+  mutate(key => typeof key === 'string' && key.startsWith('/api/v1/trades'))
 }
 
 const fetcher = async (url: string) => {

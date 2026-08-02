@@ -54,24 +54,38 @@ export function TagsProvider({ children }: { children: React.ReactNode }) {
     setError(null)
 
     fetchPromise = (async () => {
-      try {
+      const request = async (): Promise<TradeTag[] | null> => {
         const response = await fetch('/api/v1/tags', {
           headers: { 'Cache-Control': 'no-cache' }
         })
-        
+
         if (response.ok) {
           const data = await response.json()
-          const fetchedTags = data.data || []
-          
-          tagsCache = fetchedTags
-          lastFetchTime = Date.now()
-          
-          return fetchedTags
+          return data.data || []
         } else if (response.status === 401 || response.status === 403) {
-          return []
+          return null
         } else {
           throw new Error('Failed to fetch tags')
         }
+      }
+
+      const isTransientNetworkError = (err: unknown): boolean => err instanceof TypeError
+
+      try {
+        let fetchedTags: TradeTag[] | null
+        try {
+          fetchedTags = await request()
+        } catch (err) {
+          if (!isTransientNetworkError(err)) throw err
+          await new Promise((resolve) => setTimeout(resolve, 750))
+          fetchedTags = await request()
+        }
+
+        if (fetchedTags !== null) {
+          tagsCache = fetchedTags
+          lastFetchTime = Date.now()
+        }
+        return fetchedTags ?? []
       } catch (err) {
         reportClientError(err, { operation: 'load-tags', route: '/api/v1/tags' })
         if (mountedRef.current) {

@@ -88,7 +88,9 @@ export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoM
         if (!payload.success) throw Object.assign(new Error(payload.error?.message ?? 'Failed to fetch trades'), { status: res.status })
         return payload.data
       } catch (error) {
-        reportClientError(error, { operation: 'load-filtered-trades', route: '/api/v1/trades' })
+        if (!(error instanceof TypeError)) {
+          reportClientError(error, { operation: 'load-filtered-trades', route: '/api/v1/trades' })
+        }
         throw error
       }
     },

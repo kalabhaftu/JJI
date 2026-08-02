@@ -113,8 +113,6 @@ export default async function RootLayout({
       <head>
         <meta name="application-name" content={BRAND.name} />
 
-        {/* Analytics removed to comply with essential-only cookie policy */}
-
         {/* Performance: Preconnect to Supabase for faster API calls */}
         {supabaseUrl && <link rel="preconnect" href={supabaseUrl} crossOrigin="anonymous" />}
         {supabaseUrl && <link rel="dns-prefetch" href={supabaseUrl} />}

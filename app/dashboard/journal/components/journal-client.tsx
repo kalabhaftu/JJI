@@ -50,6 +50,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequest } from '@/lib/api/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useData } from '@/context/data-provider'
 import { useModalStateStore } from '@/store/modal-state-store'
@@ -294,6 +295,9 @@ export function JournalClient() {
     if (!tradeToDelete) return
 
     try {
+      await apiRequest(`/api/v1/trades/${tradeToDelete.id}`, {
+        method: 'DELETE',
+      })
       toast.success('Trade deleted successfully')
       await refetch()
     } catch (error) {

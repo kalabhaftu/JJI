@@ -115,7 +115,7 @@ export default function AccountDetailPage() {
     if (realtimeError) {
       if (realtimeError.includes('404') || realtimeError.includes('not found')) {
         toast.error("Account not found")
-        setTimeout(() => router.push('/dashboard/accounts'), 2000)
+        router.push('/dashboard/accounts')
       }
     }
   }, [realtimeError, router])

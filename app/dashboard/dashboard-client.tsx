@@ -4,11 +4,12 @@ import NextDynamic from 'next/dynamic'
 import { useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 
-import { DashboardErrorBoundary, ErrorBoundaryWrapper } from '@/components/error-boundary'
+import { DashboardErrorBoundary, ErrorBoundaryWrapper, DataError } from '@/components/error-boundary'
 import { TemplateAwareDashboardSkeleton } from '@/components/ui/dashboard-skeleton'
 import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-layout'
 import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
 import { GettingStartedChecklist } from './components/getting-started-checklist'
+import { useData } from '@/context/data-provider'
 
 const loadingLayout = cloneDefaultTemplateLayout()
 const loadingLayouts = buildResponsiveDashboardLayouts(loadingLayout, false)
@@ -30,6 +31,8 @@ const EditModeControls = NextDynamic(() => import('./components/edit-mode-contro
 export function DashboardClient() {
   const searchParams = useSearchParams()
   const router = useRouter()
+
+  const { error, refreshAllData } = useData()
 
   // Redirect old ?tab= URLs to new standalone routes (backwards compatibility)
   useEffect(() => {
@@ -95,6 +98,7 @@ export function DashboardClient() {
         <EditModeControls />
         <ErrorBoundaryWrapper context="Widgets">
           <div className="px-4 pb-24 lg:pb-0 dashboard-page-content">
+            <DataError error={error} onRetry={() => void refreshAllData()} className="mb-4" />
             <GettingStartedChecklist />
             <WidgetCanvas />
           </div>

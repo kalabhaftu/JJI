@@ -168,7 +168,7 @@ interface DataErrorProps {
   className?: string
 }
 
-function DataError({ error, onRetry, className = '' }: DataErrorProps): ReactElement | null {
+export function DataError({ error, onRetry, className = '' }: DataErrorProps): ReactElement | null {
   if (!error) return null
 
   return (

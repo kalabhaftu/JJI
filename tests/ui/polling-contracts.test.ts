@@ -77,4 +77,46 @@ describe('client polling contracts', () => {
     expect(hook).toContain("window.addEventListener('focus'")
     expect(route).toContain("dynamic = 'force-static'")
   })
+
+  it('deletes journal trades through the API instead of faking success', () => {
+    const journal = source('app/dashboard/journal/components/journal-client.tsx')
+    const deleteCall = journal.indexOf("apiRequest(`/api/v1/trades/${tradeToDelete.id}`")
+    const toastIndex = journal.indexOf("toast.success('Trade deleted successfully')")
+
+    expect(deleteCall).toBeGreaterThan(-1)
+    expect(journal.slice(deleteCall, toastIndex)).toContain("method: 'DELETE'")
+  })
+
+  it('surfaces dashboard load errors with a retry action', () => {
+    const errorBoundary = source('components/error-boundary.tsx')
+    const dataProvider = source('context/data-provider.tsx')
+    const dashboard = source('app/dashboard/dashboard-client.tsx')
+
+    expect(errorBoundary).toContain('export function DataError')
+    expect(dataProvider).toContain("setError('Failed to load data. Please refresh the page.')")
+    expect(dataProvider).toContain('setError(null)')
+    expect(dashboard).toContain('<DataError error={error} onRetry')
+  })
+
+  it('offers a retry action on the offline chip', () => {
+    const offline = source('components/offline-indicator.tsx')
+
+    expect(offline).toContain('Retry')
+    expect(offline).toContain('navigator.onLine')
+  })
+
+  it('removed the dead full-screen loading overlay', () => {
+    const loading = source('components/ui/loading.tsx')
+
+    expect(loading).not.toContain('export function LoadingOverlay')
+    expect(loading).not.toContain('positionClasses')
+  })
+
+  it('does not add artificial delays around data loading', () => {
+    const dataProvider = source('context/data-provider.tsx')
+    const propFirmPage = source('app/dashboard/prop-firm/accounts/[id]/page.tsx')
+
+    expect(dataProvider).not.toContain('setTimeout(resolve, 200)')
+    expect(propFirmPage).not.toContain("setTimeout(() => router.push('/dashboard/accounts'), 2000)")
+  })
 })

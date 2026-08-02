@@ -340,6 +340,7 @@ export const DataProvider: React.FC<{
         }));
         
         setAccounts(accountsWithBalance);
+        setError(null);
 
       } catch (error) {
         if (error instanceof Error && (
@@ -509,7 +510,6 @@ export const DataProvider: React.FC<{
       
       await queryClient.invalidateQueries({ queryKey: ['v1'] })
       
-      await new Promise(resolve => setTimeout(resolve, 200))
       await loadData()
     } catch (error) {
       if (error instanceof Error && (
@@ -530,7 +530,7 @@ export const DataProvider: React.FC<{
       }
       setIsLoading(false)
     } finally {
-      setTimeout(() => { setIsLoading(false) }, 200)
+      setIsLoading(false)
     }
   }, [user?.id, loadData, setIsLoading, locale, queryClient])
 

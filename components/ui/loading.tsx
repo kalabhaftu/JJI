@@ -13,12 +13,6 @@ interface LoadingSpinnerProps {
   className?: string
 }
 
-interface LoadingOverlayProps {
-  text?: string
-  position?: 'fixed' | 'absolute'
-  className?: string
-}
-
 interface LoadingSkeletonProps {
   variant?: 'card' | 'table' | 'chart' | 'list'
   rows?: number
@@ -49,29 +43,6 @@ function LoadingSpinner({ size = 'md', text, className }: LoadingSpinnerProps) {
           {text}
         </span>
       )}
-    </div>
-  )
-}
-
-/**
- * Loading overlay for full screen or container loading
- */
-export function LoadingOverlay({ text = 'Loading...', position = 'absolute', className }: LoadingOverlayProps) {
-  const positionClasses = {
-    fixed: 'fixed inset-0',
-    absolute: 'absolute inset-0'
-  }
-
-  return (
-    <div className={cn(
-      'z-50 flex items-center justify-center bg-background/95',
-      positionClasses[position],
-      className
-    )}>
-      <div className="flex flex-col items-center gap-3 rounded-lg bg-background p-6 shadow-lg border">
-        <Spinner className="h-8 w-8 text-primary" />
-        <p className="text-sm text-muted-foreground">{text}</p>
-      </div>
     </div>
   )
 }

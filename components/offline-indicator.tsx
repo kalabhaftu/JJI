@@ -34,6 +34,17 @@ export function OfflineIndicator() {
     >
       <WifiOff className="w-4 h-4" />
       <span>Offline, showing the last loaded view</span>
+      <button
+        type="button"
+        className="rounded-md border border-warning/40 px-2 py-0.5 text-xs font-semibold text-warning hover:bg-warning/10"
+        onClick={() => {
+          if (navigator.onLine) {
+            window.location.reload()
+          }
+        }}
+      >
+        Retry
+      </button>
     </div>
   )
 }

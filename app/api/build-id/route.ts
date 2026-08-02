@@ -2,13 +2,13 @@ import { NextResponse } from 'next/server'
 
 /**
  * API endpoint to return the current build ID
- * Used by deployment detection to identify when a new version is deployed
+ * Used by deployment detection to identify when a new version is deployed.
+ * Baked at build time from VERCEL_GIT_COMMIT_SHA so the response is static
+ * and cacheable; clients compare it against the id inlined in their bundle.
  */
 export async function GET() {
-  // Next.js generates a BUILD_ID file during build
-  // We can use a combination of deployment timestamp and a hash
-  const buildId = process.env.NEXT_BUILD_ID || process.env.VERCEL_DEPLOYMENT_ID || 'local-dev'
-  
+  const buildId = process.env.NEXT_PUBLIC_BUILD_ID || 'local-dev'
+
   return NextResponse.json(
     { buildId },
     {
@@ -30,5 +30,5 @@ export async function OPTIONS() {
   })
 }
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-static'
 

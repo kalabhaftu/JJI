@@ -10,6 +10,9 @@ try {
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   typedRoutes: true,
+  env: {
+    NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || 'local-dev',
+  },
   experimental: {
     serverActions: {
       bodySizeLimit: '10mb',

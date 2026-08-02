@@ -13,6 +13,7 @@ import { useData } from '@/context/data-provider'
 import { useAccounts } from '@/hooks/use-accounts'
 import { FileDropzone } from '@/components/ui/file-dropzone'
 import { apiRequest } from '@/lib/api/client'
+import { RESTORE_JOB_PROCESS_SPACER_MS, RESTORE_REFRESH_DELAY_MS } from '@/lib/constants/intervals'
 import { reportClientError } from '@/lib/observability/report-error'
 
 interface ImportJobResponse {
@@ -51,7 +52,7 @@ export function ImportDialog() { // Kept name for compatibility
       setImportJob(latestJob)
 
       if (!isTerminal(latestJob.status)) {
-        await new Promise(resolve => setTimeout(resolve, 400))
+        await new Promise(resolve => setTimeout(resolve, RESTORE_JOB_PROCESS_SPACER_MS))
       }
     }
 
@@ -75,7 +76,7 @@ export function ImportDialog() { // Kept name for compatibility
     setTimeout(() => {
       refreshTrades()
       refetchAccounts()
-    }, 1000)
+    }, RESTORE_REFRESH_DELAY_MS)
   }
 
   const handleImport = async () => {

@@ -18,21 +18,6 @@ const CACHE_DURATION_EXTRA_LONG = 15 * 60 * 1000
 /** Default API request timeout (10 seconds) */
 export const API_TIMEOUT = 10 * 1000
 
-/** Short API timeout for simple operations (5 seconds) */
-const API_TIMEOUT_SHORT = 5 * 1000
-
-/** Long API timeout for complex operations (30 seconds) */
-const API_TIMEOUT_LONG = 30 * 1000
-
-/** Default polling interval for real-time updates (30 seconds) */
-const POLL_INTERVAL = 30 * 1000
-
-/** Fast polling interval for critical updates (10 seconds) */
-const POLL_INTERVAL_FAST = 10 * 1000
-
-/** Slow polling interval for background updates (60 seconds) */
-const POLL_INTERVAL_SLOW = 60 * 1000
-
 /** Default debounce delay for user input (300ms) */
 const DEBOUNCE_DELAY = 300
 

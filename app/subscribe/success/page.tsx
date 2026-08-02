@@ -6,6 +6,7 @@ import { CheckCircle2, Loader2, Clock } from 'lucide-react'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
+import { SUBSCRIPTION_CONFIRMATION_POLL_MS } from '@/lib/constants/intervals'
 import { reportError } from '@/lib/observability/report-error'
 
 export default function SubscribeSuccessPage() {
@@ -85,7 +86,7 @@ export default function SubscribeSuccessPage() {
         clearInterval(interval)
         if (attempts >= maxAttempts) setStatus('pending')
       }
-    }, 5000)
+    }, SUBSCRIPTION_CONFIRMATION_POLL_MS)
 
     checkStatus()
 

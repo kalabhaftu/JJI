@@ -1,6 +1,7 @@
 'use client'
 
 import { apiRequest } from '@/lib/api/client'
+import { IMPORT_JOB_PROCESS_SPACER_MS } from '@/lib/constants/intervals'
 
 export interface TradeImportJob {
   id: string
@@ -51,7 +52,7 @@ export async function importTradesThroughApi(input: {
     job = processed.data.job
     input.onProgress?.(job)
     if (!isTerminal(job.status)) {
-      await new Promise((resolve) => window.setTimeout(resolve, 350))
+      await new Promise((resolve) => window.setTimeout(resolve, IMPORT_JOB_PROCESS_SPACER_MS))
     }
   }
 

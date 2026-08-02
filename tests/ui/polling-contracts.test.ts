@@ -25,4 +25,11 @@ describe('client polling contracts', () => {
     expect(notificationCenter).toContain("window.addEventListener('notifications:refresh'")
     expect(notificationCenter).not.toContain('setInterval(')
   })
+
+  it('registers Synchronization in the realtime table registry', () => {
+    const realtime = source('lib/realtime/database-realtime.ts')
+
+    expect(realtime).toContain("'Synchronization'")
+    expect(realtime).toContain('onSynchronizationChange')
+  })
 })

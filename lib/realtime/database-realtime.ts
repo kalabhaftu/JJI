@@ -5,9 +5,9 @@ import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/
 import logger from '@/lib/logger';
 import { reportError } from '@/lib/observability/report-error'
 
-const REALTIME_TABLES = ['Trade', 'Account', 'MasterAccount', 'PhaseAccount', 'Payout', 'DailyNote', 'Notification'] as const
+const REALTIME_TABLES = ['Trade', 'Account', 'MasterAccount', 'PhaseAccount', 'Payout', 'DailyNote', 'Notification', 'Synchronization'] as const
 type RealtimeTable = typeof REALTIME_TABLES[number]
-const TABLES_WITH_USER_ID_FILTER = new Set<RealtimeTable>(['Trade', 'Account', 'MasterAccount', 'DailyNote', 'Notification'])
+const TABLES_WITH_USER_ID_FILTER = new Set<RealtimeTable>(['Trade', 'Account', 'MasterAccount', 'DailyNote', 'Notification', 'Synchronization'])
 
 export type ChangeEvent = 'INSERT' | 'UPDATE' | 'DELETE'
 
@@ -284,6 +284,7 @@ export function useDatabaseRealtime(options: {
   onTradeChange?: (change: DatabaseChange) => void
   onAccountChange?: (change: DatabaseChange) => void
   onNotificationChange?: (change: DatabaseChange) => void
+  onSynchronizationChange?: (change: DatabaseChange) => void
   onAnyChange?: (change: DatabaseChange) => void
   onStatusChange?: (status: 'connected' | 'disconnected' | 'error') => void
 }) {
@@ -295,6 +296,7 @@ export function useDatabaseRealtime(options: {
     onTradeChange,
     onAccountChange,
     onNotificationChange,
+    onSynchronizationChange,
     onAnyChange,
     onStatusChange
   } = options
@@ -302,6 +304,7 @@ export function useDatabaseRealtime(options: {
   const onTradeChangeRef = useRef(onTradeChange)
   const onAccountChangeRef = useRef(onAccountChange)
   const onNotificationChangeRef = useRef(onNotificationChange)
+  const onSynchronizationChangeRef = useRef(onSynchronizationChange)
   const onAnyChangeRef = useRef(onAnyChange)
   const onStatusChangeRef = useRef(onStatusChange)
   
@@ -309,9 +312,10 @@ export function useDatabaseRealtime(options: {
     onTradeChangeRef.current = onTradeChange
     onAccountChangeRef.current = onAccountChange
     onNotificationChangeRef.current = onNotificationChange
+    onSynchronizationChangeRef.current = onSynchronizationChange
     onAnyChangeRef.current = onAnyChange
     onStatusChangeRef.current = onStatusChange
-  }, [onTradeChange, onAccountChange, onNotificationChange, onAnyChange, onStatusChange])
+  }, [onTradeChange, onAccountChange, onNotificationChange, onSynchronizationChange, onAnyChange, onStatusChange])
   
   const handleChange = useCallback((change: DatabaseChange) => {
     if (change.table === 'Trade' && onTradeChangeRef.current) {
@@ -322,6 +326,9 @@ export function useDatabaseRealtime(options: {
     }
     if (change.table === 'Notification' && onNotificationChangeRef.current) {
       onNotificationChangeRef.current(change)
+    }
+    if (change.table === 'Synchronization' && onSynchronizationChangeRef.current) {
+      onSynchronizationChangeRef.current(change)
     }
     
     if (onAnyChangeRef.current) {

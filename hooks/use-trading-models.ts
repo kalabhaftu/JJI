@@ -149,7 +149,10 @@ export function useTradingModels(filters?: TradingModelFilters) {
         if (Array.isArray(data?.data?.models)) return data.data.models
         return []
       } catch (error) {
-        reportClientError(error, { operation: 'load-trading-models', route: '/api/v1/user/trading-models' })
+        const status = (error as { status?: number })?.status
+        if (!(error instanceof TypeError) && status !== 429) {
+          reportClientError(error, { operation: 'load-trading-models', route: '/api/v1/user/trading-models' })
+        }
         throw error
       }
     },

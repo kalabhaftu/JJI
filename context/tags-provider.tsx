@@ -65,18 +65,19 @@ export function TagsProvider({ children }: { children: React.ReactNode }) {
         } else if (response.status === 401 || response.status === 403) {
           return null
         } else {
-          throw new Error('Failed to fetch tags')
+          throw Object.assign(new Error('Failed to fetch tags'), { status: response.status })
         }
       }
 
-      const isTransientNetworkError = (err: unknown): boolean => err instanceof TypeError
+      const isTransientError = (err: unknown): boolean =>
+        err instanceof TypeError || (err as { status?: number })?.status === 429
 
       try {
         let fetchedTags: TradeTag[] | null
         try {
           fetchedTags = await request()
         } catch (err) {
-          if (!isTransientNetworkError(err)) throw err
+          if (!isTransientError(err)) throw err
           await new Promise((resolve) => setTimeout(resolve, 750))
           fetchedTags = await request()
         }

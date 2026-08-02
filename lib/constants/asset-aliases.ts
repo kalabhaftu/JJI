@@ -1,26 +1,4 @@
-/**
- * Asset name aliases for trading instruments
- * Maps alternative names to canonical display names
- * Used for search functionality while preserving original imported names
- *
- * SEARCH ALIASES INCLUDED:
- * Indices: NQ, NAS, NASDAQ, NAS100, USTECH -> US100
- *         DJ30, DOWJONES, WallSt30, YM -> US30
- *         SP500, S&P500, SPX500, SPX, ES -> US500
- *         DAX40, DE40, GER30, DAX, FDAX -> GER40
- *         FTSE100, FTSE, UKX, Z -> UK100
- *         Nikkei225, JPN225, NI225 -> JP225
- * Commodities: XAU, GOLD, GC, XAU/USD -> XAUUSD
- *             XAG, SILVER, SI -> XAGUSD
- *             WTI, CL, OIL.WTI -> USOIL
- *             BRENT, BRN, OIL.BRENT -> UKOIL
- * Forex: EUR/USD, GBP/USD, USD/JPY variations
- * Crypto: BTC/USD, XBTUSD, BTCUSDT, ETH/USD, ETHUSDT
- */
-
-// Indices
 const INDICES_ALIASES: Record<string, string> = {
-  // US100 / Nasdaq 100 / NAS100
   'US100': 'US100',
   'NAS100': 'US100',
   'NASDAQ100': 'US100',
@@ -29,78 +7,63 @@ const INDICES_ALIASES: Record<string, string> = {
   'NAS': 'US100',
   'NQ': 'US100',
 
-  // US30 / Dow Jones
   'DJ30': 'US30',
   'DOWJONES': 'US30',
   'WALLST30': 'US30',
   'YM': 'US30',
 
-  // US500 / S&P 500
   'SP500': 'US500',
   'S&P500': 'US500',
   'SPX500': 'US500',
   'SPX': 'US500',
   'ES': 'US500',
 
-  // GER40 / DAX
   'DAX40': 'GER40',
   'DE40': 'GER40',
   'GER30': 'GER40',
   'DAX': 'GER40',
   'FDAX': 'GER40',
 
-  // UK100 / FTSE
   'FTSE100': 'UK100',
   'FTSE': 'UK100',
   'UKX': 'UK100',
   'Z': 'UK100',
 
-  // JP225 / Nikkei
   'NIKKEI225': 'JP225',
   'JPN225': 'JP225',
   'NI225': 'JP225'
 }
 
-// Commodities
 const COMMODITIES_ALIASES: Record<string, string> = {
-  // Gold
   'XAU': 'XAUUSD',
   'GOLD': 'XAUUSD',
   'GC': 'XAUUSD',
   'XAU/USD': 'XAUUSD',
 
-  // Silver
   'XAG': 'XAGUSD',
   'SILVER': 'XAGUSD',
   'SI': 'XAGUSD',
 
-  // Crude Oil (WTI)
   'WTI': 'USOIL',
   'CL': 'USOIL',
   'OIL.WTI': 'USOIL',
 
-  // Brent Oil
   'BRENT': 'UKOIL',
   'BRN': 'UKOIL',
   'OIL.BRENT': 'UKOIL'
 }
 
-// Forex (common cases)
 const FOREX_ALIASES: Record<string, string> = {
-  // EUR/USD variations
   'EUR/USD': 'EURUSD',
   'EUR-USD': 'EURUSD',
 
-  // GBP/USD variations
   'GBP/USD': 'GBPUSD',
   'GBP-USD': 'GBPUSD',
   'CABLE': 'GBPUSD',
 
-  // USD/JPY variations
   'USD/JPY': 'USDJPY',
   'USD-JPY': 'USDJPY',
 
-  // Common variations (add more as needed)
   'EURGBP': 'EUR/GBP',
   'EUR/GBP': 'EUR/GBP',
   'GBPCHF': 'GBP/CHF',
@@ -121,25 +84,20 @@ const FOREX_ALIASES: Record<string, string> = {
   'EUR/JPY': 'EUR/JPY'
 }
 
-// Crypto
 const CRYPTO_ALIASES: Record<string, string> = {
-  // Bitcoin
   'BTC/USD': 'BTCUSD',
   'BTC-USD': 'BTCUSD',
   'XBTUSD': 'BTCUSD',
   'BTCUSDT': 'BTCUSD',
 
-  // Ethereum
   'ETH/USD': 'ETHUSD',
   'ETH-USD': 'ETHUSD',
   'ETHUSDT': 'ETHUSD',
 
-  // Common crypto pairs
   'BTCUSDC': 'BTC/USD',
   'ETHUSDC': 'ETH/USD'
 }
 
-// Combined aliases mapping
 const ASSET_ALIASES: Record<string, string> = {
   ...INDICES_ALIASES,
   ...COMMODITIES_ALIASES,
@@ -190,10 +148,6 @@ function getAssetCategory(assetName: string): string {
   return 'Other'
 }
 
-/**
- * Get common asset aliases for display or suggestions
- * @returns Array of common asset aliases grouped by category
- */
 function getAssetAliasGroups() {
   return {
     indices: Object.keys(INDICES_ALIASES),
@@ -206,7 +160,6 @@ function getAssetAliasGroups() {
 
 const testAliases = () => {
 
-  // Test some common aliases
   const testCases = [
     { input: 'NQ', expected: 'NAS100' },
     { input: 'USTECH', expected: 'NAS100' },

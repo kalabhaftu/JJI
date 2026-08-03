@@ -46,14 +46,14 @@ export default function PayoutsPage() {
     try {
       setIsLoading(true)
       const response = await fetch('/api/v1/prop-firm/accounts')
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch payouts')
       }
 
       const data = await response.json()
       if (data.success) {
-        const allPayouts = data.data.flatMap((account: any) => 
+        const allPayouts = data.data.flatMap((account: any) =>
           account.payouts ? account.payouts.map((payout: any) => ({
             ...payout,
             accountNumber: account.number,
@@ -119,7 +119,7 @@ export default function PayoutsPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+      {            }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -148,7 +148,7 @@ export default function PayoutsPage() {
         </div>
       </div>
 
-      {/* Search */}
+      {            }
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Input
@@ -159,7 +159,7 @@ export default function PayoutsPage() {
         </div>
       </div>
 
-      {/* Payouts List */}
+      {                  }
       {isLoading ? (
         <GlobalPayoutListSkeleton />
       ) : filteredPayouts.length === 0 ? (
@@ -190,7 +190,7 @@ export default function PayoutsPage() {
                         </div>
                       </Badge>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="flex items-center gap-2">
                         <DollarSign className="h-4 w-4 text-muted-foreground" />
@@ -199,7 +199,7 @@ export default function PayoutsPage() {
                           <p className="font-medium">{formatCurrency(payout.amountRequested)}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <CreditCard className="h-4 w-4 text-muted-foreground" />
                         <div>
@@ -207,7 +207,7 @@ export default function PayoutsPage() {
                           <p className="font-medium">{formatCurrency(payout.amountPaid)}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
                         <div>
@@ -216,7 +216,7 @@ export default function PayoutsPage() {
                         </div>
                       </div>
                     </div>
-                    
+
                     {payout.paidAt && (
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -226,7 +226,7 @@ export default function PayoutsPage() {
                         </div>
                       </div>
                     )}
-                    
+
                     {payout.notes && (
                       <div>
                         <p className="text-xs text-muted-foreground">Notes</p>
@@ -234,10 +234,10 @@ export default function PayoutsPage() {
                       </div>
                     )}
                   </div>
-                  
+
                   <div>
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={() => router.push(`/dashboard/prop-firm/payouts/${payout.id}`)}
                     >

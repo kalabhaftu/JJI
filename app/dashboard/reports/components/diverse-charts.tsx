@@ -68,11 +68,11 @@ export function DiverseCharts({ chartData }: DiverseChartsProps) {
     return (
         <div className="space-y-6">
             <h2 className={reportTypography.sectionTitle}>Portfolio Visualizations</h2>
-            
-            {/* Top Row: Equity Curve & Outcome Distribution */}
+
+            {                                                  }
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                
-                {/* Cumulative Equity Curve (Area Chart) */}
+
+                {                                          }
                 <div className={cn('lg:col-span-2', reportSurface.chartPanel)}>
                     <h3 className={reportTypography.sectionTitle}>Cumulative Equity Curve</h3>
                     <div className="flex-1 w-full min-h-0">
@@ -84,34 +84,34 @@ export function DiverseCharts({ chartData }: DiverseChartsProps) {
                                         <stop offset="95%" stopColor={gradientColor} stopOpacity={0}/>
                                     </linearGradient>
                                 </defs>
-                                <XAxis 
-                                    dataKey="name" 
-                                    axisLine={false} 
-                                    tickLine={false} 
-                                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }} 
+                                <XAxis
+                                    dataKey="name"
+                                    axisLine={false}
+                                    tickLine={false}
+                                    tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                                     minTickGap={30}
                                 />
-                                <YAxis 
+                                <YAxis
                                     hide
-                                    axisLine={false} 
-                                    tickLine={false} 
+                                    axisLine={false}
+                                    tickLine={false}
                                 />
                                 <RechartsTooltip content={<CustomTooltip />} />
-                                <Area 
-                                    type={curveType} 
-                                    dataKey="equity" 
+                                <Area
+                                    type={curveType}
+                                    dataKey="equity"
                                     name="Equity"
-                                    stroke={strokeColor} 
+                                    stroke={strokeColor}
                                     strokeWidth={3}
-                                    fillOpacity={1} 
-                                    fill="url(#colorEquity)" 
+                                    fillOpacity={1}
+                                    fill="url(#colorEquity)"
                                 />
                             </AreaChart>
                         </ResponsiveContainer>
                     </div>
                 </div>
 
-                {/* Outcome Distribution (Donut Chart) */}
+                {                                        }
                 <div className={reportSurface.chartPanel}>
                     <h3 className={reportTypography.sectionTitle}>Outcome Distribution</h3>
                     <div className="flex-1 w-full min-h-0 flex items-center justify-center relative">
@@ -139,7 +139,7 @@ export function DiverseCharts({ chartData }: DiverseChartsProps) {
                             <span className={reportTypography.microLabel}>Trades</span>
                         </div>
                     </div>
-                    {/* Custom Legend */}
+                    {                   }
                     <div className="flex justify-center gap-4 mt-2">
                         {outcomeData.map((entry, idx) => (
                             <div key={idx} className="flex items-center gap-1.5">
@@ -152,22 +152,22 @@ export function DiverseCharts({ chartData }: DiverseChartsProps) {
 
             </div>
 
-            {/* Bottom Row: Day of Week Performance (Bar Chart) */}
+            {                                                     }
             <div className={reportSurface.chartPanel}>
                 <h3 className={reportTypography.sectionTitle}>Performance by Day of Week</h3>
                 <div className="flex-1 w-full min-h-0">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={dayOfWeekData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                            <XAxis 
-                                dataKey="name" 
-                                axisLine={false} 
-                                tickLine={false} 
+                            <XAxis
+                                dataKey="name"
+                                axisLine={false}
+                                tickLine={false}
                                 tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))' }}
                             />
-                            <YAxis 
+                            <YAxis
                                 hide
-                                axisLine={false} 
-                                tickLine={false} 
+                                axisLine={false}
+                                tickLine={false}
                             />
                             <RechartsTooltip content={<CustomTooltip />} cursor={{ fill: 'hsl(var(--muted)/0.2)' }} />
                             <Bar dataKey="Win" name="Win" fill={COLORS.bullish} radius={[4, 4, 0, 0]} maxBarSize={40} />

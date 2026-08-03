@@ -112,7 +112,6 @@ interface Account {
   } | null
 }
 
-
 function isFundedPhase(evaluationType: string | undefined, phaseNumber: number | undefined): boolean {
   return isFundedPhaseForEvaluation(evaluationType || '', phaseNumber || 0)
 }
@@ -123,7 +122,6 @@ function isAccountFunded(account: Account): boolean {
   return isFundedPhase(evaluationType, phaseNumber)
 }
 
-// Get status display name (Active, Failed, Passed)
 function getStatusDisplayName(status?: string): string {
   if (!status) return 'Active'
   switch (status) {
@@ -176,7 +174,7 @@ export default function AccountsPage() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchQuery)
-      setPage(1) // Reset page on search
+      setPage(1)
     }, 400)
     return () => clearTimeout(handler)
   }, [searchQuery])
@@ -189,7 +187,6 @@ export default function AccountsPage() {
     search: debouncedSearch
   })
 
-  // Subscribe to realtime account changes for instant UI updates (Granular Patches)
   useDatabaseRealtime({
     userId: userStore?.id,
     enabled: !!userStore?.id,
@@ -210,7 +207,6 @@ export default function AccountsPage() {
 
   const [showLeaderboard, setShowLeaderboard] = useState(false)
 
-  // Dialog states
   const [createLiveDialogOpen, setCreateLiveDialogOpen] = useState(false)
   const [createPropFirmDialogOpen, setCreatePropFirmDialogOpen] = useState(false)
   const [editLiveDialogOpen, setEditLiveDialogOpen] = useState(false)
@@ -220,7 +216,6 @@ export default function AccountsPage() {
   const [deletingAccount, setDeletingAccount] = useState<Account | null>(null)
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
 
-  // Keyboard shortcut for search
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -235,7 +230,6 @@ export default function AccountsPage() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [searchQuery])
 
-  // URL param filter on mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const filterParam = urlParams.get('filter')
@@ -266,10 +260,9 @@ export default function AccountsPage() {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true)
     try {
-      // Clear caches first
+
       clearAccountsCache()
-      // Use refetchAccounts which reloads all data including accounts from the server
-      // This is the proper way to refresh - it calls loadData() which fetches fresh data
+
       await refetchAccounts()
       toast.success("Accounts refreshed")
     } catch (error) {
@@ -282,7 +275,7 @@ export default function AccountsPage() {
 
   const handleAccountCreated = useCallback(() => {
     clearAccountsCache()
-    // Use refetchAccounts to reload all data - Zustand will automatically trigger re-render
+
     refetchAccounts()
     refreshAllData()
     setCreateLiveDialogOpen(false)
@@ -292,7 +285,7 @@ export default function AccountsPage() {
 
   const handleAccountUpdated = useCallback(() => {
     clearAccountsCache()
-    // Use refetchAccounts to reload all data - Zustand will automatically trigger re-render
+
     refetchAccounts()
     refreshAllData()
     setEditLiveDialogOpen(false)
@@ -390,12 +383,12 @@ export default function AccountsPage() {
 
   return (
     <TooltipProvider>
-      {/* Dialogs globally mounted to prevent data loss on layout reload */}
+      {                                                                    }
       <CreateLiveAccountDialog open={createLiveDialogOpen} onOpenChange={setCreateLiveDialogOpen} onSuccess={handleAccountCreated} />
       <CreatePropFirmDialog open={createPropFirmDialogOpen} onOpenChange={setCreatePropFirmDialogOpen} onSuccess={handleAccountCreated} />
       <EditLiveAccountDialog open={editLiveDialogOpen} onOpenChange={setEditLiveDialogOpen} account={editingAccount as any} onSuccess={handleAccountUpdated} />
       <EditPropFirmAccountDialog open={editPropFirmDialogOpen} onOpenChange={setEditPropFirmDialogOpen} account={editingAccount as any} onSuccess={handleAccountUpdated} />
-      
+
       <AlertDialog open={!!deletingAccount} onOpenChange={(open) => !open && setDeletingAccount(null)}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
@@ -457,14 +450,14 @@ export default function AccountsPage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Primary Layout conditional guard */}
+      {                                      }
       {isLoading && serverAccounts.length === 0 ? (
         <AccountsPageSkeleton />
       ) : (
         <div className="min-h-screen bg-background">
         <div className="w-full max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-8">
 
-          {/* Header */}
+          {            }
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -524,7 +517,7 @@ export default function AccountsPage() {
             />
           </motion.div>
 
-          {/* Stats Overview */}
+          {                    }
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -557,14 +550,14 @@ export default function AccountsPage() {
             />
           </motion.div>
 
-          {/* Filters */}
+          {             }
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
             className="flex flex-col sm:flex-row gap-3 mb-6"
           >
-            {/* Search */}
+            {            }
             <div className="relative flex-1 max-w-md">
               <Search  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
@@ -592,7 +585,7 @@ export default function AccountsPage() {
               )}
             </div>
 
-            {/* Type filter tabs */}
+            {                      }
             <Tabs value={filterType} onValueChange={(v) => setFilterType(v as FilterType)} className="w-full sm:w-auto">
               <TabsList className="w-full sm:w-auto grid grid-cols-3">
                 <TabsTrigger value="all" className="text-xs px-3">All</TabsTrigger>
@@ -607,7 +600,7 @@ export default function AccountsPage() {
               </TabsList>
             </Tabs>
 
-            {/* Status filter */}
+            {                   }
             <Tabs value={filterStatus} onValueChange={(v) => setFilterStatus(v as FilterStatus)} className="w-full sm:w-auto">
               <TabsList className="w-full sm:w-auto grid grid-cols-3">
                 <TabsTrigger value="all" className="text-xs px-3">Active</TabsTrigger>
@@ -616,7 +609,7 @@ export default function AccountsPage() {
               </TabsList>
             </Tabs>
 
-            {/* Leaderboard toggle */}
+            {                        }
             <Button
               variant="ghost"
               size="sm"
@@ -631,7 +624,7 @@ export default function AccountsPage() {
             </Button>
           </motion.div>
 
-          {/* Leaderboard */}
+          {                 }
           {showLeaderboard && serverAccounts.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -642,7 +635,7 @@ export default function AccountsPage() {
             </motion.div>
           )}
 
-          {/* Accounts Grid */}
+          {                   }
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -696,7 +689,6 @@ export default function AccountsPage() {
   )
 }
 
-// Stat Card Component
 function StatCard({
   label,
   value,
@@ -753,7 +745,6 @@ function StatCard({
   )
 }
 
-// Account Card Component
 function AccountCard({
   account,
   allAccounts,
@@ -773,13 +764,12 @@ function AccountCard({
   const isFunded = isPropFirm && isAccountFunded(account)
   const isFailed = account.status === 'failed'
   const isArchived = account.isArchived
-  // Use calculatedEquity (computed by parent) or fallback to startingBalance
+
   const equity = account.calculatedEquity ?? account.startingBalance ?? 0
   const startingBalance = account.startingBalance || 0
   const pnl = equity - startingBalance
   const pnlPercent = startingBalance > 0 ? (pnl / startingBalance) * 100 : 0
 
-  // tradeCount is pre-computed with groupTradesByExecution in serverAccounts
   const displayTradeCount = account.tradeCount || 0
 
   const isAtRisk = isPropFirm && !isFailed && (
@@ -824,7 +814,7 @@ function AccountCard({
         aria-label={`View account ${account.displayName || account.name || account.number}`}
       />
       <CardContent className="pointer-events-none relative z-[1] p-4 pt-5">
-        {/* Header */}
+        {            }
         <div className="mb-4 flex items-start justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div className={cn(
@@ -918,7 +908,7 @@ function AccountCard({
           </div>
         </div>
 
-        {/* Balance */}
+        {             }
         <div className="space-y-4">
           <div className="flex items-end justify-between gap-3">
             <div>
@@ -955,7 +945,7 @@ function AccountCard({
             </div>
           </div>
 
-          {/* Progress bar for prop firm */}
+          {                                }
           {isPropFirm && !isFunded && !isFailed && account.profitTargetProgress !== undefined && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
@@ -981,7 +971,7 @@ function AccountCard({
             </div>
           )}
 
-          {/* Risk warning */}
+          {                  }
           {isAtRisk && (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/18 bg-destructive/10 p-2 text-destructive">
               <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
@@ -990,7 +980,7 @@ function AccountCard({
           )}
         </div>
 
-        {/* Quick action hint */}
+        {                       }
         <div className="mt-4 flex items-center justify-between border-t border-border/18 pt-3 text-xs text-muted-foreground">
           <span className="truncate">{isPropFirm ? (account.currentPhaseDetails?.evaluationType || 'Evaluation') : 'Live account'}</span>
           <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1002,7 +992,6 @@ function AccountCard({
   )
 }
 
-// Account Leaderboard Component
 function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
   const sorted = [...accounts].sort((a, b) => (b.pnl || 0) - (a.pnl || 0))
   const maxPnl = accounts.reduce((max, a) => Math.max(max, Math.abs(a.pnl || 0)), 1)
@@ -1072,7 +1061,6 @@ function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
   )
 }
 
-// Empty State Component
 function EmptyState({
   hasAccounts,
   searchQuery,

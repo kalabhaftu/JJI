@@ -81,8 +81,7 @@ export default function AccountSettingsPage() {
   const [isSaving, setIsSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  
-  // Form state
+
   const [formData, setFormData] = useState({
     name: '',
     notes: '',
@@ -91,12 +90,11 @@ export default function AccountSettingsPage() {
 
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = useCallback(async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch account details')
       }
@@ -106,8 +104,7 @@ export default function AccountSettingsPage() {
         const accountData = data.data.account
         setAccount(accountData)
         setPhases(data.data.phases || [])
-        
-        // Initialize form data
+
         setFormData({
           name: accountData.name || '',
           notes: accountData.notes || '',
@@ -126,7 +123,6 @@ export default function AccountSettingsPage() {
     }
   }, [accountId])
 
-  // Load account on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()
@@ -174,7 +170,7 @@ export default function AccountSettingsPage() {
   const handleSave = async () => {
     try {
       setIsSaving(true)
-      
+
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`, {
         method: 'PATCH',
         headers: {
@@ -182,7 +178,7 @@ export default function AccountSettingsPage() {
         },
         body: JSON.stringify(formData),
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to update account')
       }
@@ -192,7 +188,7 @@ export default function AccountSettingsPage() {
         toast.success('Account updated successfully', {
           description: 'Your account settings have been saved'
         })
-        fetchAccount() // Refresh the data
+        fetchAccount()
       } else {
         throw new Error(data.error?.message || 'Failed to update account')
       }
@@ -216,7 +212,7 @@ export default function AccountSettingsPage() {
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`, {
         method: 'DELETE',
       })
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete account')
       }
@@ -262,7 +258,7 @@ export default function AccountSettingsPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+      {            }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -301,7 +297,7 @@ export default function AccountSettingsPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {                  }
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>
@@ -327,7 +323,7 @@ export default function AccountSettingsPage() {
                     disabled
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="accountName">Account Name</Label>
                   <Input
@@ -337,7 +333,7 @@ export default function AccountSettingsPage() {
                     placeholder="Enter a custom name for this account"
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="propFirm">Prop Firm</Label>
                   <Input
@@ -346,7 +342,7 @@ export default function AccountSettingsPage() {
                     disabled
                   />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <div className="flex items-center gap-2">
@@ -355,7 +351,7 @@ export default function AccountSettingsPage() {
                     </Badge>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
@@ -366,7 +362,7 @@ export default function AccountSettingsPage() {
                     rows={3}
                   />
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
                     <Label htmlFor="archived">Archive Account</Label>
@@ -393,51 +389,51 @@ export default function AccountSettingsPage() {
                     <p className="text-xs text-muted-foreground">Starting Balance</p>
                     <p className="font-medium">{formatCurrency(account.startingBalance)}</p>
                   </div>
-                  
+
                   <div>
                     <p className="text-xs text-muted-foreground">Current Balance</p>
                     <p className="font-medium">{formatCurrency(account.currentBalance)}</p>
                   </div>
-                  
+
                   <div>
                     <p className="text-xs text-muted-foreground">Current Equity</p>
                     <p className="font-medium">{formatCurrency(account.currentEquity)}</p>
                   </div>
-                  
+
                   <div>
                     <p className="text-xs text-muted-foreground">Daily Drawdown Limit</p>
                     <p className="font-medium">{formatCurrency(account.dailyDrawdownLimit)}</p>
                   </div>
-                  
+
                   <div>
                     <p className="text-xs text-muted-foreground">Max Drawdown Limit</p>
                     <p className="font-medium">{formatCurrency(account.maxDrawdownLimit)}</p>
                   </div>
-                  
+
                   <div>
                     <p className="text-xs text-muted-foreground">Profit Target</p>
                     <p className="font-medium">{formatCurrency(account.profitTarget)}</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-muted-foreground">Timezone</p>
                     <p className="font-medium">{account.timezone}</p>
                   </div>
-                  
+
                   <div>
                     <p className="text-xs text-muted-foreground">Daily Reset Time</p>
                     <p className="font-medium">{account.dailyResetTime}</p>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <p className="text-xs text-muted-foreground">Created</p>
                     <p className="font-medium">{formatDateTime(account.createdAt)}</p>
                   </div>
-                  
+
                   <div>
                     <p className="text-xs text-muted-foreground">Last Updated</p>
                     <p className="font-medium">{formatDateTime(account.updatedAt)}</p>
@@ -473,35 +469,35 @@ export default function AccountSettingsPage() {
                                 {phase.status}
                               </Badge>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                               <div>
                                 <p className="text-muted-foreground">Starting Balance</p>
                                 <p className="font-medium">{formatCurrency(phase.startingBalance)}</p>
                               </div>
-                              
+
                               <div>
                                 <p className="text-muted-foreground">Daily Drawdown</p>
                                 <p className="font-medium">{formatCurrency(phase.dailyDrawdownLimit)}</p>
                               </div>
-                              
+
                               <div>
                                 <p className="text-muted-foreground">Max Drawdown</p>
                                 <p className="font-medium">{formatCurrency(phase.maxDrawdownLimit)}</p>
                               </div>
-                              
+
                               <div>
                                 <p className="text-muted-foreground">Profit Target</p>
                                 <p className="font-medium">{formatCurrency(phase.profitTarget)}</p>
                               </div>
                             </div>
-                            
+
                             <div className="grid grid-cols-2 gap-4 text-sm mt-2">
                               <div>
                                 <p className="text-muted-foreground">Created</p>
                                 <p className="font-medium">{formatDateTime(phase.createdAt)}</p>
                               </div>
-                              
+
                               <div>
                                 <p className="text-muted-foreground">Last Updated</p>
                                 <p className="font-medium">{formatDateTime(phase.updatedAt)}</p>
@@ -531,9 +527,9 @@ export default function AccountSettingsPage() {
                     Permanently delete this account and all associated data. This action cannot be undone.
                   </p>
                 </div>
-                
-                <Button 
-                  variant="destructive" 
+
+                <Button
+                  variant="destructive"
                   size="sm"
                   onClick={handleDeleteAccount}
                 >
@@ -542,7 +538,7 @@ export default function AccountSettingsPage() {
                 </Button>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Export Data</CardTitle>
@@ -554,13 +550,13 @@ export default function AccountSettingsPage() {
                     Export all data associated with this account, including trades and phases.
                   </p>
                 </div>
-                
+
                 <div className="flex flex-wrap gap-2">
                   <Button variant="outline" size="sm">
                     <Download className="h-4 w-4 mr-2" />
                     Export as CSV
                   </Button>
-                  
+
                   <Button variant="outline" size="sm">
                     <Download className="h-4 w-4 mr-2" />
                     Export as JSON
@@ -572,7 +568,7 @@ export default function AccountSettingsPage() {
         </TabsContent>
       </Tabs>
 
-    {/* Delete Account Confirmation Dialog */}
+    {                                        }
     <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
       <AlertDialogContent>
         <AlertDialogHeader>

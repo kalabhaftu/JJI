@@ -51,9 +51,8 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
   const handleNextMonth = () => setCurrentDate(prev => addMonths(prev, 1))
   const handleToday = () => setCurrentDate(new Date())
 
-  // Generate calendar days
   const calendarDays = useMemo(() => {
-    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 }) // Sunday start
+    const startDate = startOfWeek(monthStart, { weekStartsOn: 0 })
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 0 })
 
     return eachDayOfInterval({ start: startDate, end: endDate })
@@ -61,7 +60,6 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
 
   const groupedTrades = useMemo(() => groupTradesByExecution(trades as Trade[]) as GroupedTrade[], [trades])
 
-  // Group canonical executions by date string (YYYY-MM-DD)
   const tradesByDate = useMemo(() => {
     const grouped = new Map<string, GroupedTrade[]>()
     groupedTrades.forEach(trade => {
@@ -74,15 +72,13 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
     return grouped
   }, [groupedTrades])
 
-  // Monthly stats
   const monthlyStats = useMemo(() => {
     let totalPnl = 0
     let wins = 0
     let total = 0
-    
-    // Only count trades in the currently viewed month
+
     const currentMonthStr = format(currentDate, 'yyyy-MM')
-    
+
     for (const [dateStr, dailyTrades] of tradesByDate.entries()) {
       if (dateStr.startsWith(currentMonthStr)) {
         dailyTrades.forEach(t => {
@@ -93,7 +89,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
         })
       }
     }
-    
+
     return {
       pnl: totalPnl,
       winRate: total > 0 ? (wins / total) * 100 : 0,
@@ -103,7 +99,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
 
   return (
     <div className="flex flex-col space-y-6">
-      {/* Calendar Header */}
+      {                     }
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Button variant="outline" size="icon" onClick={handlePreviousMonth} className="h-9 w-9" aria-label="Previous month">
@@ -117,8 +113,8 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
           </Button>
           <h2 className="ml-2 text-xl font-black uppercase tracking-widest">{format(currentDate, 'MMMM yyyy')}</h2>
         </div>
-        
-        {/* Monthly Summary Chips */}
+
+        {                           }
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end">
             <span className="text-[9px] uppercase tracking-widest text-muted-foreground font-black">Net P&L</span>
@@ -143,7 +139,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
         </div>
       </div>
 
-      {/* Calendar Grid */}
+      {                   }
       <Card className="overflow-hidden border border-border/40 bg-card/40 rounded-2xl">
         <div className="grid grid-cols-7 border-b border-border/40 bg-muted/20">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
@@ -164,10 +160,10 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
             const hasEmotion = Boolean(emotion)
             const hasJournalEntry = hasNote || hasEmotion
             const emotionLabel = emotion ? getJournalEmotionLabel(emotion) : null
-            
+
             let dailyPnl = 0
             dailyTrades.forEach(t => dailyPnl += getTradePnlByMode(t, pnlDisplayMode))
-            
+
             const isGreenDay = dailyPnl > 0
             const isRedDay = dailyPnl < 0
             const isBreakEven = dailyPnl === 0 && dailyTrades.length > 0
@@ -189,7 +185,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                   onClick={() => onDayClick(day, dailyTrades)}
                   aria-label={`Open ${format(day, 'MMMM d, yyyy')}${dailyTrades.length > 0 ? `, ${dailyTrades.length} trades` : ''}`}
                 />
-                {/* Date Number */}
+                {                 }
                 <div className="flex justify-between items-start">
                   <span className={cn(
                     "text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full",
@@ -197,7 +193,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                   )}>
                     {format(day, 'd')}
                   </span>
-                  
+
                   <div className="flex flex-col items-end gap-1">
                     {dailyTrades.length > 0 && (
                       <span className="max-w-full truncate text-[9px] font-bold text-muted-foreground/70 bg-muted px-1.5 py-0.5 rounded-sm">
@@ -215,7 +211,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                   </div>
                 </div>
 
-                {/* Day Content (P&L) */}
+                {                       }
                 <div className={cn("flex-1 flex flex-col justify-end mt-2", isCurrentMonth && "pb-7")}>
                   {dailyTrades.length > 0 && (
                     <p className={cn(
@@ -226,8 +222,8 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                     </p>
                   )}
                 </div>
-                
-                {/* Note button */}
+
+                {                 }
                 {isCurrentMonth && (
                   <button
                     type="button"
@@ -246,7 +242,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                   </button>
                 )}
 
-                {/* Hover overlay hint */}
+                {                        }
                 <div className="absolute inset-0 bg-background/0 group-hover:bg-background/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
                   {dailyTrades.length > 0 ? (
                     <span className="bg-background/90 text-foreground border shadow-sm px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1">

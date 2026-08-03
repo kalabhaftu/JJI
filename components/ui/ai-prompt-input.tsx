@@ -21,7 +21,6 @@ export interface PromptBoxProps {
   disabled?: boolean;
 }
 
-// Extend Window for SpeechRecognition
 interface SpeechRecognitionEvent {
   resultIndex: number;
   results: SpeechRecognitionResultList;
@@ -95,10 +94,9 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       }
     };
 
-    // Voice Typing via Web Speech API
     const toggleRecording = () => {
       if (isRecording) {
-        // Stop recording
+
         if (recognitionRef.current) {
           recognitionRef.current.stop();
         }
@@ -106,7 +104,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
         return;
       }
 
-      // Start recording
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       if (!SpeechRecognition) {
         toast.error('Voice typing is not supported in this browser. Please use Chrome or Edge.');
@@ -125,7 +122,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
         for (let i = event.resultIndex; i < event.results.length; i++) {
           const result = event.results[i];
           if (!result || !result[0]) continue;
-          
+
           const transcript = result[0].transcript;
           if (result.isFinal) {
             finalTranscript += transcript;
@@ -136,7 +133,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
 
         if (finalTranscript) {
           if (isControlled) {
-            // For controlled mode, simulate a change event
+
             const textarea = internalTextareaRef.current;
             if (textarea) {
               const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
@@ -171,7 +168,6 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
       setIsRecording(true);
     };
 
-    // Clean up on unmount
     React.useEffect(() => {
       return () => {
         if (recognitionRef.current) {
@@ -198,7 +194,7 @@ export const PromptBox = React.forwardRef<HTMLTextAreaElement, PromptBoxProps>(
           className="custom-scrollbar w-full resize-none border-0 bg-transparent p-3 text-foreground placeholder:text-muted-foreground focus:ring-0 focus-visible:outline-none min-h-12 text-sm"
           disabled={disabled}
         />
-        
+
         <div className="mt-0.5 p-1 pt-0">
           <TooltipProvider delayDuration={100}>
             <div className="flex items-center justify-end gap-2">

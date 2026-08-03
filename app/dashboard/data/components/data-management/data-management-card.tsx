@@ -8,13 +8,13 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { 
-  Trash2, 
-  AlertCircle, 
-  Pencil, 
+import {
+  Trash2,
+  AlertCircle,
+  Pencil,
   Loader2,
-  ChevronDown, 
-  ChevronRight, 
+  ChevronDown,
+  ChevronRight,
   Upload,
   Download,
   Building2,
@@ -89,7 +89,6 @@ function getPhaseDisplayLabel(evaluationType: string | undefined, phaseNumber: n
   return `Phase ${phaseNumber}`
 }
 
-// Custom fetcher for Data Management
 const fetcher = async (url: string) => {
   try {
     const response = await fetch(url)
@@ -109,7 +108,6 @@ export function DataManagementCard() {
   const [currentPage, setCurrentPage] = useState(1)
   const { mutate: globalMutate } = useSWRConfig()
 
-  // Use dedicated, unfiltered API for Data Management
   const { data: accountsResponse, isLoading: accountsLoading, mutate: refetchAccounts } = useSWR(
     user?.id ? '/api/v1/data-management/accounts' : null,
     fetcher
@@ -127,7 +125,6 @@ export function DataManagementCard() {
   const [deleteAllDataDialogOpen, setDeleteAllDataDialogOpen] = useState(false)
   const [expandedAccounts, setExpandedAccounts] = useState<Record<string, boolean>>({})
 
-  // Group accounts by master account name - use tradeCount from server data
   const groupedAccounts = useMemo(() => {
     if (!allAccounts || accountsLoading) return []
 
@@ -136,7 +133,6 @@ export function DataManagementCard() {
     allAccounts.forEach((account: any) => {
       const accountName = account.name
 
-      // Use tradeCount directly from account (comes from server)
       const tradeCount = account.tradeCount || 0
 
       if (!grouped[accountName]) {
@@ -165,7 +161,6 @@ export function DataManagementCard() {
       grouped[accountName].totalTrades += tradeCount
     })
 
-    // Sort phases within each group by phase number
     Object.values(grouped).forEach(group => {
       group.phases.sort((a, b) => (a.currentPhase || 0) - (b.currentPhase || 0))
     })
@@ -173,7 +168,6 @@ export function DataManagementCard() {
     return Object.values(grouped)
   }, [allAccounts, accountsLoading])
 
-  // Flat list for selection and deletion operations
   const accountsWithTrades = useMemo(() => {
     if (!allAccounts || accountsLoading) return []
 
@@ -245,9 +239,9 @@ export function DataManagementCard() {
       }
 
       router.refresh()
-      
+
       refetchAccounts()
-      
+
       setSelectedAccounts([])
       toast.success("Accounts Deleted", {
         description: `Successfully deleted ${accountsToDelete.length} account(s).`,
@@ -256,7 +250,6 @@ export function DataManagementCard() {
       reportClientError(error, { operation: 'delete-data-management-account', route: '/api/v1/accounts' })
       setError(error instanceof Error ? error : new Error('Failed to delete accounts'))
 
-      // Dismiss loading toast before showing error
       if (loadingToastId) {
         toast.dismiss(loadingToastId)
       }
@@ -444,8 +437,8 @@ export function DataManagementCard() {
             const isPropFirm = group.accountType === 'prop-firm'
 
             return (
-              <div 
-                key={group.accountName} 
+              <div
+                key={group.accountName}
                 className="overflow-hidden rounded-[22px] border border-border/24 bg-card/92"
               >
                 <button
@@ -469,7 +462,7 @@ export function DataManagementCard() {
                         )}
                       </div>
                     )}
-                    
+
                     <div className={cn(
                       "h-8 w-8 rounded-lg flex items-center justify-center",
                       isPropFirm ? "bg-primary/10" : "bg-long/10"
@@ -480,7 +473,7 @@ export function DataManagementCard() {
                         <User className="h-4 w-4 text-long" />
                       )}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-semibold truncate">{group.accountName}</span>
@@ -515,7 +508,7 @@ export function DataManagementCard() {
                           checked={selectedAccounts.includes(phase.number)}
                           onCheckedChange={() => handleSelectAccount(phase.number)}
                         />
-                        
+
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className="font-mono text-sm">{phase.number}</span>
@@ -524,8 +517,8 @@ export function DataManagementCard() {
                               {getPhaseDisplayLabel(phase.evaluationType, phase.currentPhase)}
                             </Badge>
                           )}
-                            <Badge 
-                              variant={getStatusVariant(phase.status)} 
+                            <Badge
+                              variant={getStatusVariant(phase.status)}
                               className="text-xs capitalize"
                             >
                               {phase.status}
@@ -535,7 +528,7 @@ export function DataManagementCard() {
                             {phase.tradeCount} trade{phase.tradeCount !== 1 ? 's' : ''}
                           </p>
                         </div>
-                        
+
                         <Button
                           variant="ghost"
                           size="icon"
@@ -593,9 +586,9 @@ export function DataManagementCard() {
           </Button>
         </div>
       </div>
-      <DeleteAllDataDialog 
-        open={deleteAllDataDialogOpen} 
-        onOpenChange={setDeleteAllDataDialogOpen} 
+      <DeleteAllDataDialog
+        open={deleteAllDataDialogOpen}
+        onOpenChange={setDeleteAllDataDialogOpen}
       />
 
       <Dialog open={renameAccountDialogOpen} onOpenChange={setRenameAccountDialogOpen}>

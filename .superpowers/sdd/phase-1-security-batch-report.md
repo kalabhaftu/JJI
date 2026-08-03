@@ -88,3 +88,41 @@ Related suites included: auth-flow contracts, storage paths, API client, API tra
 - `0d269aea` `fix: harden phase 1 security and request handling`
 
 The report-only commit hash is returned in the completion response because a commit cannot contain its own hash.
+
+## Review Follow-up
+
+Review findings were verified against `0d269aea` and corrected with focused TDD.
+
+RED evidence:
+
+```text
+bun run test -- --run tests/security/tradovate-credential-migration.test.ts
+FAIL: legacy hydration behavior was absent and the first test harness exposed invalid environment storage.
+
+bun run test -- --run tests/security/fetch-with-error-retry-policy.test.ts
+FAIL: POST 500/408/429 responses retried until the tests timed out.
+
+bun run test -- --run tests/unit/api-error-contract.test.ts tests/unit/query-fetcher-contract.test.ts
+FAIL: lib/api/errors.ts was absent and query fetchers still called fetchWithError.
+
+bun run test -- --run tests/ui/manual-trade-validation.test.tsx
+FAIL: behavioral workflow and inline recovery component did not exist.
+```
+
+GREEN verification:
+
+```text
+bun run test -- --run tests/security/tradovate-credential-migration.test.ts tests/security/fetch-with-error-retry-policy.test.ts tests/unit/api-error-contract.test.ts tests/unit/query-fetcher-contract.test.ts tests/ui/manual-trade-validation.test.tsx tests/unit/api-client.test.ts tests/unit/fetch-with-error.test.ts tests/security/api-client-retry-policy.test.ts tests/security/entitlement-capabilities.test.ts tests/security/auth-flow-contracts.test.ts tests/security/storage-paths.test.ts tests/unit/tradovate-sync-store.test.ts tests/unit/phase-validation-state-machine.test.ts tests/integration/api-v1-trades.test.ts tests/integration/csv-import.test.ts
+Result: 15 files passed, 67 tests passed after removing the obsolete source-text phase test.
+
+bun run type-check
+Result: passed.
+
+bunx eslint app/api/v1/prop-firm/accounts/validate-trade/route.ts app/dashboard/components/import/manual-trade-entry/manual-trade-form.tsx app/dashboard/components/import/manual-trade-entry/phase-validation-workflow.tsx store/tradovate-sync-store.ts lib/api/client.ts lib/api/errors.ts lib/api/signals.ts lib/utils/fetch-with-error.ts lib/query/fetcher.ts tests/security/tradovate-credential-migration.test.ts tests/security/fetch-with-error-retry-policy.test.ts tests/unit/api-error-contract.test.ts tests/unit/query-fetcher-contract.test.ts tests/ui/manual-trade-validation.test.tsx tests/unit/api-client.test.ts
+Result: passed with no lint findings.
+
+git diff --check
+Result: passed.
+```
+
+The endpoint review confirmed the missing-phase-ID branch was unreachable because lookup required equality with `phaseId`; the dead branch was removed. Missing IDs remain excluded from selectable bootstrap accounts and an arbitrary account number correctly returns not found.

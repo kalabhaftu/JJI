@@ -29,6 +29,43 @@ describe('apiRequest observability contract', () => {
     })
   })
 
+  it('retries safe reads under the explicit safe policy', async () => {
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: false, error: 'temporary' }), { status: 500, headers: { 'content-type': 'application/json' } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ success: true, data: { ok: true } }), { status: 200, headers: { 'content-type': 'application/json' } }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await expect(apiRequest('/api/v1/read', { method: 'GET', retry: { mode: 'safe', maxAttempts: 2 } })).resolves.toMatchObject({ data: { ok: true } })
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
+
+  it('never retries caller cancellation or unsafe mutations', async () => {
+    const caller = new AbortController()
+    caller.abort()
+    const abortFetch = vi.fn().mockRejectedValue(new DOMException('Aborted', 'AbortError'))
+    vi.stubGlobal('fetch', abortFetch)
+    await expect(apiRequest('/api/v1/read', { signal: caller.signal, retry: { mode: 'safe', maxAttempts: 3 } })).rejects.toMatchObject({ kind: 'cancelled' })
+    expect(abortFetch).toHaveBeenCalledTimes(1)
+
+    const mutationFetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ success: false, error: 'temporary' }), { status: 500, headers: { 'content-type': 'application/json' } }))
+    vi.stubGlobal('fetch', mutationFetch)
+    await expect(apiRequest('/api/v1/write', { method: 'POST', retry: { mode: 'safe', maxAttempts: 3 } })).rejects.toMatchObject({ kind: 'server' })
+    expect(mutationFetch).toHaveBeenCalledTimes(1)
+  })
+
+  it('classifies malformed successful responses and preserves request IDs', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ data: { ok: true } }), {
+      status: 200,
+      headers: { 'content-type': 'application/json', 'x-request-id': 'request-invalid' },
+    })))
+
+    await expect(apiRequest('/api/v1/malformed')).rejects.toMatchObject({
+      kind: 'invalid_response',
+      status: 200,
+      requestId: 'request-invalid',
+    })
+  })
+
   it('preserves rate-limit metadata and reports 429 responses', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
       success: false,

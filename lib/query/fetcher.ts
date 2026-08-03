@@ -1,23 +1,24 @@
-import { fetchWithError } from '@/lib/utils/fetch-with-error'
+import { apiRequestData } from '@/lib/api/client'
 
-export async function fetcher<T = unknown>(url: string): Promise<T> {
-  const response = await fetchWithError(url, {
+export async function fetcher<T = unknown>(url: string, signal?: AbortSignal): Promise<T> {
+  return apiRequestData<T>(url, {
     method: 'GET',
     headers: { 'Content-Type': 'application/json' },
+    ...(signal ? { signal } : {}),
+    retry: { mode: 'safe' },
   })
-  return response as T
 }
 
 export async function postFetcher<T = unknown>(
   url: string,
   body: Record<string, unknown>
 ): Promise<T> {
-  const response = await fetchWithError(url, {
+  return apiRequestData<T>(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+    retry: { mode: 'never' },
   })
-  return response as T
 }
 
 const queryKeys = {

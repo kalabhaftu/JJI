@@ -144,9 +144,10 @@ export async function fetchWithError<T = unknown>(
         )
 
 
-        const shouldRetryThis = retryCondition 
-          ? retryCondition(error, attempt)
-          : (shouldRetry && error.isRetryable && attempt <= retries)
+        const method = fetchOptions.method?.toUpperCase() ?? 'GET'
+        const shouldRetryThis = retryCondition
+          ? retryCondition(error, attempt) && method === 'GET'
+          : (shouldRetry && error.isRetryable && method === 'GET' && attempt <= retries)
 
         if (shouldRetryThis) {
           lastError = error

@@ -48,9 +48,28 @@ export function persistedTradovateState(state: TradovateOAuthState & { accessTok
     oauthState: state.oauthState,
   }
 }
+type PersistedTradovateState = ReturnType<typeof persistedTradovateState>
 
 export function clearTradovateLegacyStorage(storage: Pick<Storage, 'removeItem'> = sessionStorage) {
   for (const key of ['tradovate_access_token', 'tradovate_refresh_token', 'tradovate_token_expiration', 'tradovate_environment']) storage.removeItem(key)
+}
+
+export const tradovateStorage: Storage = typeof window === 'undefined'
+  ? { length: 0, clear() {}, getItem: () => null, key: () => null, removeItem() {}, setItem() {} }
+  : window.localStorage
+
+export function migrateTradovatePersistedState(input: unknown) {
+  const wrapper = input && typeof input === 'object' ? input as { state?: unknown } : {}
+  const source = wrapper.state && typeof wrapper.state === 'object' ? wrapper.state as Record<string, unknown> : {}
+  const state: Record<string, unknown> = {
+    isAuthenticated: Boolean(source.isAuthenticated) && !source.accessToken && !source.refreshToken,
+    environment: source.environment === 'live' ? 'live' : 'demo',
+  }
+  if (typeof source.expiresAt === 'string') state.expiresAt = source.expiresAt
+  if (Array.isArray(source.accounts)) state.accounts = source.accounts
+  if (typeof source.lastSync === 'string') state.lastSync = source.lastSync
+  if (typeof source.oauthState === 'string') state.oauthState = source.oauthState
+  return { state, version: 1 }
 }
 
 export const useTradovateSyncStore = create<TradovateSyncStore>()(
@@ -121,7 +140,13 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
     {
       name: 'tradovate-sync-storage',
       partialize: (state) => persistedTradovateState(state),
-      onRehydrateStorage: () => () => clearTradovateLegacyStorage(),
+      version: 1,
+      migrate: (state) => migrateTradovatePersistedState({ state }).state as PersistedTradovateState,
+      merge: (persisted, current) => ({ ...current, ...migrateTradovatePersistedState({ state: persisted }).state }),
+      onRehydrateStorage: () => (state) => {
+        clearTradovateLegacyStorage()
+        if (state) tradovateStorage.setItem('tradovate-sync-storage', JSON.stringify({ state: persistedTradovateState(state), version: 1 }))
+      },
     }
   )
 )

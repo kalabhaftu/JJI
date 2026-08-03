@@ -47,6 +47,7 @@ import { useUserStore } from '@/store/user-store'
 import { useAccounts } from '@/hooks/use-accounts'
 import { cn } from '@/lib/utils'
 import { classifyPhaseValidationResponse } from '@/lib/validation/phase-validation'
+import { PhaseValidationAlert } from './phase-validation-workflow'
 import { Badge } from '@/components/ui/badge'
 import {
   Command,
@@ -796,17 +797,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       case 5:
         return (
           <div className="space-y-6">
-            {phaseValidationError && (
-              <div className="p-4 rounded-lg border border-destructive/50 bg-destructive/10">
-                <div className="flex items-center justify-between gap-4 text-destructive">
-                  <div className="flex items-center gap-2">
-                  <AlertCircle className="h-4 w-4" />
-                  <p className="text-sm">{phaseValidationError}</p>
-                  </div>
-                  <Button type="submit" size="sm" variant="outline" disabled={isSubmitting}>Retry validation</Button>
-                </div>
-              </div>
-            )}
+            {phaseValidationError && <PhaseValidationAlert message={phaseValidationError} onRetry={() => void handleSubmit(onSubmit as any)()} isRetrying={isSubmitting} />}
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg border bg-muted/30">

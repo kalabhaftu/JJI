@@ -193,7 +193,7 @@ export default function AccountsPage() {
     onAccountChange: (change) => {
       if (['Account', 'MasterAccount', 'PhaseAccount'].includes(change.table)) {
         const accountId = change.newRecord?.id || change.oldRecord?.id
-        if (accountId && (change as any).eventType === 'UPDATE' && change.newRecord) {
+         if (accountId && change.event === 'UPDATE' && change.newRecord) {
            updateAccountInCache(accountId as string, change.newRecord as any)
         } else {
            refetchAccounts()

@@ -4,31 +4,38 @@ import { createClient } from '@/lib/supabase'
 import type { RealtimeChannel, RealtimePostgresChangesPayload } from '@supabase/supabase-js'
 import logger from '@/lib/logger';
 import { reportError } from '@/lib/observability/report-error'
+import type { ChangeEvent, DatabaseChange, RealtimeSession, RealtimeStatus, RealtimeTable } from './types'
+
+export type { ChangeEvent, DatabaseChange, RealtimeSession, RealtimeStatus, RealtimeTable } from './types'
 
 const REALTIME_TABLES = ['Trade', 'Account', 'MasterAccount', 'PhaseAccount', 'Payout', 'DailyNote', 'Notification', 'Synchronization'] as const
-type RealtimeTable = typeof REALTIME_TABLES[number]
 const TABLES_WITH_USER_ID_FILTER = new Set<RealtimeTable>(['Trade', 'Account', 'MasterAccount', 'DailyNote', 'Notification', 'Synchronization'])
-
-export type ChangeEvent = 'INSERT' | 'UPDATE' | 'DELETE'
-
-export interface DatabaseChange {
-  table: RealtimeTable
-  event: ChangeEvent
-  newRecord: Record<string, unknown> | null
-  oldRecord: Record<string, unknown> | null
-  timestamp: Date
-}
 
 type ChangeCallback = (change: DatabaseChange) => void
 
-interface SubscriptionOptions {
-  tables: RealtimeTable[]
+export interface SubscriptionOptions {
+  tables: readonly RealtimeTable[]
   userId: string
   onChange: ChangeCallback
   onStatusChange?: (status: 'connected' | 'disconnected' | 'error') => void
 }
 
-class DatabaseRealtimeManager {
+export function normalizeDatabaseChange(
+  table: RealtimeTable,
+  payload: Pick<RealtimePostgresChangesPayload<Record<string, unknown>>, 'eventType' | 'new' | 'old'>,
+  session: RealtimeSession,
+): DatabaseChange {
+  return {
+    table,
+    event: payload.eventType as ChangeEvent,
+    newRecord: payload.new as Record<string, unknown> | null,
+    oldRecord: payload.old as Record<string, unknown> | null,
+    timestamp: new Date(),
+    session,
+  }
+}
+
+export class DatabaseRealtimeManager {
   private channel: RealtimeChannel | null = null
   private isConnected = false
   private userId: string | null = null
@@ -38,11 +45,25 @@ class DatabaseRealtimeManager {
   private maxReconnectAttempts = 5
   private reconnectTimeout: NodeJS.Timeout | null = null
   private hasLoggedReconnectExhausted = false
+  private generation = 0
+  private readonly clientFactory: typeof createClient
+
+  constructor(clientFactory: typeof createClient = createClient) {
+    this.clientFactory = clientFactory
+  }
 
 
   subscribe(options: SubscriptionOptions): () => void {
     const { tables, userId, onChange, onStatusChange } = options
     
+    if (this.userId !== userId) {
+      this.disconnect()
+      this.generation++
+      this.reconnectAttempts = 0
+      this.hasLoggedReconnectExhausted = false
+      this.callbacks.clear()
+      this.statusCallbacks.clear()
+    }
     this.userId = userId
     this.callbacks.add(onChange)
     if (onStatusChange) {
@@ -50,7 +71,7 @@ class DatabaseRealtimeManager {
     }
 
     if (!this.isConnected && !this.channel) {
-      this.connect(tables, userId)
+      this.connect(tables, userId, this.generation)
     }
 
     return () => {
@@ -65,16 +86,16 @@ class DatabaseRealtimeManager {
     }
   }
   
-  private async connect(tables: RealtimeTable[], userId: string) {
+  private async connect(tables: readonly RealtimeTable[], userId: string, generation: number) {
     try {
-      const supabase = createClient()
+      const supabase = this.clientFactory()
 
       if (!supabase.channel || typeof supabase.channel !== 'function') {
         logger.warn('[Realtime] Supabase client does not support realtime')
         return
       }
       
-      if (this.channel) {
+      if (this.channel && this.isCurrentSession(userId, generation)) {
         try {
           this.channel.unsubscribe()
         } catch (e) {
@@ -115,7 +136,9 @@ class DatabaseRealtimeManager {
             'postgres_changes',
             postgresChangeConfig,
             (payload: RealtimePostgresChangesPayload<Record<string, unknown>>) => {
-              this.handleChange(table, payload)
+              if (this.isCurrentSession(userId, generation) && this.channel === channel) {
+                this.handleChange(table, payload, { userId, generation })
+              }
             }
           )
         } catch (tableError) {
@@ -124,10 +147,15 @@ class DatabaseRealtimeManager {
         }
       }
       
+      if (!this.isCurrentSession(userId, generation)) {
+        await channel.unsubscribe()
+        return
+      }
       this.channel = channel
       
 
       channel.subscribe((status: string, err?: Error) => {
+        if (!this.isCurrentSession(userId, generation) || this.channel !== channel) return
         if (status === 'SUBSCRIBED') {
           this.isConnected = true
           this.reconnectAttempts = 0
@@ -142,11 +170,11 @@ class DatabaseRealtimeManager {
           } else {
             logger.warn({ err: new Error('Connection issue') }, '[Realtime] Channel error:')
           }
-          this.scheduleReconnect(tables, userId)
+          this.scheduleReconnect(tables, userId, generation)
         } else if (status === 'TIMED_OUT') {
           this.isConnected = false
           this.notifyStatus('disconnected')
-          this.scheduleReconnect(tables, userId)
+          this.scheduleReconnect(tables, userId, generation)
         } else if (status === 'CLOSED') {
           this.isConnected = false
           this.notifyStatus('disconnected')
@@ -159,21 +187,16 @@ class DatabaseRealtimeManager {
       logger.warn({ err: new Error(errorMessage) }, '[Realtime] Failed to connect:')
       this.notifyStatus('error')
 
-      this.scheduleReconnect(tables, userId)
+      this.scheduleReconnect(tables, userId, generation)
     }
   }
   
   private handleChange(
     table: RealtimeTable, 
-    payload: RealtimePostgresChangesPayload<Record<string, unknown>>
+    payload: RealtimePostgresChangesPayload<Record<string, unknown>>,
+    session: RealtimeSession,
   ) {
-    const change: DatabaseChange = {
-      table,
-      event: payload.eventType as ChangeEvent,
-      newRecord: payload.new as Record<string, unknown> | null,
-      oldRecord: payload.old as Record<string, unknown> | null,
-      timestamp: new Date()
-    }
+    const change = normalizeDatabaseChange(table, payload, session)
     
     for (const callback of this.callbacks) {
       try {
@@ -202,7 +225,8 @@ class DatabaseRealtimeManager {
     }
   }
   
-  private scheduleReconnect(tables: RealtimeTable[], userId: string) {
+  private scheduleReconnect(tables: readonly RealtimeTable[], userId: string, generation: number) {
+    if (!this.isCurrentSession(userId, generation)) return
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       if (!this.hasLoggedReconnectExhausted) {
         logger.warn('[Realtime] Max reconnect attempts reached; realtime paused until a later reconnect opportunity')
@@ -221,8 +245,10 @@ class DatabaseRealtimeManager {
     
     
     this.reconnectTimeout = setTimeout(() => {
-      this.disconnect()
-      this.connect(tables, userId)
+      if (this.isCurrentSession(userId, generation)) {
+        this.disconnect()
+        void this.connect(tables, userId, generation)
+      }
     }, delay)
   }
   
@@ -239,6 +265,14 @@ class DatabaseRealtimeManager {
     }
   }
 
+  private isCurrentSession(userId: string, generation: number) {
+    return this.userId === userId && this.generation === generation
+  }
+
+  getChannelForTest() {
+    return this.channel
+  }
+
 
   getStatus(): { isConnected: boolean; subscriberCount: number } {
     return {
@@ -252,7 +286,7 @@ class DatabaseRealtimeManager {
     if (this.userId) {
       this.disconnect()
       this.reconnectAttempts = 0
-      this.connect(REALTIME_TABLES as unknown as RealtimeTable[], this.userId)
+      void this.connect(REALTIME_TABLES, this.userId, this.generation)
     }
   }
 }
@@ -339,4 +373,3 @@ export function useDatabaseRealtime(options: {
 }
 
 export default DatabaseRealtime
-

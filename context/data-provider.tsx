@@ -30,6 +30,7 @@ import type { DataContextType } from './data-provider/types';
 export type { Account } from './data-provider/types';
 import { useDataProviderAccountActions } from '@/hooks/use-data-provider-account-actions';
 import { reportClientError } from '@/lib/observability/report-error';
+import { deriveEntitlementCapability } from '@/lib/services/subscription-guard-service'
 
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -78,9 +79,11 @@ export const DataProvider: React.FC<{
     isAuthenticated: boolean
     user: any | null
     accounts: any[]
+    subscriptionAccess?: { hasAccess: boolean; status: string; message?: string } | null
   }
 }> = ({ children, initialBootstrapData, isDemoMode = false }) => {
   const isMobile = useIsMobileDetection();
+  const entitlement = deriveEntitlementCapability(initialBootstrapData?.subscriptionAccess)
 
 
   const user = useUserStore(state => state.user);
@@ -547,7 +550,7 @@ export const DataProvider: React.FC<{
   }, [serverMetricsData?.calendarData]);
 
   const isPlusUser = () => {
-    return true;
+    return entitlement.canUsePlusFeatures;
   };
 
 
@@ -585,6 +588,7 @@ export const DataProvider: React.FC<{
   const contextValue: DataContextType = {
     isDemoMode,
     isPlusUser,
+    entitlement,
     isLoading,
     isLoadingAccountFilterSettings,
     accountFilterSettings,

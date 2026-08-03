@@ -1,4 +1,11 @@
 import { reportClientError } from '@/lib/observability/report-error'
+import { composeAbortSignals } from '@/lib/api/signals'
+
+export type ApiErrorKind = 'unauthorized' | 'forbidden' | 'not_found' | 'conflict' | 'validation' | 'rate_limited' | 'timeout' | 'cancelled' | 'offline' | 'server' | 'invalid_response' | 'unknown'
+export interface ApiRequestOptions extends RequestInit { timeoutMs?: number; retry?: { maxAttempts?: number; mode?: 'never' | 'safe' }; operation?: string }
+export function isRetryAllowed(method: string | undefined, mode: 'never' | 'safe' = 'never') {
+  return mode === 'safe' && ['GET', 'HEAD', 'OPTIONS'].includes((method ?? 'GET').toUpperCase())
+}
 
 interface ApiErrorEnvelope {
   success: false
@@ -23,6 +30,9 @@ export class ApiClientError extends Error {
   readonly requestId: string | undefined
   readonly details?: unknown
   readonly retryAfterSeconds: number | undefined
+  readonly kind: ApiErrorKind
+  readonly isCancellation: boolean
+  readonly isTimeout: boolean
 
   constructor(input: {
     message: string
@@ -31,6 +41,9 @@ export class ApiClientError extends Error {
     requestId?: string
     details?: unknown
     retryAfterSeconds?: number
+    kind?: ApiErrorKind
+    isCancellation?: boolean
+    isTimeout?: boolean
   }) {
     super(input.message)
     this.name = 'ApiClientError'
@@ -44,6 +57,9 @@ export class ApiClientError extends Error {
       && typeof (input.details as { retryAfterSeconds?: unknown }).retryAfterSeconds === 'number'
       ? (input.details as { retryAfterSeconds: number }).retryAfterSeconds
       : undefined)
+    this.kind = input.kind ?? 'unknown'
+    this.isCancellation = input.isCancellation ?? false
+    this.isTimeout = input.isTimeout ?? false
   }
 }
 
@@ -58,12 +74,15 @@ function parseRetryAfter(value: string | null): number | undefined {
 
 export async function apiRequest<T>(
   input: string,
-  init?: RequestInit,
+  init?: ApiRequestOptions,
 ): Promise<ApiSuccessEnvelope<T>> {
+  const { timeoutMs = 30_000, retry, ...requestInit } = init ?? {}
+  const composed = composeAbortSignals(requestInit.signal, timeoutMs)
   let response: Response
   try {
     response = await fetch(input, {
-      ...init,
+      ...requestInit,
+      signal: composed.signal,
       headers: {
         ...(typeof init?.body === 'string'
           ? { 'Content-Type': 'application/json' }
@@ -72,12 +91,22 @@ export async function apiRequest<T>(
       },
     })
   } catch (error) {
+    composed.cleanup()
+    if (error instanceof Error && error.name === 'AbortError') {
+      const timedOut = composed.didTimeout()
+      throw new ApiClientError({ message: timedOut ? 'Request timed out' : 'Request cancelled', status: 0, kind: timedOut ? 'timeout' : 'cancelled', isCancellation: !timedOut, isTimeout: timedOut })
+    }
     reportClientError(error, {
       operation: 'api-network-request',
       route: input,
     })
-    throw error
+    throw new ApiClientError({
+      message: error instanceof Error ? error.message : 'Network request failed',
+      status: 0,
+      kind: 'offline',
+    })
   }
+  composed.cleanup()
 
   const requestId = response.headers.get('x-request-id') ?? undefined
   let payload: ApiSuccessEnvelope<T> | ApiErrorEnvelope | null = null
@@ -109,6 +138,7 @@ export async function apiRequest<T>(
         : 'REQUEST_FAILED',
       ...(responseRequestId ? { requestId: responseRequestId } : {}),
       details: typeof errorBody === 'object' ? errorBody?.details : undefined,
+      kind: response.status === 401 ? 'unauthorized' : response.status === 403 ? 'forbidden' : response.status === 404 ? 'not_found' : response.status === 409 ? 'conflict' : response.status === 422 ? 'validation' : response.status === 429 ? 'rate_limited' : response.status >= 500 ? 'server' : 'unknown',
       ...(retryAfterSeconds !== undefined ? { retryAfterSeconds } : {}),
     })
     if (response.status === 429 || response.status >= 500) {
@@ -134,4 +164,9 @@ export async function apiRequest<T>(
       ? { requestId: (payload.requestId ?? requestId)! }
       : {}),
   }
+}
+
+export async function apiRequestData<T>(input: string, init?: ApiRequestOptions): Promise<T> {
+  const response = await apiRequest<T>(input, init)
+  return response.data as T
 }

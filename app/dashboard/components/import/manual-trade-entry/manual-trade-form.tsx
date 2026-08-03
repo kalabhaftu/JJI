@@ -2,7 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -46,6 +46,7 @@ import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useAccounts } from '@/hooks/use-accounts'
 import { cn } from '@/lib/utils'
+import { classifyPhaseValidationResponse } from '@/lib/validation/phase-validation'
 import { Badge } from '@/components/ui/badge'
 import {
   Command,
@@ -172,6 +173,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
   const [calculatedDuration, setCalculatedDuration] = useState<string>('')
   const [instrumentOpen, setInstrumentOpen] = useState(false)
   const [instrumentSearch, setInstrumentSearch] = useState('')
+  const submitInFlightRef = useRef(false)
 
   const user = useUserStore(state => state.user)
   const supabaseUser = useUserStore(state => state.supabaseUser)
@@ -287,12 +289,14 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
   }
 
   const onSubmit = async (data: TradeFormData) => {
+    if (submitInFlightRef.current) return
     const currentUser = user || supabaseUser
     if (!currentUser?.id) {
       toast.error('Authentication Error', { description: 'Please sign in to add trades.' })
       return
     }
 
+    submitInFlightRef.current = true
     setIsSubmitting(true)
     setPhaseValidationError(null)
 
@@ -306,17 +310,19 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
             body: JSON.stringify({ accountNumber: data.accountNumber })
           })
 
-          const phaseResult = await phaseCheckResponse.json()
-
-          if (!phaseCheckResponse.ok && phaseCheckResponse.status === 403) {
-            const message = phaseResult.error?.message || 'Please set the ID for the current phase before adding trades.'
-            setPhaseValidationError(message)
-            toast.error("Phase ID Required", { description: message })
-            return
-          }
-        } catch (error) {
-
-        }
+           const phaseResult = await phaseCheckResponse.json().catch(() => null)
+           const validation = classifyPhaseValidationResponse(phaseCheckResponse.status, phaseResult)
+           if (validation.status !== 'valid') {
+             setPhaseValidationError(validation.message)
+             toast.error('Trade Validation Blocked', { description: validation.message })
+             return
+           }
+         } catch (error) {
+           const message = 'Unable to validate the account. Retry before saving.'
+           setPhaseValidationError(message)
+           reportClientError(error, { operation: 'validate-manual-trade-phase', route: '/api/v1/prop-firm/accounts/validate-trade' })
+           return
+         }
       }
 
       const entryDateTime = `${data.entryDate} ${data.entryTime}`
@@ -390,6 +396,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       }
       toast.error('Save Failed', { description: errorMessage })
     } finally {
+      submitInFlightRef.current = false
       setIsSubmitting(false)
     }
   }
@@ -791,9 +798,12 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
           <div className="space-y-6">
             {phaseValidationError && (
               <div className="p-4 rounded-lg border border-destructive/50 bg-destructive/10">
-                <div className="flex items-center gap-2 text-destructive">
+                <div className="flex items-center justify-between gap-4 text-destructive">
+                  <div className="flex items-center gap-2">
                   <AlertCircle className="h-4 w-4" />
                   <p className="text-sm">{phaseValidationError}</p>
+                  </div>
+                  <Button type="submit" size="sm" variant="outline" disabled={isSubmitting}>Retry validation</Button>
                 </div>
               </div>
             )}

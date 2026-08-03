@@ -17,6 +17,18 @@ afterEach(() => {
 })
 
 describe('apiRequest observability contract', () => {
+  it('classifies network failures as offline errors', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')))
+
+    await expect(apiRequest('/api/v1/offline')).rejects.toMatchObject({
+      name: 'ApiClientError',
+      kind: 'offline',
+      status: 0,
+      isCancellation: false,
+      isTimeout: false,
+    })
+  })
+
   it('preserves rate-limit metadata and reports 429 responses', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
       success: false,

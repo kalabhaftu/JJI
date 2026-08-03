@@ -1,4 +1,5 @@
 import { reportClientError } from '@/lib/observability/report-error'
+import { composeAbortSignals } from '@/lib/api/signals'
 
 import { 
   API_TIMEOUT, 
@@ -99,20 +100,19 @@ export async function fetchWithError<T = unknown>(
     attempt++
     
 
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    const composed = composeAbortSignals(fetchOptions.signal, timeout)
 
     try {
       const response = await fetch(url, {
         ...fetchOptions,
-        signal: controller.signal,
+        signal: composed.signal,
         headers: {
           'Content-Type': 'application/json',
           ...fetchOptions.headers,
         }
       })
 
-      clearTimeout(timeoutId)
+      composed.cleanup()
 
 
       let data: T | null = null
@@ -175,23 +175,24 @@ export async function fetchWithError<T = unknown>(
       }
 
     } catch (err) {
-      clearTimeout(timeoutId)
+      composed.cleanup()
 
 
       if (err instanceof Error && err.name === 'AbortError') {
+        const callerCancelled = fetchOptions.signal?.aborted && !composed.didTimeout()
         const error = createFetchError(
-          'Request timed out',
-          'TIMEOUT',
-          { isTimeout: true, isRetryable: true }
+          callerCancelled ? 'Request cancelled' : 'Request timed out',
+          callerCancelled ? 'CANCELLED' : 'TIMEOUT',
+          { isTimeout: !callerCancelled, isRetryable: false }
         )
 
-        if (shouldRetry && attempt <= retries) {
+        if (!callerCancelled && shouldRetry && fetchOptions.method?.toUpperCase() === 'GET' && attempt <= retries) {
           lastError = error
           await sleep(getRetryDelay(attempt))
           continue
         }
 
-        reportFetchFailure(error, url)
+        if (!callerCancelled) reportFetchFailure(error, url)
         return {
           data: null,
           error,
@@ -211,7 +212,7 @@ export async function fetchWithError<T = unknown>(
         }
       )
 
-      if (shouldRetry && attempt <= retries) {
+      if (shouldRetry && fetchOptions.method?.toUpperCase() === 'GET' && attempt <= retries) {
         lastError = error
         await sleep(getRetryDelay(attempt))
         continue
@@ -293,4 +294,3 @@ function isFetchError(error: unknown): error is FetchError {
     'message' in error
   )
 }
-

@@ -61,7 +61,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         localStorage.removeItem(key)
       }
     })
-    sessionStorage.clear()
+    for (const key of ['tradovate_access_token', 'tradovate_refresh_token', 'tradovate_token_expiration', 'tradovate_environment']) {
+      sessionStorage.removeItem(key)
+    }
   }, [])
 
   const isRecoverableSessionError = useCallback((error: unknown) => {

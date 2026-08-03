@@ -69,27 +69,17 @@ const tradingQuotes = [
 
 const icons = [TrendingUp, BarChart3, TrendingUp, Activity, Zap, Target]
 
-export function ImportLoading() {
+export function ImportLoading({ progress }: { progress?: number }) {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
-  const [progress, setProgress] = useState(0)
 
   useEffect(() => {
-    // Rotate quotes every 4 seconds
+
     const quoteInterval = setInterval(() => {
       setCurrentQuoteIndex((prev) => (prev + 1) % tradingQuotes.length)
     }, 4000)
 
-    // Simulate progress
-    const progressInterval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 95) return prev // Don't go to 100% until actually done
-        return prev + Math.random() * 3
-      })
-    }, 200)
-
     return () => {
       clearInterval(quoteInterval)
-      clearInterval(progressInterval)
     }
   }, [])
 
@@ -98,16 +88,15 @@ export function ImportLoading() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full p-2 sm:p-4 lg:p-6 space-y-2 sm:space-y-3 lg:space-y-4 max-h-[80vh] overflow-hidden">
-      {/* Animated Icon - Smaller */}
       <motion.div
         key={currentQuoteIndex}
         initial={{ scale: 0, rotate: -180 }}
         animate={{ scale: 1, rotate: 0 }}
         exit={{ scale: 0, rotate: 180 }}
-        transition={{ 
-          type: "spring", 
-          stiffness: 260, 
-          damping: 20 
+        transition={{
+          type: "spring",
+          stiffness: 260,
+          damping: 20
         }}
         className="relative"
       >
@@ -115,13 +104,13 @@ export function ImportLoading() {
           <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-foreground/30 animate-pulse" />
         </div>
         <motion.div
-          animate={{ 
+          animate={{
             rotate: 360,
           }}
-          transition={{ 
-            duration: 20, 
-            repeat: Infinity, 
-            ease: "linear" 
+          transition={{
+            duration: 20,
+            repeat: Infinity,
+            ease: "linear"
           }}
           className="relative z-10 w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-muted/20 border border-border flex items-center justify-center"
         >
@@ -129,7 +118,6 @@ export function ImportLoading() {
         </motion.div>
       </motion.div>
 
-      {/* Processing Text - Compact */}
       <div className="space-y-0.5 sm:space-y-1 text-center">
         <motion.h3
           initial={{ opacity: 0, y: 20 }}
@@ -148,26 +136,34 @@ export function ImportLoading() {
         </motion.p>
       </div>
 
-      {/* Progress Bar - Thinner */}
       <div className="w-full max-w-xs sm:max-w-sm space-y-1">
         <div className="h-1 sm:h-1.5 bg-muted rounded-full overflow-hidden">
-          <motion.div
-            className="h-full bg-foreground"
-            initial={{ width: 0 }}
-            animate={{ width: `${progress}%` }}
-            transition={{ duration: 0.3 }}
-          />
+          {typeof progress === 'number' ? (
+            <motion.div
+              className="h-full bg-foreground"
+              initial={{ width: 0 }}
+              animate={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          ) : (
+            <motion.div
+              className="h-full bg-foreground"
+              initial={{ x: '-100%' }}
+              animate={{ x: '200%' }}
+              transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+              style={{ width: '50%' }}
+            />
+          )}
         </div>
         <motion.p
           className="text-[10px] sm:text-xs text-center text-muted-foreground"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          {Math.round(progress)}% Complete
+          {typeof progress === 'number' ? `${Math.round(progress)}% Complete` : 'Processing...'}
         </motion.p>
       </div>
 
-      {/* Animated Quote - Hidden on small/laptop screens, shown on desktop */}
       <AnimatePresence mode="wait">
         <motion.div
           key={currentQuoteIndex}
@@ -188,7 +184,6 @@ export function ImportLoading() {
         </motion.div>
       </AnimatePresence>
 
-      {/* Floating Particles - Hidden on small screens */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
         {[...Array(3)].map((_, i) => (
           <motion.div
@@ -212,7 +207,6 @@ export function ImportLoading() {
         ))}
       </div>
 
-      {/* Processing Steps Indicator - Compact */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}

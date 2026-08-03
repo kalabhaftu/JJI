@@ -15,7 +15,7 @@ DECLARE
     'PromoRedemption', 'SharedReport', 'SiteUiSettings', 'Subscription',
     'Synchronization', 'Trade', 'TradeExecution', 'TradeTag', 'TradingModel',
     'User', 'UserGeoLog', 'UserGoal', 'UserSettings', 'WeeklyAIReview',
-    'WeeklyReview'
+    'WeeklyReview', 'WhopMembership', 'WhopWebhookEvent'
   ];
 BEGIN
   FOREACH table_name IN ARRAY protected_tables LOOP

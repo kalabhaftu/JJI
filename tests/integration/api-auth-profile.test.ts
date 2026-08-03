@@ -37,12 +37,28 @@ vi.mock('@/lib/db/client', () => ({
     })
   }
 }))
-//
 
 
 vi.mock('@/lib/activity-logger', () => ({
   logActivity: mocks.logActivity,
   getClientIp: mocks.getClientIp,
+}))
+
+vi.mock('@/lib/rate-limiter', () => ({
+  applyRateLimit: vi.fn().mockResolvedValue(null),
+  apiLimiter: {},
+  adminLimiter: {},
+  accountDeletionLimiter: {},
+  aiLimiter: {},
+  authenticatedReadLimiter: {},
+  authLimiter: {},
+  errorReportLimiter: {},
+  feedbackLimiter: {},
+  importLimiter: {},
+  paymentLimiter: {},
+  publicLimiter: {},
+  sensitiveMutationLimiter: {},
+  uploadLimiter: {},
 }))
 
 type MockUser = {
@@ -167,7 +183,7 @@ describe('GET/PATCH /api/auth/profile', () => {
     expect(patchBody.data.autoAdjustAccountDate).toBe(true)
     expect(mockOnConflictDoUpdate).toHaveBeenCalled()
 
-    const getResponse = await GET()
+    const getResponse = await GET(new Request('http://localhost/api/auth/profile') as any)
     const getBody = await getResponse.json()
 
     expect(getResponse.status).toBe(200)
@@ -191,7 +207,7 @@ describe('GET/PATCH /api/auth/profile', () => {
     expect(patchResponse.status).toBe(200)
     expect(patchBody.data.autoAdjustAccountDate).toBe(false)
 
-    const getResponse = await GET()
+    const getResponse = await GET(new Request('http://localhost/api/auth/profile') as any)
     const getBody = await getResponse.json()
 
     expect(getResponse.status).toBe(200)
@@ -213,7 +229,7 @@ describe('GET/PATCH /api/auth/profile', () => {
     expect(patchResponse.status).toBe(200)
     expect(patchBody.data.breakEvenThreshold).toBe(23.5)
 
-    const getResponse = await GET()
+    const getResponse = await GET(new Request('http://localhost/api/auth/profile') as any)
     const getBody = await getResponse.json()
     expect(getResponse.status).toBe(200)
     expect(getBody.data.breakEvenThreshold).toBe(23.5)
@@ -248,7 +264,7 @@ describe('GET/PATCH /api/auth/profile', () => {
       dataProcessingConsentVersion: null,
     })
 
-    const getResponse = await GET()
+    const getResponse = await GET(new Request('http://localhost/api/auth/profile') as any)
     const getBody = await getResponse.json()
 
     expect(getResponse.status).toBe(200)
@@ -280,7 +296,7 @@ describe('GET/PATCH /api/auth/profile', () => {
     expect(patchResponse.status).toBe(200)
     expect(patchBody.data.onboardingStatus.core_onboarding_completed).toBe(true)
 
-    const getResponse = await GET()
+    const getResponse = await GET(new Request('http://localhost/api/auth/profile') as any)
     const getBody = await getResponse.json()
     expect(getResponse.status).toBe(200)
     expect(getBody.data.onboardingStatus.core_onboarding_completed).toBe(true)

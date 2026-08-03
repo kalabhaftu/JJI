@@ -18,7 +18,7 @@ import {
 import { VisuallyHidden } from "@/components/ui/visually-hidden"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
-// UploadIcon removed
+
 import type { TradeType } from '@/lib/db/schema/trades';
 
 import { importTradesThroughApi } from '@/lib/api/trade-import-client'
@@ -77,7 +77,6 @@ interface TradeImportJobMeta {
   }
 }
 
-// Step icons mapping
 const stepIcons: Record<string, React.ReactNode> = {
   'select-import-type': <FileSpreadsheet className="h-3.5 w-3.5" />,
   'upload-file': <Upload className="h-3.5 w-3.5" />,
@@ -89,7 +88,7 @@ const stepIcons: Record<string, React.ReactNode> = {
 
 export default function ImportButton() {
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  
+
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
       const handleOpen = () => {
@@ -117,9 +116,7 @@ export default function ImportButton() {
   const [processedTrades, setProcessedTrades] = useState<TradeType[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [saveProgress, setSaveProgress] = useState<number>(0)
-  // uploadIconRef removed
 
-  // Phase transition state
   const [showPhaseTransitionDialog, setShowPhaseTransitionDialog] = useState(false)
   const [phaseTransitionData, setPhaseTransitionData] = useState<{
     masterAccountId: string
@@ -139,13 +136,11 @@ export default function ImportButton() {
   const supabaseUser = useUserStore(state => state.supabaseUser)
   const { refreshTrades } = useData()
 
-  // Get current platform config
   const platform = useMemo(() =>
     platforms.find(p => p.type === importType) || platforms.find(p => p.platformName === 'csv-ai'),
     [importType]
   )
 
-  // Get current step info
   const currentStep = useMemo(() =>
     platform?.steps.find(s => s.id === step),
     [platform, step]
@@ -195,15 +190,16 @@ export default function ImportButton() {
 
     setIsSaving(true)
     setIsLoading(true)
-    setSaveProgress(10)
+    setSaveProgress(0)
 
     try {
-      setSaveProgress(30)
       const latestJob = await importTradesThroughApi({
         accountId: selectedAccountId,
         trades: processedTrades,
         onProgress: (job) => {
-          setSaveProgress(Math.max(30, Math.min(95, job.progress || 30)))
+          if (typeof job.progress === 'number') {
+            setSaveProgress(Math.min(100, Math.max(0, job.progress)))
+          }
         },
       })
       if (latestJob.status === 'cancelled') {
@@ -228,20 +224,16 @@ export default function ImportButton() {
         evaluation: jobMeta.evaluation,
       }
 
-      setSaveProgress(70)
-
-      // Invalidate accounts cache
       const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
       invalidateAccountsCache('trades imported')
 
-      setSaveProgress(90)
+      setSaveProgress(100)
 
       setIsOpen(false)
       resetImportState()
       emitTourEvent('import.succeeded')
       if (typeof document !== 'undefined') document.dispatchEvent(new Event('jji-import-completed'))
 
-      // Refresh data
       await refreshTrades()
 
       setSaveProgress(100)
@@ -375,13 +367,10 @@ export default function ImportButton() {
     const currentStepConfig = platform.steps.find(s => s.id === step)
     if (!currentStepConfig) return true
 
-    // File upload requires files
     if (currentStepConfig.component === FileUpload && csvData.length === 0) return true
 
-    // Account selection requires selection
     if (currentStepConfig.component === AccountSelection && !selectedAccountId) return true
 
-    // FormatPreview requires processed trades
     if (currentStepConfig.component === FormatPreview && processedTrades.length === 0) return true
 
     return false
@@ -425,7 +414,6 @@ export default function ImportButton() {
 
     const Component = currentStepConfig.component
 
-    // Show saving state
     if (isSaving) {
       return (
         <div className="flex flex-col items-center justify-center h-full gap-6 p-8 bg-background">
@@ -574,7 +562,6 @@ export default function ImportButton() {
 
   return (
     <div>
-      {/* Phase Transition Dialog */}
       {phaseTransitionData && (
         <PhaseTransitionDialog
           isOpen={showPhaseTransitionDialog}
@@ -632,7 +619,7 @@ export default function ImportButton() {
         <DialogContent
           className="flex flex-col w-full max-w-[95vw] sm:max-w-4xl h-[85vh] p-0 bg-background border border-border shadow-xl overflow-hidden gap-0 duration-200 sm:rounded-2xl rounded-none"
           onOpenAutoFocus={(e) => {
-            // Prevent auto-focus on mobile devices to avoid keyboard popup
+
             if (typeof window !== 'undefined' && window.innerWidth < 768) {
               e.preventDefault()
             }
@@ -642,7 +629,7 @@ export default function ImportButton() {
             <DialogTitle>Import Trades</DialogTitle>
           </VisuallyHidden>
 
-          {/* Header - only show for non-manual entry or show simplified for manual */}
+          {                                                                           }
           {!isManualEntry && (
             <div className="flex-none border-b border-border/40 p-5 bg-background">
               <div className="flex items-center justify-between mb-4">
@@ -656,7 +643,7 @@ export default function ImportButton() {
                 </div>
               </div>
 
-              {/* Progress steps */}
+              {                    }
               {platform && totalSteps > 1 && (
                 <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-0.5">
                   {platform.steps.map((s, idx) => {
@@ -700,7 +687,7 @@ export default function ImportButton() {
             </div>
           )}
 
-          {/* Content */}
+          {             }
           <div className={cn(
             "flex-1 overflow-hidden",
             !isManualEntry && "p-5"
@@ -719,7 +706,7 @@ export default function ImportButton() {
             </AnimatePresence>
           </div>
 
-          {/* Footer - only show for non-manual entry */}
+          {                                             }
           {!isManualEntry && (
             <div className="flex-none p-4 border-t border-border/30 bg-background">
               <div className="flex justify-between items-center max-w-4xl mx-auto w-full">

@@ -32,11 +32,12 @@ describe('authentication flow contracts', () => {
   })
 
   it('uses the auth callback URL for email and provider redirects', () => {
-    const auth = source('server/auth.ts')
+    const providers = source('server/auth/providers.ts')
+    const client = source('server/auth/client.ts')
 
-    expect(auth).toContain("new URL('api/auth/callback', websiteURL)")
-    expect(auth).toContain('emailRedirectTo')
-    expect(auth).toContain('redirectTo: await getAuthCallbackUrl(next)')
+    expect(client).toContain("new URL('api/auth/callback', websiteURL)")
+    expect(providers).toContain('emailRedirectTo')
+    expect(providers).toContain('redirectTo: await getAuthCallbackUrl(next)')
   })
 
   it('isolates local dev output from production builds and bundle analysis', () => {

@@ -8,16 +8,32 @@ vi.mock('@/lib/db/client', () => ({
       UserSettings: {
         findFirst: vi.fn(),
       },
-      Account: {
-        findFirst: vi.fn(),
-      },
+    Account: {
+      findFirst: vi.fn(),
     },
+    },
+    transaction: vi.fn(async (callback: (tx: any) => Promise<unknown>) => callback({
+      insert: vi.fn(() => ({ values: vi.fn().mockResolvedValue([{}]) })),
+    })),
     insert: vi.fn(() => ({ values: vi.fn().mockResolvedValue([{}]) })),
   },
 }))
 
 vi.mock('@/lib/rate-limiter', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(null),
+  apiLimiter: {},
+  adminLimiter: {},
+  accountDeletionLimiter: {},
+  aiLimiter: {},
+  authenticatedReadLimiter: {},
+  authLimiter: {},
+  errorReportLimiter: {},
+  feedbackLimiter: {},
+  importLimiter: {},
+  paymentLimiter: {},
+  publicLimiter: {},
+  sensitiveMutationLimiter: {},
+  uploadLimiter: {},
   webhookLimiter: {},
 }))
 
@@ -58,7 +74,7 @@ describe('POST /api/v1/import/webhook/tradingview', () => {
 
     expect(response.status).toBe(200)
     expect(json.success).toBe(true)
-    expect(db.insert).toHaveBeenCalled()
+    expect(db.transaction).toHaveBeenCalled()
   })
 
   it('successfully processes flexible date formats from TradingView', async () => {
@@ -76,8 +92,8 @@ describe('POST /api/v1/import/webhook/tradingview', () => {
       side: 'BUY',
       entry_price: 1.0850,
       close_price: 1.0920,
-      entry_time: '2026-05-07T14:30:00', // Missing 'Z' or offset
-      close_time: '2026-05-07 18:45:00',  // Space separated format
+      entry_time: '2026-05-07T14:30:00',
+      close_time: '2026-05-07 18:45:00',
     }
 
     const request = new Request('http://localhost/api/v1/import/webhook/tradingview', {
@@ -91,7 +107,7 @@ describe('POST /api/v1/import/webhook/tradingview', () => {
 
     expect(response.status).toBe(200)
     expect(json.success).toBe(true)
-    expect(db.insert).toHaveBeenCalled()
+    expect(db.transaction).toHaveBeenCalled()
   })
 
   it('successfully authenticates with token in query params instead of body', async () => {
@@ -103,7 +119,7 @@ describe('POST /api/v1/import/webhook/tradingview', () => {
       number: 'ACC123',
     } as any)
     
-    // No token in payload body
+
     const payload = {
       symbol: 'EURUSD',
       side: 'BUY',
@@ -124,6 +140,6 @@ describe('POST /api/v1/import/webhook/tradingview', () => {
 
     expect(response.status).toBe(200)
     expect(json.success).toBe(true)
-    expect(db.insert).toHaveBeenCalled()
+    expect(db.transaction).toHaveBeenCalled()
   })
 })

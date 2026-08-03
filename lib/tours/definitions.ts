@@ -94,7 +94,6 @@ export const TOURS: Record<TourId, TourStep[]> = {
       placement: 'bottom',
       completion: { type: 'event', key: 'account.created' },
     },
-    actionStep('accounts-import', 'Import from here', 'Import Trades is available from the shared navigation when you are ready.', '/dashboard/accounts', '[data-tour="import-nav-btn"]', 'import.opened'),
     routeStep('accounts-review', 'Review account health', 'Account cards show balance, trade count, and the state of each portfolio.', '/dashboard/accounts', '[data-tour="account-card"]'),
   ],
   trades: [

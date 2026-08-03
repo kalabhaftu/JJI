@@ -170,4 +170,23 @@ describe('client polling contracts', () => {
     expect(checklist).toContain('jji_checklist_dismissed')
     expect(checklist).toContain('Dismiss getting started checklist')
   })
+
+  it('does not simulate import progress with Math.random', () => {
+    const loading = source('app/dashboard/components/import/components/import-loading.tsx')
+
+    expect(loading).not.toContain('Math.random() * 3')
+    expect(loading).not.toContain('progressInterval')
+    expect(loading).toContain('progress?: number')
+    expect(loading).toContain('typeof progress === \'number\'')
+  })
+
+  it('drives import progress from the real job progress instead of fixed hops', () => {
+    const button = source('app/dashboard/components/import/import-button.tsx')
+
+    expect(button).not.toContain('setSaveProgress(10)')
+    expect(button).not.toContain('setSaveProgress(30)')
+    expect(button).not.toContain('setSaveProgress(70)')
+    expect(button).not.toContain('setSaveProgress(90)')
+    expect(button).toContain('job.progress')
+  })
 })

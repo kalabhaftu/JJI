@@ -14,7 +14,10 @@ describe('middleware security boundary', () => {
   })
 
   it('does not perform a duplicate Supabase auth request for API traffic', () => {
-    expect(middlewareSource).toContain('(?!api/|_next/static')
+    const apiGuard = middlewareSource.indexOf("pathname.startsWith('/api/')")
+    const serverClient = middlewareSource.indexOf('createServerClient(')
+    expect(apiGuard).toBeGreaterThan(-1)
+    expect(serverClient).toBeGreaterThan(apiGuard)
   })
 
   it('rewrites the docs subdomain into the docs route without a browser redirect', () => {

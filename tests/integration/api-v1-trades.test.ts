@@ -1,7 +1,4 @@
-/**
- * Integration tests for GET /api/v1/trades
- * Requires authenticated request context (mocked in tests)
- */
+
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
@@ -40,6 +37,18 @@ vi.mock('@/lib/db/client', () => ({
 vi.mock('@/lib/rate-limiter', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(null),
   apiLimiter: {},
+  adminLimiter: {},
+  accountDeletionLimiter: {},
+  aiLimiter: {},
+  authenticatedReadLimiter: {},
+  authLimiter: {},
+  errorReportLimiter: {},
+  feedbackLimiter: {},
+  importLimiter: {},
+  paymentLimiter: {},
+  publicLimiter: {},
+  sensitiveMutationLimiter: {},
+  uploadLimiter: {},
 }))
 
 describe('GET /api/v1/trades', () => {
@@ -56,7 +65,7 @@ describe('GET /api/v1/trades', () => {
     const response = await GET(request)
 
     expect(response.status).toBe(401)
-  }, 10000) // Increase timeout to 10s to prevent compilation flakiness on first test
+  }, 10000)
 
   it('returns 404 when user is not found in database', async () => {
     const { getResolvedUserIdentity } = await import('@/server/user-identity')
@@ -104,13 +113,13 @@ describe('GET /api/v1/trades', () => {
     const data = await response.json()
 
     expect(response.status).toBe(200)
-    expect(data).toHaveProperty('trades')
-    expect(data).toHaveProperty('total')
-    expect(data).toHaveProperty('statistics')
-    expect(data).toHaveProperty('calendarData')
-    expect(Array.isArray(data.trades)).toBe(true)
-    expect(data.total).toBe(1)
-    expect(data.breakEvenThreshold).toBe(12)
+    expect(data.data).toHaveProperty('trades')
+    expect(data.data).toHaveProperty('total')
+    expect(data.data).toHaveProperty('statistics')
+    expect(data.data).toHaveProperty('calendarData')
+    expect(Array.isArray(data.data.trades)).toBe(true)
+    expect(data.data.total).toBe(1)
+    expect(data.data.breakEvenThreshold).toBe(12)
   })
 
   it('applies account filter when accounts param is provided', async () => {
@@ -170,7 +179,7 @@ describe('GET /api/v1/trades', () => {
     const data = await response.json()
 
     expect(response.status).toBe(200)
-    expect(data.total).toBe(1)
-    expect(data.trades[0].id).toBe('w1')
+    expect(data.data.total).toBe(1)
+    expect(data.data.trades[0].id).toBe('w1')
   })
 })

@@ -59,7 +59,7 @@ function parseWebhookDate(value: string | undefined) {
 
 export async function POST(req: NextRequest) {
   const requestId = resolveRequestId(req.headers)
-  const rl = await applyApiRoutePolicy(req)
+  const rl = await applyApiRoutePolicy(req, 'trusted-signed')
   if (rl) return rl
 
   try {
@@ -174,7 +174,7 @@ export async function POST(req: NextRequest) {
     reportError(err, {
       surface: 'api',
       operation: 'import-tradingview-webhook',
-      route: req.nextUrl.pathname,
+      route: new URL(req.url).pathname,
       requestId,
     })
     return createErrorResponse('Internal server error', 500)

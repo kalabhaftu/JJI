@@ -1,13 +1,19 @@
-/**
- * Integration tests for POST /api/v1/reports/stats
- * Requires authenticated request context (mocked in tests)
- */
+
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-vi.mock('@/server/auth', () => ({
-  getUserId: vi.fn().mockResolvedValue('internal-user-id'),
+const { getResolvedUserIdentitySafe } = vi.hoisted(() => ({
+  getResolvedUserIdentitySafe: vi.fn(),
 }))
+
+vi.mock('@/server/user-identity', () => ({
+  getResolvedUserIdentitySafe,
+}))
+
+getResolvedUserIdentitySafe.mockResolvedValue({
+    authUserId: 'auth-user-id',
+    internalUserId: 'internal-user-id',
+})
 
 vi.mock('@/lib/statistics/report-statistics', () => ({
   calculateReportStatistics: vi.fn().mockResolvedValue({
@@ -21,6 +27,18 @@ vi.mock('@/lib/statistics/report-statistics', () => ({
 vi.mock('@/lib/rate-limiter', () => ({
   applyRateLimit: vi.fn().mockResolvedValue(null),
   apiLimiter: {},
+  adminLimiter: {},
+  accountDeletionLimiter: {},
+  aiLimiter: {},
+  authenticatedReadLimiter: {},
+  authLimiter: {},
+  errorReportLimiter: {},
+  feedbackLimiter: {},
+  importLimiter: {},
+  paymentLimiter: {},
+  publicLimiter: {},
+  sensitiveMutationLimiter: {},
+  uploadLimiter: {},
 }))
 
 vi.mock('@/lib/db/client', () => ({
@@ -36,11 +54,14 @@ vi.mock('@/lib/db/client', () => ({
 describe('POST /api/v1/reports/stats', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    getResolvedUserIdentitySafe.mockResolvedValue({
+      authUserId: 'auth-user-id',
+      internalUserId: 'internal-user-id',
+    })
   })
 
   it('returns 401 when user is not authenticated', async () => {
-    const { getUserId } = await import('@/server/auth')
-    vi.mocked(getUserId).mockRejectedValueOnce(new Error('not authenticated'))
+    getResolvedUserIdentitySafe.mockResolvedValueOnce(null)
 
     const { POST } = await import('@/app/api/v1/reports/stats/route')
     const request = new Request('http://localhost/api/v1/reports/stats', {
@@ -98,7 +119,7 @@ describe('POST /api/v1/reports/stats', () => {
     const data = await response.json()
 
     expect(response.status).toBe(200)
-    expect(data.tradingActivity.totalTrades).toBe(42)
-    expect(data.psychMetrics.winRate).toBe(59.5)
+    expect(data.data.tradingActivity.totalTrades).toBe(42)
+    expect(data.data.psychMetrics.winRate).toBe(59.5)
   })
 })

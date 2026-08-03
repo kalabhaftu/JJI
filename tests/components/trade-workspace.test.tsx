@@ -2,7 +2,7 @@ import { act } from 'react'
 import { createRoot } from 'react-dom/client'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import { TradeWorkspace } from '@/components/ui/trade-workspace'
+import { TradeWorkspace, TradeWorkspaceCloseButton } from '@/components/ui/trade-workspace'
 
 const roots: Array<ReturnType<typeof createRoot>> = []
 
@@ -17,9 +17,10 @@ async function renderWorkspace(props: Partial<React.ComponentProps<typeof TradeW
   const root = createRoot(container)
   roots.push(root)
   const onRequestClose = vi.fn()
+  const { children = <input aria-label="Symbol" />, ...workspaceProps } = props
   await act(async () => root.render(
-    <TradeWorkspace mode="dialog" open title="Edit trade" description="Trade fields" onRequestClose={onRequestClose} {...props}>
-      <input aria-label="Symbol" />
+    <TradeWorkspace mode="dialog" open title="Edit trade" description="Trade fields" onRequestClose={onRequestClose} {...workspaceProps}>
+      {children}
     </TradeWorkspace>
   ))
   return { onRequestClose }
@@ -49,6 +50,34 @@ describe('TradeWorkspace', () => {
     const discard = Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Discard changes')
     await act(async () => discard?.click())
     expect(onConfirmDiscard).toHaveBeenCalledOnce()
+    expect(onRequestClose).toHaveBeenCalledOnce()
+  })
+
+  it('gates migrated panel close buttons through the workspace', async () => {
+    const { onRequestClose } = await renderWorkspace({
+      dirty: true,
+      children: <TradeWorkspaceCloseButton>Cancel</TradeWorkspaceCloseButton>,
+    })
+    const cancel = Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Cancel')
+    await act(async () => cancel?.click())
+    expect(onRequestClose).not.toHaveBeenCalled()
+    expect(document.querySelector('[role="alertdialog"]')).toHaveAccessibleName('Discard unsaved changes?')
+  })
+
+  it('renders one title, one description, and one close control for a sheet', async () => {
+    const { onRequestClose } = await renderWorkspace({ mode: 'sheet' })
+    const dialog = document.querySelector('[role="dialog"]')
+    expect(dialog).toHaveAccessibleName('Edit trade')
+    expect(dialog).toHaveAccessibleDescription('Trade fields')
+    const titleIds = dialog?.getAttribute('aria-labelledby')?.split(/\s+/) ?? []
+    const descriptionIds = dialog?.getAttribute('aria-describedby')?.split(/\s+/) ?? []
+    expect(titleIds).toHaveLength(1)
+    expect(descriptionIds).toHaveLength(1)
+    expect(document.getElementById(titleIds[0] ?? '')?.textContent).toBe('Edit trade')
+    expect(document.getElementById(descriptionIds[0] ?? '')?.textContent).toBe('Trade fields')
+    const closeButtons = Array.from(dialog?.querySelectorAll('button') ?? []).filter(button => button.textContent === 'Close')
+    expect(closeButtons).toHaveLength(1)
+    await act(async () => closeButtons[0]?.click())
     expect(onRequestClose).toHaveBeenCalledOnce()
   })
 

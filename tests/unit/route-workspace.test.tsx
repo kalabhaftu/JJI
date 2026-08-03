@@ -29,4 +29,14 @@ describe('useRouteWorkspace', () => {
     expect(controller?.open).toBe(false)
     await act(async () => root.unmount())
   })
+
+  it('returns to the encoded route when remounted on a workspace URL', async () => {
+    let controller: RouteWorkspaceController | undefined
+    const root = createRoot(document.createElement('div'))
+    function Probe() { controller = useRouteWorkspace('/dashboard/table'); return null }
+    await act(async () => root.render(<Probe />))
+    await act(async () => controller?.closeWorkspace())
+    expect(replace).toHaveBeenCalledWith('/dashboard/table', { scroll: false })
+    await act(async () => root.unmount())
+  })
 })

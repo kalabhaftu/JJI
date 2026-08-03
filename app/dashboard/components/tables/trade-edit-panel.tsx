@@ -3,7 +3,7 @@
 import { Spinner } from '@/components/ui/spinner'
 
 import { Button } from '@/components/ui/button'
-import { TradeWorkspace, type TradeWorkspaceProps } from '@/components/ui/trade-workspace'
+import { TradeWorkspace, TradeWorkspaceCloseButton, type TradeWorkspaceProps } from '@/components/ui/trade-workspace'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useTags } from '@/context/tags-provider'
@@ -312,9 +312,6 @@ export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route'
     }
   }
 
-  const handleCloseAttempt = onClose
-
-
   const tradeData = trade as any
   const threshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
   const netPnL = getTradeNetPnl(trade)
@@ -331,10 +328,10 @@ export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route'
         <div className="px-4 sm:px-6 py-3 border-b border-border/40 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <Button variant="ghost" size="sm" onClick={handleCloseAttempt} disabled={isSubmitting} className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
+              <TradeWorkspaceCloseButton variant="ghost" size="sm" disabled={isSubmitting} className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
                 <ArrowLeft className="mr-1 h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Back</span>
-              </Button>
+              </TradeWorkspaceCloseButton>
               <div className="h-4 w-px bg-border/40 shrink-0" />
               <h2 className="text-base sm:text-lg font-black tracking-tight truncate">{tradeData.instrument}</h2>
               <Badge variant={isLong ? 'default' : 'destructive'} className="text-[10px] px-1.5 py-0 h-5 uppercase font-bold shrink-0">
@@ -457,9 +454,9 @@ export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route'
 
         {}
         <div className="px-4 sm:px-6 py-3 border-t border-border/40 shrink-0 flex flex-col-reverse sm:flex-row gap-2 items-center justify-between bg-muted/5">
-          <Button type="button" variant="outline" onClick={handleCloseAttempt} disabled={isSubmitting} className="w-full sm:w-auto h-9 px-5 rounded-xl text-xs">
+          <TradeWorkspaceCloseButton variant="outline" disabled={isSubmitting} className="w-full sm:w-auto h-9 px-5 rounded-xl text-xs">
             Cancel
-          </Button>
+          </TradeWorkspaceCloseButton>
           <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="w-full sm:w-auto h-9 px-5 rounded-xl shadow-lg shadow-primary/10 font-semibold text-xs">
             {isSubmitting ? (
               <>

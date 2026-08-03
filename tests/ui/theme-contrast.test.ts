@@ -144,19 +144,11 @@ describe('theme contrast', () => {
       expect(block(selector), `${selector} must declare a brand accent`).toContain('--primary:')
     }
 
-    for (const selector of [
-      '.accent-reports {',
-      '.dark.accent-reports,',
-      '.accent-violet {',
-      '.dark.accent-violet,',
-      '.accent-slate {',
-      '.dark.accent-slate,',
-    ]) {
+    for (const selector of accentSelectors.slice(0, 6)) {
       const declarations = block(selector)
-      expect(declarations, `${selector} must declare a profit palette`).toContain('--success:')
-      expect(declarations, `${selector} must declare a loss palette`).toContain('--destructive:')
-      expect(declarations, `${selector} must declare profit chart colors`).toContain('--chart-profit:')
-      expect(declarations, `${selector} must declare loss chart colors`).toContain('--chart-loss:')
+      expect(declarations, `${selector} must declare selected brand emphasis`).toContain('--brand-selected:')
+      expect(declarations, `${selector} must declare navigation emphasis`).toContain('--brand-navigation-active:')
+      expect(declarations, `${selector} must not redefine semantic or financial roles`).not.toMatch(/--(success|destructive|warning|chart-profit|chart-loss|financial-|semantic-)/)
     }
   })
 })

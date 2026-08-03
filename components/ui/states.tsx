@@ -7,6 +7,75 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 
+export type AsyncDataState<T = unknown> =
+  | { status: "initial-loading" }
+  | { status: "local-loading" }
+  | { status: "success"; data: T; updatedAt?: number }
+  | { status: "refreshing"; data: T; updatedAt?: number }
+  | { status: "realtime-updating"; data: T; updatedAt?: number }
+  | { status: "stale"; data: T; updatedAt: number; reason?: string }
+  | { status: "offline"; data?: T; updatedAt?: number }
+  | { status: "partial"; data: T; missing: readonly string[] }
+  | { status: "permission-denied"; message: string }
+  | { status: "recoverable-error"; data: T; error: unknown; updatedAt?: number }
+  | { status: "blocking-error"; error: unknown }
+  | { status: "empty" }
+  | { status: "no-results"; query?: string }
+
+type AsyncStateProps<T> = {
+  state: AsyncDataState<T>
+  renderData?: (data: T) => React.ReactNode
+  initialLoading?: React.ReactNode
+  localLoading?: React.ReactNode
+  empty?: React.ReactNode
+  noResults?: React.ReactNode
+  className?: string
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "Something went wrong."
+}
+
+export function AsyncState<T>({
+  state,
+  renderData,
+  initialLoading,
+  localLoading,
+  empty,
+  noResults,
+  className,
+}: AsyncStateProps<T>) {
+  if (state.status === "initial-loading") return initialLoading ?? <PageLoadingState />
+  if (state.status === "local-loading") return localLoading ?? <SectionLoadingState />
+  if (state.status === "empty") return empty ?? <EmptyState title="No data" />
+  if (state.status === "no-results") return noResults ?? <EmptyState title="No results" {...(state.query ? { description: `No results for “${state.query}”.` } : {})} />
+  if (state.status === "permission-denied") return <InlineErrorState message={state.message} />
+  if (state.status === "blocking-error") return <InlineErrorState message={errorMessage(state.error)} />
+
+  const data = "data" in state ? state.data : undefined
+  const busy = state.status === "refreshing" || state.status === "realtime-updating"
+  const notice = state.status === "refreshing"
+    ? "Refreshing"
+    : state.status === "realtime-updating"
+      ? "Updating"
+      : state.status === "stale"
+        ? state.reason ?? "Data may be stale"
+        : state.status === "offline"
+          ? "Offline"
+          : state.status === "partial"
+            ? `Some data is unavailable: ${state.missing.join(", ")}`
+            : state.status === "recoverable-error"
+              ? errorMessage(state.error)
+              : null
+
+  return (
+    <div className={cn("space-y-2", className)} aria-busy={busy || undefined}>
+      {notice && <div role="status" aria-live="polite" className="text-sm text-muted-foreground">{notice}</div>}
+      {data !== undefined && renderData?.(data)}
+    </div>
+  )
+}
+
 export function PageLoadingState({ label = "Loading" }: { label?: string }) {
   return <div role="status" aria-live="polite" aria-busy="true" className="space-y-4"><span className="sr-only">{label}</span><Skeleton className="h-8 w-48" /><Skeleton className="h-4 w-72 max-w-full" /><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"><Skeleton className="h-32" /><Skeleton className="h-32" /><Skeleton className="h-32" /></div></div>
 }

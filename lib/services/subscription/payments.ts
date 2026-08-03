@@ -130,7 +130,7 @@ export async function createSubscriptionInvoice(
   let promoCodeRecord = null
   let discountAmount = 0
 
-  // Apply promo code if provided
+
   if (options?.promoCode) {
     const promo = await validateAndGetPromo(options.promoCode, userId, options.context || 'signup')
     if (promo) {
@@ -140,9 +140,9 @@ export async function createSubscriptionInvoice(
       } else if (promo.type === 'fixed_discount') {
         discountAmount = Math.min(promo.value, finalAmount)
       } else if (promo.type === 'free_months') {
-        discountAmount = finalAmount // First month free
+        discountAmount = finalAmount
       } else if (promo.type === 'lifetime_free') {
-        // Grant lifetime free access
+
         await db.update(Subscription)
           .set({ status: 'promo_active', promoCodeId: promo.id })
           .where(eq(Subscription.id, subscription.id))
@@ -153,7 +153,7 @@ export async function createSubscriptionInvoice(
     }
   }
 
-  // If amount is 0 after discount, activate directly
+
   if (finalAmount <= 0) {
     const now = new Date()
     const freeMonths = promoCodeRecord?.type === 'free_months' ? Math.max(1, Math.floor(promoCodeRecord.value)) : 1
@@ -171,7 +171,7 @@ export async function createSubscriptionInvoice(
     return { subscription, invoiceUrl: null, paymentRecordId: null, freeAccess: true }
   }
 
-  // Create NOWPayments invoice
+
   const periodStart = new Date()
   const periodEnd = new Date(periodStart.getTime() + 30 * 86400000)
   const paymentDeadline = new Date(periodStart.getTime() + PAYMENT_LINK_EXPIRY_MS)
@@ -193,7 +193,7 @@ export async function createSubscriptionInvoice(
     order_description: `JJI Pro - Monthly Subscription`,
   })
 
-  // Create payment record
+
   const [paymentRecord] = await db.insert(PaymentRecord).values({
       userId,
       subscriptionId: subscription.id,
@@ -226,7 +226,7 @@ export async function handleIpnWebhook(payload: IpnPayload) {
 
   logger.info({ payment_id, payment_status, order_id }, '[Subscription] IPN received')
 
-  // Find the payment record by invoice ID or order_id
+
   const lookupClauses = [
     invoice_id ? eq(PaymentRecord.providerInvoiceId, String(invoice_id)) : null,
     payment_id ? eq(PaymentRecord.providerPaymentId, String(payment_id)) : null,
@@ -272,13 +272,13 @@ export async function handleIpnWebhook(payload: IpnPayload) {
     return { processed: true, reason: 'Payment arrived after local expiration', status: 'expired' }
   }
 
-  // Idempotency: skip if already in terminal state
+
   if (paymentRecord.providerStatus === 'finished' && payment_status !== 'refunded') {
     logger.info({ paymentId: paymentRecord.id }, '[Subscription] Payment already finished, skipping')
     return { processed: true, reason: 'Already processed' }
   }
 
-  // Update payment record
+
   const updateData: any = {
     providerStatus: payment_status,
     providerPaymentId: String(payment_id),
@@ -298,7 +298,7 @@ export async function handleIpnWebhook(payload: IpnPayload) {
     .set(updateData)
     .where(eq(PaymentRecord.id, paymentRecord.id))
 
-  // Update subscription status based on payment outcome
+
   if (isSuccessStatus(payment_status)) {
     await db.update(Subscription)
       .set({
@@ -309,7 +309,7 @@ export async function handleIpnWebhook(payload: IpnPayload) {
       })
       .where(eq(Subscription.id, paymentRecord.subscriptionId))
 
-    // Create success notification
+
     await createPaymentNotification(
       paymentRecord.userId,
       'PAYMENT_RECEIVED',
@@ -409,3 +409,4 @@ export async function reconcilePaymentRecord(paymentRecordId: string, userId?: s
 export async function refreshPaymentRecordStatus(paymentRecordId: string, userId: string) {
   return reconcilePaymentRecord(paymentRecordId, userId)
 }
+

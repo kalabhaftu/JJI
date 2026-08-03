@@ -12,11 +12,7 @@ interface LogActivityParams {
   requestId?: string | null
 }
 
-/**
- * Fire-and-forget activity logger.
- * Creates a record in the ActivityLog table without blocking the caller.
- * Silently catches errors to never break the primary operation.
- */
+
 export function logActivity(params: LogActivityParams): void {
   db.insert(ActivityLog)
     .values({
@@ -30,14 +26,13 @@ export function logActivity(params: LogActivityParams): void {
     })
     .execute()
     .catch(() => {
-      // Silently swallow - logging must never break the primary operation
+
     })
 }
 
-/**
- * Extract client IP from request headers (works behind Vercel/Cloudflare proxies).
- */
+
 export function getClientIp(request: Request): string | null {
   const address = resolveClientIp(request.headers)
   return address === 'unknown' ? null : address
 }
+

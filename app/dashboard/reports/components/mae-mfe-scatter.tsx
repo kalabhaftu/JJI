@@ -48,7 +48,6 @@ export function MaeMfeScatter({ trades }: MaeMfeScatterProps) {
     const avgMfe = points.reduce((s, p) => s + p.mfe, 0) / points.length
     const edgeRatio = avgMfe > 0 && avgMae > 0 ? avgMfe / avgMae : 0
 
-    // Capture efficiency: how much of MFE was captured as actual P&L
     const wins = points.filter(p => p.isWin)
     const captureEfficiency = wins.length > 0
       ? (wins.reduce((s, p) => s + (p.mfe > 0 ? p.pnl / p.mfe : 0), 0) / wins.length) * 100

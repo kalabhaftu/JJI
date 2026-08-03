@@ -61,7 +61,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 
-// Common instruments for quick selection
+
 const COMMON_INSTRUMENTS = [
   { value: 'ES', label: 'ES - E-mini S&P 500' },
   { value: 'NQ', label: 'NQ - E-mini Nasdaq 100' },
@@ -80,7 +80,7 @@ const COMMON_INSTRUMENTS = [
   { value: 'ETH/USD', label: 'ETH/USD - Ethereum' },
 ]
 
-// Trading sessions
+
 const TRADING_SESSIONS = [
   { value: 'london-killzone', label: 'London Killzone' },
   { value: 'ny-killzone', label: 'NY Killzone' },
@@ -88,14 +88,14 @@ const TRADING_SESSIONS = [
   { value: 'ny-pm', label: 'NY PM Session' },
 ]
 
-// Market bias options
+
 const MARKET_BIAS = [
   { value: 'bullish', label: 'Bullish' },
   { value: 'bearish', label: 'Bearish' },
   { value: 'neutral', label: 'Neutral' },
 ]
 
-// Trade types
+
 const TRADE_TYPES = [
   { value: 'scalp', label: 'Scalp' },
   { value: 'intraday', label: 'Intraday' },
@@ -103,7 +103,7 @@ const TRADE_TYPES = [
   { value: 'position', label: 'Position' },
 ]
 
-// Emotional states
+
 const EMOTIONAL_STATES = [
   { value: 'confident', label: 'Confident' },
   { value: 'calm', label: 'Calm' },
@@ -114,7 +114,7 @@ const EMOTIONAL_STATES = [
   { value: 'anxious', label: 'Anxious' },
 ]
 
-// Form schema
+
 const tradeFormSchema = z.object({
   instrument: z.string().min(1, 'Instrument is required'),
   accountNumber: z.string().min(1, 'Account is required'),
@@ -245,7 +245,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
     })
   }, [allAccounts])
 
-  // Filter instruments based on search
+
   const filteredInstruments = useMemo(() => {
     if (!instrumentSearch) return COMMON_INSTRUMENTS
     const search = instrumentSearch.toLowerCase()
@@ -264,7 +264,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       case 3:
         return !!(values.entryDate && values.entryTime && values.closeDate && values.closeTime)
       case 4:
-        return true // Optional fields
+        return true
       case 5:
         return true
       default:
@@ -297,7 +297,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
     setPhaseValidationError(null)
 
     try {
-      // Validate prop firm account phase
+
       if (data.accountNumber) {
         try {
           const phaseCheckResponse = await fetch(`/api/v1/prop-firm/accounts/validate-trade`, {
@@ -315,7 +315,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
             return
           }
         } catch (error) {
-          // Not a prop firm account, continue
+
         }
       }
 
@@ -463,7 +463,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
                           value={instrumentSearch}
                           onValueChange={(value) => {
                             setInstrumentSearch(value)
-                            // Allow custom instruments
+
                             if (value && !COMMON_INSTRUMENTS.find(i => i.value === value)) {
                               field.onChange(value.toUpperCase())
                             }
@@ -872,7 +872,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
+      {}
       <div className="flex-none border-b p-4">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -883,7 +883,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
           </div>
         </div>
 
-        {/* Progress steps */}
+        {}
         <div className="flex items-center gap-1">
           {stepInfo.map((s, idx) => {
             const StepIcon = s.icon
@@ -918,14 +918,14 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
         </div>
       </div>
 
-      {/* Content */}
+      {}
       <div className="flex-1 overflow-y-auto p-6">
         <form id="manual-trade-form" onSubmit={handleSubmit(onSubmit as any)} className="h-full flex flex-col">
           {renderStepContent()}
         </form>
       </div>
 
-      {/* Footer */}
+      {}
       <div className="flex-none border-t p-4">
         <div className="flex justify-between items-center">
           {currentStep === 1 && onBack ? (

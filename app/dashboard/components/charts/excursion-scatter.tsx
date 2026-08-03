@@ -37,7 +37,7 @@ export default function ExcursionScatter({ size }: ExcursionScatterProps) {
         const pnl = getTradeNetPnl(trade)
         return {
           id: trade.id,
-          mae: Math.abs(trade.mae), // MAE is typically tracked as positive magnitude
+          mae: Math.abs(trade.mae),
           mfe: Math.abs(trade.mfe),
           pnl,
           symbol: trade.symbol || trade.instrument || 'Unknown',

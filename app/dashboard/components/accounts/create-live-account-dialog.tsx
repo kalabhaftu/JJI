@@ -40,7 +40,7 @@ import { toast } from "sonner"
 import { clearAccountsCache } from "@/hooks/use-accounts"
 import { emitTourEvent } from '@/lib/tours/events'
 
-// Popular brokers
+
 const POPULAR_BROKERS = [
   'Exness',
   'FBS',
@@ -136,7 +136,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
         description: `Your ${finalBroker} account has been added.`,
       })
 
-      // Dispatch custom event to notify onboarding system instantly
+
       if (typeof window !== 'undefined' && result.data?.id) {
         document.dispatchEvent(
           new CustomEvent('jji-account-created', {
@@ -210,7 +210,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
           <form
             onSubmit={handleSubmit(onSubmit)}
             onKeyDown={(e) => {
-              // Prevent Enter key from submitting the form when in input fields
+
               if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
                 e.preventDefault()
               }
@@ -308,7 +308,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
               </CardContent>
             </Card>
 
-            {/* Account Summary */}
+            {}
             <Card>
               <CardHeader>
                 <CardTitle>Summary</CardTitle>
@@ -338,7 +338,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
               </CardContent>
             </Card>
 
-            {/* Error Display */}
+            {}
             {Object.keys(errors).length > 0 && (
               <Card className="border-destructive">
                 <CardContent className="pt-6">
@@ -357,7 +357,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
               </Card>
             )}
 
-            {/* Actions */}
+            {}
             <div className="flex justify-end gap-3">
               <Button
                 type="button"

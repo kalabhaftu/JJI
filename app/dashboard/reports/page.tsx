@@ -43,7 +43,7 @@ export default async function ReportsPage() {
       initialReportKey = getStableFilterKey(initialFilters)
     }
   } catch {
-    // Keep page rendering resilient; client hooks will fetch on mount.
+
   }
 
   return (

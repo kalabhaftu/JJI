@@ -113,7 +113,7 @@ export default async function RootLayout({
       <head>
         <meta name="application-name" content={BRAND.name} />
 
-        {/* Performance: Preconnect to Supabase for faster API calls */}
+        {                                                              }
         {supabaseUrl && <link rel="preconnect" href={supabaseUrl} crossOrigin="anonymous" />}
         {supabaseUrl && <link rel="dns-prefetch" href={supabaseUrl} />}
 

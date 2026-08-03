@@ -19,7 +19,7 @@ import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// GET /api/auth/profile - Get user profile information
+
 export async function GET(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   try {
@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH /api/auth/profile - Update user profile information
+
 export async function PATCH(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const limited = await applyApiRoutePolicy(request, 'auth')
@@ -100,7 +100,7 @@ export async function PATCH(request: NextRequest) {
       widgetStyle
     } = body
 
-    // Validate input - only check fields that are actually provided
+
     if (chartStyle !== undefined && chartStyle !== 'smooth' && chartStyle !== 'sharp') {
       return NextResponse.json(
         { error: 'Invalid chartStyle format' },
@@ -149,7 +149,7 @@ export async function PATCH(request: NextRequest) {
       )
     }
 
-    // Build update data - only include fields that were sent
+
     const currentUser = await db.query.User.findFirst({
       where: (table, { eq }) => eq(table.id, internalUserId),
       with: {
@@ -197,8 +197,8 @@ export async function PATCH(request: NextRequest) {
     })
 
     const updated = await db.transaction(async (tx) => {
-      // The update projection is intentionally smaller than the hydrated
-      // user record above; normalize it before combining settings.
+
+
       let baseUser: any = currentUser
       if (Object.keys(userUpdateData).length > 0) {
         baseUser = (await tx.update(schema.User).set(userUpdateData).where(eq(schema.User.id, internalUserId)).returning({

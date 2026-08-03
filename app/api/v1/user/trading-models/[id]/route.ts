@@ -31,7 +31,7 @@ async function getTradingModelId(context: TradingModelRouteContext) {
   return typeof params?.id === 'string' && params.id.trim() ? params.id : null
 }
 
-// PATCH - Update trading model
+
 async function updateTradingModel(
   request: NextRequest,
   context: TradingModelRouteContext
@@ -55,7 +55,7 @@ async function updateTradingModel(
     const body = await request.json()
     const validated = tradingModelSchema.parse(body)
 
-    // Verify model belongs to user
+
     const existing = await db.query.TradingModel.findFirst({
       where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, userId)),
     })
@@ -64,7 +64,7 @@ async function updateTradingModel(
       return NextResponse.json({ error: 'Model not found' }, { status: 404 })
     }
 
-    // If name is being changed, check for duplicates
+
     if (validated.name && validated.name !== existing.name) {
       const duplicate = await db.query.TradingModel.findFirst({
         where: and(eq(schema.TradingModel.userId, userId), eq(schema.TradingModel.name, validated.name!)),
@@ -104,7 +104,7 @@ async function updateTradingModel(
   }
 }
 
-// DELETE - Delete trading model
+
 async function deleteTradingModel(
   request: NextRequest,
   context: TradingModelRouteContext
@@ -125,7 +125,7 @@ async function deleteTradingModel(
     }
     const userId = identity.internalUserId
 
-    // Verify model belongs to user
+
     const existing = await db.query.TradingModel.findFirst({
       where: (table, { and, eq }) => and(eq(table.id, id), eq(table.userId, userId)),
       with: {
@@ -139,7 +139,7 @@ async function deleteTradingModel(
 
     const tradesCount = existing.Trade?.length ?? 0
 
-    // Delete the model (trades will have modelId set to null due to onDelete: SetNull)
+
     await db.delete(schema.TradingModel).where(and(
       eq(schema.TradingModel.id, id),
       eq(schema.TradingModel.userId, userId),

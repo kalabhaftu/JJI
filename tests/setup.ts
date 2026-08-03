@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { vi } from 'vitest'
 
-// Mock environment variables for tests
+
 process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
 process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY = 'test-anon-key'
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/test'
@@ -10,14 +10,14 @@ process.env.UPSTASH_REDIS_REST_TOKEN = 'test-token'
 process.env.TRADOVATE_API_URL = 'https://test.tradovate.com'
 process.env.RESEND_API_KEY = 'test-key'
 
-// Global test utilities
+
 global.ResizeObserver = vi.fn().mockImplementation(() => ({
   observe: vi.fn(),
   unobserve: vi.fn(),
   disconnect: vi.fn(),
 }))
 
-// Mock Next.js router
+
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
     push: vi.fn(),

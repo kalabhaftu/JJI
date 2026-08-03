@@ -44,7 +44,7 @@ const DayWinRate = React.memo(function DayWinRate({ size }: DayWinRateProps) {
   return (
     <WidgetCard isKpi>
       <div className="h-full flex flex-col justify-between">
-        {/* Header with title and info */}
+        {}
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-muted-foreground">
             Day win %
@@ -65,13 +65,13 @@ const DayWinRate = React.memo(function DayWinRate({ size }: DayWinRateProps) {
           </TooltipProvider>
         </div>
 
-        {/* Main content: large value + segmented gauge */}
+        {}
         <div className="flex items-center justify-between gap-3">
           <span className="text-[1.65rem] min-[768px]:text-[1.85rem] min-[1440px]:text-3xl font-bold tracking-tight text-foreground">
             {dayWinRate.toFixed(2)}%
           </span>
 
-          {/* Segmented gauge showing wins/breakeven/losses days */}
+          {}
           <CircularProgress
             value={dayWinRate}
             size={80}

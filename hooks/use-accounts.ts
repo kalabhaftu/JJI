@@ -45,7 +45,6 @@ interface UseAccountsOptions {
   search?: string
 }
 
-// Global broadcast system for cache updates
 const realtimeSubscribers = new Set<() => void>()
 
 function broadcastAccountsUpdate() {
@@ -96,24 +95,24 @@ const fetcher = async (url: string) => {
 }
 
 export function useAccounts(options: UseAccountsOptions = {}) {
-  // Legacy support for older options
+
   const mappedStatus = options.includeArchived ? 'archived' : options.includeFailed ? 'all' : 'active'
   const filterStatus = options.status || mappedStatus
 
-  const { 
-    page = 1, 
-    limit = 50, 
-    status = filterStatus, 
-    type = options.type || 'all', 
+  const {
+    page = 1,
+    limit = 50,
+    status = filterStatus,
+    type = options.type || 'all',
     search = options.search || ''
   } = options
-  
+
   const router = useRouter()
   const user = useUserStore(state => state.user)
   const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const url = (user?.id || isDemo) ? `/api/v1/accounts?page=${page}&limit=${limit}&status=${status}&type=${type}&search=${encodeURIComponent(search)}` : null
-  
+
   const { data, error, isLoading, mutate } = useSWR(url, fetcher, {
     keepPreviousData: true,
   })
@@ -127,20 +126,19 @@ export function useAccounts(options: UseAccountsOptions = {}) {
     await mutate()
   }, [mutate])
 
-  // Real-time patching function (Part of Phase 3/4)
   const updateAccountInCache = useCallback((accountId: string, partialData: Partial<UnifiedAccount>) => {
     if (!data) return
-    const updatedAccounts = accounts.map((acc: UnifiedAccount) => 
+    const updatedAccounts = accounts.map((acc: UnifiedAccount) =>
       acc.id === accountId ? { ...acc, ...partialData } : acc
     )
-    mutate({ ...data, data: updatedAccounts }, false) // false = don't revalidate immediately
+    mutate({ ...data, data: updatedAccounts }, false)
   }, [data, accounts, mutate])
 
   return {
     accounts,
     pagination,
-    isLoading: isLoading && !data, // Only perfectly true loading
-    isFetching: isLoading, // Background fetching
+    isLoading: isLoading && !data,
+    isFetching: isLoading,
     error: error ? error.message : null,
     refetch,
     updateAccountInCache

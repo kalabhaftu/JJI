@@ -1,9 +1,4 @@
-/**
- * React Query hook for report statistics
- * 
- * Replaces the 4 useMemo blocks in reports/page.tsx with a single
- * server-side computed response via /api/v1/reports/stats
- */
+
 
 'use client'
 

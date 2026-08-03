@@ -18,7 +18,6 @@ interface JournalEntry {
 export function useJournalData(startDate?: Date, endDate?: Date, accountId?: string | null) {
   const queryClient = useQueryClient()
 
-  // Build query key from params for proper cache management
   const queryKey = useMemo(() => [
     'journal-data',
     startDate ? format(startDate, 'yyyy-MM-dd') : null,
@@ -30,16 +29,16 @@ export function useJournalData(startDate?: Date, endDate?: Date, accountId?: str
     queryKey,
     queryFn: async () => {
       if (!startDate || !endDate) return {}
-      
+
       const params = new URLSearchParams({
         startDate: format(startDate, 'yyyy-MM-dd'),
         endDate: format(endDate, 'yyyy-MM-dd'),
       })
       if (accountId) params.append('accountId', accountId)
-      
+
       const response = await fetch(`/api/v1/journal/list?${params}`)
       if (!response.ok) throw new Error('Failed to fetch journals')
-      
+
       const data = await response.json()
       const journalMap: Record<string, JournalEntry> = {}
       data.data?.journals?.forEach((journal: JournalEntry) => {
@@ -49,7 +48,7 @@ export function useJournalData(startDate?: Date, endDate?: Date, accountId?: str
       return journalMap
     },
     enabled: !!startDate && !!endDate,
-    staleTime: 5 * 60 * 1000, // 5 min
+    staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,
   })
 

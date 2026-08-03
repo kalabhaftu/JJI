@@ -26,10 +26,10 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   
-  // Replay State
+
   const [isPlaying, setIsPlaying] = useState(false)
   const [replayIndex, setReplayIndex] = useState(0)
-  const [speed, setSpeed] = useState(1000) // ms per candle
+  const [speed, setSpeed] = useState(1000)
 
   const entryTime = new Date(trade.entryDate).getTime() / 1000
   const exitTime = new Date(trade.closeDate).getTime() / 1000
@@ -40,7 +40,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
       setError(null)
       try {
         const symbol = trade.instrument || trade.symbol || 'ES'
-        // Fetch data from 3 hours before entry to 3 hours after exit
+
         const padding = 3 * 60 * 60 * 1000 
         const period1 = new Date(trade.entryDate).getTime() - padding
         const period2 = new Date(trade.closeDate).getTime() + padding
@@ -54,7 +54,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
         
         const data = await response.json()
         setMarketData(data)
-        setReplayIndex(0) // Start from beginning
+        setReplayIndex(0)
       } catch (err: any) {
         reportClientError(err, { operation: 'load-trade-replay-market-data', route: '/api/v1/market-data' })
         setError(err.message)
@@ -66,7 +66,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     fetchMarketData()
   }, [trade.id, trade.instrument, trade.symbol, trade.entryDate, trade.closeDate])
 
-  // Initialize Chart
+
   useEffect(() => {
     if (!chartContainerRef.current || marketData.length === 0) return
 
@@ -103,10 +103,10 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     })
     seriesRef.current = candlestickSeries
     
-    // Add markers for entry/exit
+
     const markers: SeriesMarker<Time>[] = []
     
-    // Find closest candle to entry time
+
     const entryCandle = marketData.find(d => d.time >= entryTime)
     if (entryCandle) {
         markers.push({
@@ -129,7 +129,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
         })
     }
     
-    // Set initial data up to replay index
+
     const initialData = replayIndex > 0 ? marketData.slice(0, replayIndex) : marketData
     candlestickSeries.setData(initialData)
     createSeriesMarkers(candlestickSeries, markers)
@@ -145,7 +145,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [marketData, resolvedTheme, trade, entryTime, exitTime])
   
-  // Replay Logic
+
   useEffect(() => {
      let intervalId: NodeJS.Timeout
      

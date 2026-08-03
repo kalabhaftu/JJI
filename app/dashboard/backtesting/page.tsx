@@ -6,24 +6,21 @@ import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { BacktestingPageSkeleton } from './components/backtesting-page-skeleton'
 
-// Enable ISR with 5 minute revalidation
 export const revalidate = 300
-// Note: PPR requires Next.js canary
-// export const experimental_ppr = true
 
 async function getBacktests(): Promise<BacktestTrade[]> {
   try {
     const userId = await getUserId()
-    
+
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 5000) // 5 second timeout
-    
+    const timeoutId = setTimeout(() => controller.abort(), 5000)
+
     try {
       const backtests = await db.query.BacktestTrade.findMany({
         where: (bt, { eq }) => eq(bt.userId, userId),
         orderBy: (bt, { desc }) => [desc(bt.createdAt)],
       })
-      
+
       clearTimeout(timeoutId)
 
       return backtests.map((bt: typeof backtests[number]) => ({
@@ -63,7 +60,7 @@ async function getBacktests(): Promise<BacktestTrade[]> {
       throw dbError
     }
   } catch (error) {
-    
+
     return []
   }
 }

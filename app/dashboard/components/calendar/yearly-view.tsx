@@ -54,7 +54,7 @@ function MiniMonth({
     return { pnl, trades }
   }, [calendarData, monthDate, year])
 
-  // Sunday-start grid
+
   const gridDays = useMemo(() => {
     const monthStart = startOfMonth(monthDate)
     const monthEnd = endOfMonth(monthDate)
@@ -65,7 +65,7 @@ function MiniMonth({
 
   return (
     <div className="flex flex-col gap-1.5 p-2.5 md:p-3 rounded-xl border border-border/50 dark:border-border/30 bg-muted/10 dark:bg-card/30 hover:bg-muted/20 dark:hover:bg-card/50 transition-all group">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <span className="text-sm font-black tracking-tight text-muted-foreground/70 group-hover:text-foreground transition-colors italic">
           {format(monthDate, 'MMMM')}
@@ -86,7 +86,7 @@ function MiniMonth({
         )}
       </div>
 
-      {/* Weekday Headers */}
+      {}
       <div className="grid grid-cols-7 gap-[1px]">
         {WEEKDAYS.map((day) => (
           <div
@@ -98,7 +98,7 @@ function MiniMonth({
         ))}
       </div>
 
-      {/* Day Grid */}
+      {}
       <TooltipProvider>
         <div className="grid grid-cols-7 gap-[1px]">
           {gridDays.map((day) => {
@@ -116,17 +116,17 @@ function MiniMonth({
                       "aspect-square w-full rounded-[3px] border flex items-center justify-center transition-all text-[8px] font-bold",
                       !isCurrentMonth && "opacity-0 pointer-events-none",
 
-                      // No trades
+
                       isCurrentMonth &&
                         !hasTrades &&
                         "bg-muted/30 dark:bg-[#0c0e12]/40 border-border/20 dark:border-transparent text-muted-foreground/40 dark:text-muted-foreground/20",
 
-                      // Profit - green
+
                       hasTrades &&
                         classifyOutcome(data.pnl, breakEvenThreshold) === 'win' &&
                         "bg-long/10 border-long/20 dark:bg-long/20 dark:border-long/35 text-long dark:text-slate-200",
 
-                      // Loss - red/orange
+
                       hasTrades &&
                         classifyOutcome(data.pnl, breakEvenThreshold) === 'loss' &&
                         "bg-short/10 border-short/20 dark:bg-short/20 dark:border-short/35 text-short dark:text-slate-200",

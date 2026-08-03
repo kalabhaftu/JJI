@@ -41,7 +41,7 @@ export function GettingStartedChecklist() {
     try {
       localStorage.setItem(CHECKLIST_DISMISSED_KEY, '1')
     } catch {
-      // ignore
+
     }
     setDismissed(true)
   }

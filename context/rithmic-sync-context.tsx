@@ -20,7 +20,7 @@ import {
 } from '@/lib/rithmic/sync-contract'
 
 interface RithmicSyncContextType {
-  // Core connection management
+
   connect: (
     url: string,
     token: string,
@@ -31,17 +31,17 @@ interface RithmicSyncContextType {
   isConnected: boolean;
   connectionStatus: string;
 
-  // Message handling
+
   handleMessage: (message: any) => void;
 
-  // Auto-sync functionality
+
   performSyncForCredential: (
     credentialId: string
   ) => Promise<
     { success: boolean; rateLimited: boolean; message: string } | undefined
   >;
 
-  // Utilities
+
   calculateStartDate: (selectedAccounts: string[]) => string;
   authenticateAndGetAccounts: (credentials: RithmicCredentials) => Promise<
     | { success: false; rateLimited: boolean; message: string }
@@ -78,7 +78,7 @@ export function RithmicSyncContextProvider({
   const isLoading = useUserStore((state) => state.isLoading);
   const trades = useTradesStore((state) => state.trades);
 
-  // Use store for state management
+
   const {
     syncInterval,
     accountsProgress,
@@ -289,19 +289,19 @@ export function RithmicSyncContextProvider({
         }),
         getWebSocketUrl,
       } : {
-        // Core connection management
+
         connect,
         disconnect,
         isConnected,
         connectionStatus,
 
-        // Message handling
+
         handleMessage,
 
-        // Auto-sync functionality
+
         performSyncForCredential,
 
-        // Utilities
+
         calculateStartDate,
         authenticateAndGetAccounts,
         getWebSocketUrl,

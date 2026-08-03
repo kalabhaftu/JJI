@@ -104,8 +104,7 @@ export function calculateAccountBalanceChart(
 ) {
   const dailyMap = getDailyAggregations(trades, breakEvenThreshold)
 
-  // Use calculateTotalStartingBalance for proper prop-firm phase deduplication
-  // This prevents double/triple counting when master account has multiple phases
+
   let startingBalance = 0
   if (activeAccountsData && activeAccountsData.length > 0) {
     startingBalance = calculateTotalStartingBalance(activeAccountsData)
@@ -165,3 +164,4 @@ export function calculateAccountProgression(
     },
   }
 }
+

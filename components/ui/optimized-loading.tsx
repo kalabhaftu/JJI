@@ -20,7 +20,7 @@ function OptimizedAccountsLoading({
   return (
     <div className={cn("min-h-screen bg-background", className)}>
       <div className="container mx-auto px-6 py-8 max-w-7xl">
-        {/* Header skeleton with fade-in animation */}
+        {}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -39,7 +39,7 @@ function OptimizedAccountsLoading({
           </div>
         </motion.div>
         
-        {/* Stats cards skeleton */}
+        {}
         {showStats && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -63,7 +63,7 @@ function OptimizedAccountsLoading({
           </motion.div>
         )}
         
-        {/* Filter section skeleton */}
+        {}
         {showFilters && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -81,7 +81,7 @@ function OptimizedAccountsLoading({
           </motion.div>
         )}
         
-        {/* Account cards skeleton */}
+        {}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

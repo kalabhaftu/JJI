@@ -11,8 +11,9 @@ const systemFont = {
 
 const appFont = systemFont
 
-// Backward-compatible aliases for existing layout imports.
+
 export const satoshi = systemFont
 
 const fontClassName = `${systemFont.variable} font-sans`
 export const fontFamily = `"DM Sans", var(--font-system), ${systemFontStack}`
+

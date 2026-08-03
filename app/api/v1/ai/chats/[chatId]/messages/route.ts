@@ -19,13 +19,13 @@ import { resolveRequestId } from '@/lib/observability/request-id'
 
 export const maxDuration = 60
 
-// Initialize xAI provider
+
 const xai = createOpenAI({
   apiKey: process.env.XAI_API_KEY || '',
   baseURL: process.env.XAI_BASE_URL || 'https://api.x.ai/v1',
 })
 
-// Simple pre-filters to save tokens and block abuse
+
 function isPromptSuspicious(prompt: string): boolean {
   const lowercase = prompt.toLowerCase()
   const patterns = [
@@ -74,7 +74,7 @@ async function resolveDataContext(userId: string, chat: any) {
   let toDate = new Date()
   
   if (dateRange === 'all-time') {
-    fromDate = subDays(new Date(), 3650) // ~10 years back
+    fromDate = subDays(new Date(), 3650)
   } else if (dateRange === 'last-7-days') {
     fromDate = subDays(new Date(), 7)
   } else if (dateRange === 'last-30-days') {
@@ -91,7 +91,7 @@ async function resolveDataContext(userId: string, chat: any) {
   
   let contextText = `User Profile Context:\n`
   
-  // Resolve standard accounts and phase accounts to IDs/numbers
+
   let resolvedAccountIds: string[] = []
   let resolvedAccountNumbers: string[] = []
   let resolvedPhaseAccountIds: string[] = []
@@ -128,7 +128,7 @@ async function resolveDataContext(userId: string, chat: any) {
     )
   }
 
-  // 1. Fetch Trades
+
   const tradesWhere = (table: any, { and, or, inArray, gte, lte, isNull }: any) => {
     const base = and(
       eq(table.userId, userId),
@@ -159,7 +159,7 @@ async function resolveDataContext(userId: string, chat: any) {
     limit: 5_000,
   }) : Promise.resolve([])
 
-  // 2. Fetch Daily Journal Notes
+
   const journalsWhere = (table: any, { and, inArray, gte, lte }: any) => {
     const base = and(
       eq(table.userId, userId),
@@ -181,7 +181,7 @@ async function resolveDataContext(userId: string, chat: any) {
     limit: 366,
   }) : Promise.resolve([])
 
-  // 3. Fetch Weekly Performance Reviews
+
   const weeklyReviewsPromise = includeReviews ? db.query.WeeklyReview.findMany({
     where: (table, { and, gte, lte }) => and(
       eq(table.userId, userId),
@@ -192,7 +192,7 @@ async function resolveDataContext(userId: string, chat: any) {
     limit: 104,
   }) : Promise.resolve([])
 
-  // 4. Fetch AI Performance Reports
+
   const aiReviewsPromise = includeReviews ? db.query.WeeklyAIReview.findMany({
     where: (table, { and, gte, lte }) => and(
       eq(table.userId, userId),
@@ -203,7 +203,7 @@ async function resolveDataContext(userId: string, chat: any) {
     limit: 104,
   }) : Promise.resolve([])
 
-  // 5. Fetch Accounts/Metrics
+
   const accountsPromise = includeAccounts ? db.query.MasterAccount.findMany({
     where: (table, { and, eq, inArray }) => and(
       eq(table.userId, userId),
@@ -225,7 +225,7 @@ async function resolveDataContext(userId: string, chat: any) {
     accountsPromise
   ])
 
-  // Build context text
+
   if (tradesList.length > 0) {
     const recentTrades = tradesList.slice(-50)
     contextText += `### TRADING HISTORY (Showing last ${recentTrades.length} of ${tradesList.length} trades in range):\n`
@@ -233,7 +233,7 @@ async function resolveDataContext(userId: string, chat: any) {
       return `- Date: ${t.entryDate}, Symbol: ${t.instrument}, Side: ${t.side}, Net PnL: $${t.pnl}, Hold Time: ${t.timeInPosition} mins, Quantity: ${t.quantity}, Setup Tag: ${t.setup || 'None'}, Rule Broken: ${t.ruleBroken ? 'Yes' : 'No'}`
     }).join('\n') + '\n\n'
     
-    // Add summary stats
+
     const totalTrades = tradesList.length
     const wins = tradesList.filter(t => t.pnl > 10).length
     const losses = tradesList.filter(t => t.pnl < -10).length
@@ -244,7 +244,7 @@ async function resolveDataContext(userId: string, chat: any) {
     contextText += `### PERFORMANCE SUMMARY STATS:\n`
     contextText += `- Total Trade Executions: ${totalTrades}\n- Win Rate: ${winRate.toFixed(1)}%\n- Wins: ${wins}, Losses: ${losses}, Breakevens: ${breakevens}\n- Total Net P&L: $${totalPnL.toFixed(2)}\n\n`
     
-    // Add comments
+
     const notedTrades = tradesList.filter(t => t.comment)
     if (notedTrades.length > 0) {
       contextText += `### INDIVIDUAL TRADE COMMENTS:\n`
@@ -284,7 +284,7 @@ async function resolveDataContext(userId: string, chat: any) {
     }).join('\n') + '\n\n'
   }
 
-  // Also include standard accounts if applicable
+
   const standardAccountsWhere = (table: any, { and, eq, or, inArray }: any) => and(
     eq(table.userId, userId),
     eq(table.isArchived, false),
@@ -382,7 +382,7 @@ export async function POST(
       return createErrorResponse('Chat not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
-    // Check general AI Access and Limits
+
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
       return createErrorResponse(aiGuard.reason ?? 'AI access is unavailable.', 403, undefined, 'PAYWALL', requestId)
@@ -417,8 +417,8 @@ export async function POST(
     }
 
     const body = await request.json()
-    // Web uses `prompt`; mobile historically used `content`. Accept both so
-    // clients stay interoperable during rolling deployments.
+
+
     const prompt = typeof body?.prompt === 'string' ? body.prompt : body?.content
 
     if (!prompt || !prompt.trim()) {
@@ -429,7 +429,7 @@ export async function POST(
       return createErrorResponse('Message content is too long', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
-    // 1. Abuse Protection Pre-filters
+
     if (isPromptSuspicious(prompt)) {
       return createErrorResponse(
         'Security Alert: Unsupported command execution or prompt injection attempt detected. Request blocked.',
@@ -450,21 +450,21 @@ export async function POST(
       )
     }
 
-    // Save user's message
+
     await db.insert(schema.AIChatMessage).values({
       chatId,
       role: 'user',
       content: prompt,
     })
 
-    // 2. Fetch Chat History
+
     const history = await db.query.AIChatMessage.findMany({
       where: (table, { eq }) => eq(table.chatId, chatId),
       orderBy: (table, { asc }) => [asc(table.createdAt)],
       limit: 12,
     })
 
-    // 3. Resolve Data Context
+
     const contextFingerprint = createHash('sha256').update(JSON.stringify({
       accounts: chat.accounts ?? [],
       dateRange: chat.dateRange,
@@ -479,7 +479,7 @@ export async function POST(
       CacheTTL.VERY_LONG
     )
 
-    // 4. Construct System Prompt
+
     const systemPrompt = `You are The Trading Intelligence Assistant. You operate as a professional trading analyst and performance coach.
 You must remain objective, data-driven, and non-emotional.
 Do NOT be overly agreeable. If the user's data shows bad risk management, overtrading, or gambling, call it out directly with evidence. Do not offer emotional reassurance.
@@ -519,14 +519,14 @@ ${dataContext}`
       content: msg.content,
     }))
 
-    // Add latest prompt if it wasn't in history yet
+
     if (formattedMessages.length === 0 || formattedMessages[formattedMessages.length - 1]?.content !== prompt) {
       formattedMessages.push({ role: 'user', content: prompt })
     }
 
     const startTime = Date.now()
 
-    // 5. Call Grok/xAI and stream response
+
     const result = streamText({
       model: xai(process.env.XAI_MODEL || 'grok-4-1-fast-reasoning'),
       system: systemPrompt,
@@ -537,7 +537,7 @@ ${dataContext}`
         const completionTokens = event.usage?.outputTokens || 0
         const totalTokens = event.usage?.totalTokens || 0
         
-        // Grok price approximation
+
         const promptCost = (promptTokens / 1000000) * 2.00
         const completionCost = (completionTokens / 1000000) * 10.00
         const estimatedCost = promptCost + completionCost

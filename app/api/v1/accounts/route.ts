@@ -40,13 +40,13 @@ export async function GET(request: NextRequest) {
     const typeFilter = searchParams.get('type') || 'all'
     const search = searchParams.get('search')?.toLowerCase() || ''
 
-    // 1. Fetch live accounts
+
     const liveAccounts = await db.query.Account.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       orderBy: (table, { desc }) => [desc(table.createdAt)],
     })
 
-    // 2. Fetch prop firm accounts
+
     const propFirmAccounts = await db.query.MasterAccount.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       with: { PhaseAccount: { orderBy: (table, { asc }) => [asc(table.phaseNumber)] } }
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
       return isFundedPhaseForEvaluation(evaluationType, phaseNumber)
     }
 
-    // 3. Normalize to UnifiedAccount schema
+
     const unified: any[] = []
 
     liveAccounts.forEach(acc => {
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
         accountType: 'live',
         displayName: acc.name || acc.number,
         tradeCount: 0,
-        status: 'active', // Live accounts don't inherently have failed/passed
+        status: 'active',
         currentPhase: null,
         createdAt: acc.createdAt,
         isArchived: acc.isArchived || false,
@@ -111,10 +111,10 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // 4. Apply Filters (Server-side simulation)
+
     const filtered = unified.filter(acc => {
       if (statusFilter === 'all_inclusive') {
-         // Type filter
+
          if (typeFilter !== 'all' && acc.accountType !== typeFilter) return false
          
          if (search) {
@@ -129,14 +129,14 @@ export async function GET(request: NextRequest) {
          return true
       }
 
-      // Archival filter: The 'archived' tab shows ONLY archived. Other tabs EXCLUDE archived.
+
       if (statusFilter === 'archived') {
          if (!acc.isArchived) return false
       } else {
          if (acc.isArchived) return false
          
          const isPassed = acc.status === 'passed'
-         if (isPassed) return false // Implicit global hide for passed phases
+         if (isPassed) return false
 
          const shouldHideByDefault = acc.status === 'failed' || acc.status === 'pending'
          if (statusFilter !== 'all') {
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest) {
          }
       }
 
-      // Type filter
+
       if (typeFilter !== 'all' && acc.accountType !== typeFilter) return false
       
       if (search) {
@@ -162,16 +162,14 @@ export async function GET(request: NextRequest) {
       return true
     })
 
-    // 5. Paginate
+
     const total = filtered.length
     
-    // Sort logic (Active funded -> active phase -> live -> failed) can be added here if needed
-    // Usually sorted by creation descending, already mostly sorted.
-    
+
     const offset = (page - 1) * limit
     const paginated = filtered.slice(offset, offset + limit)
 
-    // 6. Fetch detailed math data ONLY for the paginated slice
+
     const liveNumbersToFetch = paginated.filter(a => a.accountType === 'live').map(a => a.number)
     const propPhaseIdsToFetch = paginated.filter(a => a.accountType === 'prop-firm').map(a => a.id)
     const propNumbersToFetch = paginated.filter(a => a.accountType === 'prop-firm').map(a => a.number)
@@ -219,7 +217,7 @@ export async function GET(request: NextRequest) {
       })
      }
     
-    // 7. Calculate true equity & grouped counts
+
     const finalAccounts = paginated.map(acc => {
       let calcTrades = []
       if (acc.accountType === 'prop-firm') {
@@ -240,7 +238,7 @@ export async function GET(request: NextRequest) {
       
       const pnl = calculatedEquity - (acc.startingBalance || 0)
       
-      // Grouping logic for clean grouped trade counts
+
       const groupedCount = calcTrades.length > 0 ? buildGroupedTradeCountSummary(calcTrades as any).groupedTradeCount : 0
       
       return {

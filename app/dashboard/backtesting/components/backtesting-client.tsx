@@ -44,9 +44,9 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
   const refreshBacktests = async () => {
     if (isDemoMode) return
     try {
-      // Add timeout to prevent hanging requests
+
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000)
 
       const response = await fetch('/api/v1/backtesting', {
         signal: controller.signal,
@@ -97,7 +97,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
       setBacktests(transformedBacktests)
     } catch (err) {
       reportClientError(err, { operation: 'load-backtests', route: '/dashboard/backtesting' })
-      // Only show error toast if it's not an abort error
+
       if (err instanceof Error && err.name !== 'AbortError') {
         toast.error('Failed to load backtests')
       }
@@ -404,14 +404,13 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
             setIsAddDialogOpen(false)
             toast.success('Backtest added successfully')
 
-            // Refresh in background with small delay to ensure UI is smooth
             setTimeout(async () => {
               await refreshBacktests()
             }, 100)
           } catch (error) {
             reportClientError(error, { operation: 'create-backtest', route: '/dashboard/backtesting' })
             toast.error('Failed to create backtest')
-            throw error // Re-throw to prevent dialog close on error
+            throw error
           }
         }}
       />

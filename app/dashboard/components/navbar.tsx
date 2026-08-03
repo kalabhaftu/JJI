@@ -86,7 +86,7 @@ export default function Navbar() {
       className="navbar-slide-in sticky top-0 z-20 flex w-full items-center border-b border-sidebar-border/60 bg-sidebar/95 text-foreground backdrop-blur-md lg:bg-sidebar/80"
     >
       <div className="flex h-11 w-full items-center justify-between px-3 sm:px-4">
-        {/* Left: Sidebar mobile trigger & logo */}
+        {}
         <div className="flex items-center gap-3">
           <SidebarTrigger className="lg:hidden" />
           <Link href="/dashboard" className="lg:hidden flex items-center">
@@ -94,7 +94,7 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Right: Account Selector + Filters + Template + Import + Notifications + Theme + Profile */}
+        {}
         <div className="flex items-center gap-1 sm:gap-1.5">
           <Button
             variant="nav"
@@ -116,7 +116,7 @@ export default function Navbar() {
             <SlidersHorizontal aria-hidden />
           </Button>
 
-          {/* Account Selector */}
+          {}
           <Popover open={!isMobile && accountPopoverOpen} onOpenChange={(open) => {
             setAccountPopoverOpen(open)
             if (open) emitTourEvent('account-filter.changed')
@@ -141,7 +141,7 @@ export default function Navbar() {
             <DashboardDisplayModeSelector />
           </div>
 
-          {/* Filters - hidden on mobile */}
+          {}
           <div className="hidden sm:block">
             <CombinedFilters
               onSave={() => setFiltersPopoverOpen(false)}
@@ -150,12 +150,12 @@ export default function Navbar() {
             />
           </div>
 
-          {/* Template Selector - hidden on mobile */}
+          {}
           <div className="hidden md:block">
             <TemplateSelector />
           </div>
 
-          {/* Quick Add Trade - always visible on desktop */}
+          {}
           <Button
             variant="nav"
             size="navIcon"
@@ -168,18 +168,18 @@ export default function Navbar() {
             <Plus aria-hidden />
           </Button>
 
-          {/* Import - always visible, icon only on mobile */}
+          {}
           <ImportButton />
 
-          {/* Notifications - always visible */}
+          {}
           <NotificationCenter />
 
-          {/* Theme - hidden on mobile, in profile dropdown */}
+          {}
           <div className="hidden sm:block">
             <ThemeSwitcher />
           </div>
 
-          {/* Profile dropdown - includes mobile-only items */}
+          {}
           <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="nav" size="navIcon" className="relative rounded-full p-0" aria-label="Open profile menu">
@@ -228,7 +228,7 @@ export default function Navbar() {
                 </Link>
               </DropdownMenuItem>
 
-              {/* Mobile-only: Theme toggle in menu */}
+              {}
               <div className="sm:hidden px-2 py-1.5">
                 <div className="flex items-center justify-between">
                   <span className="text-sm">Theme</span>

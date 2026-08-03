@@ -28,7 +28,7 @@ export default function EditModeControls() {
   const handleSave = async () => {
     if (!activeTemplate || !currentLayout) return
     
-    // Don't save temporary/fallback template or default template
+
     if (activeTemplate.id === 'default-temp' || activeTemplate.id === 'fallback') {
       setTimeout(() => toast.error('Cannot save temporary template. Please wait for templates to load.'), 0)
       return
@@ -104,7 +104,7 @@ export default function EditModeControls() {
         </Button>
       </div>
 
-      {/* Unsaved Changes Dialog */}
+      {}
       <AlertDialog open={showUnsavedDialog} onOpenChange={setShowUnsavedDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>

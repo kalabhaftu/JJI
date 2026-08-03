@@ -30,11 +30,10 @@ export function FileDropzone({
 }: FileDropzoneProps) {
     const { getRootProps, getInputProps, isDragActive, isDragReject, fileRejections } = useDropzone({
         onDrop,
-        multiple: false, // Default to single file, can be overridden by props
+        multiple: false,
         ...dropzoneProps,
     })
 
-    // Mini variant (for grid cells, avatars, etc.)
     if (variant === 'mini') {
         return (
             <div
@@ -58,7 +57,6 @@ export function FileDropzone({
         )
     }
 
-    // Default variant (large upload area)
     return (
         <div className={cn("w-full space-y-2", className)}>
             <div
@@ -79,10 +77,10 @@ export function FileDropzone({
                 {value ? (
                     <div className="flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-200">
                         <div className="p-3 bg-background rounded-full shadow-sm mb-3 relative group">
-                            {/* File Icon */}
+                            {}
                             <FileText className="h-8 w-8 text-primary" />
 
-                            {/* Remove Button Overlay */}
+                            {}
                             {onClear && (
                                 <button
                                     type="button"
@@ -137,7 +135,7 @@ export function FileDropzone({
                 )}
             </div>
 
-            {/* Error Feedback */}
+            {                    }
             {fileRejections.length > 0 && (
                 <div role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
                     <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />

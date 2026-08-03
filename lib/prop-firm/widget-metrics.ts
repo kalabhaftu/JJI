@@ -178,7 +178,7 @@ export function buildPropFirmDailyDrawdown(
   const dailyDrawdownPercent = Number(phase.dailyDrawdownPercent || 0)
   const dailyLimit = accountSize * (dailyDrawdownPercent / 100)
 
-  // 1. If API already has a breach state and a frozen dailyStartBalance, use it
+
   if (apiDrawdown?.isBreached && apiDrawdown?.dailyStartBalance) {
     const dailyStartBalance = Number(apiDrawdown.dailyStartBalance)
     const dailyDrawdownUsed = Math.max(0, dailyStartBalance - Number(apiDrawdown.currentEquity || 0))
@@ -196,7 +196,7 @@ export function buildPropFirmDailyDrawdown(
     }
   }
 
-  // 2. Chronological simulation fallback for breach freeze
+
   const breach = findFirstBreach(account, trades, timezone)
   if (breach) {
     return {
@@ -211,7 +211,7 @@ export function buildPropFirmDailyDrawdown(
     }
   }
 
-  // 3. Active account calculations
+
   const todayKey = getPropFirmDateKey(now, timezone)
   let pnlBeforeToday = 0
   let todayPnl = 0
@@ -248,3 +248,4 @@ export function formatPropFirmAxisMoney(value: number) {
   const amount = Math.round(Number(value) || 0)
   return `$${amount.toLocaleString('en-US')}`
 }
+

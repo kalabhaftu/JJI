@@ -1,6 +1,6 @@
 import { reportError } from '@/lib/observability/report-error'
 export interface RithmicCredentialSet {
-  id: string // unique identifier for this credential set
+  id: string
   credentials: {
     username: string
     password: string
@@ -9,8 +9,8 @@ export interface RithmicCredentialSet {
   }
   selectedAccounts: string[]
   lastSyncTime: string
-  name?: string // optional display name for the credential set
-  allAccounts?: boolean // flag to indicate if all accounts should be synced
+  name?: string
+  allAccounts?: boolean
 }
 
 const STORAGE_KEY = 'rithmic_sync_data'
@@ -63,7 +63,7 @@ export function getAllRithmicData(): Record<string, RithmicCredentialSet> {
     const parsedData = JSON.parse(data)
     const validatedData: Record<string, RithmicCredentialSet> = {}
     
-    // Validate each credential set
+
     Object.entries(parsedData).forEach(([id, cred]) => {
       if (isValidCredentialSet(cred)) {
         validatedData[id] = cred
@@ -73,7 +73,7 @@ export function getAllRithmicData(): Record<string, RithmicCredentialSet> {
     return validatedData
   } catch (error) {
     reportError(error, { surface: 'client', operation: 'read-all-rithmic-credentials' })
-    // If there's an error, clear the corrupted data
+
     localStorage.removeItem(STORAGE_KEY)
     return {}
   }
@@ -107,12 +107,12 @@ export function updateLastSyncTime(id: string): void {
   }
 }
 
-// Helper to generate a unique ID for new credential sets
-// Uses username as the ID since synchronizations use username as accountId
+
 export function generateCredentialId(username: string): string {
   if (!username) {
-    // Fallback for edge cases (should not happen in normal flow)
+
     return `cred_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
   }
   return username
 }
+

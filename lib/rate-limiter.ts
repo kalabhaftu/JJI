@@ -8,7 +8,7 @@ import { ErrorResponses } from '@/lib/api-response'
 import { getSafeErrorMessage, reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// ─── Limiter config type ───
+
 export interface LimiterConfig {
   points: number
   duration: number
@@ -97,11 +97,10 @@ function rateLimitHeaders(
   }
 }
 
-// @upstash/ratelimit uses this only to suppress duplicate requests within one
-// process. It is not a production fallback limiter.
+
 const ephemeralCache = new Map()
 
-// ─── Upstash Limiter Instances ───
+
 const ratelimiterInstances = new Map<string, Ratelimit>()
 const UPSTASH_TIMEOUT_MS = 1_500
 
@@ -137,9 +136,8 @@ async function consumeUpstashLimit(
   requestId?: string,
 ) {
   const result = await getUpstashLimiter(limiter).limit(key)
-  // Upstash intentionally returns success after its timeout. Sensitive JJI
-  // policies must convert that result back into the configured fail-closed
-  // decision instead of silently bypassing enforcement.
+
+
   if (isUpstashTimeout(result)) {
     return {
       unavailable: handleUnavailableLimiter(
@@ -154,7 +152,7 @@ async function consumeUpstashLimit(
   return { unavailable: null, result }
 }
 
-// ─── Exported limiter configs (drop-in compatible with existing imports) ───
+
 export const apiLimiter: LimiterConfig = { points: 100, duration: 60, failClosed: true }
 export const authenticatedReadLimiter: LimiterConfig = { points: 100, duration: 60 }
 export const sensitiveMutationLimiter: LimiterConfig = { points: 60, duration: 60, failClosed: true }
@@ -173,14 +171,11 @@ export const publicLimiter: LimiterConfig = { points: 30, duration: 60 }
 export const errorReportLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
 export const emailOtpLimiter: LimiterConfig = { points: 3, duration: 3600, failClosed: true }
 
-/**
- * Get identifier for rate limiting.
- * Uses user ID if available, falls back to IP.
- */
+
 async function getRateLimitIdentifier(req: NextRequest): Promise<string> {
   try {
-    // Resolve the canonical internal identity only for authenticated requests.
-    // Dynamic import avoids a module cycle: server/auth imports this limiter.
+
+
     const { getResolvedUserIdentitySafe } = await import('@/server/user-identity')
     const identity = await getResolvedUserIdentitySafe()
     if (identity?.internalUserId) {
@@ -238,12 +233,7 @@ export async function consumeRateLimitKey(
   }
 }
 
-/**
- * Apply rate limiting to a request.
- * Returns null if allowed, or a 429/503 response when enforcement blocks.
- *
- * Uses @upstash/ratelimit for distributed rate limiting.
- */
+
 export async function applyRateLimit(
   req: NextRequest,
   limiter: LimiterConfig = apiLimiter
@@ -286,9 +276,7 @@ export async function applyRateLimit(
   }
 }
 
-/**
- * Wrapper for API route handlers with rate limiting.
- */
+
 function withRateLimit(
   handler: (req: NextRequest) => Promise<NextResponse>,
   limiter: LimiterConfig = apiLimiter
@@ -301,3 +289,4 @@ function withRateLimit(
     return handler(req)
   }
 }
+

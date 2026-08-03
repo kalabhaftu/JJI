@@ -28,9 +28,8 @@ export interface DataProviderHourFilter {
 
 export function useDataProviderFilterState(timezone: string | undefined) {
   const [instruments, setInstruments] = useState<string[]>([])
-  // Initialize synchronously from localStorage so the first render already has the
-  // saved selection - this eliminates the flash where accountNumbers=[] before the
-  // data-provider useEffect fires to restore saved settings.
+
+
   const [accountNumbers, setAccountNumbers] = useState<string[]>(() => {
     if (typeof window === 'undefined') return []
     try {

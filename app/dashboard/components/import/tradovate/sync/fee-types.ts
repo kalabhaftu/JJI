@@ -9,7 +9,7 @@ export const TRADOVATE_FEE_TYPE_KEYS = [
 
 export type TradovateFeeTypeKey = (typeof TRADOVATE_FEE_TYPE_KEYS)[number]
 
-/** Default: commission only (matches legacy behavior) */
+
 export const DEFAULT_INCLUDED_FEE_TYPES: Record<TradovateFeeTypeKey, boolean> = {
   commission: true,
   exchangeFee: false,

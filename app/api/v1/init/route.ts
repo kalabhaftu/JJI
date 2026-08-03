@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   try {
     const payload = await getInitBootstrapData()
     
-    // Background Geo Logging
+
     if (payload.isAuthenticated && payload.user?.id) {
       const headerList = await headers()
       const countryCode = normalizeCountryCode(headerList.get('x-vercel-ip-country'))
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
       const country = countryCode ? getCountryLabel(undefined, countryCode) : null
       
       if (countryCode || city) {
-        // Run completely asynchronously without blocking the payload delivery
+
         db.query.UserGeoLog.findFirst({
           where: (table, { eq }) => eq(table.userId, payload.user.id),
           orderBy: (table, { desc }) => [desc(table.createdAt)]

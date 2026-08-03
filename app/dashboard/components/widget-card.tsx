@@ -47,21 +47,15 @@ function getWidgetDescription(title: string): string | null {
 
 export interface WidgetCardProps extends Partial<Pick<WidgetSurfaceContract, 'title' | 'actions' | 'mobileMinHeight'>> {
   children: React.ReactNode
-  /** Widget title shown in the header */
+
   headerRight?: React.ReactNode
-  /** Whether this is a KPI card (compact, no border-radius padding) */
+
   isKpi?: boolean
   className?: string
   noPadding?: boolean
 }
 
-/**
- * Shared widget wrapper - applies the reports page design language
- * to all dashboard widgets for visual consistency.
- *
- * MOBILE: renders with GPU-safe flat styles (no glass, no blur, no isolation).
- * DESKTOP: renders with full glass/shadow effects.
- */
+
 export function WidgetCard({
   children,
   title,
@@ -76,10 +70,7 @@ export function WidgetCard({
   const isMobile = useIsMobile()
   const isGlass = widgetStyle === 'glass'
 
-  /* ── MOBILE: flat, GPU-safe rendering ─────────────────────────── */
-  /* No isolation, no z-index, no backdrop-blur, fully opaque bg,
-   * no box-shadow, no group hover effects.
-   * This eliminates ALL GPU compositing layer sources. */
+
   if (isMobile) {
     if (isKpi) {
       return (
@@ -140,7 +131,7 @@ export function WidgetCard({
     )
   }
 
-  /* ── DESKTOP: full glass/shadow rendering ──────────────────────── */
+
   if (isKpi) {
     return (
       <div
@@ -239,30 +230,23 @@ export function ChartTooltip({ active, payload, label }: any) {
   )
 }
 
-/**
- * Standard chart color constants matching reports page.
- * CSS var strings for stylesheet usage.
- */
+
 export const CHART_COLORS = {
   bullish: 'hsl(var(--chart-bullish))',
   bearish: 'hsl(var(--chart-bearish))',
   muted: 'hsl(220, 15%, 55%)',
 } as const
 
-/**
- * Resolved color values for Recharts SVG contexts where CSS variables
- * don't reliably work in fill/stroke attributes.
- * These match the CSS vars in globals.css.
- */
+
 const RECHARTS_COLORS = {
   light: {
-    bullish: '#83b885',   // --chart-bullish: 123 27% 62%
-    bearish: '#c4572a',   // --chart-bearish: 25 70% 45%
-    muted: '#7b8494',     // neutral muted
+    bullish: '#83b885',
+    bearish: '#c4572a',
+    muted: '#7b8494',
   },
   dark: {
-    bullish: '#83b885',   // same in dark
-    bearish: '#c4572a',   // same in dark
+    bullish: '#83b885',
+    bearish: '#c4572a',
     muted: '#7b8494',
   },
 } as const

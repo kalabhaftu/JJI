@@ -13,7 +13,7 @@ interface CircularProgressProps {
   color?: string
   backgroundColor?: string
   type?: 'circle' | 'gauge' | 'segmented-gauge'
-  /** For segmented-gauge: breakdown of wins/breakeven/losses */
+
   segments?: { wins: number; breakeven: number; losses: number }
 }
 
@@ -32,11 +32,8 @@ export function CircularProgress({
   const isGauge = type === 'gauge' || type === 'segmented-gauge'
   const isSegmented = type === 'segmented-gauge' && segments
 
-  // For gauge: semi-circle (180 degrees)
-  // For circle: full circle (360 degrees)
   const circumference = isGauge ? radius * Math.PI : radius * 2 * Math.PI
 
-  // For segmented gauge, calculate segment lengths
   const getSegmentedPaths = () => {
     if (!segments) return null
     const total = segments.wins + segments.breakeven + segments.losses
@@ -56,7 +53,6 @@ export function CircularProgress({
   const segmentData = getSegmentedPaths()
   const offset = circumference - (value / 100) * circumference
 
-  // Arc path for semi-circle (left to right)
   const arcPath = `M ${strokeWidth / 2} ${size / 2} A ${radius} ${radius} 0 0 1 ${size - strokeWidth / 2} ${size / 2}`
   const circlePath = `M ${size / 2} ${strokeWidth / 2} A ${radius} ${radius} 0 1 1 ${size / 2} ${size - strokeWidth / 2} A ${radius} ${radius} 0 1 1 ${size / 2} ${strokeWidth / 2}`
 
@@ -68,7 +64,7 @@ export function CircularProgress({
         className={cn(isGauge ? '' : 'transform -rotate-90')}
         viewBox={`0 0 ${size} ${isGauge ? size / 2 + strokeWidth : size}`}
       >
-        {/* Background arc/circle */}
+        {                           }
         <path
           d={isGauge ? arcPath : circlePath}
           stroke={backgroundColor}
@@ -79,7 +75,7 @@ export function CircularProgress({
 
         {isSegmented && segmentData ? (
           <>
-            {/* Win segment (green) - starts from left */}
+            {                                            }
             <path
               d={arcPath}
               stroke="hsl(var(--chart-profit))"
@@ -90,7 +86,7 @@ export function CircularProgress({
               strokeLinecap="round"
               className="transition-all duration-500 ease-in-out"
             />
-            {/* Breakeven segment (gray) - starts after wins */}
+            {                                                  }
             {segmentData.beLength > 0 && (
               <path
                 d={arcPath}
@@ -103,7 +99,7 @@ export function CircularProgress({
                 className="transition-all duration-500 ease-in-out"
               />
             )}
-            {/* Loss segment (red) - starts after wins + breakeven */}
+            {                                                        }
             <path
               d={arcPath}
               stroke="hsl(var(--chart-loss))"
@@ -116,7 +112,7 @@ export function CircularProgress({
             />
           </>
         ) : (
-          /* Single color progress arc/circle */
+
           <path
             d={isGauge ? arcPath : circlePath}
             stroke={color}
@@ -130,7 +126,7 @@ export function CircularProgress({
         )}
       </svg>
 
-      {/* Segment counts below gauge */}
+      {                                }
       {isSegmented && segmentData && segments && (
         <div className="flex items-center justify-center gap-3 mt-1">
           <span className="text-xs font-bold text-profit">{segments.wins}</span>

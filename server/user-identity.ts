@@ -71,12 +71,12 @@ export async function getResolvedUserIdentitySafe(): Promise<ResolvedUserIdentit
   }
 }
 
-/** Canonical application owner for server-side data access. */
+
 export async function getInternalUserId(): Promise<string> {
   return (await getResolvedUserIdentity()).internalUserId
 }
 
-/** Nullable canonical application owner for server actions that fail soft. */
+
 export async function getInternalUserIdSafe(): Promise<string | null> {
   return (await getResolvedUserIdentitySafe())?.internalUserId ?? null
 }

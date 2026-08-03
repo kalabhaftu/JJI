@@ -7,7 +7,7 @@ import { consumeRateLimitKey, thorLimiter } from '@/lib/rate-limiter';
 import { getClientIp } from '@/lib/security/client-ip';
 import { reportApiHandlerError } from '@/lib/api/canonical-handler';
 
-// Common authentication function to use across all methods
+
 async function authenticateRequest(req: NextRequest) {
   const ip = getClientIp(req.headers);
   const { allowed } = await consumeRateLimitKey(`thor:${ip}`, thorLimiter);
@@ -36,7 +36,7 @@ async function authenticateRequest(req: NextRequest) {
   const token = authHeader.split(' ')[1];
   
   try {
-    // Verify the token by finding the user
+
     const user = await db.query.User.findFirst({
       where: eq(schema.User.thorToken as any, token)
     });
@@ -100,12 +100,12 @@ export async function POST(req: NextRequest) {
     const user = auth.user!;
     const data: ThorRequest = await req.json();
     
-    // Transform the data to match the Trade schema
+
     const trades: any[] = data.dates.flatMap(dateData => 
       dateData.trades.map(trade => {
         const entryTime = new Date(trade.entry_time)
         const exitTime = new Date(trade.exit_time)
-        const timeInPosition = Math.round((exitTime.getTime() - entryTime.getTime()) / 1000) // in seconds
+        const timeInPosition = Math.round((exitTime.getTime() - entryTime.getTime()) / 1000)
 
         return {
           id: `${dateData.date}-${trade.symbol}-${trade.entry_time}-${trade.quantity}`,
@@ -173,7 +173,7 @@ export async function GET(req: NextRequest) {
     
     const user = auth.user!;
     
-    // Get query parameters
+
     const searchParams = req.nextUrl.searchParams;
     const accountNumber = searchParams.get('accountNumber');
     
@@ -189,7 +189,7 @@ export async function GET(req: NextRequest) {
     const fromDate = searchParams.get('from');
     const toDate = searchParams.get('to');
     
-    // Build conditions
+
     const conditions = [
       eq(schema.Trade.userId, user.id),
       eq(schema.Trade.accountNumber, accountNumber)
@@ -203,7 +203,7 @@ export async function GET(req: NextRequest) {
       conditions.push(lte(schema.Trade.entryDate, new Date(toDate).toISOString()));
     }
     
-    // Get trades
+
     const trades = await db.query.Trade.findMany({
       where: (table, { and }) => and(...conditions),
       orderBy: (table, { desc }) => [desc(table.entryDate)],
@@ -211,7 +211,7 @@ export async function GET(req: NextRequest) {
       offset
     });
     
-    // Get total count for pagination
+
     const totalCountResult = await db.select({ count: count() })
       .from(schema.Trade)
       .where(and(...conditions));
@@ -251,7 +251,7 @@ export async function DELETE(req: NextRequest) {
     
     const user = auth.user!;
     
-    // Get accountNumber from query parameters
+
     const searchParams = req.nextUrl.searchParams;
     const accountNumber = searchParams.get('accountNumber');
     
@@ -262,7 +262,7 @@ export async function DELETE(req: NextRequest) {
       }, { status: 400 });
     }
     
-    // Delete trades for this user and specific account
+
     const result = await db.delete(schema.Trade)
       .where(and(
         eq(schema.Trade.userId, user.id),

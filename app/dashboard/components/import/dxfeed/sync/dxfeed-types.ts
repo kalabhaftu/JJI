@@ -20,11 +20,7 @@ export interface DxFeedLoginResponse {
   tradingApiVersion?: number
 }
 
-/**
- * Stored as JSON in the Synchronization.token field.
- * Contains both the access token and the historical API host
- * returned by the auth endpoint.
- */
+
 export interface DxFeedStoredCredentials {
   accessToken: string
   historicalHost: string

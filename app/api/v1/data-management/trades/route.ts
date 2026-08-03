@@ -25,8 +25,7 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '50', 10) || 50))
     const offset = (page - 1) * limit
 
-    // Fetch trades for this user without any specific account/status filters
-    // This is for the Data Management "everything" view
+
     const [trades, totalResult] = await Promise.all([
       db.query.Trade.findMany({
         where: (table, { and, or, eq, isNull, not, inArray }) => and(
@@ -34,7 +33,7 @@ export async function GET(request: NextRequest) {
           or(
             isNull(table.phaseAccountId),
             not(
-              // Note: relation filter approximated; may require exists/notExists in full Drizzle setup
+
               inArray(schema.PhaseAccount.status, ['pending', 'pending_approval'])
             )
           )

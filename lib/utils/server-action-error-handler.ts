@@ -7,10 +7,7 @@ let globalErrorHandlersAttached = false
 let chunkRecoveryInProgress = false
 let chunkFailureToastShown = false
 
-/**
- * Detects if an error is a Server Action mismatch error
- * This happens when the client has old action IDs after a new deployment
- */
+
 function isServerActionMismatchError(error: unknown): boolean {
   if (!error) return false
 
@@ -23,9 +20,7 @@ function isServerActionMismatchError(error: unknown): boolean {
   )
 }
 
-/**
- * Detects chunk loading/runtime asset failures.
- */
+
 function isChunkLoadError(error: unknown): boolean {
   if (!error) return false
 
@@ -70,7 +65,7 @@ function handleChunkRecovery(showToast: boolean): boolean {
     return true
   }
 
-  // Second failure: stop auto-looping and show explicit action.
+
   chunkRecoveryInProgress = false
 
   if (showToast && !chunkFailureToastShown) {
@@ -91,19 +86,14 @@ function handleChunkRecovery(showToast: boolean): boolean {
   return true
 }
 
-/**
- * Detects if an error is a deployment-related error
- */
+
 function isDeploymentError(error: unknown): boolean {
   if (!error) return false
 
   return isServerActionMismatchError(error) || isChunkLoadError(error)
 }
 
-/**
- * Handles Server Action errors gracefully
- * Shows user-friendly message and auto-refreshes if needed
- */
+
 export function handleServerActionError(error: unknown, options?: {
   autoRefresh?: boolean
   refreshDelay?: number
@@ -142,22 +132,19 @@ export function handleServerActionError(error: unknown, options?: {
         })
       }
     } else if (autoRefresh) {
-      // Silent refresh without toast
+
       setTimeout(() => {
         reloadPage()
       }, refreshDelay)
     }
 
-    return true // Error was handled
+    return true
   }
 
-  return false // Error was not a deployment error
+  return false
 }
 
-/**
- * Wraps an async function with Server Action error handling
- * Usage: const safeAction = withServerActionErrorHandling(myAction)
- */
+
 function withServerActionErrorHandling<T extends (...args: any[]) => Promise<any>>(
   fn: T,
   options?: {
@@ -175,38 +162,35 @@ function withServerActionErrorHandling<T extends (...args: any[]) => Promise<any
       const wasHandled = handleServerActionError(error, options)
 
       if (!wasHandled) {
-        // If it wasn't a deployment error, call the custom error handler
+
         options?.onError?.(error)
-        throw error // Re-throw for normal error handling
+        throw error
       }
 
-      // Return a rejected promise for deployment errors
+
       return Promise.reject(error)
     }
   }) as T
 }
 
-/**
- * Global error handler for Server Actions
- * Can be attached to window.addEventListener('error') or 'unhandledrejection'
- */
+
 export function setupGlobalServerActionErrorHandler() {
   if (typeof window === 'undefined') return
   if (globalErrorHandlersAttached) return
 
   globalErrorHandlersAttached = true
 
-  // Clear one-time retry guard after stable runtime window.
+
   window.setTimeout(() => {
     window.sessionStorage.removeItem(CHUNK_RETRY_KEY)
     chunkRecoveryInProgress = false
     chunkFailureToastShown = false
   }, CHUNK_RETRY_CLEAR_DELAY_MS)
 
-  // Handle unhandled promise rejections (Server Actions often throw these)
+
   window.addEventListener('unhandledrejection', (event) => {
     if (isDeploymentError(event.reason)) {
-      event.preventDefault() // Prevent console error
+      event.preventDefault()
       handleServerActionError(event.reason, {
         autoRefresh: true,
         refreshDelay: 2000,
@@ -216,10 +200,10 @@ export function setupGlobalServerActionErrorHandler() {
     }
   })
 
-  // Handle regular errors
+
   window.addEventListener('error', (event) => {
     if (isDeploymentError(event.error)) {
-      event.preventDefault() // Prevent console error
+      event.preventDefault()
       handleServerActionError(event.error, {
         autoRefresh: true,
         refreshDelay: 2000,
@@ -229,3 +213,4 @@ export function setupGlobalServerActionErrorHandler() {
     }
   })
 }
+

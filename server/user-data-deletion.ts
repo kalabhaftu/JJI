@@ -25,12 +25,7 @@ type UserDeletionInput = {
 
 type IdRow = { id: string }
 
-/**
- * Deletes the application-owned graph in one transaction.
- * Storage is intentionally returned as follow-up work: database deletion must
- * not be rolled back by an object-store outage, and object cleanup is retried
- * by the job system after this transaction commits.
- */
+
 export async function deleteUserData({
   internalUserId,
   mode,
@@ -90,8 +85,7 @@ export async function deleteUserData({
           phaseAccountIds = phaseAccounts.map(({ id }) => id)
         }
 
-        // Children first. These predicates keep deletion scoped even before
-        // the planned foreign-key migration is applied.
+
         if (tradeIds.length > 0) {
           await tx.delete(schema.TradeExecution).where(and(
             inArray(schema.TradeExecution.tradeId, tradeIds),

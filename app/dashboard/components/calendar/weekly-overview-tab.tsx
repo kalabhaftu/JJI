@@ -74,9 +74,9 @@ type WeeklyOverviewTabProps = WeeklyModalMetrics & {
 export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: WeeklyOverviewTabProps) {
   return (
     <>
-{/* Overview Tab */}
+{}
               <TabsContent value="overview" className="m-0 px-4 py-5 sm:px-6 lg:px-8 space-y-6">
-                {/* Key Metrics Grid */}
+                {}
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                   <MetricCard
                     icon={Coins}
@@ -117,7 +117,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
                   />
                 </div>
 
-                {/* Chart Section */}
+                {}
                 <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                   <div className="flex items-center gap-2 mb-4">
                     <AreaChartIcon className="h-4 w-4 text-primary" />
@@ -183,7 +183,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
                   </div>
                 </div>
 
-                {/* Performance Highlights Grid */}
+                {}
                 {stats && (
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border/25 border border-border/30 bg-card/45 rounded-xl overflow-hidden">
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">

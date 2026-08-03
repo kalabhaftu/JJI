@@ -73,28 +73,23 @@ export function TradeCard({
   const previewImage = parseTradePreviewImageValue((trade as any).cardPreviewImage)
   const hasPreviewImage = !!previewImage.src && String(previewImage.src).trim() !== ''
 
-  // Parse trade tags - tags is now an array
   const tradeTagIds = Array.isArray((trade as any).tags) ? (trade as any).tags : []
   const tradeTags = getTagsByIds(tradeTagIds)
 
-  // Get status variant based on PnL (matching account card patterns)
   const getStatusVariant = (pnl: number): "default" | "secondary" | "destructive" | "outline" => {
-    if (pnl > threshold) return 'default' // WIN
-    if (pnl < -threshold) return 'destructive' // LOSS
-    return 'outline' // BREAK EVEN
+    if (pnl > threshold) return 'default'
+    if (pnl < -threshold) return 'destructive'
+    return 'outline'
   }
 
-  // Calculate R:R ratio and detect incomplete data
   const calculateRiskRewardRatio = (trade: Trade): { ratio: number; hasIncompleteData: boolean } => {
-    // Parse prices from strings
+
     const entryPrice = parseFloat(String(trade.entryPrice))
     const closePrice = parseFloat(String(trade.closePrice))
 
-    // Get stop loss and take profit from database fields
     const stopLossRaw = (trade as any).stopLoss || null
     const takeProfitRaw = (trade as any).takeProfit || null
 
-    // Parse and validate stop loss and take profit (skip if 0.00 or null)
     const stopLoss = stopLossRaw && parseFloat(stopLossRaw.toString()) !== 0 ? parseFloat(stopLossRaw.toString()) : null
     const takeProfit = takeProfitRaw && parseFloat(takeProfitRaw.toString()) !== 0 ? parseFloat(takeProfitRaw.toString()) : null
 
@@ -103,58 +98,48 @@ export function TradeCard({
 
     const hasIncompleteData = !entryPrice || !closePrice || !stopLoss || !side
 
-    // Need all required fields for calculation
     if (hasIncompleteData) {
-      // Fallback to TradeAnalytics if available
+
       const analyticsRR = (trade as any).tradeAnalytics?.riskRewardRatio
       if (analyticsRR && analyticsRR > 0) {
         return { ratio: analyticsRR, hasIncompleteData: false }
       }
-      return { ratio: 0.00, hasIncompleteData: true } // 0.00 indicates missing data (1:1 is real data!)
+      return { ratio: 0.00, hasIncompleteData: true }
     }
 
     let potentialRisk: number
     let potentialReward: number
 
     if (side === 'BUY' || side === 'LONG') {
-      // Risk = Entry Price - Stop Loss
+
       potentialRisk = entryPrice - stopLoss
 
-      // Reward calculation depends on win/loss:
-      // WINS: Use actual close price (what trader actually captured)
-      // LOSSES: Use planned TP (shows setup quality, avoid negative RR)
       if (isWin) {
-        potentialReward = closePrice - entryPrice  // Actual reward captured
+        potentialReward = closePrice - entryPrice
       } else {
-        // For losses, use planned TP if available, otherwise use close
+
         potentialReward = takeProfit ? (takeProfit - entryPrice) : Math.abs(closePrice - entryPrice)
       }
     } else if (side === 'SELL' || side === 'SHORT') {
-      // Risk = Stop Loss - Entry Price
+
       potentialRisk = stopLoss - entryPrice
 
-      // Reward calculation depends on win/loss:
-      // WINS: Use actual close price (what trader actually captured)
-      // LOSSES: Use planned TP (shows setup quality, avoid negative RR)
       if (isWin) {
-        potentialReward = entryPrice - closePrice  // Actual reward captured
+        potentialReward = entryPrice - closePrice
       } else {
-        // For losses, use planned TP if available, otherwise use close
+
         potentialReward = takeProfit ? (entryPrice - takeProfit) : Math.abs(entryPrice - closePrice)
       }
     } else {
-      return { ratio: 0.00, hasIncompleteData: true } // Unknown side
+      return { ratio: 0.00, hasIncompleteData: true }
     }
 
-    // Ensure risk and reward are positive (invalid setup returns 0.00)
     if (potentialRisk <= 0 || potentialReward <= 0) {
-      return { ratio: 0.00, hasIncompleteData: true } // Invalid calculation
+      return { ratio: 0.00, hasIncompleteData: true }
     }
 
-    // R:R = Potential Reward ÷ Potential Risk
     const rrRatio = potentialReward / potentialRisk
 
-    // Return calculated R:R, capped at reasonable maximum (99.99)
     return { ratio: Math.min(rrRatio, 99.99), hasIncompleteData: false }
   }
 
@@ -252,7 +237,7 @@ export function TradeCard({
       </CardHeader>
 
       <CardContent className="space-y-3 flex-1 flex flex-col pt-0">
-        {/* Preview Image */}
+        {                   }
         <div className="relative aspect-video overflow-hidden rounded-xl border border-border/30 bg-muted/20 shadow-inner">
           {hasPreviewImage ? (
             <>
@@ -281,7 +266,7 @@ export function TradeCard({
           )}
         </div>
 
-        {/* Trade Information */}
+        {                       }
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <div className="min-w-0">
             <p className="text-xs text-muted-foreground mb-1">P&L</p>
@@ -365,7 +350,7 @@ export function TradeCard({
           </div>
         </div>
 
-        {/* Tags */}
+        {          }
         {tradeTags.length > 0 && (
           <div className="flex flex-wrap gap-1.5 pt-2 border-t">
             {tradeTags.slice(0, 3).map((tag) => (

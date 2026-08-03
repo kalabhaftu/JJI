@@ -5,7 +5,7 @@ export default function SubscribeLoading() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
+        {            }
         <div className="text-center mb-8 flex flex-col items-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Skeleton className="w-8 h-8 rounded-md bg-muted/30" />
@@ -15,9 +15,9 @@ export default function SubscribeLoading() {
           <Skeleton className="h-4 w-72 bg-muted/25" />
         </div>
 
-        {/* Pricing Card Skeleton */}
+        {                           }
         <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-6 shadow-lg space-y-6">
-          {/* Price Section */}
+          {                   }
           <div className="text-center pb-6 border-b border-border/40 flex flex-col items-center space-y-2">
             <div className="flex items-baseline justify-center gap-1">
               <Skeleton className="h-10 w-24 bg-muted/45" />
@@ -26,7 +26,7 @@ export default function SubscribeLoading() {
             <Skeleton className="h-3.5 w-36 bg-muted/20" />
           </div>
 
-          {/* Features */}
+          {              }
           <div className="space-y-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="flex items-center gap-3">
@@ -36,21 +36,21 @@ export default function SubscribeLoading() {
             ))}
           </div>
 
-          {/* Promo Code Input */}
+          {                      }
           <div className="space-y-1">
             <Skeleton className="h-10 w-full rounded-md bg-muted/20" />
           </div>
 
-          {/* Subscribe Button */}
+          {                      }
           <Skeleton className="h-11 w-full rounded-md bg-muted/40" />
 
-          {/* Bottom helper text */}
+          {                        }
           <div className="flex justify-center">
             <Skeleton className="h-3 w-64 bg-muted/20" />
           </div>
         </div>
 
-        {/* Sign out */}
+        {              }
         <div className="text-center mt-6 flex justify-center">
           <Skeleton className="h-8 w-20 rounded-md bg-muted/20" />
         </div>

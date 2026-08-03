@@ -1,15 +1,4 @@
-/**
- * Server-Side Report Statistics Calculator
- * 
- * Absorbs ALL client-side useMemo calculations from reports/page.tsx:
- * - tradingActivity (win rate, avg trades/month, trading days)
- * - psychMetrics (drawdown, expectancy, streaks, avg holding time, profit factor)
- * - sessionPerformance (per-session stats for New York/London/Asia)
- * - rMultipleDistribution (R-multiple buckets)
- * 
- * These were previously computed client-side on 50,000+ trade arrays.
- * Now they run server-side in a single pass and return pre-computed DTOs.
- */
+
 
 import { db } from '@/lib/db/client'
 import * as Sentry from '@sentry/nextjs'
@@ -226,7 +215,7 @@ export async function calculateReportStatistics(
     getRuntimeBreakEvenThreshold(userId),
   ])
 
-  // Use a Case-Insensitive Set to deduplicate instrument vs symbol
+
   const symbols = [...new Set(
     allPossibleSymbols.map(t => (t.instrument || t.symbol || '').trim())
       .filter(Boolean)
@@ -235,7 +224,7 @@ export async function calculateReportStatistics(
 
   const trades = groupTradesByExecution(rawTrades as any[]) as any[]
 
-  // Session filter (needs to be done post-query since it's derived from entryDate)
+
   const sessionFilteredTrades = filters.session && filters.session !== 'all'
     ? trades.filter(trade => {
       if (!trade.entryDate) return false
@@ -314,7 +303,7 @@ function computeAllMetrics(
     return dateA - dateB
   })
 
-  // --- Pass 1: Core metrics (drawdown, PnL, wins/losses, holding time, sessions, R-multiples) ---
+
   let cumulativePnL = 0
   let maxDD = 0
   let peakEquity = 0
@@ -323,27 +312,27 @@ function computeAllMetrics(
   let totalHoldingTimeMs = 0
   let tradesWithDuration = 0
 
-  // Win/loss tracking
+
   const wins: any[] = []
   const losses: any[] = []
 
-  // Streak tracking
+
   let maxWinStreak = 0
   let maxLoseStreak = 0
   let tempStreak = 0
   let lastWasWin: boolean | null = null
 
-  // Unique trading days
+
   const tradeDates = new Set<string>()
 
-  // Session performance
+
   const sessions: SessionPerformanceDTO = {
     'New York': { name: 'New York Session', range: '08:00 - 17:00', trades: 0, wins: 0, pnl: 0, totalHoldMs: 0, peak: 0, maxDD: 0 },
     'London': { name: 'London Session', range: '03:00 - 08:00', trades: 0, wins: 0, pnl: 0, totalHoldMs: 0, peak: 0, maxDD: 0 },
     'Asia': { name: 'Asia Session', range: '18:00 - 03:00', trades: 0, wins: 0, pnl: 0, totalHoldMs: 0, peak: 0, maxDD: 0 },
   }
 
-  // R-multiple distribution
+
   const rDistribution: RMultipleDistributionDTO = {
     '<-1R': 0,
     '-1R to 0R': 0,
@@ -353,12 +342,12 @@ function computeAllMetrics(
     '>3R': 0,
   }
 
-  // Track R-multiple data quality (trades with valid stop loss)
+
   let tradesWithStopLoss = 0
 
   let totalRMultipleDelta = 0
 
-  // Chart data
+
   const equityCurve: any[] = []
   const outcomeDistribution: any[] = [
     { name: 'Wins', value: 0, color: 'hsl(var(--chart-bullish))' },
@@ -366,7 +355,7 @@ function computeAllMetrics(
     { name: 'Breakeven', value: 0, color: 'hsl(220, 15%, 55%)' }
   ]
 
-  // New metrics: day-of-week and pair aggregation
+
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
   const dayTradeCount: Record<string, number> = {}
   const dayPnL: Record<string, number> = {}
@@ -374,12 +363,12 @@ function computeAllMetrics(
   const dayLossPnL: Record<string, number> = {}
   const pairPnL: Record<string, number> = {}
 
-  // Single pass through all trades
+
   for (const trade of sorted) {
     const netPnL = getTradeNetPnl(trade)
     const outcome = classifyTrade(netPnL, breakEvenThreshold)
 
-    // Cumulative PnL + Drawdown
+
     cumulativePnL += netPnL
     if (cumulativePnL > peakEquity) peakEquity = cumulativePnL
     const dd = peakEquity - cumulativePnL
@@ -394,7 +383,7 @@ function computeAllMetrics(
       })
     }
 
-    // Win/Loss classification
+
     if (outcome === 'win') {
       wins.push(trade)
       totalGrossProfit += netPnL
@@ -407,7 +396,7 @@ function computeAllMetrics(
       outcomeDistribution[2].value++
     }
 
-    // Streaks
+
     if (outcome === 'breakeven') {
       if (lastWasWin !== null) {
         if (lastWasWin) maxWinStreak = Math.max(maxWinStreak, tempStreak)
@@ -430,7 +419,7 @@ function computeAllMetrics(
       }
     }
 
-    // Trading days + day-of-week tracking
+
     if (trade.entryDate) {
       const d = new Date(trade.entryDate)
       const dateStr = d.toISOString().split('T')[0] || ''
@@ -447,13 +436,13 @@ function computeAllMetrics(
       }
     }
 
-    // Pair P&L tracking
+
     const pairName = (trade.instrument || trade.symbol || '').trim()
     if (pairName) {
       pairPnL[pairName] = (pairPnL[pairName] || 0) + netPnL
     }
 
-    // Holding time
+
     if (trade.entryDate && trade.closeDate) {
       const entryTime = new Date(trade.entryDate).getTime()
       const exitTime = new Date(trade.closeDate).getTime()
@@ -463,7 +452,7 @@ function computeAllMetrics(
       }
     }
 
-    // Session performance
+
     if (trade.entryDate) {
       const entryDateStr = trade.entryDate || ''
       const date = entryDateStr.includes('Z') ? entryDateStr : `${entryDateStr}Z`
@@ -490,8 +479,7 @@ function computeAllMetrics(
       }
     }
 
-    // R-multiple distribution (PRICE POINTS - OPTION 1)
-    // Track if trade has valid stop loss for data quality indicator
+
     const hasValidStopLoss = hasValidTradeRMultipleData(trade)
     if (hasValidStopLoss) tradesWithStopLoss++
 
@@ -508,13 +496,13 @@ function computeAllMetrics(
     }
   }
 
-  // Finalize streaks
+
   if (lastWasWin !== null) {
     if (lastWasWin) maxWinStreak = Math.max(maxWinStreak, tempStreak)
     else maxLoseStreak = Math.max(maxLoseStreak, tempStreak)
   }
 
-  // --- Derived metrics ---
+
   const tradableCount = wins.length + losses.length
   const winRateNum = tradableCount > 0 ? (wins.length / tradableCount) : 0
   const winRate = (winRateNum * 100).toFixed(1)
@@ -522,7 +510,7 @@ function computeAllMetrics(
   const avgWin = wins.length > 0 ? totalGrossProfit / wins.length : 0
   const avgLoss = losses.length > 0 ? totalGrossLoss / losses.length : 0
   
-  // CORRECTED EXPECTANCY: (P_w * AvgWin) - (P_l * Abs(AvgLoss))
+
   const lossRateNum = tradableCount > 0 ? (losses.length / tradableCount) : 0
   const expectancy = (winRateNum * avgWin) - (lossRateNum * avgLoss)
   
@@ -530,7 +518,7 @@ function computeAllMetrics(
   const rrEfficiency = avgLoss > 0 ? avgWin / avgLoss : 0
   const recoveryFactor = maxDD > 0 ? cumulativePnL / maxDD : 0
   
-  // CONSISTENCY: R-Squared of the equity curve
+
   const rSquared = calculateRSquared(equityCurve.map(p => p.equity))
   const consistencyScore = (rSquared * 100).toFixed(0)
 
@@ -538,7 +526,7 @@ function computeAllMetrics(
   const hours = Math.floor(avgHoldingTimeMs / (1000 * 60 * 60))
   const minutes = Math.floor((avgHoldingTimeMs % (1000 * 60 * 60)) / (1000 * 60))
 
-  // Date range calculation
+
   const from = dateFrom ? new Date(dateFrom) : null
   const to = dateTo ? new Date(dateTo) : null
   const daysInRange = from && to
@@ -546,7 +534,7 @@ function computeAllMetrics(
     : 30
   const monthsInRange = Math.max(1, Math.ceil(daysInRange / 30))
 
-  // New metrics: most traded day, most profitable/losing day & pair
+
   let mostTradedDay: string | null = null
   let mostTradedDayCount = 0
   let mostProfitableDay: string | null = null
@@ -624,3 +612,4 @@ function computeAllMetrics(
     }
   }
 }
+

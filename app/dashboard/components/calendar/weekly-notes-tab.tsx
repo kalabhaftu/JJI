@@ -14,7 +14,7 @@ type WeeklyNotesTabProps = {
 export function WeeklyNotesTab({ reviewData, setReviewData }: WeeklyNotesTabProps) {
   return (
     <>
-{/* Notes Tab */}
+{}
               <TabsContent value="notes" className="m-0 px-4 py-5 sm:px-6 lg:px-8">
                 <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                   <div className="flex items-center gap-2 mb-4">

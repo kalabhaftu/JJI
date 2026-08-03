@@ -111,7 +111,7 @@ function normalizeToLexicalState(value?: string) {
             }
         }
     } catch {
-        // fall through and wrap plain text
+
     }
 
     return {
@@ -346,7 +346,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                     </div>
                 </div>
             ) : null}
-            {/* Trade Notes */}
+            {}
             <div className="space-y-3">
                 <div className="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4 sm:gap-2">
                     <div className="space-y-1">
@@ -463,85 +463,8 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                             </TooltipContent>
                         </Tooltip>
                     </div>
-                    {/* Legacy button templates kept only for quick rollback reference.
-                        New dropdown template system above is the active path. */}
-                    {/*
-                    <Controller
-                        name={'comment' as Path<TFieldValues>}
-                        control={control}
-                        render={({ field }) => (
-                            <div className="hidden">
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-[10px] uppercase font-bold tracking-tight bg-muted/20 shrink-0"
-                                    onClick={() => {
-                                        field.onChange(insertTemplateIntoNote(field.value, {
-                                                "root": {
-                                                    "children": [
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Trade Thesis","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","tag":"h3","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Why did I take this trade? What was the higher timeframe context?","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Execution & Logic","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","tag":"h3","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Specific entry trigger, stop loss placement logic, and initial target reasoning.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Results & Management","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","tag":"h3","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"How did the trade play out? Did I manage it according to plan?","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Key Takeaways","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"heading","tag":"h3","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"One thing I did well and one thing I could improve for next time.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}
-                                                    ],
-                                                    "direction":"ltr","format":"","indent":0,"type":"root","version":1
-                                                }
-                                            }))
-                                    }}
-                                >
-                                    Standard Review
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-[10px] uppercase font-bold tracking-tight bg-muted/20 shrink-0"
-                                    onClick={() => {
-                                        field.onChange(insertTemplateIntoNote(field.value, {
-                                                "root": {
-                                                    "children": [
-                                                        {"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Emotional State:","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" Calm / Anxious / Greedy / FOMO","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Focus Level (1-10): ","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Self-Discipline:","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" Did I follow my routine? Did I wait for my setup?","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Mental Notes:","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" Any external factors affecting my trading today?","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}
-                                                    ],
-                                                    "direction":"ltr","format":"","indent":0,"type":"root","version":1
-                                                }
-                                            }))
-                                    }}
-                                >
-                                    Mental Check-in
-                                </Button>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-7 text-[10px] uppercase font-bold tracking-tight bg-muted/20 shrink-0"
-                                    onClick={() => {
-                                        field.onChange(insertTemplateIntoNote(field.value, {
-                                                "root": {
-                                                    "children": [
-                                                        {"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"HTF Bias:","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" Monthly/Weekly/Daily directional bias.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Entry Framework:","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" (e.g., MSS + FVG, Turtle Soup, etc.)","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Risk Management:","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" RR ratio, position sizing logic.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},
-                                                        {"children":[{"detail":0,"format":1,"mode":"normal","style":"","text":"Correlation Check:","type":"text","version":1},{"detail":0,"format":0,"mode":"normal","style":"","text":" USDX, ES/NQ correlation at time of entry.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}
-                                                    ],
-                                                    "direction":"ltr","format":"","indent":0,"type":"root","version":1
-                                                }
-                                            }))
-                                    }}
-                                >
-                                    Technical Breakdown
-                                </Button>
-                            </div>
-                        )}
-                    />
-                    */}
+                    {}
+                    {}
                 </div>
                 <Controller
                     name={'comment' as Path<TFieldValues>}
@@ -629,7 +552,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
             </Dialog>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Card Preview Image */}
+                {}
                 <div className="space-y-4">
                     <div className="space-y-1">
                         <h3 className="text-sm font-semibold text-foreground">Featured Analysis</h3>
@@ -714,7 +637,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                     </div>
                 </div>
 
-                {/* Additional Screenshots - using the extracted component */}
+                {}
                 <TradeImagesGallery
                     images={images}
                     onUpload={(field, file) => onUpload(field, file)}
@@ -725,7 +648,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                 />
             </div>
 
-            {/* Chart Links */}
+            {}
             <div className="space-y-4 pt-4 border-t border-border/50">
                 <div className="space-y-1">
                     <h3 className="text-sm font-semibold text-foreground">Chart Analysis Links</h3>

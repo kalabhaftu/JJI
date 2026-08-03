@@ -41,7 +41,6 @@ export function AdvancedExportDialog() {
   const [isOpen, setIsOpen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
 
-  // Selection states
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
   const [selectAllAccounts, setSelectAllAccounts] = useState(true)
@@ -58,7 +57,6 @@ export function AdvancedExportDialog() {
     [exportOptionsResponse?.data?.instruments]
   )
 
-  // Get unique accounts
   const accountsList = useMemo(() => {
     if (!allAccounts || optionsLoading) return []
     return allAccounts.map((account: ExportOptionAccount) => ({
@@ -68,12 +66,10 @@ export function AdvancedExportDialog() {
     }))
   }, [allAccounts, optionsLoading])
 
-  // Get instruments from dedicated export options endpoint (unfiltered full scope)
   const instrumentsList = useMemo(() => {
     return allInstruments
   }, [allInstruments])
 
-  // Initialize selections when lists load
   useEffect(() => {
     if (accountsList.length > 0 && selectedAccounts.length === 0 && selectAllAccounts) {
       setSelectedAccounts(accountsList.map(a => a.id))
@@ -155,7 +151,6 @@ export function AdvancedExportDialog() {
         throw new Error(error.error || 'Export failed')
       }
 
-      // Download the file
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -201,7 +196,7 @@ export function AdvancedExportDialog() {
         <div className="flex-1 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
 
-            {/* Filter Controls */}
+            {                     }
             <Card className="md:col-span-2">
               <CardHeader>
                 <CardTitle className="text-base">Date Range</CardTitle>
@@ -232,7 +227,7 @@ export function AdvancedExportDialog() {
               </CardContent>
             </Card>
 
-            {/* Accounts Selection */}
+            {                        }
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex justify-between items-center">
@@ -280,7 +275,7 @@ export function AdvancedExportDialog() {
               </CardContent>
             </Card>
 
-            {/* Instruments Selection */}
+            {                           }
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex justify-between items-center">

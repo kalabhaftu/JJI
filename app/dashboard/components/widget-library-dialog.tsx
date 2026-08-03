@@ -45,16 +45,16 @@ export default function WidgetLibraryDialog({
       .catch(() => setCatalog({}))
   }, [open])
 
-  // Get list of widget types already in use
+
   const usedWidgetTypes = useMemo(() => {
     return new Set(currentLayout.map(w => w.type))
   }, [currentLayout])
 
-  // Filter widgets by search query and exclude KPI-only widgets from general library
+
   const filteredWidgets = useMemo(() => {
     const query = searchQuery.toLowerCase()
     return Object.entries(WIDGET_REGISTRY).filter(([type, config]) => {
-      // Exclude KPI-only widgets - they can only be added/swapped in the 5 KPI slots
+
       if (config.kpiRowOnly || config.hiddenFromLibrary) {
         return false
       }
@@ -72,7 +72,7 @@ export default function WidgetLibraryDialog({
     })
   }, [searchQuery, catalog])
 
-  // Group by category
+
   const widgetsByCategory = useMemo(() => {
     const grouped: Record<string, Array<[string, typeof WIDGET_REGISTRY[keyof typeof WIDGET_REGISTRY]]>> = {}
 
@@ -93,7 +93,7 @@ export default function WidgetLibraryDialog({
   }
 
   const formatWidgetName = (type: string) => {
-    // Convert camelCase to Title Case
+
     return type
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, str => str.toUpperCase())
@@ -125,7 +125,7 @@ export default function WidgetLibraryDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Search */}
+        {}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -146,7 +146,7 @@ export default function WidgetLibraryDialog({
           )}
         </div>
 
-        {/* Widget List */}
+        {}
         <div className="flex-1 overflow-y-auto space-y-6 pr-2">
           {Object.keys(widgetsByCategory).length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -204,7 +204,7 @@ export default function WidgetLibraryDialog({
           )}
         </div>
 
-        {/* Footer */}
+        {}
         <div className="flex justify-end pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Close

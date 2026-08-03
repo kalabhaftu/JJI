@@ -1,9 +1,4 @@
-/**
- * POST /api/v1/payments/webhook
- * NOWPayments IPN callback handler.
- * Verifies HMAC-SHA512 signature and processes payment status updates.
- * Must be idempotent - NOWPayments may send the same event multiple times.
- */
+
 
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyIpnSignature, type IpnPayload } from '@/lib/services/nowpayments-service'

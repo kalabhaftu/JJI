@@ -11,23 +11,19 @@ import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import logger from '@/lib/logger'
 
 interface TradovateSyncContextType {
-  // Core sync management
+
   performSyncForAccount: (accountId: string) => Promise<{ success: boolean; message: string } | undefined>
   performSyncForAllAccounts: () => Promise<void>
-  
-  // State management
+
   isAutoSyncing: boolean
-  
-  // Account management
+
   accounts: SynchronizationType[]
   loadAccounts: () => Promise<void>
   deleteAccount: (accountId: string) => Promise<void>
-  
-  // Per-account fee config (stored in DB)
+
   getIncludedFeeTypesForAccount: (accountId: string) => Record<string, boolean>
   updateIncludedFeeTypesForAccount: (accountId: string, includedFeeTypes: Record<string, boolean>) => Promise<{ success: boolean; error?: string }>
-  
-  // Auto-sync functionality
+
   syncInterval: number
   setSyncInterval: (interval: number) => void
   enableAutoSync: boolean
@@ -39,7 +35,7 @@ const TradovateSyncContext = createContext<TradovateSyncContextType | undefined>
 export function TradovateSyncContextProvider({ children, disabled = false }: { children: ReactNode; disabled?: boolean }) {
   const [isAutoSyncing, setIsAutoSyncing] = useState(false)
   const [accounts, setAccounts] = useState<SynchronizationType[]>([])
-  const [syncInterval, setSyncInterval] = useState(15) // 15 minutes default
+  const [syncInterval, setSyncInterval] = useState(15)
   const [enableAutoSync, setEnableAutoSync] = useState(false)
 
   const user = useUserStore((state) => state.user)
@@ -57,7 +53,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
   const { refreshTrades } = useData()
 
-  // Normalize dates and fee config returned from API
   const normalizeSynchronization = useCallback(
     (sync: any): SynchronizationType => ({
       ...sync,
@@ -71,7 +66,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     []
   )
 
-  // Load accounts from API
   const loadAccounts = useCallback(async () => {
     if (disabled) {
       setAccounts([])
@@ -127,7 +121,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     })
   }, [disabled])
 
-  // Perform sync for a specific account
   const performSyncForAccount = useCallback(async (accountId: string) => {
     if (disabled) {
       return { success: false, message: 'Tradovate sync is disabled in demo mode' }
@@ -160,24 +153,21 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
         const payload = await response.json()
 
-        // Handle duplicate trades (already imported)
         const responseMessage = payload?.error?.message ?? payload?.message
         if (responseMessage === "DUPLICATE_TRADES") {
           return "All trades from this account have already been imported"
         }
-        
+
         if (!response.ok || !payload?.success) {
           const errorMsg = responseMessage || `Sync error for account ${accountId}`
           throw new Error(errorMsg)
         }
 
-        // Track progress
         const savedCount = payload.savedCount || 0
         const ordersCount = payload.ordersCount || 0
 
         logger.debug({ accountId, savedCount, ordersCount }, 'Tradovate sync complete')
 
-        // Show success message
         let successMessage: string
         if (savedCount > 0) {
           successMessage = `Sync complete: ${savedCount} trades saved, ${ordersCount} orders processed for account ${accountId}.`
@@ -187,7 +177,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
           successMessage = `Sync complete: No orders found for account ${accountId}.`
         }
 
-        // Refresh the accounts list to update last sync time
         await loadAccounts()
         await refreshTrades()
 
@@ -214,7 +203,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
   }, [accounts, disabled, refreshTrades, loadAccounts])
 
-  // Perform sync for all accounts
   const performSyncForAllAccounts = useCallback(async () => {
     if (disabled) return
     if (isAutoSyncing) {
@@ -222,17 +210,16 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
 
     setIsAutoSyncing(true)
-    
+
     try {
       const validAccounts = accounts.filter(acc => acc.token)
       if (validAccounts.length === 0) {
         return
       }
 
-      // Sync accounts sequentially to avoid overwhelming the API
       for (const account of validAccounts) {
         await performSyncForAccount(account.accountId)
-        // Small delay between accounts
+
         await new Promise(resolve => setTimeout(resolve, 1000))
       }
 
@@ -246,7 +233,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
   }, [disabled, isAutoSyncing, accounts, performSyncForAccount])
 
-  // Schedule the next auto-sync check for when a connection actually becomes due
   const clearNextSyncTimer = useCallback(() => {
     if (nextSyncTimerRef.current) {
       clearTimeout(nextSyncTimerRef.current)
@@ -270,7 +256,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }, Math.min(delay, 2_147_000_000))
   }, [accounts, enableAutoSync, syncInterval, clearNextSyncTimer])
 
-  // Auto-sync checking
   const checkAndPerformSyncs = useCallback(async () => {
     if (disabled) return
     if (document.visibilityState === 'hidden') return
@@ -278,10 +263,9 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
     try {
       const now = Date.now()
-      
-      // Check each account's last sync time
+
       for (const account of accounts) {
-        // If we don't have a token, skip this account
+
         if (!account.token) continue
 
         const lastSyncTime = new Date(account.lastSyncedAt).getTime()
@@ -301,7 +285,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
   checkAndPerformSyncsRef.current = checkAndPerformSyncs
 
-  // Trigger an immediate check when a synchronization row is updated elsewhere
   useDatabaseRealtime({
     userId: user?.id,
     enabled: enableAutoSync && !disabled,
@@ -310,7 +293,6 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     },
   })
 
-  // Re-check when the tab regains focus or the network comes back
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') void checkAndPerformSyncsRef.current()
@@ -328,36 +310,30 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
   }, [])
 
-  // Reschedule whenever accounts, the toggle, or the interval change
   useEffect(() => {
     scheduleNextSync()
     return clearNextSyncTimer
   }, [scheduleNextSync, clearNextSyncTimer])
 
-  // Load accounts on mount
   useEffect(() => {
     loadAccounts()
   }, [loadAccounts])
 
   return (
     <TradovateSyncContext.Provider value={{
-      // Core sync management
+
       performSyncForAccount,
       performSyncForAllAccounts,
-      
-      // State management
+
       isAutoSyncing,
-      
-      // Account management
+
       accounts,
       loadAccounts,
       deleteAccount,
-      
-      // Per-account fee config
+
       getIncludedFeeTypesForAccount,
       updateIncludedFeeTypesForAccount,
-      
-      // Auto-sync functionality
+
       syncInterval,
       setSyncInterval,
       enableAutoSync,

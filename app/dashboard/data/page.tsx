@@ -8,10 +8,8 @@ import { Briefcase, Table } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 
-// Force dynamic rendering to avoid static generation issues
 export const dynamic = 'force-dynamic'
 
-// Lazy load heavy components
 const TradeTable = lazy(() => import("@/app/dashboard/data/components/data-management/trade-table"))
 const DataManagementCard = lazy(() => import("@/app/dashboard/data/components/data-management/data-management-card").then(mod => ({ default: mod.DataManagementCard })))
 

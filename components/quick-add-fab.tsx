@@ -110,7 +110,7 @@ export function QuickAddFAB({ className }: QuickAddFABProps) {
                 className={cn(
                     "fixed bottom-28 right-6 h-14 w-14 rounded-full shadow-md z-[60]",
                     "bg-primary hover:bg-primary/90 text-primary-foreground",
-                    "lg:hidden", // Match bottom nav breakpoint
+                    "lg:hidden",
                     className
                 )}
                 aria-label="Quick add trade"

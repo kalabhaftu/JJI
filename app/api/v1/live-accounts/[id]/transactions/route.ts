@@ -10,7 +10,7 @@ import { recordAuditEvent } from '@/lib/audit-logger'
 import { getClientIp } from '@/lib/security/client-ip'
 import { and, eq } from 'drizzle-orm'
 
-// POST /api/live-accounts/[id]/transactions - Create deposit or withdrawal
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -30,7 +30,7 @@ export async function POST(
     const body = await request.json()
     const { type, amount, description } = body
 
-    // Validate input
+
     if (!type || amount === undefined || amount === null || amount === '') {
       return createErrorResponse('Type and amount are required', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
@@ -44,7 +44,7 @@ export async function POST(
       return createErrorResponse('Amount must be a positive number', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
-    // Validate minimum amounts
+
     if (type === 'DEPOSIT' && numericAmount < 5) {
       return createErrorResponse('Minimum deposit amount is $5', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
@@ -53,7 +53,7 @@ export async function POST(
       return createErrorResponse('Minimum withdrawal amount is $10', 400, undefined, 'VALIDATION_ERROR', requestId)
     }
 
-    // Verify account belongs to user
+
     const account = await db.query.Account.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, accountId), eq(table.userId, userId))
     })
@@ -62,9 +62,9 @@ export async function POST(
       return createErrorResponse('Account not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
-    // For withdrawals, check if account has sufficient balance
+
     if (type === 'WITHDRAWAL') {
-      // Calculate current balance including trades and previous transactions
+
       const trades = await db.query.Trade.findMany({
         where: (table, { eq, and }) => and(
           eq(table.userId, userId),
@@ -101,7 +101,7 @@ export async function POST(
       }
     }
 
-    // Create transaction
+
     const transactionAmount = type === 'DEPOSIT' ? numericAmount : -numericAmount
 
     const transaction = await db.transaction(async (tx) => {
@@ -135,7 +135,7 @@ export async function POST(
   }
 }
 
-// GET /api/live-accounts/[id]/transactions - Get transaction history
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -153,7 +153,7 @@ export async function GET(
 
     const { id: accountId } = await params
 
-    // Verify account belongs to user
+
     const account = await db.query.Account.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, accountId), eq(table.userId, userId))
     })
@@ -162,7 +162,7 @@ export async function GET(
       return createErrorResponse('Account not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
-    // Get transactions
+
     const transactions = await db.query.LiveAccountTransaction.findMany({
       where: (table, { eq, and }) => and(
         eq(table.userId, userId),

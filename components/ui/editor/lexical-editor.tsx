@@ -104,7 +104,7 @@ function sanitizeLexicalState(state: any) {
       indent: typeof root?.indent === 'number' ? root.indent : 0,
       type: 'root',
       version: typeof root?.version === 'number' ? root.version : 1,
-      // Lexical throws error #38 when root is empty.
+
       children: children.length > 0 ? children : [createEmptyParagraphNode()],
     },
   }
@@ -119,7 +119,7 @@ function toLexicalStateString(value?: string): string {
     const parsed = JSON.parse(value)
     return JSON.stringify(sanitizeLexicalState(parsed))
   } catch {
-    // Migrate legacy plain text notes to a safe Lexical paragraph state.
+
     return JSON.stringify({
       root: {
         children: [
@@ -164,7 +164,7 @@ function SyncExternalValuePlugin({ value }: { value?: string }) {
       const parsedState = editor.parseEditorState(normalizedValue)
       editor.setEditorState(parsedState)
     } catch (error) {
-      // Ignore malformed payloads and keep current state.
+
     }
   }, [editor, value])
 

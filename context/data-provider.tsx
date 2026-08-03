@@ -46,10 +46,10 @@ function useIsMobileDetection() {
     const mobileQuery = window.matchMedia('(max-width: 768px)');
     const checkMobile = (e: MediaQueryListEvent | MediaQueryList) => setIsMobile(e.matches);
 
-    // Check immediately
+
     checkMobile(mobileQuery);
 
-    // Add listener for changes
+
     mobileQuery.addEventListener('change', checkMobile);
     return () => mobileQuery.removeEventListener('change', checkMobile);
   }, []);
@@ -82,7 +82,7 @@ export const DataProvider: React.FC<{
 }> = ({ children, initialBootstrapData, isDemoMode = false }) => {
   const isMobile = useIsMobileDetection();
 
-  // Get store values
+
   const user = useUserStore(state => state.user);
   const setUser = useUserStore(state => state.setUser);
 
@@ -94,11 +94,10 @@ export const DataProvider: React.FC<{
   const setSupabaseUser = useUserStore(state => state.setSupabaseUser);
 
   const dashboardLayout = useUserStore(state => state.dashboardLayout);
-  const locale = 'en' // Fixed to English since we removed i18n
+  const locale = 'en'
   const isLoading = useUserStore(state => state.isLoading)
   const setIsLoading = useUserStore(state => state.setIsLoading)
 
-  // Remove unused states that caused dependency issues
 
   const { settings: accountFilterSettings, isLoading: isLoadingAccountFilterSettings, updateSettings: updateAccountFilterSettings } = useAccountFilterSettings()
 
@@ -123,18 +122,17 @@ export const DataProvider: React.FC<{
   const [isFirstConnection, setIsFirstConnection] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize account filter from saved settings (CLIENT-SIDE ONLY)
+
   const selectionInitializedRef = React.useRef(false)
   const lastSyncedSelectionRef = React.useRef<string>('')
 
-  // Initialize account filter from saved settings only (NO AUTO-SELECTION)
-  // User must explicitly select accounts
+
   useEffect(() => {
     if (!accounts || accounts.length === 0) {
       return
     }
 
-    // ONLY load from saved settings - no auto-selection
+
     const savedSelection = accountFilterSettings?.selectedPhaseAccountIds || []
     const savedSignature = JSON.stringify(normalizeSelection(savedSelection))
 
@@ -152,12 +150,12 @@ export const DataProvider: React.FC<{
             })
           )
         } catch (error) {
-          // Ignore storage errors
+
         }
         return
       }
 
-      // Check localStorage cache as fallback
+
       let cachedSelection: string[] | null = null
       try {
         const cached = localStorage.getItem('settings-cache')
@@ -166,7 +164,7 @@ export const DataProvider: React.FC<{
           cachedSelection = settings.selectedPhaseAccountIds || null
         }
       } catch (error) {
-        // Ignore parsing errors
+
       }
 
       if (cachedSelection && cachedSelection.length > 0) {
@@ -176,15 +174,13 @@ export const DataProvider: React.FC<{
         return
       }
 
-      // NO SAVED SELECTION - leave accountNumbers empty
-      // This will show "All Accounts" in the navbar and show all data
-      // User must explicitly select accounts via the filter dialog
+
       selectionInitializedRef.current = true
       lastSyncedSelectionRef.current = ''
       return
     }
 
-    // Sync updates from server settings (e.g., another tab saved settings)
+
     if (
       savedSelection.length > 0 &&
       savedSignature !== lastSyncedSelectionRef.current &&
@@ -195,11 +191,11 @@ export const DataProvider: React.FC<{
     }
   }, [accounts, accountFilterSettings, accountNumbers, setAccountNumbers])
 
-  // Track active data loading to prevent concurrent calls - MOVED TO useRef FOR PERSISTENCE
+
   const activeLoadPromiseRef = React.useRef<Promise<void> | null>(null)
   const hasLoadedDataRef = React.useRef(false)
 
-  // HYDRATE FROM SERVER BOOTSTRAP (targeted SSR path)
+
   useEffect(() => {
     if (isDemoMode) return
     
@@ -290,8 +286,7 @@ export const DataProvider: React.FC<{
           }
         }
 
-        // Step 2: Fetch initial data from v1 init endpoint (NO trades - those come via React Query)
-        // If SSR bootstrap already provided authenticated data, skip this duplicate DB-heavy fetch.
+
         const initData = initialBootstrapData?.isAuthenticated
           ? initialBootstrapData
           : await (async () => {
@@ -317,7 +312,7 @@ export const DataProvider: React.FC<{
         setUser(userData);
         setIsFirstConnection(userData?.isFirstConnection || false)
 
-        // Persist account filter settings
+
         if (userData?.accountFilterSettings) {
           try {
             const hasPendingChanges = localStorage.getItem('settings-pending')
@@ -330,7 +325,7 @@ export const DataProvider: React.FC<{
           }
         }
 
-        // Calculate balanceToDate for accounts (without trades, uses trade count from API)
+
         const accountsWithBalance = (rawAccounts || []).map((account: any) => ({
           ...account,
           balanceToDate: calcBalance(account, [], [], {
@@ -377,12 +372,12 @@ export const DataProvider: React.FC<{
       return;
     }
 
-    // CRITICAL FIX: Only run on initial mount when supabaseUser is first set
+
     if (!supabaseUser) {
       return
     }
     
-    // CRITICAL: Check and set flag IMMEDIATELY to prevent duplicate calls
+
     if (hasLoadedDataRef.current) {
       return
     }
@@ -398,17 +393,17 @@ export const DataProvider: React.FC<{
       try {
         await loadData()
       } catch (error) {
-        // Handle Next.js redirect errors (these are normal and expected)
+
         if (error instanceof Error && (
           error.message === 'NEXT_REDIRECT' || 
           error.message.includes('NEXT_REDIRECT') ||
           ('digest' in error && typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))
         )) {
-          // Let the redirect proceed - these are handled by Next.js router
+
           throw error;
         }
 
-        // Handle authentication errors
+
         if (error instanceof Error && (
           error.message.includes('User not authenticated') ||
           error.message.includes('User not found') ||
@@ -417,9 +412,9 @@ export const DataProvider: React.FC<{
           return;
         }
         
-        // Silent fail to prevent unhandled promise rejections
+
         
-        // Set error state to inform user
+
         reportClientError(error, { operation: 'load-dashboard-data', route: '/dashboard' })
         setError('Failed to load data. Please refresh the page.');
         setIsLoading(false);
@@ -431,12 +426,12 @@ export const DataProvider: React.FC<{
     return () => {
       mounted = false;
     };
-  }, [supabaseUser, loadData, setIsLoading, isDemoMode]); // ONLY depend on supabaseUser, run once when it's set
+  }, [supabaseUser, loadData, setIsLoading, isDemoMode]);
 
   const queryClient = useQueryClient()
   
-  // Keep the table feed paginated. Analytics use a separate metrics-only response
-  // so the dashboard does not ship the full calculation payload with every table read.
+
+
   const tableTradeFilters = useMemo(() => ({
     ...tradeFilters,
     limit: 5_000,
@@ -463,8 +458,7 @@ export const DataProvider: React.FC<{
     reloadBootstrapData: loadData,
   })
 
-  // SUPABASE KEEP-ALIVE HEARTBEAT
-  // Pings DB every 4 hours to prevent free-tier pause
+
   useEffect(() => {
     if (isDemoMode) return
 
@@ -476,12 +470,12 @@ export const DataProvider: React.FC<{
       }
     }
 
-    // Defer initial ping by 10s - avoids adding to the connection burst on dashboard load
+
     const initialPingTimeout = setTimeout(ping, 10_000)
 
     const intervalId = setInterval(ping, FOUR_HOURS)
 
-    // Also ping when tab becomes visible after being hidden
+
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         ping()
@@ -534,26 +528,26 @@ export const DataProvider: React.FC<{
     }
   }, [user?.id, loadData, setIsLoading, locale, queryClient])
 
-  // Expose refreshAllData as an alias for refreshTrades (it refreshes everything including accounts)
+
   const refreshAllData = refreshTrades
 
-  // Server-owned trade feed. No client-side trade-store fallback or analytics.
+
   const formattedTrades = useMemo(() => serverTradeData?.trades ?? [], [serverTradeData?.trades]);
 
   const statistics = useMemo(() => {
-    // Use server-computed statistics when available
+
     if (serverMetricsData?.statistics) return serverMetricsData.statistics;
     return EMPTY_STATISTICS;
   }, [serverMetricsData?.statistics]);
 
   const calendarData = useMemo(() => {
-    // Use server-computed calendar data when available
+
     if (serverMetricsData?.calendarData) return serverMetricsData.calendarData;
     return EMPTY_CALENDAR_DATA;
   }, [serverMetricsData?.calendarData]);
 
   const isPlusUser = () => {
-    return true; // All users now have full access
+    return true;
   };
 
 
@@ -580,11 +574,11 @@ export const DataProvider: React.FC<{
   const saveDashboardLayout = useCallback(async (layout: DashboardLayoutType) => {
     if (!user?.id) return
     setDashboardLayout(layout)
-    // Update localStorage to keep cache fresh for next visit
+
     try {
       localStorage.setItem(`dashboard-layout-${user.id}`, JSON.stringify(layout))
     } catch (error) {
-      // Ignore localStorage errors
+
     }
   }, [user?.id, setDashboardLayout])
 
@@ -614,41 +608,40 @@ export const DataProvider: React.FC<{
     pnlRange,
     setPnlRange,
 
-    // Time range related
+
     timeRange,
     setTimeRange,
 
-    // Weekday filter related
+
     weekdayFilter,
     setWeekdayFilter,
 
-    // Hour filter related
+
     hourFilter,
     setHourFilter,
 
-    // Statistics, calendar, and widget data
+
     statistics,
     calendarData,
     widgetData: serverMetricsData?.widgets ?? null,
 
-    // Accounts
+
     accounts,
 
-    // Mutations
 
     updateTrades,
     appendTagsToTrades,
     groupTrades,
     ungroupTrades,
 
-    // Accounts
+
     deleteAccount,
     saveAccount,
 
     deletePayout,
     savePayout,
 
-    // Dashboard layout
+
     saveDashboardLayout,
   };
 

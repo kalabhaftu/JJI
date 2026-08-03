@@ -109,13 +109,13 @@ export function TradovateCredentialsManager() {
         return;
       }
 
-      // Store the state for verification
+
       tradovateStore.setOAuthState(result.state);
 
-      // Also store in sessionStorage as backup
+
       sessionStorage.setItem("tradovate_oauth_state", result.state);
 
-      // Redirect to Tradovate OAuth
+
       window.location.href = result.authUrl;
     } catch (error) {
       reportError(error, {
@@ -152,7 +152,7 @@ export function TradovateCredentialsManager() {
   const handleSetDailySyncTime = useCallback((accountId: string, currentTime: Date | null) => {
     setSelectedAccountId(accountId);
     if (currentTime) {
-      // Convert UTC time to local time for display
+
       const utcDate = new Date(currentTime);
       const localHours = utcDate.getHours().toString().padStart(2, '0');
       const localMinutes = utcDate.getMinutes().toString().padStart(2, '0');
@@ -169,7 +169,7 @@ export function TradovateCredentialsManager() {
     try {
       setIsSavingTime(true);
       
-      // Convert local time to UTC on client side
+
       let utcTimeString: string | null = null;
       if (dailySyncTime) {
         const [hours = 0, minutes = 0] = dailySyncTime.split(':').map(Number);
@@ -193,7 +193,7 @@ export function TradovateCredentialsManager() {
       if (result.success) {
         toast.success("Daily sync time updated");
         setIsTimeDialogOpen(false);
-        await loadAccounts(); // Reload to show updated time
+        await loadAccounts();
       } else {
         toast.error(result.error || "Failed to update daily sync time");
       }
@@ -219,8 +219,8 @@ export function TradovateCredentialsManager() {
         minutes = 0;
         break;
       case 'after-close':
-        // 22:00 UTC = 4:00 PM EST / 10:00 PM CET (after US market close)
-        // Convert to local time
+
+
         const utcClose = new Date();
         utcClose.setUTCHours(22, 0, 0, 0);
         hours = utcClose.getHours();
@@ -244,13 +244,12 @@ export function TradovateCredentialsManager() {
   function formatSyncTime(date: Date | null) {
     if (!date) return "Not Set (Manual Only)";
     
-    // The date from DB is stored with UTC hours/minutes
-    // We need to create a proper UTC date and convert to local
+
     const utcDate = new Date(date);
     const localHours = utcDate.getHours().toString().padStart(2, '0');
     const localMinutes = utcDate.getMinutes().toString().padStart(2, '0');
     
-    // Get timezone abbreviation
+
     const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const formatter = new Intl.DateTimeFormat('en-US', { 
       timeZone, 

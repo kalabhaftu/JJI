@@ -8,16 +8,16 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // Deliberately false (Supabase Realtime handles focus updates).
-        // Offline recovery is handled safely by ReconnectRefetcher.
+
+
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
-        // Retry failed requests twice with exponential backoff
+
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
-        // Data considered fresh for 2 minutes
+
         staleTime: 2 * 60 * 1000,
-        // Keep unused data in cache for 10 minutes
+
         gcTime: 10 * 60 * 1000,
       },
       mutations: {
@@ -31,10 +31,10 @@ let browserQueryClient: QueryClient | undefined
 
 function getQueryClient() {
   if (typeof window === 'undefined') {
-    // Server: always create a new QueryClient
+
     return makeQueryClient()
   }
-  // Browser: reuse the same QueryClient
+
   if (!browserQueryClient) {
     browserQueryClient = makeQueryClient()
   }
@@ -51,3 +51,4 @@ export function QueryProvider({ children }: { children: ReactNode }) {
     </QueryClientProvider>
   )
 }
+

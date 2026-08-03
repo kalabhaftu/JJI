@@ -7,12 +7,7 @@ function toNumber(value: unknown, fallback = 0): number {
   return Number.isNaN(num) ? fallback : num
 }
 
-/**
- * Custom hook that provides all trading statistics calculations
- * 
- * REFACTORED: Statistics now come strictly from the server via DataProvider.
- * Removed redundant client-side win/loss math to ensure 100% consistency.
- */
+
 export function useTradeStatistics() {
   const { formattedTrades, accounts, statistics } = useData()
   const normalizedStatistics = useMemo(() => ({
@@ -32,13 +27,13 @@ export function useTradeStatistics() {
     totalPayouts: toNumber((statistics as any)?.totalPayouts, 0),
   }), [statistics])
 
-  // Group trades by execution for advanced display calculations (if needed by components)
+
   const groupedTrades = useMemo(
     () => groupTradesByExecution(formattedTrades) as any[],
     [formattedTrades]
   )
 
-  // Derive additional stats from server-computed statistics
+
   const derivedStats = useMemo(() => {
     const {
       nbWin,
@@ -57,7 +52,7 @@ export function useTradeStatistics() {
     const lossRate = Number(nbTrades || 0) > 0 ? Math.round((Number(nbLoss || 0) / Number(nbTrades || 0)) * 1000) / 10 : 0
     const beRate = Number(nbTrades || 0) > 0 ? Math.round((Number(nbBe || 0) / Number(nbTrades || 0)) * 1000) / 10 : 0
 
-    // Server stats safely cast
+
     const stats = normalizedStatistics as any
     
     return {

@@ -11,7 +11,7 @@ function importLockKey(jobId: string) {
   return `lock:import-job:${jobId}`
 }
 
-/** Redis is the fast duplicate-worker guard; the database lease remains authoritative. */
+
 export async function acquireImportLock(jobId: string, workerToken: string, ttlSeconds = 300) {
   if (!isRedisConfigured()) return true
 
@@ -24,8 +24,8 @@ export async function acquireImportLock(jobId: string, workerToken: string, ttlS
       operation: 'acquire-import-lock',
       jobId,
     })
-    // The database lease is the authoritative CAS guard. Keep imports
-    // available during a Redis outage while preserving duplicate protection.
+
+
     return true
   }
 }

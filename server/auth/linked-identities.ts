@@ -49,7 +49,7 @@ export async function getUserIdentities() {
     throw new Error('User not authenticated')
   }
 
-  // Get user's identities using the proper method
+
   const { data: identities, error: identitiesError } = await supabase.auth.getUserIdentities()
 
   if (identitiesError) {

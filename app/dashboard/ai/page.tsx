@@ -69,13 +69,11 @@ export default function AIChatWorkspace() {
     aiConsentGranted,
     setAiConsentGranted,
   } = useAiWorkspaceLoader(isDemoMode)
-  
-  // State variables
+
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('chats')
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
   const [messages, setMessages] = useState<ChatMessage[]>([])
-  
-  // Context Selection States
+
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const [selectedDateRange, setSelectedDateRange] = useState<string>('last-30-days')
   const [customFromDate, setCustomFromDate] = useState<string>('')
@@ -83,8 +81,7 @@ export default function AIChatWorkspace() {
   const [selectedSources, setSelectedSources] = useState<string[]>([
     'trades', 'journals', 'performance', 'statistics'
   ])
-  
-  // Chatting State
+
   const [isSending, setIsSending] = useState(false)
   const [streamingText, setStreamingText] = useState('')
   const [isRenameMode, setIsRenameMode] = useState(false)
@@ -93,50 +90,44 @@ export default function AIChatWorkspace() {
   const [isConsentDialogOpen, setIsConsentDialogOpen] = useState(false)
   const [isSavingConsent, setIsSavingConsent] = useState(false)
   const [pendingPrompt, setPendingPrompt] = useState<{ prompt: string; sources?: string[] } | null>(null)
-  
-  // Sidebar collapsed state
+
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileWorkspaceOpen, setMobileWorkspaceOpen] = useState(false)
-  
-  // Delete confirmation state
+
   const [deleteChatId, setDeleteChatId] = useState<string | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-  
-  // Full-screen analysis dialog
+
   const [selectedReview, setSelectedReview] = useState<WeeklyReview | null>(null)
   const [selectedReviewIndex, setSelectedReviewIndex] = useState<number | null>(null)
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
-  
+
   const chatEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
-  // Auto Scroll Chat
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTop = scrollContainerRef.current.scrollHeight
     }
   }, [messages, streamingText])
 
-  // Pre-populate account selector when accounts are loaded
   useEffect(() => {
     if (accounts && accounts.length > 0 && selectedAccounts.length === 0) {
       setSelectedAccounts([accounts[0]!.id])
     }
   }, [accounts, selectedAccounts.length])
 
-  // Fetch Messages for Selected Chat
   const handleChatSelect = async (chatId: string) => {
     setSelectedChatId(chatId)
     setIsLoadingMessages(true)
     setStreamingText('')
-    
+
     if (isDemoMode) {
       if (chatId === 'demo-1') {
         setMessages([
           { id: 'm1', role: 'user', content: 'What is my risk per trade across the funded account?', createdAt: new Date(Date.now() - 3600000).toISOString() },
-          { 
-            id: 'm2', 
-            role: 'assistant', 
+          {
+            id: 'm2',
+            role: 'assistant',
             content: `### Key Findings
 Your average risk per trade is highly inconsistent, swinging from $120 to over $450 per trade.
 
@@ -150,16 +141,16 @@ Your average risk per trade is highly inconsistent, swinging from $120 to over $
 
 ### Recommended Actions
 - Set a hard max loss limit of **$200** per trade.
-- Standardize stop loss parameters at entry and never slide stops wider.`, 
-            createdAt: new Date(Date.now() - 3500000).toISOString() 
+- Standardize stop loss parameters at entry and never slide stops wider.`,
+            createdAt: new Date(Date.now() - 3500000).toISOString()
           }
         ])
       } else {
         setMessages([
           { id: 'm3', role: 'user', content: 'Analyze my journal for emotional patterns.', createdAt: new Date(Date.now() - 7200000).toISOString() },
-          { 
-            id: 'm4', 
-            role: 'assistant', 
+          {
+            id: 'm4',
+            role: 'assistant',
             content: `### Key Findings
 Emotional states directly correlate with performance. Operating under stress or frustration is highly destructive.
 
@@ -173,8 +164,8 @@ Emotional states directly correlate with performance. Operating under stress or 
 
 ### Recommended Actions
 - Perform a 5-minute breathing exercise before opening trading platform.
-- Write down your pre-trade checklist: if rules are not met, close the laptop.`, 
-            createdAt: new Date(Date.now() - 7100000).toISOString() 
+- Write down your pre-trade checklist: if rules are not met, close the laptop.`,
+            createdAt: new Date(Date.now() - 7100000).toISOString()
           }
         ])
       }
@@ -196,7 +187,6 @@ Emotional states directly correlate with performance. Operating under stress or 
     }
   }
 
-  // Create Chat and Send Message
   const handleStartChat = async (customPrompt?: string, sourceOverride?: string[], consentConfirmed = false) => {
     if (isSending) return
     const promptToSend = customPrompt || ''
@@ -214,7 +204,7 @@ Emotional states directly correlate with performance. Operating under stress or 
     setIsSending(true)
 
     if (isDemoMode) {
-      // Simulate Demo Streaming Response
+
       const newChat: ChatSession = {
         id: `demo-${Date.now()}`,
         title: promptToSend.slice(0, 30) + '...',
@@ -228,10 +218,10 @@ Emotional states directly correlate with performance. Operating under stress or 
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       }
-      
+
       setChats(prev => [newChat, ...prev])
       setSelectedChatId(newChat.id)
-      
+
       const userMsg: ChatMessage = {
         id: `m-u-${Date.now()}`,
         role: 'user',
@@ -239,7 +229,7 @@ Emotional states directly correlate with performance. Operating under stress or 
         createdAt: new Date().toISOString()
       }
       setMessages([userMsg])
-      
+
       const fullText = `### Key Findings
 [DEMO MODE PREVIEW] You are experiencing the AI assistant simulator.
 With an active workspace, the assistant analyzes your actual trading records. Here is a sample analysis of the demo data:
@@ -259,7 +249,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
       let current = ''
       const words = fullText.split(' ')
       let i = 0
-      
+
       const interval = setInterval(() => {
         if (i < words.length) {
           current += words[i] + ' '
@@ -282,7 +272,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
 
     try {
-      // 1. Create chat if none selected
+
       let chatId = selectedChatId
       if (!chatId) {
         const response = await fetch('/api/v1/ai/chats', {
@@ -313,7 +303,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
         setSelectedChatId(chatId)
       }
 
-      // Add user message locally first
       const userMsg: ChatMessage = {
         id: `local-u-${Date.now()}`,
         role: 'user',
@@ -322,7 +311,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
       }
       setMessages(prev => [...prev, userMsg])
 
-      // 2. Stream AI message response
       const response = await fetch(`/api/v1/ai/chats/${chatId}/messages`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -345,7 +333,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
         return
       }
 
-      // Read SSE stream
       const reader = response.body?.getReader()
       const decoder = new TextDecoder()
       let assistantResponse = ''
@@ -356,8 +343,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
           if (done) break
 
           const chunk = decoder.decode(value)
-          
-          // Parse Vercel AI SDK text protocol (e.g. 0:"text chunk")
+
           const lines = chunk.split('\n')
           for (const line of lines) {
             if (line.startsWith('0:')) {
@@ -373,7 +359,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
         }
       }
 
-      // Reload chat messages from backend to get official saved ids
       const reloadRes = await fetch(`/api/v1/ai/chats/${chatId}`)
       if (reloadRes.ok) {
         const payload = await reloadRes.json()
@@ -384,8 +369,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
       }
 
       setStreamingText('')
-      
-      // Update chat title if it was a new chat
+
       await fetch('/api/v1/ai/chats')
         .then(async res => {
           const payload = await res.json()
@@ -407,7 +391,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
   }
 
-  // Manage Chat Actions
   const handleTogglePin = async (chat: ChatSession) => {
     if (isDemoMode) {
       setChats(prev => prev.map(c => c.id === chat.id ? { ...c, isPinned: !c.isPinned } : c))
@@ -464,7 +447,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
   }
 
-  // Delete with confirmation
   const handleRequestDelete = (chatId: string) => {
     setDeleteChatId(chatId)
     setIsDeleteDialogOpen(true)
@@ -537,7 +519,6 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
   }
 
-  // Saved Insights Actions
   const handleSaveInsight = async (msg: ChatMessage) => {
     if (isDemoMode) {
       const newInsight: SavedInsight = {
@@ -602,32 +583,31 @@ With an active workspace, the assistant analyzes your actual trading records. He
   }
 
   const handleSourceToggle = (source: string) => {
-    setSelectedSources(prev => 
-      prev.includes(source) 
+    setSelectedSources(prev =>
+      prev.includes(source)
         ? prev.filter(s => s !== source)
         : [...prev, source]
     )
   }
 
   const handleAccountToggle = (accId: string) => {
-    setSelectedAccounts(prev => 
-      prev.includes(accId) 
+    setSelectedAccounts(prev =>
+      prev.includes(accId)
         ? prev.filter(a => a !== accId)
         : [...prev, accId]
     )
   }
 
-  // Get Suggested Follow Ups based on messages length and context
   const getFollowUps = () => {
     if (messages.length === 0) return []
-    // Look at last user message content to suggest category
+
     const lastUserMsg = [...messages].reverse().find(m => m.role === 'user')
     const content = lastUserMsg?.content.toLowerCase() || ''
-    
+
     if (content.includes('risk') || content.includes('drawdown')) return followUpSuggestions.risk
     if (content.includes('journal') || content.includes('emotion')) return followUpSuggestions.psychology
     if (content.includes('performance') || content.includes('win')) return followUpSuggestions.performance
-    
+
     return followUpSuggestions.default
   }
 

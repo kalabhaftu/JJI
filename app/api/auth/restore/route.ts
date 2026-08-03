@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
        route: request.nextUrl.pathname,
        requestId,
      })
-     // Auth restoration should not fail because the profile sync is temporarily unavailable.
+
    }
 
   const response = NextResponse.json(

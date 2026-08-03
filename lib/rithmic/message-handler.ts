@@ -29,7 +29,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
   switch (message.type) {
     case "log":
       if (message.level === "info") {
-        // Handle initial days count message
+
         if (
           message.message.includes("Processing") &&
           message.message.includes("days of history")
@@ -40,7 +40,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
           if (match) {
             const [, totalDays] = match;
 
-            // Look for the most recently added account that doesn't have totalDays set
+
             const entries = Object.entries(accountsProgress);
             const activeAccount = entries.find(
               ([_, progress]) =>
@@ -66,9 +66,9 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
             }
           }
         }
-        // Handle day-by-day progress
+
         else if (message.message.includes("Processing date")) {
-          // Support both old and new message formats
+
           const newFormatMatch = message.message.match(
             /\[(.*?)\] Processing date (\d+)\/(\d+)(?:: (\d{8}))?/
           );
@@ -90,7 +90,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
           }
 
           if (accountId && currentDay && totalDays) {
-            // Calculate the actual days processed based on the current day number
+
             const daysProcessed = Math.max(parseInt(currentDay) - 1, 0);
             const currentProgress = accountsProgress[accountId] || {
               processedDates: [],
@@ -107,7 +107,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
             });
           }
         }
-        // Handle completed dates
+
         else if (
           message.message.includes("Successfully processed orders for date")
         ) {
@@ -137,7 +137,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
             });
           }
         }
-        // Handle account initialization
+
         else if (message.message.includes("Successfully added account")) {
           const accountId = message.message.match(/account ([^"]+)/)?.[1];
           if (accountId) {
@@ -155,7 +155,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
             });
           }
         }
-        // Handle account start
+
         else if (
           message.message.includes("Starting processing for account")
         ) {
@@ -176,7 +176,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
             });
           }
         }
-        // Handle account completion
+
         else if (
           message.message.includes("Completed processing account") &&
           message.message.includes("collected")
@@ -240,7 +240,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
           total: 0,
         };
 
-        // Only update if it's a newer progress
+
         if (current > prevAccount.current || total !== prevAccount.total) {
           const daysProcessed = Math.max(current - 1, 0);
 
@@ -261,7 +261,7 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
           });
         }
 
-        // Update current account if not set
+
         if (!currentAccount) {
           setCurrentAccount(accountId);
         }
@@ -269,3 +269,4 @@ export function handleRithmicMessage(message: any, dependencies: RithmicMessageH
       break;
   }
 }
+

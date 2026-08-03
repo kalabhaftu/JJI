@@ -75,7 +75,7 @@ export async function createClient() {
     throw new Error('Supabase configuration is incomplete. Please check your environment variables.')
   }
 
-  // In non-production, use placeholder values that won't break the build
+
   const finalUrl = hasPlaceholderValues ? 'https://placeholder.supabase.co' : supabaseUrl!
   const finalKey = hasPlaceholderValues ? 'placeholder-key-for-build' : supabaseKey!
 
@@ -93,9 +93,8 @@ export async function createClient() {
               cookieStore.set(name, value, options)
             )
            } catch {
-             // The `setAll` method was called from a Server Component.
-             // This can be ignored if you have middleware refreshing
-             // user sessions.
+
+
            }
         },
       },

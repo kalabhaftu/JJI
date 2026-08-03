@@ -72,7 +72,7 @@ export function SharedReportView({ report }: Props) {
           setViewCount(data.viewCount)
         }
       } catch {
-        // Ignore analytics failures for public views.
+
       }
     }
 

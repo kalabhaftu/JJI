@@ -65,7 +65,7 @@ export function TradeTableMobileCard({
         isExpanded && "bg-muted/50"
       )}
     >
-      {/* Header Row */}
+      {}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 flex-1 min-w-0">
           <Checkbox
@@ -130,7 +130,7 @@ export function TradeTableMobileCard({
         </div>
       </div>
 
-      {/* Details Grid */}
+      {}
       <div className="grid grid-cols-2 gap-3 text-sm">
         <div>
           <p className="text-muted-foreground text-xs">Entry</p>
@@ -164,7 +164,7 @@ export function TradeTableMobileCard({
         )}
       </div>
 
-      {/* Actions - larger touch targets for mobile */}
+      {}
       <div className="flex gap-2 pt-3 border-t">
         <Button
           variant="outline"
@@ -197,7 +197,7 @@ export function TradeTableMobileCard({
         )}
       </div>
 
-      {/* Expanded Content - Show child trades */}
+      {}
       {isExpanded && trade.trades && trade.trades.length > 0 && (
         <div className="pl-6 pt-3 border-t space-y-2">
           <p className="text-sm font-medium text-muted-foreground">

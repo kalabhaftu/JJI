@@ -52,7 +52,6 @@ export default function ImportCallbackPage() {
         return;
       }
 
-      // Prevent double execution (React StrictMode in development)
       if (hasProcessed.current) {
         logger.info("Callback already processed, skipping...");
         return;
@@ -85,7 +84,6 @@ export default function ImportCallbackPage() {
           return;
         }
 
-        // Verify state matches what we stored
         const storedOAuthState =
           tradovateStore.oauthState ??
           (typeof sessionStorage !== "undefined"
@@ -114,7 +112,6 @@ export default function ImportCallbackPage() {
           return;
         }
 
-        // Exchange code for tokens and save token in database
         const response = await apiRequest<{ connected: boolean; error?: string }>(
           '/api/v1/tradovate/oauth/callback',
           {
@@ -124,7 +121,6 @@ export default function ImportCallbackPage() {
         );
         const result = response.data;
 
-        // Defensive programming: ensure result is an object
         if (!result || typeof result !== "object") {
           reportError(new Error('Invalid OAuth callback response'), {
             surface: 'client',
@@ -158,7 +154,6 @@ export default function ImportCallbackPage() {
           sessionStorage.removeItem("tradovate_oauth_state");
         }
 
-        // Refresh synchronizations so context has the latest accounts
         try {
           await loadAccounts();
         } catch (loadError) {
@@ -168,7 +163,6 @@ export default function ImportCallbackPage() {
         logger.info("OAuth flow completed successfully");
         setStatus("success");
 
-        // Redirect back to dashboard after a short delay
         setTimeout(() => {
           router.push("/dashboard");
         }, 1000);

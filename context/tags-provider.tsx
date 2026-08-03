@@ -21,7 +21,7 @@ interface TagsContextType {
 
 const TagsContext = createContext<TagsContextType | undefined>(undefined)
 
-// Cache for tags to prevent redundant fetches
+
 let tagsCache: TradeTag[] | null = null
 let lastFetchTime = 0
 let fetchPromise: Promise<TradeTag[]> | null = null
@@ -40,7 +40,7 @@ export function TagsProvider({ children }: { children: React.ReactNode }) {
       return tagsCache
     }
 
-    // Deduplicate in-flight requests
+
     if (fetchPromise && !force) {
       const cached = await fetchPromise
       if (mountedRef.current) {

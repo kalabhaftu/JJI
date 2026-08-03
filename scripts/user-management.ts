@@ -5,7 +5,6 @@ import readline from 'readline'
 import { config as loadEnvFile } from 'dotenv'
 import { createClient } from '@supabase/supabase-js'
 
-// --- Types ---
 
 type AuthUser = {
   id: string
@@ -35,7 +34,6 @@ type OrphanResult = {
   details?: string
 }
 
-// --- Configuration & Clients ---
 
 function loadEnvironment() {
   loadEnvFile({ path: path.join(process.cwd(), '.env') })
@@ -71,7 +69,6 @@ function getPrisma() {
 const supabase = getSupabaseAdmin()
 const prisma = getPrisma()
 
-// --- CLI Helpers ---
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -83,7 +80,6 @@ const question = (query: string): Promise<string> =>
 
 const clear = () => console.clear()
 
-// --- Data Fetching ---
 
 async function listAllAuthUsers(): Promise<AuthUser[]> {
   const users: AuthUser[] = []
@@ -141,13 +137,13 @@ async function getStorageStats(userId: string, authId: string) {
   const results: UserStats['storage'] = []
   
   for (const bucket of buckets) {
-    // Check for objects with userId/authId prefix
-    // Common folders are 'trades/', 'avatars/', 'notes/'
+
+
     const folders = ['trades', 'avatars', 'notes', 'backtests']
     let totalCount = 0
     let totalSize = 0
 
-    // Also check if the bucket IS named after the user
+
     if (bucket.name === userId || bucket.name === authId) {
       const { data: files } = await supabase.storage.from(bucket.name).list('', { recursive: true })
       if (files) {
@@ -162,7 +158,7 @@ async function getStorageStats(userId: string, authId: string) {
           totalSize += files.reduce((acc, f) => acc + (f.metadata?.size || 0), 0)
         }
         
-        // Also check with authId just in case
+
         if (userId !== authId) {
             const { data: filesAuth } = await supabase.storage.from(bucket.name).list(`${folder}/${authId}`, { recursive: true })
             if (filesAuth) {
@@ -181,20 +177,19 @@ async function getStorageStats(userId: string, authId: string) {
   return results
 }
 
-// --- Actions ---
 
 async function deleteUser(user: DbUser, authUser?: AuthUser) {
   console.log(`\nDeleting user ${user.email}...`)
   
-  // 1. Cleanup Storage
+
   const { data: buckets } = await supabase.storage.listBuckets()
   if (buckets) {
     for (const bucket of buckets) {
-      // Check if bucket is user-specific (bucket name is user UUID)
+
       if (bucket.name === user.id || bucket.name === user.auth_user_id) {
         console.log(`- Deleting user bucket: ${bucket.name}`)
         try {
-          // Must delete files first
+
           const { data: files } = await supabase.storage.from(bucket.name).list('', { recursive: true })
           if (files && files.length > 0) {
             await supabase.storage.from(bucket.name).remove(files.map(f => f.name))
@@ -204,7 +199,7 @@ async function deleteUser(user: DbUser, authUser?: AuthUser) {
           console.error(`  Error deleting bucket: ${e instanceof Error ? e.message : String(e)}`)
         }
       } else {
-        // Delete objects in shared buckets (folders named by user UUID)
+
         const folders = ['trades', 'avatars', 'notes', 'backtests', 'weekly-calendars']
         for (const folder of folders) {
           const prefixes = [ `${folder}/${user.id}`, `${folder}/${user.auth_user_id}` ]
@@ -224,7 +219,7 @@ async function deleteUser(user: DbUser, authUser?: AuthUser) {
     }
   }
 
-  // 2. Delete Auth User
+
   if (user.auth_user_id) {
     console.log(`- Deleting auth user: ${user.auth_user_id}`)
     const { error } = await supabase.auth.admin.deleteUser(user.auth_user_id)
@@ -237,10 +232,10 @@ async function deleteUser(user: DbUser, authUser?: AuthUser) {
     }
   }
 
-  // 3. Delete DB User (Cascades)
+
   console.log(`- Deleting DB user: ${user.id}`)
   try {
-    // Use deleteMany to avoid throwing if already deleted by a trigger
+
     const { count } = await prisma.user.deleteMany({ where: { id: user.id } })
     if (count === 0) console.log(`  DB user already gone.`)
   } catch (e) {
@@ -289,7 +284,7 @@ async function manageBuckets() {
     const status = isOrphaned ? ' [ORPHANED BUCKET]' : ''
     console.log(`${bucket.name.padEnd(40)} | ${owner.padEnd(30)} | ${files?.length ? 'Has files' : 'Empty'}${status}`)
 
-    // If shared bucket, check for orphaned subfolders
+
     if (!isUuid) {
       const sharedFolders = ['trades', 'avatars', 'notes', 'backtests', 'weekly-calendars']
       for (const folder of sharedFolders) {
@@ -335,7 +330,7 @@ async function runDatabaseAudit(autoFix = false) {
 
   console.log(`\nRunning audit${fixMode ? ' (FIX MODE)' : ''}...`)
 
-  // --- 1. Ghost Users ---
+
   console.log('\n[1/4] Checking for Ghost Users...')
   const authUsers = await listAllAuthUsers()
   const authUserIds = new Set(authUsers.map(u => u.id))
@@ -354,7 +349,7 @@ async function runDatabaseAudit(autoFix = false) {
   }
   if (ghostCount === 0) console.log('[✓] No ghost users found.')
 
-  // --- 2. Abandoned Payments ---
+
   console.log('\n[2/4] Checking for Abandoned Payments (2h+)...')
   const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
   const abandoned = await prisma.paymentRecord.findMany({
@@ -376,7 +371,7 @@ async function runDatabaseAudit(autoFix = false) {
     console.log('[✓] No abandoned payments found.')
   }
 
-  // --- 3. Orphaned Storage ---
+
   console.log('\n[3/5] Checking for Orphaned Storage (Buckets/Folders)...')
   const { data: buckets } = await supabase.storage.listBuckets()
   const validIds = new Set([
@@ -423,7 +418,7 @@ async function runDatabaseAudit(autoFix = false) {
   }
   if (orphanStorageCount === 0) console.log('[✓] Storage structure is clean.')
 
-  // --- 4. Orphaned DB Records ---
+
   console.log('\n[4/5] Checking for Orphaned DB Records...')
   const tables = [
     'Account', 'Trade', 'TradeExecution', 'BacktestTrade', 'DailyNote', 'MasterAccount',
@@ -461,7 +456,7 @@ async function runDatabaseAudit(autoFix = false) {
   }
   if (totalOrphanRecords === 0) console.log('[✓] No orphaned records found.')
 
-  // --- 5. Broken Storage Links ---
+
   console.log('\n[5/5] Checking for Broken Storage Links (DB -> Storage)...')
   const modelsWithImages = [
     { name: 'Trade', fields: ['imageOne', 'imageTwo', 'imageThree', 'imageFour', 'imageFive', 'imageSix', 'cardPreviewImage'] },
@@ -491,7 +486,7 @@ async function runDatabaseAudit(autoFix = false) {
             const bucket = pathParts[0]
             const filePath = pathParts.slice(1).join('/')
 
-            // Check if file exists by trying to get its metadata or listing it
+
             const { data, error } = await supabase.storage.from(bucket).list(path.dirname(filePath), {
               search: path.basename(filePath)
             })
@@ -508,7 +503,7 @@ async function runDatabaseAudit(autoFix = false) {
                }
             }
           } catch (e) {
-            // Ignore parsing errors for malformed URLs
+
           }
         }
       }
@@ -520,7 +515,6 @@ async function runDatabaseAudit(autoFix = false) {
   if (!autoFix) await question('\nPress Enter to return...')
 }
 
-// --- UI Flows ---
 
 async function userDetailsFlow(user: DbUser) {
   clear()
@@ -586,7 +580,7 @@ async function listUsersFlow() {
     const idx = parseInt(choice) - 1
     if (users[idx]) {
       await userDetailsFlow(users[idx])
-      // Refresh list after deletion if necessary
+
       return listUsersFlow()
     }
   }

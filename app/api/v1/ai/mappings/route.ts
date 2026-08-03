@@ -10,16 +10,16 @@ import { z } from 'zod'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// Allow streaming responses up to 30 seconds
+
 export const maxDuration = 30;
 
-// Initialize xAI provider (OpenAI-compatible)
+
 const xai = createOpenAI({
   apiKey: process.env.XAI_API_KEY || '',
   baseURL: process.env.XAI_BASE_URL || 'https://api.x.ai/v1',
 });
 
-// Comprehensive header name variations for intelligent matching hints
+
 const FIELD_HINTS = {
   instrument: ['symbol', 'ticker', 'asset', 'pair', 'contract', 'market', 'product', 'security', 'name', 'underlying', 'sym', 'instr', 'currency pair'],
   entryId: ['id', 'trade id', 'order id', 'ticket', 'position id', 'deal', 'execution id', 'ref', 'reference', 'trade number', 'order number', 'ticket number'],

@@ -102,7 +102,6 @@ const performSyncForCredential = useCallback(
         ),
       ])) as Response;
 
-      // Handle rate limit error specifically
       if (response.status === 429) {
         const data = await response.json();
         const params = parseRithmicRateLimitMessage(data.detail);
@@ -121,7 +120,6 @@ const performSyncForCredential = useCallback(
       const data = await response.json();
       if (!data.success) throw new Error(data.message);
 
-      // If allAccounts is true, use all available accounts else use selected accounts (which exist in the data.accounts array)
       const accountsToSync = savedData.allAccounts
         ? data.accounts.map((acc: any) => acc.account_id)
         : savedData.selectedAccounts.filter((account: string) =>
@@ -131,7 +129,6 @@ const performSyncForCredential = useCallback(
       setAvailableAccounts(data.accounts);
       const wsUrl = getWebSocketUrl(data.websocket_url);
 
-      // Get most recent date for each account
       const mostRecentDates = accountsToSync
         .map((accountId: string) => {
           const accountTrades = trades.filter(
@@ -148,14 +145,13 @@ const performSyncForCredential = useCallback(
 
       let startDate: string;
 
-      // If no valid dates found, use 200 days ago as default
       if (mostRecentDates.length === 0) {
         const defaultDate = new Date(Date.now() - 200 * 24 * 60 * 60 * 1000);
         startDate = defaultDate.toISOString().slice(0, 10).replace(/-/g, "");
       } else {
-        // Find oldest of the most recent dates
+
         const oldestRecentDate = new Date(Math.min(...mostRecentDates));
-        // Add 3 days buffer
+
         oldestRecentDate.setDate(oldestRecentDate.getDate() - 3);
         startDate = oldestRecentDate
           .toISOString()
@@ -173,8 +169,6 @@ const performSyncForCredential = useCallback(
         message: `Starting automatic background sync for ${savedData.name || savedData.credentials.username}`,
       });
 
-      // Update last sync time in the database
-      // Call API route instead of server action
       const syncResponse = await fetch("/api/v1/rithmic/synchronizations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -246,7 +240,6 @@ const authenticateAndGetAccounts = useCallback(
       }
     );
 
-    // Handle rate limit error specifically
     if (response.status === 429) {
       const data = await response.json();
       const params = parseRithmicRateLimitMessage(data.detail);
@@ -284,7 +277,7 @@ const authenticateAndGetAccounts = useCallback(
 
 const calculateStartDate = useCallback(
   (selectedAccounts: string[]): string => {
-    // Filter trades for selected accounts
+
     const accountTrades = trades.filter((trade) =>
       selectedAccounts.includes(trade.accountNumber)
     );
@@ -297,7 +290,6 @@ const calculateStartDate = useCallback(
       return startDate;
     }
 
-    // Find the most recent trade date for each account
     const accountDates = selectedAccounts
       .map((accountId) => {
         const accountTrades = trades.filter(
@@ -310,13 +302,10 @@ const calculateStartDate = useCallback(
       })
       .filter(Boolean) as number[];
 
-    // Get the oldest most recent date across all accounts
     const oldestRecentDate = new Date(Math.min(...accountDates));
 
-    // Set to next day
     oldestRecentDate.setDate(oldestRecentDate.getDate() + 1);
 
-    // Format as YYYYMMDD
     const startDate = oldestRecentDate
       .toISOString()
       .slice(0, 10)
@@ -363,7 +352,7 @@ const checkAndPerformSyncs = useCallback(async () => {
   if (isAutoSyncing) return;
   if (document.visibilityState === 'hidden') return;
   try {
-    // Call API route instead of server action
+
     const response = await fetch("/api/v1/rithmic/synchronizations", {
       method: "GET",
       headers: { "Content-Type": "application/json" },
@@ -400,14 +389,12 @@ const checkAndPerformSyncs = useCallback(async () => {
 
 checkAndPerformSyncsRef.current = checkAndPerformSyncs;
 
-// Schedule the next check for when a credential set actually becomes due
 useEffect(() => {
   if (disabled) return;
   scheduleNextSync();
   return clearNextSyncTimer;
 }, [disabled, scheduleNextSync, clearNextSyncTimer]);
 
-// Re-check when the tab regains focus or the network comes back
 useEffect(() => {
   const handleVisibilityChange = () => {
     if (document.visibilityState === 'visible') void checkAndPerformSyncsRef.current();

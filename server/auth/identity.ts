@@ -6,12 +6,12 @@ import { headers } from 'next/headers'
 import { reportError } from '@/lib/observability/report-error'
 import { createClient } from '@/server/auth/client'
 
-// Optimized function that uses middleware data when available
+
 export async function getUserId(): Promise<string> {
   try {
     const headersList = await headers()
 
-    // Support Authorization: Bearer token from mobile/CLI clients
+
     const authHeader = headersList.get('authorization') || headersList.get('Authorization')
     if (authHeader && authHeader.startsWith('Bearer ')) {
       const token = authHeader.slice(7)
@@ -53,10 +53,10 @@ export async function getUserId(): Promise<string> {
   try {
     const supabase = await createClient()
 
-    // Add timeout to Supabase call with reasonable timeout for stability
+
     const authPromise = supabase.auth.getUser()
     const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error("Auth timeout")), 10000) // Increased to 10 seconds for stability
+      setTimeout(() => reject(new Error("Auth timeout")), 10000)
     )
 
     const { data: { user }, error } = await Promise.race([authPromise, timeoutPromise]) as any
@@ -102,17 +102,14 @@ async function getUserEmail(): Promise<string> {
   }
 }
 
-/**
- * Get user ID safely - returns null for unauthenticated users instead of throwing
- * Use this in server actions that should handle unauthenticated users gracefully
- */
+
 export async function getUserIdSafe(): Promise<string | null> {
   try {
     return await getUserId()
   } catch (error) {
     if (error instanceof Error && error.message.includes("not authenticated")) {
-      return null // Return null for unauthenticated users instead of throwing
+      return null
     }
-    throw error // Re-throw other errors (like service unavailable)
+    throw error
   }
 }

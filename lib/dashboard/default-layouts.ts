@@ -9,14 +9,14 @@ type PrismaDashboardLayout = {
   mobile: any[];
 };
 
-// Original default layouts (without KPI widgets) - used for existing users to prevent flash
+
 export const defaultLayouts: PrismaDashboardLayout = {
   id: '',
   userId: '',
   createdAt: new Date(),
   updatedAt: new Date(),
   desktop: [
-    // Row 1 - KPI widgets
+
     {
       "i": "widget-net-pnl-kpi",
       "type": "netPnlKpi",
@@ -63,7 +63,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 1.8
     },
     
-    // Row 2 - Statistics and Trade Distribution
+
     {
       "i": "widget1752135396857",
       "type": "statisticsWidget",
@@ -83,7 +83,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 4
     },
     
-    // Row 3 - Chart widgets
+
     {
       "i": "widget1752135357688",
       "type": "weekdayPnlChart",
@@ -103,7 +103,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 4
     },
     
-    // Row 4 - Calendar (full width)
+
     {
       "i": "widget1751403095730",
       "type": "calendarAdvanced",
@@ -114,7 +114,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 6
     },
 
-    // Row 4 - Equity Chart and P&L Chart
+
     {
       "i": "widget1752135363430",
       "type": "equityChart",
@@ -134,7 +134,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 4
     },
 
-    // Row 5 - Time charts
+
     {
       "i": "widget1752135359621",
       "type": "timeOfDayChart",
@@ -145,7 +145,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 4
     },
 
-    // Row 7 - Side charts (shifted from row 6)
+
     {
       "i": "widget1752135365730",
       "type": "pnlBySideChart",
@@ -164,7 +164,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "w": 6,
       "h": 4
     },
-    // Row 8 - Commission and Time Range (shifted from row 7)
+
     {
       "i": "widget1752135370579",
       "type": "commissionsPnl",
@@ -184,7 +184,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 4
     },
 
-    // Row 9 - Small widgets (tiny sizes) (shifted from row 8)
+
     {
       "i": "widget1752135435916",
       "type": "riskRewardRatio",
@@ -222,7 +222,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 1
     },
 
-    // Row 10 - More small widgets (shifted from row 9)
+
     {
       "i": "widget1752135445916",
       "type": "winningStreak",
@@ -260,10 +260,10 @@ export const defaultLayouts: PrismaDashboardLayout = {
       "h": 1
     },
     
-    // Row 10 - Other widgets
+
   ],
   mobile: [
-    // KPI widgets
+
     {
       i: "mobile-net-pnl-kpi",
       type: "netPnlKpi" as WidgetType,
@@ -310,7 +310,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       h: 3
     },
     
-    // Core widgets
+
     {
       i: "statisticsWidget",
       type: "statisticsWidget" as WidgetType,
@@ -339,7 +339,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       h: 6
     },
 
-    // Important small widgets
+
     {
       i: "cumulativePnl",
       type: "cumulativePnl" as WidgetType,
@@ -368,7 +368,7 @@ export const defaultLayouts: PrismaDashboardLayout = {
       h: 1
     },
 
-    // Chart widgets
+
     {
       i: "pnlChart",
       type: "pnlChart" as WidgetType,
@@ -397,18 +397,18 @@ export const defaultLayouts: PrismaDashboardLayout = {
       h: 4
     },
     
-    // Other essential widgets
+
   ]
 };
 
-// New default layouts with KPI widgets - used only for new users and reset functionality
+
 const defaultLayoutsWithKPI: PrismaDashboardLayout = {
   id: '',
   userId: '',
   createdAt: new Date(),
   updatedAt: new Date(),
   desktop: [
-    // Row 1 - KPI Widgets (Top row with 5 KPI cards)
+
     {
       "i": "kpi-net-pnl",
       "type": "netPnlKpi",
@@ -455,7 +455,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 1.8
     },
     
-    // Row 2 - Statistics and Trade Distribution  
+
     {
       "i": "widget1752135396857",
       "type": "statisticsWidget",
@@ -475,7 +475,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 4
     },
     
-    // Row 3 - Chart widgets
+
     {
       "i": "widget1752135357688",
       "type": "weekdayPnlChart",
@@ -495,7 +495,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 4
     },
     
-    // Row 4 - Calendar (full width)
+
     {
       "i": "widget1751403095730",
       "type": "calendarAdvanced",
@@ -506,7 +506,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 6
     },
 
-    // Row 5 - Equity Chart and P&L Chart
+
     {
       "i": "widget1752135363430",
       "type": "equityChart",
@@ -526,7 +526,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 4
     },
 
-    // Row 6 - Time charts
+
     {
       "i": "widget1752135359621",
       "type": "timeOfDayChart",
@@ -537,7 +537,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 4
     },
 
-    // Row 7 - Side charts
+
     {
       "i": "widget1752135365730",
       "type": "pnlBySideChart",
@@ -556,7 +556,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "w": 6,
       "h": 4
     },
-    // Row 8 - Commission and Time Range
+
     {
       "i": "widget1752135370579",
       "type": "commissionsPnl",
@@ -576,7 +576,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 4
     },
 
-    // Row 9 - Small widgets (tiny sizes)
+
     {
       "i": "widget1752135435916",
       "type": "riskRewardRatio",
@@ -614,7 +614,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 1
     },
 
-    // Row 10 - More small widgets
+
     {
       "i": "widget1752135445916",
       "type": "winningStreak",
@@ -652,10 +652,10 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       "h": 1
     },
     
-    // Row 10 - Other widgets
+
   ],
   mobile: [
-    // KPI widgets (stacked vertically on mobile)
+
     {
       i: "kpi-net-pnl-mobile",
       type: "netPnlKpi" as WidgetType,
@@ -702,7 +702,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       h: 3
     },
     
-    // Core widgets
+
     {
       i: "statisticsWidget",
       type: "statisticsWidget" as WidgetType,
@@ -731,7 +731,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       h: 6
     },
 
-    // Important small widgets
+
     {
       i: "cumulativePnl",
       type: "cumulativePnl" as WidgetType,
@@ -760,7 +760,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       h: 1
     },
 
-    // Chart widgets
+
     {
       i: "pnlChart",
       type: "pnlChart" as WidgetType,
@@ -789,6 +789,7 @@ const defaultLayoutsWithKPI: PrismaDashboardLayout = {
       h: 4
     },
     
-    // Other essential widgets
+
   ]
 };
+

@@ -13,7 +13,7 @@ import { OptimizedAccountSelectionLoading } from "@/components/ui/optimized-load
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
 import { useRouter } from 'next/navigation'
 
-// Temporary translation function
+
 const useTranslations = () => {
   const t = (key: string) => key
   return { t }
@@ -42,17 +42,12 @@ interface UnifiedAccount {
   } | null
 }
 
-/**
- * Helper function to determine if a phase number represents the funded stage
- * based on the evaluation type.
- */
+
 function isFundedPhase(evaluationType: string | undefined, phaseNumber: number | undefined): boolean {
   return isFundedPhaseForEvaluation(evaluationType || '', phaseNumber || 0)
 }
 
-/**
- * Helper function to get phase label
- */
+
 function getPhaseLabel(evaluationType: string | undefined, phaseNumber: number | undefined): string {
   if (!phaseNumber) return 'PHASE 1'
   if (isFundedPhase(evaluationType, phaseNumber)) {
@@ -84,15 +79,15 @@ export default function AccountSelection({
   const [accountsWithPhases, setAccountsWithPhases] = useState<UnifiedAccount[]>([])
   const [isLoadingPhases, setIsLoadingPhases] = useState(false)
   
-  // Enable real-time updates for better UX
+
   const { isConnected } = useRealtimeAccounts({
     enabled: true,
     onUpdate: () => {
-      // Accounts will auto-update via the useAccounts hook
+
     }
   })
 
-  // Update error state when hook error changes
+
   useEffect(() => {
     if (error) {
       setHasError(true)
@@ -104,7 +99,7 @@ export default function AccountSelection({
     }
   }, [error])
 
-  // Filter accounts for import - only show active phases and all live accounts
+
   useEffect(() => {
     const prepareAccounts = () => {
       if (accounts.length === 0) {
@@ -115,14 +110,14 @@ export default function AccountSelection({
       setIsLoadingPhases(true)
       
       try {
-        // For import: only show active phases for prop-firm accounts
+
         const filteredAccounts = accounts.filter(acc => {
-          // Show all non-archived live accounts; live accounts do not have phases.
+
           if (acc.accountType === 'live') return !acc.isArchived
           
-          // For prop-firm accounts: only show active phases (NOT passed or failed)
+
           if (acc.accountType === 'prop-firm') {
-            // Check phase status - must be active (not passed, not failed)
+
             const phaseStatus = acc.currentPhase?.status || acc.status
             return phaseStatus === 'active'
           }
@@ -130,9 +125,9 @@ export default function AccountSelection({
           return false
         })
 
-        // Map to include phase details in the expected format
+
         const accountsWithPhaseData = filteredAccounts.map((account) => {
-          // Use phaseDetails that's already loaded from server
+
           if (account.accountType === 'prop-firm') {
             const phaseDetails = (account as any).phaseDetails
             if (phaseDetails) {
@@ -151,7 +146,7 @@ export default function AccountSelection({
         
         setAccountsWithPhases(accountsWithPhaseData as any)
       } catch (error) {
-        setAccountsWithPhases((accounts || []) as any) // Fallback to accounts without phase formatting
+        setAccountsWithPhases((accounts || []) as any)
       } finally {
         setIsLoadingPhases(false)
       }

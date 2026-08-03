@@ -38,10 +38,10 @@ export default function ImportTypeSelection({ selectedType, setSelectedType, set
   const [searchQuery, setSearchQuery] = useState('')
   const [hoveredCategory, setHoveredCategory] = useState<PlatformConfig['category'] | null>(null)
   
-  // Don't auto-select anything - let user choose
+
   const selectedPlatform = platforms.find(p => p.type === selectedType)
   
-  // If a custom component platform is selected (like manual trade entry), render it full screen
+
   if (selectedType && selectedPlatform?.customComponent) {
     const CustomComponent = selectedPlatform.customComponent
     return (
@@ -75,7 +75,7 @@ export default function ImportTypeSelection({ selectedType, setSelectedType, set
   return (
     <div className="flex flex-col h-full">
       <div className="grid md:grid-cols-2 gap-6 h-full min-h-0 p-1">
-        {/* Platform List */}
+        {}
         <div className="h-full min-h-0">
           <div className="border border-border/40 bg-card/45 rounded-2xl h-full shadow-sm overflow-hidden flex flex-col">
             <Command className="bg-transparent h-full flex flex-col">
@@ -130,7 +130,7 @@ export default function ImportTypeSelection({ selectedType, setSelectedType, set
           </div>
         </div>
 
-        {/* Right Panel - Tutorial/Info */}
+        {}
         <div className="h-full min-h-0">
           {selectedType !== '' && selectedPlatform && !selectedPlatform.customComponent ? (
             <div className="h-full overflow-y-auto bg-card/45 border border-border/40 rounded-2xl p-6 shadow-sm">

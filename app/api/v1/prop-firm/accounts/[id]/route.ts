@@ -32,15 +32,12 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-/**
- * Helper function to determine if a phase number represents the funded stage
- * based on the evaluation type.
- */
+
 function isFundedPhase(evaluationType: string, phaseNumber: number): boolean {
   return isFundedPhaseForEvaluation(evaluationType, phaseNumber)
 }
 
-// Only user-editable master-account fields are accepted.
+
 const UpdateMasterAccountSchema = z.object({
   accountName: z.string().min(1, 'Account name is required').optional(),
   status: z.enum(['active', 'funded', 'failed']).optional(),
@@ -89,11 +86,10 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
     const { id: masterAccountId } = await params
     const { searchParams } = new URL(request.url)
     const resetTimezone = normalizeTimeZone(searchParams.get('resetTimezone'))
-    // ID is pure masterAccountId (UUID), not composite
 
-    // PERFORMANCE OPTIMIZATION: Use parallel queries and database aggregations
+
     const [masterAccount, phases, allPhaseTrades, breakEvenThreshold] = await Promise.all([
-      // 1. Get master account basic info (no nested relations)
+
       db.query.MasterAccount.findFirst({
         where: (table, { eq, and }) => and(
           eq(table.id, masterAccountId),
@@ -112,7 +108,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
         }
       }),
 
-      // 2. Get phases with 10 most recent trades and breach records using nested include
+
       db.query.PhaseAccount.findMany({
         where: (table, { eq }) => eq(table.masterAccountId, masterAccountId),
         with: {
@@ -136,7 +132,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
         orderBy: (table, { asc }) => [asc(table.phaseNumber)]
       }),
 
-      // 3. Get all phase trades once, then build grouped execution stats consistently
+
       db.query.Trade.findMany({
         where: (table, { exists, eq }) => exists(
           db.select({ id: schema.PhaseAccount.id })
@@ -160,13 +156,11 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
         { status: 404 }
       )
     }
-    // Get the current active phase
+
     const currentPhase = phases.find(
       (phase: typeof phases[number]) => phase.phaseNumber === masterAccount.currentPhase
     )
 
-    // NOTE: Evaluation is now done in the background after trade import
-    // This keeps the GET request fast and responsive
 
     const groupedCounts = buildGroupedTradeCountSummary(allPhaseTrades as any)
     const totalTrades = groupedCounts.groupedTradeCount
@@ -179,7 +173,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       (trade: any) => trade.phaseAccountId === currentPhase?.id
     )
 
-    // CRITICAL FIX: Use canonical net P&L (`trade.pnl`) and exclude break-even trades
+
     const winningTrades = groupedCounts.groupedTrades.filter(
       (trade: { pnl: number }) => {
         return classifyOutcome(getTradeNetPnl(trade), breakEvenThreshold) === 'win'
@@ -193,7 +187,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
     const tradableCount = winningTrades + losingTrades
     const winRate = tradableCount > 0 ? (winningTrades / tradableCount) * 100 : 0
 
-    // Calculate current phase statistics - PHASE SPECIFIC!
+
     const currentPhaseTradeCount = currentPhase
       ? (groupedCounts.groupedCountByPhaseAccountId.get(currentPhase.id) || 0)
       : 0
@@ -206,7 +200,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       0
     )
 
-    // Determine next action based on phase status
+
     let nextAction = 'continue_trading'
     if (!currentPhase?.phaseId) {
       nextAction = 'set_phase_id'
@@ -216,7 +210,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       nextAction = 'failed'
     }
 
-    // Calculate drawdown data for the hook
+
     const drawdownData = {
       dailyDrawdownRemaining: 0,
       maxDrawdownRemaining: 0,
@@ -227,20 +221,18 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       breachType: undefined as 'daily_drawdown' | 'max_drawdown' | undefined
     }
 
-    // FIXED: Calculate current balance and equity from CURRENT PHASE trades only
+
     const currentBalance = masterAccount.accountSize + currentPhaseNetPnL
     const currentEquity = currentBalance
 
-    // Calculate drawdown based on current phase rules
+
     if (currentPhase) {
-      // Calculate highest equity (high-water mark) - track peak balance
-      // IMPORTANT: Use only CURRENT PHASE trades, not all phases!
-      // Use grouped trades for accurate high-water mark calculation
+
+
       let highWaterMark = masterAccount.accountSize
       let runningBalance = masterAccount.accountSize
 
-      // Calculate high-water mark from CURRENT PHASE grouped trades in order
-      // Grouped trades ensure partial closes are counted as single trades
+
       for (const trade of currentPhaseGroupedTrades as Array<{ pnl: number }>) {
         runningBalance += Number(trade.pnl || 0)
         highWaterMark = Math.max(highWaterMark, runningBalance)
@@ -249,7 +241,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       drawdownData.highestEquity = highWaterMark
       drawdownData.currentEquity = currentEquity
 
-      // Get daily start balance from daily anchor (fallback to account size)
+
       const todayAnchor = await db.query.DailyAnchor.findFirst({
         where: (table, { eq, and, gte }) => and(
           eq(table.phaseAccountId, currentPhase.id),
@@ -261,23 +253,23 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       const dailyStartBalance = todayAnchor?.anchorEquity || masterAccount.accountSize
       drawdownData.dailyStartBalance = dailyStartBalance
 
-      // Daily drawdown calculation (from daily start balance)
+
       const dailyDrawdownLimit = currentPhase.dailyDrawdownPercent > 0
         ? (masterAccount.accountSize * currentPhase.dailyDrawdownPercent) / 100
         : 0
       const dailyDrawdownUsed = Math.max(0, dailyStartBalance - currentEquity)
       drawdownData.dailyDrawdownRemaining = Math.max(0, dailyDrawdownLimit - dailyDrawdownUsed)
 
-      // Max drawdown calculation (static vs trailing)
+
       let maxDrawdownBase: number
       let maxDrawdownLimit: number
 
       if (currentPhase.maxDrawdownType === 'trailing') {
-        // Trailing: Base on high-water mark
+
         maxDrawdownBase = highWaterMark
         maxDrawdownLimit = highWaterMark * (currentPhase.maxDrawdownPercent / 100)
       } else {
-        // Static: Base on starting balance
+
         maxDrawdownBase = masterAccount.accountSize
         maxDrawdownLimit = masterAccount.accountSize * (currentPhase.maxDrawdownPercent / 100)
       }
@@ -285,7 +277,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       const maxDrawdownUsed = Math.max(0, maxDrawdownBase - currentEquity)
       drawdownData.maxDrawdownRemaining = Math.max(0, maxDrawdownLimit - maxDrawdownUsed)
 
-      // FAILURE-FIRST: Check breaches (daily first, then max)
+
       if (dailyDrawdownUsed > dailyDrawdownLimit) {
         drawdownData.isBreached = true
         drawdownData.breachType = 'daily_drawdown'
@@ -294,7 +286,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
         drawdownData.breachType = 'max_drawdown'
       }
 
-      // If there is an actual BreachRecord in the database, override calculations to freeze details
+
       const firstBreach = (currentPhase as any).BreachRecord?.[0]
       if (firstBreach) {
         drawdownData.isBreached = true
@@ -351,7 +343,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       })
     }
 
-    // Format account data as expected by the hook
+
     const accountData = {
       id: masterAccount.id,
       accountName: masterAccount.accountName,
@@ -434,7 +426,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
       account: accountData,
       drawdown: drawdownData,
       widgetMetrics,
-      // Keep the full data for backward compatibility
+
       masterAccount: {
         id: masterAccount.id,
         accountName: masterAccount.accountName,
@@ -501,7 +493,7 @@ async function getPropFirmAccount(request: NextRequest, { params }: RouteParams)
         currentPhaseGrossPnL,
         currentPhaseNetPnL
       },
-      recentTrades: currentPhaseGroupedTrades.slice(-20).reverse().map((trade: any) => ({  // FIXED: Show recent grouped trades from CURRENT PHASE only
+      recentTrades: currentPhaseGroupedTrades.slice(-20).reverse().map((trade: any) => ({
         id: trade.id,
         pnl: trade.pnl,
         commission: trade.commission,
@@ -564,7 +556,7 @@ async function updatePropFirmAccount(request: NextRequest, { params }: RoutePara
     const internalUserId = identity.internalUserId
 
     const { id: masterAccountId } = await params
-    // ID is pure masterAccountId (UUID), not composite
+
     const body = await request.json()
     const updateData = UpdateMasterAccountSchema.parse(body)
 
@@ -628,7 +620,7 @@ async function deletePropFirmAccount(request: NextRequest, { params }: RoutePara
     const internalUserId = identity.internalUserId
 
     const { id: masterAccountId } = await params
-    // ID is pure masterAccountId (UUID), not composite
+
 
     await deletePropFirmAccountForUser(
       internalUserId,

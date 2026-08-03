@@ -41,7 +41,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
         setError(null)
 
         try {
-            // Fetch Real Data
+
             const { data, error: fetchError } = await getMarketData(
                 trade.instrument,
                 '5m',
@@ -57,7 +57,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
                 return
             }
 
-            // Timezone adjustment for New York
+
             const nyTimezone = 'America/New_York'
             const adjustedData = data.map((d: any) => {
                 const date = new Date(d.time * 1000)
@@ -68,7 +68,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
                 }
             })
 
-            // Create Chart
+
             if (chartRef.current) {
                 chartRef.current.remove();
                 chartRef.current = null;
@@ -115,7 +115,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
 
             candleSeries.setData(adjustedData as any)
 
-            // Plot Markers - CRITICAL: Use adjustedData to find times
+
             const markers: SeriesMarker<Time>[] = []
 
             const findNearestAdjustedTime = (targetTimeStr: string) => {
@@ -135,12 +135,12 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
                     markers.push({
                         time: entryTime,
                         position: isLong ? 'belowBar' : 'aboveBar',
-                        color: 'hsl(var(--chart-1))', // Entry
+                        color: 'hsl(var(--chart-1))',
                         shape: isLong ? 'arrowUp' : 'arrowDown',
                         text: `Entry: ${Number(trade.entryPrice).toFixed(2)}`,
                         size: 2
                     })
-                } catch (e) { /* marker placement failed silently */ }
+                } catch (e) { }
             }
 
             if (trade.closeDate && trade.closePrice) {
@@ -149,12 +149,12 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
                     markers.push({
                         time: exitTime,
                         position: isLong ? 'aboveBar' : 'belowBar',
-                        color: 'hsl(var(--chart-loss))', // Exit
+                        color: 'hsl(var(--chart-loss))',
                         shape: isLong ? 'arrowDown' : 'arrowUp',
                         text: `Exit: ${Number(trade.closePrice).toFixed(2)}`,
                         size: 2
                     })
-                } catch (e) { /* marker placement failed silently */ }
+                } catch (e) { }
             }
 
             createSeriesMarkers(candleSeries, markers)
@@ -171,13 +171,13 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
     }, [trade.id, trade.instrument, trade.entryDate, trade.closeDate, trade.entryPrice, trade.closePrice, isLong])
 
     useEffect(() => {
-        // Prevent race conditions with strict mode/fast unmounts
+
         let isMounted = true;
 
         const runInit = async () => {
             if (!chartContainerRef.current) return;
 
-            // Cleanup existing chart if any
+
             if (chartRef.current) {
                 chartRef.current.remove();
                 chartRef.current = null;
@@ -188,11 +188,11 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
 
         runInit();
 
-        // Robust ResizeObserver that handles exact container dimensions
+
         const resizeObserver = new ResizeObserver((entries) => {
             if (!isMounted || !entries[0]?.contentRect || !chartRef.current) return
             const { width, height } = entries[0].contentRect
-            // Only resize if dimensions are valid and changed
+
             if (width > 0 && height > 0) {
                 chartRef.current.applyOptions({ width, height })
             }

@@ -4,7 +4,7 @@ import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { createErrorResponse } from '@/lib/api-response'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// Rithmic live sync is under development — endpoint is disabled.
+
 export async function POST(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const limited = await applyApiRoutePolicy(request, 'sensitive')

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
   const userId = identity.internalUserId
 
   try {
-    // Check general AI access
+
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
       return createErrorResponse(aiGuard.reason ?? 'AI access is unavailable.', 403, undefined, 'PAYWALL', requestId)
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
   const userId = identity.internalUserId
 
   try {
-    // Check AI access
+
     const aiGuard = await checkAIAccess(userId)
     if (!aiGuard.hasAccess) {
       return createErrorResponse(aiGuard.reason ?? 'AI access is unavailable.', 403, undefined, 'PAYWALL', requestId)

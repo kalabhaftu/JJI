@@ -36,13 +36,13 @@ export function encrypt(text: string | null | undefined): string | null {
       surface: 'server',
       operation: 'encrypt-provider-credential',
     })
-    return text; // Fallback to raw string if crypto fails (e.g., edge runtimes)
+    return text;
   }
 }
 
 export function decrypt(hash: string | null | undefined): string | null {
   if (!hash) return hash as null;
-  if (!hash.includes(':')) return hash; // Support legacy plaintext
+  if (!hash.includes(':')) return hash;
   
   try {
     const parts = hash.split(':');
@@ -67,3 +67,4 @@ export function decrypt(hash: string | null | undefined): string | null {
     return hash; 
   }
 }
+

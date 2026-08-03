@@ -41,7 +41,6 @@ export default function NewTradePage() {
 
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = useCallback(async () => {
     try {
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
@@ -66,7 +65,6 @@ export default function NewTradePage() {
     }
   }, [accountId])
 
-  // Load account on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()
@@ -96,7 +94,7 @@ export default function NewTradePage() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto p-6 max-w-7xl">
-        {/* Header */}
+        {            }
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Button
@@ -116,7 +114,7 @@ export default function NewTradePage() {
           </div>
         </div>
 
-        {/* Account Info */}
+        {                  }
         <Card className="mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg">Account Information</CardTitle>
@@ -140,7 +138,7 @@ export default function NewTradePage() {
           </CardContent>
         </Card>
 
-        {/* Import Trades Card */}
+        {                        }
         <ImportTradesCard accountId={accountId} />
       </div>
     </div>

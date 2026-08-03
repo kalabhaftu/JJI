@@ -102,20 +102,20 @@ export function CombinedFilters({
   const [currentView, setCurrentView] = useState<FilterView>('menu')
   const [internalOpen, setInternalOpen] = useState(false)
 
-  // Use controlled open state if provided, otherwise use internal state
+
   const isOpen = controlledOpen !== undefined ? controlledOpen : internalOpen
   const setIsOpen = onOpenChange || setInternalOpen
 
-  // Instrument filter state
+
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
   const [searchQuery, setSearchQuery] = useState("")
 
-  // Date filter state
+
   const [startDate, setStartDate] = useState<Date | null>(dateRange?.from || null)
   const [endDate, setEndDate] = useState<Date | null>(dateRange?.to || null)
   const [isDatePickerOpen, setIsDatePickerOpen] = useState(false)
 
-  // Initialize from context
+
   useEffect(() => {
     setSelectedInstruments(instruments || [])
   }, [instruments])
@@ -130,14 +130,14 @@ export function CombinedFilters({
     }
   }, [dateRange])
 
-  // Reset to menu when popover closes
+
   useEffect(() => {
     if (!isOpen) {
       setCurrentView('menu')
     }
   }, [isOpen])
 
-  // Get all unique instruments from trades
+
   const availableInstruments = useMemo(() => {
     const instrumentSet = new Set<string>()
     if (formattedTrades && Array.isArray(formattedTrades)) {
@@ -149,7 +149,7 @@ export function CombinedFilters({
     return Array.from(instrumentSet).sort()
   }, [formattedTrades])
 
-  // Count trades per instrument
+
   const instrumentCounts = useMemo(() => {
     const counts: Record<string, number> = {}
     if (formattedTrades && Array.isArray(formattedTrades)) {
@@ -163,14 +163,14 @@ export function CombinedFilters({
     return counts
   }, [formattedTrades])
 
-  // Filter instruments by search
+
   const filteredInstruments = useMemo(() => {
     if (!searchQuery) return availableInstruments
     const query = searchQuery.toLowerCase()
     return availableInstruments.filter(inst => inst.toLowerCase().includes(query))
   }, [availableInstruments, searchQuery])
 
-  // Instrument filter handlers
+
   const handleToggleInstrument = (instrument: string) => {
     setSelectedInstruments(prev =>
       prev.includes(instrument)
@@ -208,13 +208,13 @@ export function CombinedFilters({
     onSave?.()
   }
 
-  // Date filter handlers
+
   const handlePresetClick = (preset: typeof DATE_PRESETS[0]) => {
     const range = preset.getValue()
     setStartDate(range.from || null)
     setEndDate(range.to || null)
 
-    // Auto-apply presets immediately
+
     const newRange = range.from && range.to ? { from: range.from, to: range.to } : undefined
     setDateRange(newRange)
 
@@ -330,7 +330,7 @@ export function CombinedFilters({
         </div>
       </div>
 
-      {/* Search */}
+      {}
       <div className="relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <Input
@@ -341,7 +341,7 @@ export function CombinedFilters({
         />
       </div>
 
-      {/* Quick Actions */}
+      {}
       <div className="flex gap-2">
         <Button
           variant="outline"
@@ -365,7 +365,7 @@ export function CombinedFilters({
 
       <Separator />
 
-      {/* Instrument List */}
+      {}
       <ScrollArea className="h-48 sm:h-72 pr-3">
         {totalInstruments === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center">
@@ -407,7 +407,7 @@ export function CombinedFilters({
 
       <Separator />
 
-      {/* Selected Summary & Apply */}
+      {}
       <div className="space-y-2 sm:space-y-3">
         <div className="flex items-center justify-between text-xs sm:text-sm">
           <span className="text-muted-foreground">
@@ -467,7 +467,7 @@ export function CombinedFilters({
         </div>
       </div>
 
-      {/* Presets */}
+      {}
       <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
         {DATE_PRESETS.map((preset) => (
           <Button
@@ -487,7 +487,7 @@ export function CombinedFilters({
 
       <Separator />
 
-      {/* Custom Date Range Picker */}
+      {}
       <div className="flex flex-col gap-2">
         <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
           <PopoverTrigger asChild>
@@ -513,7 +513,7 @@ export function CombinedFilters({
                   setStartDate(range.from || null)
                   setEndDate(range.to || null)
 
-                  // Auto-apply when both dates are selected
+
                   if (range.from && range.to) {
                     const newRange = { from: range.from, to: range.to }
                     setDateRange(newRange)
@@ -537,7 +537,7 @@ export function CombinedFilters({
 
       <Separator />
 
-      {/* Actions */}
+      {}
       <div className="flex gap-2">
         <Button
           variant="outline"

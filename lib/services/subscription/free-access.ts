@@ -35,7 +35,7 @@ export async function grantFreeAccess(params: {
     invite = updated
   }
 
-  // If user already exists, auto-activate their subscription
+
   const user = await db.query.User.findFirst({ where: eq(User.email, params.email) })
   if (user) {
     let userSub = await db.query.Subscription.findFirst({ where: eq(Subscription.userId, user.id) })
@@ -91,3 +91,4 @@ export async function revokeFreeAccess(email: string) {
 
   return invite
 }
+

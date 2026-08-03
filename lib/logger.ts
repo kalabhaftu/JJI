@@ -7,7 +7,7 @@ const pinoLogger = pino({
 
 const logger = pinoLogger as pino.Logger
 
-// Named re-exports so both `import logger from '@/lib/logger'`
-// and `import { logger } from '@/lib/logger'` work seamlessly.
+
 export { logger, shouldIgnoreError }
 export default logger
+

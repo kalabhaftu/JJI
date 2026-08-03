@@ -37,12 +37,7 @@ function redactAuditValue(value: unknown, depth = 0): unknown {
   )
 }
 
-/**
- * Durable security/compliance audit record.
- *
- * Pass the active Drizzle transaction as `executor` when the material mutation
- * and its audit record must commit or roll back together.
- */
+
 export async function recordAuditEvent(
   input: AuditEventInput,
   executor: AuditInsertExecutor = db,
@@ -79,3 +74,4 @@ export function buildBulkAuditSummary(input: {
     entityTypes: [...new Set(input.entityTypes ?? [])].sort(),
   }
 }
+

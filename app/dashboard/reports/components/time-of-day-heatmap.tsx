@@ -21,7 +21,6 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
   const { grid, maxAbsPnl, activeHours } = useMemo(() => {
     if (!trades || trades.length === 0) return { grid: {}, maxAbsPnl: 0, activeHours: new Set<number>() }
 
-    // Build grid: day -> hour -> { pnl, trades, wins }
     const grid: Record<string, Record<number, { pnl: number; trades: number; wins: number }>> = {}
     const activeHours = new Set<number>()
     let maxAbs = 0
@@ -32,8 +31,8 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
       const rawDate = trade.entryDate || trade.entryTime
       if (!rawDate) return
 
-      const dayIdx = getNewYorkWeekdayIndex(rawDate) // 0=Sun, 1=Mon, ...
-      if (dayIdx == null || dayIdx < 1 || dayIdx > 5) return // Skip weekends
+      const dayIdx = getNewYorkWeekdayIndex(rawDate)
+      if (dayIdx == null || dayIdx < 1 || dayIdx > 5) return
 
       const dayName = DAYS[dayIdx - 1]
       if (!dayName) return
@@ -54,7 +53,6 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
       if (pnl > 0) cell.wins++
     })
 
-    // Find max absolute PnL for color scaling
     Object.values(grid).forEach(hours => {
       Object.values(hours).forEach(cell => {
         if (Math.abs(cell.pnl) > maxAbs) maxAbs = Math.abs(cell.pnl)
@@ -64,7 +62,6 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
     return { grid, maxAbsPnl: maxAbs, activeHours }
   }, [trades])
 
-  // Filter to only hours that have activity (±2 hours buffer)
   const filteredHours = useMemo(() => {
     if (activeHours.size === 0) return []
     const sorted = Array.from(activeHours).sort((a, b) => a - b)
@@ -126,7 +123,7 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
                           {cell.trades}
                         </span>
                       </div>
-                      {/* Tooltip */}
+                      {             }
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
                         <div className="bg-card border border-border rounded-lg shadow-lg p-2 min-w-[120px] text-center">
                           <p className="text-[9px] font-bold text-muted-foreground">{day} {formatHour(hour)}</p>
@@ -144,7 +141,7 @@ export function TimeOfDayHeatmap({ trades }: TimeOfDayHeatmapProps) {
           </tbody>
         </table>
       </div>
-      {/* Legend */}
+      {            }
       <div className="flex items-center justify-center gap-4 mt-4">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsla(var(--chart-bearish) / 0.5)' }} />

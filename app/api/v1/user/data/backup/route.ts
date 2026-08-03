@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     }
     const internalUserId = identity.internalUserId
 
-    // Fetch all user data in parallel
+
     const [
       user,
       accounts,
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       db.query.Trade.findMany({
         where: (table, { eq }) => eq(table.userId, internalUserId)
       }),
-      // Groups removed - no longer used
+
       Promise.resolve([]),
       db.query.MasterAccount.findMany({
         where: (table, { eq }) => eq(table.userId, internalUserId),
@@ -74,7 +74,7 @@ export async function GET(request: NextRequest) {
       })
     ])
 
-    // Build comprehensive backup object
+
     const backupData = {
       metadata: {
         backupVersion: '1.0',
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
         name: acc.name,
         broker: acc.broker,
         startingBalance: acc.startingBalance,
-        groupName: null, // Groups removed - no longer used
+        groupName: null,
         createdAt: acc.createdAt,
         isArchived: acc.isArchived
       })),
@@ -165,7 +165,7 @@ export async function GET(request: NextRequest) {
         cardPreviewTransform: t.cardPreviewTransform,
         tags: t.tags || []
       })),
-      groups: [], // Groups removed - no longer used
+      groups: [],
       tags: tags.map((t: typeof tags[number]) => ({
         id: t.id,
         name: t.name,
@@ -197,7 +197,7 @@ export async function GET(request: NextRequest) {
       }))
     }
 
-    // Generate filename
+
     const timestamp = format(new Date(), 'yyyy-MM-dd_HHmmss')
     const filename = `jji-backup-${timestamp}.json`
 

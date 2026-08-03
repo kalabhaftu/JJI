@@ -6,11 +6,11 @@ export type MagicTabVariant = "default" | "secondary";
 export type MagicTabSize = "sm" | "md" | "lg";
 
 export type MagicTabItem = {
-  /** Unique value identifying the tab */
+
   value: string;
-  /** Visible label */
+
   label: React.ReactNode;
-  /** Disable this tab — not selectable or focusable */
+
   disabled?: boolean;
   dataTour?: string;
 };
@@ -19,24 +19,21 @@ export type MagicTabProps = Omit<
   React.HTMLAttributes<HTMLDivElement>,
   "onChange"
 > & {
-  /** Tabs to render in the bar */
+
   items: MagicTabItem[];
-  /** Controlled selected value */
+
   value?: string;
-  /** Uncontrolled initial value (defaults to the first non-disabled item) */
+
   defaultValue?: string;
-  /** Called when the selected tab changes */
+
   onValueChange?: (value: string) => void;
   variant?: MagicTabVariant;
   size?: MagicTabSize;
   orientation?: "horizontal" | "vertical";
-  /** Animate the selected tab's 3D edge and shadow with a flowing rainbow gradient */
+
   rainbow?: boolean;
 };
 
-// Segmented bar; the selected tab lifts into the magic-button 3D. `selected`,
-// `variant`, and `rainbow` are known per-render, so their styling is resolved
-// in JS — `group-*` variants cover only runtime hover / focus-visible state.
 const CONTAINER_CLASS =
   "inline-flex items-stretch gap-1 rounded-lg bg-muted/60 p-1 font-medium select-none [-webkit-tap-highlight-color:transparent]";
 
@@ -49,10 +46,6 @@ const EDGE_BASE =
 const SHADOW_BASE =
   "absolute inset-0 rounded-md [transition:opacity_200ms_ease] motion-reduce:[transition:none]";
 
-// Resting transform AND colors are kept out of the base: the selected state
-// sets its own (`-translate-y-[4px]`, `bg-primary`, …) and a same-specificity
-// resting utility (`translate-y-0`, `bg-transparent`) would win the cascade —
-// leaving the selected tab flat and transparent (rainbow edge showing through).
 const FRONT_BASE =
   "relative block rounded-md [transition:color_200ms_ease,background-color_200ms_ease,box-shadow_200ms_ease] motion-reduce:[transition:none]";
 
@@ -73,7 +66,6 @@ const frontVariantSelected: Record<MagicTabVariant, string> = {
   secondary: "bg-secondary text-secondary-foreground",
 };
 
-// Unselected hover / focus-visible previews the selected color flat (no lift).
 const frontVariantPreview: Record<MagicTabVariant, string> = {
   default:
     "group-hover:bg-primary group-hover:text-primary-foreground group-focus-visible:bg-primary group-focus-visible:text-primary-foreground",
@@ -116,9 +108,6 @@ const MagicTab = React.forwardRef<HTMLDivElement, MagicTabProps>(
 
     const tabRefs = React.useRef<Array<HTMLButtonElement | null>>([]);
 
-    // The selected tab's rainbow edge/shadow run an infinite background-position
-    // keyframe (main-thread paint). Pause it when the tablist is off screen so it
-    // costs nothing while idle — resumes seamlessly on scroll-in.
     const rootRef = React.useRef<HTMLDivElement>(null);
     const setRefs = React.useCallback(
       (node: HTMLDivElement | null) => {
@@ -148,8 +137,6 @@ const MagicTab = React.forwardRef<HTMLDivElement, MagicTabProps>(
       return () => io.disconnect();
     }, [rainbow]);
 
-    // Roving tabindex moves focus independently of selection (manual
-    // activation): arrows move focus, Enter/Space commits the selection.
     const [focusValue, setFocusValue] = React.useState<string | undefined>(
       undefined,
     );
@@ -216,7 +203,7 @@ const MagicTab = React.forwardRef<HTMLDivElement, MagicTabProps>(
     };
 
     const handleBlur = (event: React.FocusEvent<HTMLDivElement>) => {
-      // Tabbing away resets the roving tab-stop back to the selected tab.
+
       if (!event.currentTarget.contains(event.relatedTarget)) {
         setFocusValue(undefined);
       }
@@ -238,8 +225,6 @@ const MagicTab = React.forwardRef<HTMLDivElement, MagicTabProps>(
         {items.map((item, index) => {
           const selected = item.value === selectedValue;
 
-          // Selected: focus-visible lifts the tab (like magic-button hover);
-          // pointer hover leaves it. Unselected: hover/focus previews the color.
           const itemFilter = selected
             ? "focus-visible:brightness-110 focus-visible:[transition:filter_250ms]"
             : "hover:brightness-110 focus-visible:brightness-110 hover:[transition:filter_250ms] focus-visible:[transition:filter_250ms]";

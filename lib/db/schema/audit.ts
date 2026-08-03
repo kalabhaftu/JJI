@@ -6,8 +6,8 @@ export const AuditLog = pgTable('AuditLog', {
   id: uuid('id').primaryKey().defaultRandom(),
   userId: text('user_id')
     .references(() => User.id, { onDelete: 'set null' }),
-  action: text('action').notNull(), // e.g. "CREATE_TRADE", "UPDATE_TRADE", "DELETE_TRADE"
-  entityId: text('entity_id').notNull(), // e.g. the Trade UUID
+  action: text('action').notNull(),
+  entityId: text('entity_id').notNull(),
   entityType: text('entity_type'),
   source: text('source'),
   requestId: text('request_id'),
@@ -27,3 +27,4 @@ export const auditLogRelations = relations(AuditLog, ({ one }) => ({
     references: [User.id],
   }),
 }))
+

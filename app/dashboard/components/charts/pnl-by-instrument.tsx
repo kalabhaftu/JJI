@@ -94,7 +94,7 @@ export default function PnLByInstrument({ size = 'small-long' }: PnLByInstrument
     }
   }, [normalizedChartData, isCompact])
 
-  // Y-AXIS DOMAIN CALCULATION (PRESERVED - DO NOT MODIFY)
+
   const { yDomain, yTicks } = React.useMemo(() => {
     if (!normalizedChartData.length) {
       return {

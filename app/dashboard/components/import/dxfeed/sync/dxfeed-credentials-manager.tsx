@@ -440,7 +440,7 @@ export function DxFeedCredentialsManager() {
         </Table>
       </div>
 
-      {/* Add Account Dialog */}
+      {}
       <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -487,7 +487,7 @@ export function DxFeedCredentialsManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {}
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -510,7 +510,7 @@ export function DxFeedCredentialsManager() {
         </DialogContent>
       </Dialog>
 
-      {/* Daily Sync Time Dialog */}
+      {}
       <Dialog open={isTimeDialogOpen} onOpenChange={setIsTimeDialogOpen}>
         <DialogContent>
           <DialogHeader>

@@ -1,7 +1,4 @@
-/**
- * GET /api/cron/reconcile-payments
- * Reconciles pending NOWPayments records on a shorter cadence than subscription renewal checks.
- */
+
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateCronRequest } from '@/lib/cron-auth'

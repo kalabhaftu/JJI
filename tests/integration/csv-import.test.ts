@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-// Mock data for testing
+
 const mockCSVData = `Date,Instrument,Entry Price,Exit Price,Quantity,P&L,Commission,Side
 2024-01-01 10:00:00,EURUSD,1.1000,1.1050,1,50,2.50,Long
 2024-01-01 11:00:00,GBPUSD,1.2500,1.2450,-1,-50,2.50,Short
@@ -21,7 +21,7 @@ describe('CSV Import - Column Mapping', () => {
       'Side': 'side'
     }
     
-    // Test that each header maps to expected field
+
     expect(headers.length).toBe(8)
     expect(expectedMapping['Date']).toBe('entryDate')
     expect(expectedMapping['Instrument']).toBe('instrument')
@@ -30,7 +30,7 @@ describe('CSV Import - Column Mapping', () => {
   it('should handle case-insensitive column names', () => {
     const headers = ['date', 'INSTRUMENT', 'entry price', 'EXIT PRICE']
     
-    // All should be recognized regardless of case
+
     expect(headers.length).toBeGreaterThan(0)
     expect(headers[0].toLowerCase()).toBe('date')
     expect(headers[1].toLowerCase()).toBe('instrument')
@@ -39,14 +39,14 @@ describe('CSV Import - Column Mapping', () => {
   it('should detect partial matches for column names', () => {
     const headers = ['Entry Dt', 'Symbol', 'Buy Price', 'Sell Price', 'Qty', 'Profit/Loss']
     
-    // These should map to:
+
     const expectedMappings = {
-      'Entry Dt': 'entryDate', // Contains 'entry'
-      'Symbol': 'instrument', // Synonym for instrument
-      'Buy Price': 'entryPrice', // Contains 'price' and 'buy/entry'
-      'Sell Price': 'closePrice', // Contains 'price' and 'sell/close'
-      'Qty': 'quantity', // Common abbreviation
-      'Profit/Loss': 'pnl' // Common synonym
+      'Entry Dt': 'entryDate',
+      'Symbol': 'instrument',
+      'Buy Price': 'entryPrice',
+      'Sell Price': 'closePrice',
+      'Qty': 'quantity',
+      'Profit/Loss': 'pnl'
     }
     
     expect(headers.length).toBe(6)
@@ -75,7 +75,7 @@ describe('CSV Import - Column Mapping', () => {
     expect(requiredColumns.length).toBe(7)
     expect(optionalColumns.length).toBe(5)
     
-    // All required columns must be present
+
     requiredColumns.forEach(col => {
       expect(col).toBeTruthy()
     })
@@ -92,7 +92,7 @@ describe('CSV Import - Data Parsing', () => {
       commission: '2.50'
     }
     
-    // Parse strings to numbers
+
     const parsed = {
       entryPrice: parseFloat(testData.entryPrice),
       closePrice: parseFloat(testData.closePrice),
@@ -117,10 +117,10 @@ describe('CSV Import - Data Parsing', () => {
     ]
     
     prices.forEach(price => {
-      const parsed = price // Store as string for Decimal type
+      const parsed = price
       expect(parsed).toBe(price)
       
-      // When converted to float for display
+
       const float = parseFloat(price)
       expect(float).toBeCloseTo(parseFloat(price), 10)
     })
@@ -163,9 +163,9 @@ describe('CSV Import - Data Parsing', () => {
 describe('CSV Import - Data Validation', () => {
   it('should reject trades with missing required fields', () => {
     const incompleteTrades = [
-      { instrument: 'EURUSD', entryPrice: '1.1000' }, // Missing closePrice, pnl, dates
-      { entryPrice: '1.1000', closePrice: '1.1050' }, // Missing instrument
-      { instrument: 'EURUSD', entryPrice: '1.1000', closePrice: '1.1050' } // Missing pnl, dates
+      { instrument: 'EURUSD', entryPrice: '1.1000' },
+      { entryPrice: '1.1000', closePrice: '1.1050' },
+      { instrument: 'EURUSD', entryPrice: '1.1000', closePrice: '1.1050' }
     ]
     
     incompleteTrades.forEach(trade => {
@@ -200,7 +200,7 @@ describe('CSV Import - Data Validation', () => {
       { name: 'ES', valid: true },
       { name: 'NQ', valid: true },
       { name: '', valid: false },
-      { name: 'A', valid: true }, // Short but valid
+      { name: 'A', valid: true },
     ]
     
     instruments.forEach(({ name, valid }) => {
@@ -213,11 +213,11 @@ describe('CSV Import - Partial Closes & Grouping', () => {
   it('should group trades with same entryId', () => {
     const trades = [
       { entryId: 'E1', pnl: 50, quantity: 1 },
-      { entryId: 'E1', pnl: 100, quantity: 1 }, // Partial close
+      { entryId: 'E1', pnl: 100, quantity: 1 },
       { entryId: 'E2', pnl: 200, quantity: 2 },
     ]
     
-    // Group by entryId
+
     const grouped = trades.reduce((acc, trade) => {
       if (!acc[trade.entryId]) {
         acc[trade.entryId] = { ...trade, pnl: 0, quantity: 0 }
@@ -227,8 +227,8 @@ describe('CSV Import - Partial Closes & Grouping', () => {
       return acc
     }, {} as Record<string, any>)
     
-    expect(grouped['E1'].pnl).toBe(150) // 50 + 100
-    expect(grouped['E1'].quantity).toBe(2) // 1 + 1
+    expect(grouped['E1'].pnl).toBe(150)
+    expect(grouped['E1'].quantity).toBe(2)
     expect(grouped['E2'].pnl).toBe(200)
     expect(Object.keys(grouped).length).toBe(2)
   })
@@ -244,8 +244,8 @@ describe('CSV Import - Partial Closes & Grouping', () => {
     const totalCommission = partialCloses.reduce((sum, t) => sum + t.commission, 0)
     const canonicalNetPnL = totalPnL
     
-    expect(totalPnL).toBe(200) // 100 + 150 - 50
-    expect(totalCommission).toBe(7.5) // 2.5 * 3
+    expect(totalPnL).toBe(200)
+    expect(totalCommission).toBe(7.5)
     expect(canonicalNetPnL).toBe(200)
   })
 })
@@ -254,20 +254,19 @@ describe('CSV Import - Special Characters & Edge Cases', () => {
   it('should handle commas in quoted fields', () => {
     const csvLine = '"Trade 1, with comma","EURUSD","1,100.50","1,150.75"'
     
-    // CSV parser should handle this correctly
-    // Just verify we can detect the pattern
+
     expect(csvLine).toContain('"Trade 1, with comma"')
     expect(csvLine).toContain('"1,100.50"')
   })
 
   it('should handle various instrument name formats', () => {
     const instruments = [
-      'EURUSD',    // Forex
-      'ES',        // Futures
-      'AAPL',      // Stocks
-      'BTC/USD',   // Crypto with separator
-      'XAUUSD',    // Gold
-      'US100',     // Index with numbers
+      'EURUSD',
+      'ES',
+      'AAPL',
+      'BTC/USD',
+      'XAUUSD',
+      'US100',
     ]
     
     instruments.forEach(inst => {
@@ -295,7 +294,7 @@ describe('CSV Import - Special Characters & Edge Cases', () => {
     ]
     
     microPrices.forEach(price => {
-      // Store as string for Decimal precision
+
       expect(typeof price).toBe('string')
       expect(parseFloat(price)).toBeGreaterThan(0)
     })

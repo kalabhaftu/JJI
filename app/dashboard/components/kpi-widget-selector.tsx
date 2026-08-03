@@ -31,11 +31,11 @@ export default function KpiWidgetSelector({
 }: KpiWidgetSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Get KPI-row-only widgets (widgets that can only be placed in row 0)
+
   const kpiWidgets = useMemo(() => {
     const query = searchQuery.toLowerCase()
     return Object.entries(WIDGET_REGISTRY).filter(([type, config]) => {
-      // Only KPI-row-only widgets (6 total: accountBalancePnl, tradeWinRate, dayWinRate, profitFactor, avgWinLoss, currentStreak)
+
       if (!config.kpiRowOnly) {
         return false
       }
@@ -46,11 +46,11 @@ export default function KpiWidgetSelector({
     })
   }, [searchQuery])
 
-  // Get list of widget types already in use in KPI slots
+
   const usedKpiTypes = useMemo(() => {
     return new Set(
       currentLayout
-        .filter(w => w.y === 0 && w.x < 5) // Only KPI row
+        .filter(w => w.y === 0 && w.x < 5)
         .map(w => w.type)
     )
   }, [currentLayout])
@@ -61,7 +61,7 @@ export default function KpiWidgetSelector({
   }
 
   const formatWidgetName = (type: string) => {
-    // Convert camelCase to Title Case
+
     return type
       .replace(/([A-Z])/g, ' $1')
       .replace(/^./, str => str.toUpperCase())
@@ -78,7 +78,7 @@ export default function KpiWidgetSelector({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Search */}
+        {}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -99,7 +99,7 @@ export default function KpiWidgetSelector({
           )}
         </div>
 
-        {/* Widget Grid */}
+        {}
         <div className="flex-1 overflow-y-auto">
           {kpiWidgets.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -146,7 +146,7 @@ export default function KpiWidgetSelector({
           )}
         </div>
 
-        {/* Footer */}
+        {}
         <div className="flex justify-end pt-4 border-t">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel

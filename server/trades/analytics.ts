@@ -117,7 +117,7 @@ export function buildTradeAnalytics(input: AnalyticsInput) {
     relevantTransactions,
   } = input
 
-  // Filter out missed trades from analytics, but keep them for the trades list
+
   const analyticsTrades = trades.filter((t: any) => !t.isMissedTrade)
 
   const grouped = (includeStats || includeCalendar || groupByExecution) ? groupTradesByExecution(analyticsTrades) : undefined

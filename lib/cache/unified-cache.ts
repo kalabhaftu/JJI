@@ -1,9 +1,4 @@
-/**
- * Unified Cache Layer
- * 
- * Automatically uses Redis when available, falls back to memory cache
- * Provides a unified API regardless of backend
- */
+
 
 import {
   getFromCache as redisGet,
@@ -17,9 +12,7 @@ import { memGet, memSet } from './memory-cache'
 
 export { CachePrefix, CacheTTL }
 
-/**
- * Get value from cache (Redis or memory)
- */
+
 export async function getCached<T>(key: string): Promise<T | null> {
   if (isRedisAvailable()) {
     return await redisGet<T>(key)
@@ -28,9 +21,7 @@ export async function getCached<T>(key: string): Promise<T | null> {
   return memGet<T>(key)
 }
 
-/**
- * Set value in cache (Redis or memory)
- */
+
 export async function setCached<T>(
   key: string,
   value: T,
@@ -44,9 +35,7 @@ export async function setCached<T>(
   return true
 }
 
-/**
- * Get or set pattern (cache-aside) - unified
- */
+
 export async function getOrSetCached<T>(
   key: string,
   fetcher: () => Promise<T>,
@@ -63,3 +52,4 @@ export async function getOrSetCached<T>(
 
   return data
 }
+

@@ -21,7 +21,7 @@ export function useWeeklyModalMetrics({
   calendarData,
   breakEvenThreshold,
 }: WeeklyModalMetricsInput) {
-// Aggregate weekly data
+
   const weeklyData = useMemo(() => {
     if (!selectedDate) return { trades: [], tradeNumber: 0, pnl: 0, longNumber: 0, shortNumber: 0, winRate: 0, avgWin: 0, avgLoss: 0, winningTrades: 0, losingTrades: 0 }
 
@@ -29,19 +29,18 @@ export function useWeeklyModalMetrics({
     const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 })
     const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 })
 
-    // Format week boundaries as YYYY-MM-DD strings for consistent comparison
-    // This avoids timezone issues when comparing against dateString keys
+
     const weekStartStr = format(weekStart, 'yyyy-MM-dd')
     const weekEndStr = format(weekEnd, 'yyyy-MM-dd')
 
     for (const [dateString, dayData] of Object.entries(calendarData)) {
-      // Compare date strings directly to avoid timezone parsing issues
+
       if (dateString >= weekStartStr && dateString <= weekEndStr && dayData.trades) {
         trades.push(...(dayData.trades as any[]))
       }
     }
 
-    // CRITICAL: Group trades to show correct execution count
+
     const groupedTrades = groupTradesByExecution(trades as TradeType[]) as GroupedTrade[]
 
     let longNumber = 0
@@ -98,21 +97,21 @@ export function useWeeklyModalMetrics({
     let grossLoss = 0
 
     weeklyData.trades.forEach((trade: any) => {
-      // Day Stats
+
       const day = format(new Date(trade.entryDate), 'EEEE')
       const netPnL = getTradeNetPnl(trade)
       if (!dayStats[day]) dayStats[day] = { pnl: 0, trades: 0 }
       dayStats[day].pnl += netPnL
       dayStats[day].trades += 1
 
-      // Pair Stats
+
       const pair = trade.instrument || 'Unknown'
       if (!pairStats[pair]) pairStats[pair] = { pnl: 0, trades: 0, wins: 0 }
       pairStats[pair].pnl += netPnL
       pairStats[pair].trades += 1
       if (classifyOutcome(netPnL, breakEvenThreshold) === 'win') pairStats[pair].wins += 1
 
-      // Session Stats (proper timezone handling)
+
       const session = getTradingSession(trade.entryDate)
       if (!sessionStats[session]) sessionStats[session] = { pnl: 0, trades: 0 }
       sessionStats[session].pnl += netPnL
@@ -145,20 +144,20 @@ export function useWeeklyModalMetrics({
     }
   }, [weeklyData, breakEvenThreshold])
 
-  // Chart data for cumulative P&L
+
   const chartData = useMemo(() => {
     if (!selectedDate) return []
 
     const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 })
     const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 })
 
-    // Format week boundaries as YYYY-MM-DD strings for consistent comparison
+
     const weekStartStr = format(weekStart, 'yyyy-MM-dd')
     const weekEndStr = format(weekEnd, 'yyyy-MM-dd')
 
     const dailyData: Record<string, number> = {}
     for (const [dateString, dayData] of Object.entries(calendarData)) {
-      // Compare date strings directly to avoid timezone parsing issues
+
       if (dateString >= weekStartStr && dateString <= weekEndStr) {
         dailyData[dateString] = dayData.pnl || 0
       }
@@ -173,7 +172,7 @@ export function useWeeklyModalMetrics({
         date,
         balance: cumulative,
         daily: dailyData[date],
-        // Use parseISO to treat YYYY-MM-DD as local midnight, avoiding timezone shifts
+
         label: format(parseISO(date), 'EEE', { locale: enUS })
       }
     })

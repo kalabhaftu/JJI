@@ -121,7 +121,7 @@ export function RithmicCredentialsManager({
     }
   }, []);
 
-  // Fetch synchronizations from API
+
   useEffect(() => {
     fetchSynchronizations();
   }, [fetchSynchronizations]);

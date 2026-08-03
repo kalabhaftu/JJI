@@ -67,7 +67,7 @@ export function SettingsProfileSection({
           <p className="text-xs text-muted-foreground/85">Manage your personal information and subscription plan</p>
         </div>
 
-        {/* Profile Card */}
+        {                  }
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6" data-tour="settings-card-profile">
           <div className="flex items-start justify-between gap-4">
             <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
@@ -86,7 +86,7 @@ export function SettingsProfileSection({
             </Button>
           </div>
 
-          {/* User Info details */}
+          {                       }
           <div className="flex items-center gap-4 p-4 rounded-lg bg-muted/20 border border-border/10">
             <Avatar className="h-12 w-12 shrink-0 border border-border/25">
               <AvatarImage key={avatarUrl ?? 'settings-avatar-fallback'} src={avatarUrl} referrerPolicy="no-referrer" />
@@ -162,7 +162,7 @@ export function SettingsProfileSection({
           )}
         </div>
 
-        {/* Subscription Plan details */}
+        {                               }
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
           <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
             <CreditCard className="h-4 w-4" />

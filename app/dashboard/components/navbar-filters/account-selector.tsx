@@ -24,8 +24,8 @@ interface AccountSelectorProps {
 export function AccountSelector({ onSave }: AccountSelectorProps) {
   const { accountNumbers, setAccountNumbers, refreshTrades, accounts: contextAccounts } = useData()
   const { updateSettings, isSaving } = useAccountFilterSettings()
-  // Use accounts from the data provider context (fetched from /api/v1/init)
-  // Cast to any[] since processed accounts include extra fields (propfirm, tradeCount, etc.)
+
+
   const accounts: any[] = useMemo(
     () => ((contextAccounts as any[]) || []).map((a) => ({ ...a })),
     [contextAccounts]
@@ -36,10 +36,10 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
   const [selectedAccounts, setSelectedAccounts] = useState<Set<string>>(new Set())
   const [expandedAccounts, setExpandedAccounts] = useState<Set<string>>(new Set())
 
-  // Track previous accountNumbers to detect external changes
+
   const prevAccountNumbersRef = React.useRef<string[]>([])
 
-  // Memoized helper to sync from context into local selection
+
   const syncSelectedFromContext = useCallback(
     (currentNumbers: string[]) => {
       if (!accounts || accounts.length === 0) return
@@ -51,23 +51,23 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       if (matchingAccountIds.length > 0) {
         setSelectedAccounts(new Set(matchingAccountIds))
 
-        // Auto-expand parent groups for selected accounts
+
         const matchingAccounts = accounts.filter(acc => currentNumbers.includes(acc.id) || currentNumbers.includes(acc.number))
         const accountNames = new Set(matchingAccounts.map(acc => acc.name || acc.number))
         setExpandedAccounts(prev => new Set([...prev, ...accountNames]))
       } else if (currentNumbers.length > 0) {
-        // accountNumbers has values but no matching accounts found - clear selection
-        // This can happen when account data is stale
+
+
         setSelectedAccounts(new Set())
       } else {
-        // accountNumbers was cleared - clear selection
+
         setSelectedAccounts(new Set())
       }
     },
     [accounts]
   )
 
-  // Sync selectedAccounts when accountNumbers context changes (including external updates)
+
   useEffect(() => {
     if (!accounts || accounts.length === 0) return
 
@@ -84,14 +84,14 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     }
   }, [accountNumbers, accounts, syncSelectedFromContext])
 
-  // Server now returns clean data without master account duplicates
+
   const filteredAccountsList = useMemo(() => {
     if (!accounts || !Array.isArray(accounts)) return []
-    // Freeze a simple snapshot so hook deps are stable
+
     return accounts.map((a) => ({ ...a }))
   }, [accounts])
 
-  // Group accounts by master account name (hierarchical structure)
+
   const groupedAccountsByName = useMemo(() => {
     if (!filteredAccountsList || filteredAccountsList.length === 0) {
       return {}
@@ -112,10 +112,10 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       }>
     }> = {}
 
-    // Group by account name
+
     filteredAccountsList.forEach(account => {
-      // For prop firm accounts, use the account name (which is the master account name)
-      // For regular accounts, use the account name directly
+
+
       const accountName = account.accountType === 'prop-firm' ? account.name : account.name
 
       if (!grouped[accountName]) {
@@ -141,7 +141,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     return grouped
   }, [filteredAccountsList])
 
-  // Filter accounts by search query
+
   const filteredGroupedAccounts = useMemo(() => {
     if (!searchQuery) return groupedAccountsByName
 
@@ -154,7 +154,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         return
       }
 
-      // Check if any phase matches
+
       const matchingPhases = accountData.phases.filter((phase: any) =>
         phase.number.toLowerCase().includes(query) ||
         phase.status.toLowerCase().includes(query) ||
@@ -172,17 +172,17 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     return filtered
   }, [groupedAccountsByName, searchQuery])
 
-  // Get only active accounts for default selection
+
   const activeAccounts = useMemo(() => {
     if (!filteredAccountsList) return []
     return filteredAccountsList.filter(account => account.status === 'active')
   }, [filteredAccountsList])
 
-  // Restore saved account selection from settings and auto-expand parent groups
+
   useEffect(() => {
     if (!accounts || accounts.length === 0) return
 
-    // If accountNumbers are already set from saved settings, find and expand parent groups
+
     if (accountNumbers.length > 0 && selectedAccounts.size === 0) {
       const matchingAccounts = accounts.filter(acc =>
         accountNumbers.includes(acc.number) ||
@@ -190,20 +190,17 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       )
 
       if (matchingAccounts.length > 0) {
-        // Set selected accounts
+
         setSelectedAccounts(new Set(matchingAccounts.map(acc => acc.id)))
 
-        // Auto-expand all parent groups for selected accounts
+
         const accountNames = new Set(matchingAccounts.map(acc => acc.name || acc.number))
         setExpandedAccounts(accountNames)
       }
     }
   }, [accounts, accountNumbers, selectedAccounts.size])
 
-  // NO AUTO-SELECT: Users must explicitly select accounts
-  // This ensures preferences are intentional and saved to DB
 
-  // Count unique master accounts from selected accounts (prop-firm grouped by masterAccountId, live counted individually)
   const getSelectedMasterAccountCount = useMemo(() => {
     if (selectedAccounts.size === 0) return 0
 
@@ -211,19 +208,18 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
       .map(accountId => accounts.find(acc => acc.id === accountId))
       .filter(Boolean) as any[]
 
-    // Group prop-firm accounts by masterAccountId (or name as fallback)
-    // Count live accounts individually
+
     const masterAccountSet = new Set<string>()
 
     selectedAccountObjects.forEach(acc => {
       const accountType = acc.accountType || (acc.propfirm ? 'prop-firm' : 'live')
 
       if (accountType === 'prop-firm') {
-        // For prop-firm: group by masterAccountId or name
+
         const masterId = acc.currentPhaseDetails?.masterAccountId || acc.name || acc.number
         masterAccountSet.add(masterId)
       } else {
-        // For live accounts: count each individually (use id as unique identifier)
+
         masterAccountSet.add(acc.id || acc.number)
       }
     })
@@ -242,7 +238,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
 
     setSelectedAccounts(newSelected)
 
-    // Auto-expand the parent group for the toggled account
+
     const accountData = accounts?.find(acc => acc.id === accountId)
     if (accountData && checked) {
       const accountName = accountData.name || accountData.number
@@ -287,12 +283,12 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
     const phaseIds = accountData.phases.map(p => p.id)
     const newSelected = new Set(selectedAccounts)
 
-    // Add all phases of this account
+
     phaseIds.forEach(id => newSelected.add(id))
 
     setSelectedAccounts(newSelected)
 
-    // Ensure expanded
+
     setExpandedAccounts(prev => new Set([...prev, accountName]))
   }
 
@@ -309,7 +305,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
   }
 
   const handleSelectAll = () => {
-    // Select all phase accounts (not master accounts)
+
     const allIds = filteredAccountsList.map(acc => acc.id)
     setSelectedAccounts(new Set(allIds))
   }
@@ -335,17 +331,17 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
   }
 
   const handleActiveOnly = () => {
-    // Select only active accounts
+
     const activeIds = activeAccounts.map(acc => acc.id)
     setSelectedAccounts(new Set(activeIds))
   }
 
-  // Calculate display counts
+
   const totalAccounts = filteredAccountsList.length
 
   return (
     <div className="w-full min-w-[280px] sm:min-w-[300px] max-w-[400px] sm:max-w-[450px] flex flex-col max-h-[min(85vh,520px)] flex-1 min-h-0">
-      {/* Header: title + search + quick actions - fixed, never scrolls */}
+      {}
       <div className="p-3 sm:p-4 pb-2 space-y-3 flex-shrink-0 border-b">
         <div className="space-y-1">
           <h4 className="font-semibold text-sm sm:text-base">Account Filter</h4>
@@ -363,7 +359,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
           />
         </div>
 
-        {/* Quick Actions */}
+        {}
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -394,7 +390,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
           </Button>
         </div>
 
-        {/* Selection Count */}
+        {}
         {selectedAccounts.size > 0 && (
           <div className="text-xs text-muted-foreground text-center">
             {getSelectedMasterAccountCount} account{getSelectedMasterAccountCount !== 1 ? 's' : ''} selected
@@ -402,7 +398,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         )}
       </div>
 
-      {/* Account List - explicit height so Radix ScrollArea calculates scroll bounds properly */}
+      {}
       <ScrollArea className="h-[280px] sm:h-[340px] px-3 sm:px-4">
         <div className="pb-2">
           {isLoading ? (
@@ -453,7 +449,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
                     </div>
                     <CollapsibleContent className="ml-6 space-y-1 overflow-visible">
                       {accountData.phases
-                        .filter((phase: any) => phase.status && phase.status !== 'pending') // Filter out pending phases that don't exist
+                        .filter((phase: any) => phase.status && phase.status !== 'pending')
                         .map((phase: any) => (
                           <div key={phase.id} className="flex items-center gap-2 py-1">
                             <Checkbox
@@ -483,9 +479,8 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
                                     const phaseNum = phase.currentPhase || phase.phaseDetails?.phaseNumber
                                     if (!phaseNum) return 'N/A'
                                     const evalType = phase.phaseDetails?.evaluationType
-                                    // Determine funded phase based on evaluation type
-                                    // Note: PhaseAccountStatus does NOT have 'funded' - it only exists on MasterAccount
-                                    // Use consistent logic with isFundedPhase helper
+
+
                                     const isFunded = (() => {
                                       switch (evalType) {
                                         case 'Two Step':
@@ -495,7 +490,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
                                         case 'Instant':
                                           return phaseNum >= 1
                                         default:
-                                          // Default to Two Step behavior
+
                                           return phaseNum >= 3
                                       }
                                     })()
@@ -524,7 +519,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         </div>
       </ScrollArea>
 
-      {/* Apply Button - flex-shrink-0 so it sticks to the bottom regardless of list length */}
+      {}
       <div className="flex-shrink-0 p-3 sm:p-4 border-t space-y-2">
         <Button
           className="w-full h-9 sm:h-10"

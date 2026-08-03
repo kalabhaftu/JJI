@@ -28,16 +28,16 @@ export interface TourStep {
   id: string
   title: string
   content: string
-  targetSelector?: string // If null, renders as centered modal overlay
+  targetSelector?: string
   placement?: 'top' | 'bottom' | 'left' | 'right' | 'center'
-  route?: string // Route the user must be on for this step
+  route?: string
   completion?: {
     type: 'event' | 'route' | 'selector' | 'value'
     key: string
   }
-  contrastMessage?: string // Optional contrast explanation ("Why you aren't here")
-  desktopOnly?: boolean // Skip this step on mobile
-  icon?: string // Optional Lucide icon mapping identifier
+  contrastMessage?: string
+  desktopOnly?: boolean
+  icon?: string
 }
 
 export interface OnboardingStatus {
@@ -49,10 +49,11 @@ export interface OnboardingStatus {
   current_step_id?: string | null
   tours: Partial<Record<Exclude<TourId, 'onboarding'>, TourProgress>>
 
-  // Legacy mirrors retained for existing profile readers and migration.
+
   core_onboarding_completed: boolean
   dashboard_tour_completed: boolean
   analytics_tour_completed: boolean
   settings_tour_completed: boolean
   last_updated?: string
 }
+

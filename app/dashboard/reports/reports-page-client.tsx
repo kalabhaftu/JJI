@@ -118,13 +118,11 @@ export default function ReportsPageClient({
         handleFilterChange,
     } = useReportPageController()
 
-    // SERVER-SIDE: Use React Query hook instead of client-side fetching + useMemo
     const { data: reportData, isLoading } = useReportStats(filterArgs, true, {
         ...(initialReportData !== undefined && { initialData: initialReportData as any }),
         ...(initialReportKey !== undefined && { initialDataKey: initialReportKey })
     })
 
-    // Extract server-computed data
     const tradingActivity = reportData?.tradingActivity ?? null
     const psychMetrics = reportData?.psychMetrics ?? null
     const sessionPerformance = reportData?.sessionPerformance ?? null
@@ -139,7 +137,6 @@ export default function ReportsPageClient({
         strategies: []
     }
 
-    // Export metrics as CSV spreadsheet
     const handleExportCSV = useCallback(() => {
         if (!tradingActivity || !psychMetrics) {
             toast.error('No metrics to export')
@@ -149,7 +146,7 @@ export default function ReportsPageClient({
         setIsExporting(true)
         try {
             const rows: [string, string | number][] = [
-                // Performance
+
                 ['--- PERFORMANCE ---', ''],
                 ['Net P&L', psychMetrics.totalNetPnL],
                 ['Win Rate (%)', tradingActivity.winRate],
@@ -161,7 +158,7 @@ export default function ReportsPageClient({
                 ['Recovery Factor', psychMetrics.recoveryFactor],
                 ['R:R Efficiency', psychMetrics.rrEfficiency],
                 ['Consistency Score (%)', psychMetrics.consistencyScore],
-                // Trading Activity
+
                 ['', ''],
                 ['--- TRADING ACTIVITY ---', ''],
                 ['Total Trades', tradingActivity.totalTrades],
@@ -172,7 +169,7 @@ export default function ReportsPageClient({
                 ['Avg Win ($)', psychMetrics.avgWin],
                 ['Avg Loss ($)', psychMetrics.avgLoss],
                 ['Avg Holding Time', psychMetrics.avgHoldingTime],
-                // Best / Worst
+
                 ['', ''],
                 ['--- BEST & WORST ---', ''],
                 ['Most Traded Day', tradingActivity.mostTradedDay || '-'],
@@ -206,7 +203,6 @@ export default function ReportsPageClient({
         }
     }, [setIsExporting, tradingActivity, psychMetrics])
 
-    // Screenshot page snapshot
     const handlePageSnapshot = useCallback(async () => {
         const element = document.getElementById('report-content')
         if (!element) return
@@ -286,8 +282,7 @@ export default function ReportsPageClient({
             if (!res.ok) throw new Error('Failed to generate link')
             const responseData = await res.json()
             const reportData = responseData.data || {}
-            
-            // Copy to clipboard
+
             await navigator.clipboard.writeText(reportData.url || `${window.location.origin}/reports/shared/${reportData.slug}`)
             toast.success('Shareable link copied to clipboard!')
         } catch (error) {
@@ -301,20 +296,20 @@ export default function ReportsPageClient({
     return (
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-8 px-4 py-8 pb-20 sm:px-6 md:pb-8" id="report-content">
             <div>
-                {/* Header */}
+                {            }
                 <PageHeader
                     title="Reports"
                     meta={<span className="text-xs font-medium text-muted-foreground">{periodLabel}</span>}
                     className=""
                     actions={
                       <div className="no-export flex items-center gap-2">
-                        {/* Export CSV Button */}
+                        {                       }
                         <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isExporting} className="h-8 gap-1.5 rounded-lg border-border/30 text-xs font-semibold hover:bg-muted-foreground/10">
                             <Download className="h-3.5 w-3.5 opacity-60" />
                             Export CSV
                         </Button>
 
-                        {/* Share Dropdown */}
+                        {                    }
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold uppercase tracking-wider border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl gap-1.5">
@@ -487,7 +482,7 @@ export default function ReportsPageClient({
                                 </section>
 
                                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:items-stretch">
-                                    {/* Detailed Metrics Table */}
+                                    {                            }
                                     <div className="lg:col-span-7 space-y-6">
                                         <div className="flex items-center gap-2">
                                             <TrendingUp className="h-4 w-4 text-primary" />
@@ -551,7 +546,7 @@ export default function ReportsPageClient({
                                         </div>
                                     </div>
 
-                                    {/* R-Multiple Distribution Chart */}
+                                    {                                   }
                                     <div className="lg:col-span-5 space-y-4 flex flex-col">
                                         <div className="flex flex-col space-y-6">
                                             <div className="space-y-4">
@@ -580,7 +575,7 @@ export default function ReportsPageClient({
                                                 </div>
                                             </div>
 
-                                            {/* Risk and recovery context */}
+                                            {                               }
                                             <div className="flex flex-1 flex-col justify-center border-y border-border/20 py-6">
                                                 <div className="flex items-center justify-between mb-6">
                                                     <h3 className="text-sm font-semibold text-muted-foreground">Risk analysis</h3>
@@ -593,9 +588,9 @@ export default function ReportsPageClient({
                                                             {psychMetrics.rrEfficiency}
                                                         </p>
                                                         <div className="h-1 w-full bg-muted/20 rounded-full overflow-hidden">
-                                                            <div 
-                                                                className="h-full bg-long transition-all duration-1000" 
-                                                                style={{ width: `${Math.min(100, parseFloat(psychMetrics.rrEfficiency) * 40)}%` }} 
+                                                            <div
+                                                                className="h-full bg-long transition-all duration-1000"
+                                                                style={{ width: `${Math.min(100, parseFloat(psychMetrics.rrEfficiency) * 40)}%` }}
                                                             />
                                                         </div>
                                                     </div>
@@ -605,9 +600,9 @@ export default function ReportsPageClient({
                                                             {psychMetrics.recoveryFactor}
                                                         </p>
                                                         <div className="h-1 w-full bg-muted/20 rounded-full overflow-hidden">
-                                                            <div 
-                                                                className="h-full bg-primary transition-all duration-1000" 
-                                                                style={{ width: `${Math.min(100, parseFloat(psychMetrics.recoveryFactor) * 20)}%` }} 
+                                                            <div
+                                                                className="h-full bg-primary transition-all duration-1000"
+                                                                style={{ width: `${Math.min(100, parseFloat(psychMetrics.recoveryFactor) * 20)}%` }}
                                                             />
                                                         </div>
                                                     </div>
@@ -621,9 +616,9 @@ export default function ReportsPageClient({
                                                             {psychMetrics.consistencyScore}%
                                                         </p>
                                                         <div className="h-1 w-full bg-muted/20 rounded-full overflow-hidden">
-                                                            <div 
-                                                                className="h-full bg-foreground transition-all duration-1000" 
-                                                                style={{ width: `${Math.min(100, Math.max(0, Number(psychMetrics.consistencyScore)))}%` }} 
+                                                            <div
+                                                                className="h-full bg-foreground transition-all duration-1000"
+                                                                style={{ width: `${Math.min(100, Math.max(0, Number(psychMetrics.consistencyScore)))}%` }}
                                                             />
                                                         </div>
                                                     </div>
@@ -663,37 +658,37 @@ export default function ReportsPageClient({
                                     </div>
                                 </div>
 
-                                {/* Rich Visualizations */}
+                                {                         }
                                 {reportData?.chartData && (
                                     <DiverseCharts chartData={reportData.chartData} />
                                 )}
 
-                                {/* Monthly Returns Matrix */}
+                                {                            }
                                 {reportData?.chartData?.equityCurve && reportData.chartData.equityCurve.length > 0 && (
                                     <MonthlyReturnsMatrix equityCurve={reportData.chartData.equityCurve} />
                                 )}
 
-                                {/* Trade Duration Performance */}
+                                {                                }
                                 {filteredTrades && filteredTrades.length > 0 && (
                                     <TradeDurationChart trades={filteredTrades} />
                                 )}
 
-                                {/* Time of Day Heatmap */}
+                                {                         }
                                 {filteredTrades && filteredTrades.length > 0 && (
                                     <TimeOfDayHeatmap trades={filteredTrades} />
                                 )}
 
-                                {/* MAE vs MFE Analysis */}
+                                {                         }
                                 {filteredTrades && filteredTrades.length > 0 && (
                                     <MaeMfeScatter trades={filteredTrades} />
                                 )}
 
-                                {/* Instrument Performance Breakdown */}
+                                {                                      }
                                 {filteredTrades && filteredTrades.length > 0 && (
                                     <InstrumentBreakdown trades={filteredTrades} />
                                 )}
 
-                                {/* Commission & Fee Impact */}
+                                {                             }
                                 {filteredTrades && filteredTrades.length > 0 && (
                                     <CommissionAnalysis trades={filteredTrades} />
                                 )}

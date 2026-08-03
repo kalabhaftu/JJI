@@ -31,8 +31,8 @@ export function getWhopWebhookClient(): Whop {
     const config = getWhopConfig()
     webhookClient = new Whop({
       apiKey: config.apiKey,
-      // The SDK passes this value directly to Standard Webhooks, which handles
-      // the provider's `whsec_` encoding. Re-encoding it breaks verification.
+
+
       webhookKey: config.webhookSecret,
       baseURL: baseUrl(config.environment),
       maxRetries: 0,
@@ -53,3 +53,4 @@ export async function cancelWhopMembershipAtPeriodEnd(membershipId: string) {
     cancellation_mode: 'at_period_end',
   })
 }
+

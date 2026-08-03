@@ -35,7 +35,6 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
     }
   }, [isAuthenticated, isAuthLoading, router])
 
-  // Debounced promo code validation as the user types
   useEffect(() => {
     const code = promoCode.trim()
     if (code.length < 3) {
@@ -95,11 +94,11 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
 
       const paymentUrl = payment?.paymentUrl || payment?.invoiceUrl
       if (paymentUrl) {
-        // Store payment record ID for status polling
+
         if (payment.paymentRecordId) {
           sessionStorage.setItem('pendingPaymentId', payment.paymentRecordId)
         }
-        // Redirect through the app so expired sessions cannot reopen stale provider links.
+
         window.location.href = paymentUrl
       }
     } catch (error) {
@@ -161,7 +160,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Header */}
+        {            }
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <Logo className="w-8 h-8" />
@@ -176,9 +175,9 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
           </div>
         </div>
 
-        {/* Pricing Card */}
+        {                  }
         <div className="rounded-2xl border border-border/60 bg-card/50 backdrop-blur-sm p-6 shadow-lg">
-          {/* Price */}
+          {           }
           <div className="text-center mb-6 pb-6 border-b border-border/40">
             <div className="flex items-baseline justify-center gap-1">
               <span className="text-4xl font-bold tracking-tight">$10</span>
@@ -187,7 +186,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             <p className="text-xs text-muted-foreground mt-1">Card or cryptocurrency</p>
           </div>
 
-          {/* Features */}
+          {              }
           <div className="space-y-3 mb-6">
             {features.map((feature) => (
               <div key={feature.text} className="flex items-center gap-3 text-sm">
@@ -197,7 +196,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             ))}
           </div>
 
-          {/* Promo Code */}
+          {                }
           <div className="mb-4">
             <div className="flex gap-2">
               <div className="relative flex-1">
@@ -285,7 +284,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
           </p>
         </div>
 
-        {/* Sign out */}
+        {              }
         <div className="text-center mt-6">
           <Button
             variant="ghost"

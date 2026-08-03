@@ -57,18 +57,18 @@ export function CustomDateRangePicker({
 
   const handleDayClick = (day: Date) => {
     if (!selected?.from || (selected.from && selected.to)) {
-      // Start new selection
+
       onSelect?.({ from: day, to: undefined })
     } else if (selected.from && !selected.to) {
-      // Complete the range
+
       if (isSameDay(day, selected.from)) {
-        // Same day clicked, select just that day
+
         onSelect?.({ from: day, to: day })
       } else if (isBefore(day, selected.from)) {
-        // Clicked before start, make it the new start
+
         onSelect?.({ from: day, to: selected.from })
       } else {
-        // Clicked after start, make it the end
+
         onSelect?.({ from: selected.from, to: day })
       }
     }
@@ -99,7 +99,7 @@ export function CustomDateRangePicker({
 
   return (
     <div className={cn("p-3 bg-background border rounded-md", className)}>
-      {/* Header with navigation */}
+      {}
       <div className="flex items-center justify-between mb-4">
         <Button
           variant="outline"
@@ -126,9 +126,9 @@ export function CustomDateRangePicker({
         </Button>
       </div>
 
-      {/* Calendar grid */}
+      {}
       <div className="grid grid-cols-7 gap-1">
-        {/* Weekday headers */}
+        {}
         {WEEKDAYS.map((weekday) => (
           <div
             key={weekday}
@@ -138,7 +138,7 @@ export function CustomDateRangePicker({
           </div>
         ))}
         
-        {/* Calendar days */}
+        {}
         {days.map((day) => {
           const isCurrentMonth = isSameMonth(day, currentMonth)
           const isSelected = isDayInRange(day)

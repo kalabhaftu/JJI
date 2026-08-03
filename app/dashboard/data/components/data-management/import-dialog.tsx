@@ -26,7 +26,7 @@ interface ImportJobResponse {
   error?: string | null
 }
 
-export function ImportDialog() { // Kept name for compatibility
+export function ImportDialog() {
   const { refreshTrades } = useData()
   const { refetch: refetchAccounts } = useAccounts()
   const [isOpen, setIsOpen] = useState(false)
@@ -190,7 +190,7 @@ export function ImportDialog() { // Kept name for compatibility
         </DialogHeader>
 
         <div className="space-y-6 py-4">
-          {/* File Selection */}
+          {                    }
           {!importResults && (
             <>
               <Alert>
@@ -238,7 +238,7 @@ export function ImportDialog() { // Kept name for compatibility
             </>
           )}
 
-          {/* Import Results */}
+          {                    }
           {importResults && (
             <div className="space-y-4">
               <Alert className="border-long/20 bg-long/5">
@@ -275,7 +275,7 @@ export function ImportDialog() { // Kept name for compatibility
           )}
         </div>
 
-        {/* Action Buttons */}
+        {                    }
         {!importResults && (
           <div className="flex items-center justify-between pt-4 border-t">
             {isImporting ? (

@@ -10,31 +10,30 @@ import { getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/li
 import { useUserStore } from '@/store/user-store'
 import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
 
-const ROW_HEIGHT = 36 // Approximate height of each trade row in pixels
+const ROW_HEIGHT = 36
 
 export default function RecentTradesWidget() {
   const { formattedTrades, statistics } = useData()
   const containerRef = useRef<HTMLDivElement>(null)
-  const [visibleRowCount, setVisibleRowCount] = useState(10) // Default fallback
+  const [visibleRowCount, setVisibleRowCount] = useState(10)
   const threshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
   const pnlDisplayMode = normalizePnlDisplayMode(
     useUserStore((state) => state.user?.pnlDisplayMode)
   )
   const { formatValue, getTradeRMultipleInfo } = useDashboardDisplay()
 
-  // CRITICAL FIX: Group trades first to handle partial closes correctly
-  // This ensures partial closes are shown as single trades, not multiple entries
+
   const groupedTrades = React.useMemo(() => {
     return groupTradesByExecution(formattedTrades)
   }, [formattedTrades])
 
-  // All trades sorted newest-first
+
   const allRecentTrades = React.useMemo(() => {
     return groupedTrades
       .sort((a: any, b: any) => new Date(b.entryDate).getTime() - new Date(a.entryDate).getTime())
   }, [groupedTrades])
 
-  // Calculate how many rows can fit in the container
+
   useEffect(() => {
     const calculateVisibleRows = () => {
       if (containerRef.current) {
@@ -46,7 +45,7 @@ export default function RecentTradesWidget() {
 
     calculateVisibleRows()
 
-    // Use ResizeObserver for dynamic height changes (when user resizes widget)
+
     const resizeObserver = new ResizeObserver(calculateVisibleRows)
     if (containerRef.current) {
       resizeObserver.observe(containerRef.current)
@@ -55,7 +54,7 @@ export default function RecentTradesWidget() {
     return () => resizeObserver.disconnect()
   }, [])
 
-  // Only show trades that fit in the current container height
+
   const recentTrades = React.useMemo(() => {
     return allRecentTrades.slice(0, visibleRowCount)
   }, [allRecentTrades, visibleRowCount])
@@ -72,14 +71,14 @@ export default function RecentTradesWidget() {
   return (
     <WidgetCard title="Recent Trades">
       <div className="flex flex-col h-full">
-        {/* Header */}
+        {}
         <div className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1fr)_auto] min-[1280px]:grid-cols-[1fr_1.2fr_auto] gap-2 min-[1280px]:gap-3 pb-2 border-b border-border/30 text-[9px] min-[1280px]:text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50 shrink-0">
           <div>Date</div>
           <div>Symbol</div>
           <div className="text-right min-w-[58px] min-[1280px]:min-w-[70px]">P&L</div>
         </div>
 
-        {/* Trades List - shows only what fits, no scrolling */}
+        {}
         <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden">
           {recentTrades.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-muted-foreground gap-2">

@@ -44,15 +44,15 @@ type RawDailyPoint = Partial<ChartDataPoint>
 type RenderedDailyPoint = RawDailyPoint & { originalPnl: number; pnl: number }
 
 const COLORS = {
-  profit: 'hsl(var(--chart-profit))',      // Emerald green
-  loss: 'hsl(var(--chart-loss))',          // Red
+  profit: 'hsl(var(--chart-profit))',
+  loss: 'hsl(var(--chart-loss))',
   grid: 'hsl(var(--border))',
   axis: 'hsl(var(--muted-foreground))',
   reference: 'hsl(var(--muted-foreground))'
 } as const
 
 const CHART_CONFIG = {
-  gridOpacity: 0.25, // Increased from 0.1 for better visibility
+  gridOpacity: 0.25,
   barRadius: [4, 4, 0, 0] as [number, number, number, number],
   referenceLineOpacity: 0.4
 } as const

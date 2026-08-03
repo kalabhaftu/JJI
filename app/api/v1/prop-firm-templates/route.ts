@@ -1,7 +1,4 @@
-/**
- * Prop Firm Templates API
- * GET /api/prop-firm-templates - Get all prop firm rule templates
- */
+
 
 import { NextRequest } from 'next/server'
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'

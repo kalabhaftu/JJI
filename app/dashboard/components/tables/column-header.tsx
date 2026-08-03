@@ -58,7 +58,7 @@ export function DataTableColumnHeader<TData, TValue>({
     if (tableId) {
       updateColumnVisibility(tableId, column.id, false)
     } else {
-      // Fallback to default behavior if no tableId provided
+
       column.toggleVisibility(false)
     }
   }

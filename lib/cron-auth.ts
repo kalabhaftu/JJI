@@ -1,9 +1,4 @@
-/**
- * Cron route authentication.
- *
- * Accepts Authorization: Bearer <CRON_SECRET> or x-cron-secret.
- * Vercel automatically sends CRON_SECRET as a bearer token for scheduled calls.
- */
+
 
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
@@ -47,3 +42,4 @@ export function validateCronRequest(request: NextRequest): NextResponse | null {
 
   return null
 }
+

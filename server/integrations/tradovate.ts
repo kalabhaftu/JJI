@@ -41,15 +41,15 @@ function formatDuration(seconds: number): string {
   return `${minutes}min ${remainingSeconds}sec`
 }
 
-// Environment variables for Tradovate OAuth
+
 const TRADOVATE_CLIENT_ID = process.env.TRADOVATE_CLIENT_ID
 const TRADOVATE_CLIENT_SECRET = process.env.TRADOVATE_CLIENT_SECRET
 const TRADOVATE_REDIRECT_URI = process.env.TRADOVATE_REDIRECT_URI
 
-// Debug mode configuration - enabled in development or when explicitly set
+
 const DEBUG_MODE = process.env.NODE_ENV === 'development' || process.env.TRADOVATE_DEBUG === 'true'
 
-// Logger utility for conditional logging
+
 const logger = {
   debug: (message: string, data?: any) => {
     if (DEBUG_MODE) {
@@ -80,11 +80,11 @@ const logger = {
   }
 }
 
-// Environment URLs - demo only
+
 const TRADOVATE_ENVIRONMENTS = {
   demo: {
-    auth: 'https://trader.tradovate.com', // OAuth authorization
-    api: 'https://demo.tradovateapi.com'   // API calls
+    auth: 'https://trader.tradovate.com',
+    api: 'https://demo.tradovateapi.com'
   }
 }
 
@@ -840,7 +840,7 @@ async function getTradovateAccounts(accessToken: string): Promise<TradovateAccou
   }
 }
 
-// Process fill pairs into trades with proper P&L calculation
+
 async function buildTradesFromFillPairs(
   fillPairs: TradovateFillPair[],
   contracts: Map<number, TradovateContract>,

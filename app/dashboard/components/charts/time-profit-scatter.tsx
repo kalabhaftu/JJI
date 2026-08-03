@@ -45,7 +45,7 @@ export default function TimeProfitScatter({ size }: TimeProfitScatterProps) {
         const pnl = getTradeNetPnl(trade)
         return {
           id: trade.id,
-          duration: durationSec / 60, // Convert to minutes for better scale
+          duration: durationSec / 60,
           pnl,
           symbol: trade.symbol || trade.instrument || 'Unknown',
           date: trade.entryDate || trade.entryTime,

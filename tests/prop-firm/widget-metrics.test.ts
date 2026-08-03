@@ -83,10 +83,7 @@ describe('prop firm widget metrics', () => {
       },
     }
 
-    // Start balance: 50,000.
-    // Day 1: Trade 1: -1,000 -> balance: 49,000. Daily floor was 47,500. Not breached.
-    // Day 2: Start balance: 49,000. Trade 2: -4,000 -> balance: 45,000. Daily floor: 49,000 - 2,500 = 46,500. Breached!
-    // Day 3: Start balance: 45,000. Trade 3: -1,000 -> balance: 44,000.
+
     const trades = [
       { id: '1', netPnL: -1000, exitTime: '2026-06-21T12:00:00.000Z' },
       { id: '2', netPnL: -4000, exitTime: '2026-06-22T12:00:00.000Z' },

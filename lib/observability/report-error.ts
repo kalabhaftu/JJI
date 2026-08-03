@@ -148,12 +148,7 @@ function getSafeCause(error: Error): Record<string, string> | undefined {
   return { name: 'NonErrorCause', message: 'Unexpected non-error cause' }
 }
 
-/**
- * Report an unexpected application failure exactly once.
- *
- * Logging and Sentry capture are deliberately explicit and separate from
- * `logger.error`, so ordinary operational logs cannot create duplicate issues.
- */
+
 export function reportError(
   error: unknown,
   context: ReportErrorContext,
@@ -189,3 +184,4 @@ export function reportError(
     return Sentry.captureException(safeError)
   })
 }
+

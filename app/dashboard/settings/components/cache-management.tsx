@@ -26,7 +26,6 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
     sessionStorageKeys: 0
   })
 
-  // Load cache stats only on client side to avoid hydration mismatch
   useEffect(() => {
     setStats(getCacheStats())
   }, [])

@@ -146,7 +146,7 @@ export default function PayoutDetailPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+      {            }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -183,7 +183,7 @@ export default function PayoutDetailPage() {
         </div>
       </div>
 
-      {/* Payout Details */}
+      {                    }
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -281,7 +281,7 @@ export default function PayoutDetailPage() {
         </Card>
       </div>
 
-      {/* Account Information */}
+      {                         }
       <Card>
         <CardHeader>
           <CardTitle>Related Account</CardTitle>

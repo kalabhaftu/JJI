@@ -112,11 +112,11 @@ export function FundedApprovalDialog({
 
       clearAccountsCache()
 
-      // Clear localStorage caches that might contain stale data
+
       try {
         localStorage.removeItem('settings-cache')
       } catch (e) {
-        // Ignore storage errors
+
       }
 
       resetState()

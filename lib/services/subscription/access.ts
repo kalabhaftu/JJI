@@ -25,14 +25,14 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
   })
 
   if (!subscription) {
-    // Check if there's a free access invite for this user
+
     const user = await db.query.User.findFirst({ where: eq(User.id, userId), columns: { email: true } })
     if (user) {
       const freeAccess = await db.query.FreeAccessInvite.findFirst({
         where: eq(FreeAccessInvite.email, user.email!),
       })
       if (freeAccess?.isActive) {
-        // Auto-create subscription record for free access
+
         const [sub] = await db.insert(Subscription).values({
             userId,
             status: freeAccess.type === 'lifetime' ? 'free_access' : 'invited_free',
@@ -64,7 +64,7 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
       return { hasAccess: false, status: 'expired', subscription: updated, reason: 'Free access revoked' }
     }
 
-    // Check if free access has expired
+
     if (
       (subscription.status === 'invited_free' || subscription.status === 'free_access') &&
       subscription.currentPeriodEnd &&
@@ -78,12 +78,12 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
     return { hasAccess: true, status: subscription.status as string, subscription }
   }
 
-  // Handle active "waiting" payments that might be expired
+
   if (subscription.status === 'unpaid' || subscription.status === 'past_due') {
     await reconcilePendingPayments({ userId })
   }
 
-  // past_due: within grace period, still allow access
+
   if (subscription.status === 'past_due') {
     const graceCutoff = subscription.currentPeriodEnd
       ? new Date(subscription.currentPeriodEnd.getTime() + GRACE_DAYS * 86400000)
@@ -91,7 +91,7 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
     if (graceCutoff && new Date() <= graceCutoff) {
       return { hasAccess: true, status: 'past_due', subscription, reason: 'Grace period' }
     }
-    // Past grace period
+
     await db.update(Subscription)
         .set({ status: 'expired' })
         .where(eq(Subscription.id, subscription.id))
@@ -100,3 +100,4 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
 
   return { hasAccess: false, status: subscription.status as string, subscription, reason: `Status: ${subscription.status}` }
 }
+

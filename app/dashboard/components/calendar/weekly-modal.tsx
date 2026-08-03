@@ -61,21 +61,21 @@ export function WeeklyModal({
   const [imageLoadError, setImageLoadError] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
 
-  // Track the latest save request to prevent race conditions
+
   const saveRequestRef = useRef<number>(0)
-  // Track the latest reviewData to avoid stale values in rapid changes
+
   const reviewDataRef = useRef<WeeklyReviewData | null>(null)
 
   useEffect(() => {
     reviewDataRef.current = reviewData
   }, [reviewData])
 
-  // Generate organized path: userId/week-start-date (YYYY-MM-DD)
+
   const weekStartDate = selectedDate ? format(startOfWeek(selectedDate), 'yyyy-MM-dd') : ''
   const uploadOwnerId = supabaseUser?.id
   const uploadPath = uploadOwnerId ? `${uploadOwnerId}/${weekStartDate}` : ''
 
-  // Image upload setup - dedicated bucket for weekly calendars
+
   const { onUpload, files, setFiles, isSuccess: isUploadSuccess, loading: isUploading } = useSupabaseUpload({
     bucketName: 'weekly-calendars',
     path: uploadPath,
@@ -85,7 +85,7 @@ export function WeeklyModal({
   })
 
   useEffect(() => {
-    // Validate selectedDate before opening
+
     if (isOpen && selectedDate && selectedDate instanceof Date && !isNaN(selectedDate.getTime())) {
       const loadReview = async () => {
         setIsLoadingReview(true)
@@ -127,7 +127,7 @@ export function WeeklyModal({
     try {
       const loadingToast = toast.loading("Compressing image...")
 
-      // Compress image to WebP
+
       const options = {
         maxSizeMB: 1,
         maxWidthOrHeight: 1920,
@@ -138,12 +138,12 @@ export function WeeklyModal({
       const compressedFile = await imageCompression(file, options)
       const newFile = new File([compressedFile], `weekly-calendar-${Date.now()}.webp`, { type: 'image/webp' })
 
-      // Create preview URL from the compressed file
+
       const preview = URL.createObjectURL(compressedFile)
       setImagePreview(preview)
       setUploadedFile(newFile)
 
-      // Prepare file for upload hook
+
       const fileWithPreview = Object.assign(newFile, {
         preview: preview,
         errors: []
@@ -163,9 +163,9 @@ export function WeeklyModal({
     }
   }
 
-  // Handle Image Removal
+
   const handleRemoveImage = () => {
-    // Clear preview
+
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview)
       setImagePreview(null)
@@ -173,13 +173,13 @@ export function WeeklyModal({
     setUploadedFile(null)
     setFiles([])
 
-    // Clear the saved image from review data
+
     setReviewData({ ...reviewData, calendarImage: null })
     toast.info("Image removed")
   }
 
   const handleReplaceImage = () => {
-    // Clear current preview
+
     if (imagePreview) {
       URL.revokeObjectURL(imagePreview)
       setImagePreview(null)
@@ -187,7 +187,7 @@ export function WeeklyModal({
     setUploadedFile(null)
     setFiles([])
 
-    // Trigger file input
+
     const fileInput = document.getElementById('weekly-calendar-upload') as HTMLInputElement
     if (fileInput) {
       fileInput.value = ''
@@ -195,7 +195,7 @@ export function WeeklyModal({
     }
   }
 
-  // Cleanup preview URL when modal closes or unmounts
+
   useEffect(() => {
     return () => {
       if (imagePreview) {
@@ -204,7 +204,7 @@ export function WeeklyModal({
     }
   }, [imagePreview])
 
-  // Reset preview when modal closes
+
   useEffect(() => {
     if (!isOpen) {
       if (imagePreview) {
@@ -218,12 +218,12 @@ export function WeeklyModal({
     }
   }, [isOpen, imagePreview, setFiles])
 
-  // Safe Close Logic
+
   const [showUnsavedAlert, setShowUnsavedAlert] = useState(false)
-  // Track the exact data state as confirmed by the server (initially or after save)
+
   const lastSavedReviewData = useRef<WeeklyReviewData | null>(null)
 
-  // Update baseline when data is loaded (only if we haven't tracked it yet to avoid resetting on re-renders)
+
   useEffect(() => {
     if (reviewData && !isLoadingReview && !lastSavedReviewData.current) {
       lastSavedReviewData.current = JSON.parse(JSON.stringify(reviewData))
@@ -237,7 +237,7 @@ export function WeeklyModal({
         return
       }
 
-      // We only care about user-editable fields
+
       const current = reviewData
       const saved = lastSavedReviewData.current || {}
 
@@ -245,10 +245,9 @@ export function WeeklyModal({
         (current.notes || '') !== (saved.notes || '') ||
         (current.actualOutcome || '') !== (saved.actualOutcome || '') ||
         (current.isCorrect !== saved.isCorrect) ||
-        // Check image: logic handles both URL strings (saved) and nulls
+
         (current.calendarImage !== saved.calendarImage)
 
-      // Note: Expectation is auto-saved, so we don't block on it (refer to auto-save logic)
 
       if (hasChanges) {
         setShowUnsavedAlert(true)
@@ -260,7 +259,7 @@ export function WeeklyModal({
     }
   }
 
-  // Update handleSave to update baseline
+
   const handleSave = async () => {
     if (!selectedDate) return
     setIsSaving(true)
@@ -268,14 +267,14 @@ export function WeeklyModal({
     try {
       let imageUrl = reviewData?.calendarImage
 
-      // Upload new image if exists
+
       if (uploadedFile && files.length > 0) {
         if (!uploadOwnerId) throw new Error('Upload session is not available')
         const uploadResult = await onUpload()
         if (uploadResult.errors.length > 0 || !uploadResult.successfulNames.includes(files[0]!.name)) {
           throw new Error(uploadResult.errors[0]?.message || 'Calendar image upload failed')
         }
-        // Construct public URL for weekly-calendars bucket with organized path
+
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
         if (supabaseUrl) {
           const objectPath = `${uploadOwnerId}/${weekStartDate}/${files[0]!.name}`
@@ -298,12 +297,12 @@ export function WeeklyModal({
 
       if (result.success) {
         setReviewData(result.data)
-        // CRITICAL: Update baseline after successful save
+
         lastSavedReviewData.current = JSON.parse(JSON.stringify(result.data))
 
         toast.success("Weekly review saved")
 
-        // Clear upload state after successful save
+
         if (imagePreview) {
           URL.revokeObjectURL(imagePreview)
           setImagePreview(null)
@@ -311,7 +310,7 @@ export function WeeklyModal({
         setUploadedFile(null)
         setFiles([])
 
-        // Close modal after successful save
+
         onOpenChange(false)
       } else {
         reportError(new Error(result.error || 'Failed to save review'), {
@@ -333,8 +332,6 @@ export function WeeklyModal({
     }
   }
 
-  // Also need to update baseline when Expectation auto-saves
-  // We can modify the auto-save logic in the RadioGroup onValueChange
 
   if (!selectedDate || !isOpen) return null;
 
@@ -348,7 +345,7 @@ export function WeeklyModal({
         <DialogContent className={dashboardModalShell.weekly}>
           <DialogTitle className="sr-only">Weekly Review for {dateRange}</DialogTitle>
 
-          {/* Hidden file input for replacement */}
+          {}
           <input
             id="weekly-calendar-upload"
             type="file"
@@ -357,7 +354,7 @@ export function WeeklyModal({
             onChange={handleImageUpload}
           />
 
-          {/* Header */}
+          {}
           <div className="shrink-0 px-5 py-4 sm:px-6 border-b border-border/40 bg-background/95">
             <div className="flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
@@ -376,7 +373,7 @@ export function WeeklyModal({
             </div>
           </div>
 
-          {/* Tabs Navigation */}
+          {}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
             <div className="px-4 sm:px-6 py-3 border-b border-border/40 bg-background">
               <TabsList className="h-auto w-full flex-wrap justify-start rounded-xl border border-border/40 bg-muted/20 p-1 gap-1">
@@ -451,7 +448,7 @@ export function WeeklyModal({
             <AlertDialogAction
               onClick={() => {
                 setShowUnsavedAlert(false)
-                // Reset to baseline derived from lastSavedReviewData
+
                 if (lastSavedReviewData.current) {
                   setReviewData(JSON.parse(JSON.stringify(lastSavedReviewData.current)))
                 }

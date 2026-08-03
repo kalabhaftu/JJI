@@ -77,14 +77,14 @@ export default function OutcomeDistributionWidget() {
               />
             </PieChart>
           </ResponsiveContainer>
-          {/* Center label */}
+          {}
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
             <span className="text-xl font-black font-mono tracking-tighter">{totalTrades}</span>
             <span className="text-[9px] uppercase font-bold tracking-widest text-muted-foreground/50">Trades</span>
           </div>
         </div>
 
-        {/* Legend */}
+        {}
         <div className="flex items-center gap-4">
           {data.map((entry: any) => (
             <div key={entry.name} className="flex items-center gap-1.5">

@@ -1,12 +1,4 @@
-/**
- * Automatic Cache Cleanup Hook
- * 
- * This hook automatically detects and clears stale caches when:
- * - App loads and cache version doesn't match
- * - Accounts are created, updated, or deleted
- * - User logs in/out
- * - Critical data changes occur
- */
+
 
 import { useEffect, useRef } from 'react'
 import { autoCleanStaleCache, clearAccountCaches, getCacheStats } from '@/lib/cache/persistent-cache'
@@ -25,7 +17,7 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
   useEffect(() => {
     if (!enabled) return
     
-    // Run once on mount to check for stale caches
+
     if (!hasRunRef.current) {
       hasRunRef.current = true
       
@@ -37,7 +29,7 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
             invalidateAccountsCache('auto-cleanup on version mismatch')
           }
         } catch (error) {
-          // Ignore cleanup errors
+
         }
       })()
     }
@@ -59,9 +51,7 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
   }
 }
 
-/**
- * Hook to automatically clear caches when accounts change
- */
+
 function useAccountChangeDetection() {
   const accountsVersionRef = useRef<number>(0)
   

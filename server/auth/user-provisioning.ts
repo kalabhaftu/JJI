@@ -272,14 +272,13 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       );
 
 
-
       if (!newUser) {
         throw new Error('Failed to create user record in database');
       }
 
       logActivity({ userId: newUser.id, action: 'USER_SIGNUP', entity: 'Auth' })
 
-      // Create default dashboard template for new user (non-blocking)
+
       try {
         const { ensureDefaultTemplate } = await import('../seed-default-template')
         await ensureDefaultTemplate()
@@ -303,7 +302,7 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       throw new Error('Failed to create user account');
     }
   } catch (error) {
-    // Re-throw NEXT_REDIRECT errors immediately (these are normal Next.js redirects)
+
     if (error instanceof Error && (
       error.message === 'NEXT_REDIRECT' ||
       ('digest' in error && typeof error.digest === 'string' && error.digest.startsWith('NEXT_REDIRECT'))
@@ -311,7 +310,7 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       throw error;
     }
 
-    // Handle database connection errors gracefully - DON'T sign out user
+
     if (error instanceof Error && (
       error.message.includes("Can't reach database server") ||
       error.message.includes('P1001') ||
@@ -319,11 +318,11 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       error.message.includes('ECONNREFUSED') ||
       error.message.includes('ENOTFOUND')
     )) {
-      // Return without signing out - let the middleware handle the auth state
+
       return null;
     }
 
-    // Handle Prisma validation errors (these require sign out)
+
     if (error instanceof Error) {
       if (error.message.includes('Argument `where` of type UserWhereUniqueInput needs')) {
         await signOut();
@@ -336,12 +335,12 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       }
 
       if (error.message.includes('Account conflict')) {
-        // Error already handled above
+
         throw error;
       }
     }
 
-    // For authentication-related errors, sign out the user
+
     if (error instanceof Error && (
       error.message.includes('User not authenticated') ||
       error.message.includes('Invalid authentication') ||
@@ -352,7 +351,7 @@ export async function ensureUserInDatabase(user: SupabaseUser, locale?: string) 
       throw new Error('Authentication error occurred. Please log in again.');
     }
 
-    // For other unexpected errors, don't sign out - just log and continue
+
     return null;
   }
 }

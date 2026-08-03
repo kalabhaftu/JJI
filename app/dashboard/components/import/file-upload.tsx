@@ -35,7 +35,7 @@ export default function FileUpload({
   const [parsedFiles, setParsedFiles] = useState<string[][][]>([])
   const processFile = useCallback((file: File, index: number) => {
     return new Promise<void>((resolve, reject) => {
-      // First read the first line to detect delimiter
+
       const reader = new FileReader();
       reader.onload = (e) => {
         const firstLine = e.target?.result?.toString().split('T')[0] || '';
@@ -116,7 +116,7 @@ export default function FileUpload({
         throw new Error("Invalid import type")
       }
 
-      // If platform doesn't have processFile (e.g., Rithmic Sync), skip processing
+
       if (!platform.processFile) {
         return
       }
@@ -138,7 +138,7 @@ export default function FileUpload({
       setCsvData(concatenatedData)
       setHeaders(headers)
 
-      // Find current step index and move to next step
+
       const currentStepIndex = platform.steps.findIndex(step => step.id === 'upload-file')
       const nextStep = platform.steps[currentStepIndex + 1]
       if (currentStepIndex !== -1 && nextStep) {

@@ -23,7 +23,6 @@ interface TradingViewAdvancedChartProps {
   className?: string
 }
 
-// TradingView Charting Library types
 declare global {
   interface Window {
     TradingView: {
@@ -43,7 +42,6 @@ export function TradingViewAdvancedChart({
   const [error, setError] = useState<string | null>(null)
   const { resolvedTheme } = useTheme()
 
-  // Initialize the TradingView Chart using iframe approach
   const initializeChart = useCallback(() => {
     if (!containerRef.current) {
       setError('Chart container not available')
@@ -57,7 +55,6 @@ export function TradingViewAdvancedChart({
 
       containerRef.current.innerHTML = ''
 
-      // Create iframe-based TradingView widget
       const iframe = document.createElement('iframe')
       iframe.width = '100%'
       iframe.height = '100%'
@@ -67,7 +64,6 @@ export function TradingViewAdvancedChart({
       iframe.style.margin = '0'
       iframe.style.padding = '0'
 
-      // Build TradingView embed URL with basic configuration
       const baseUrl = 'https://www.tradingview.com/widgetembed/'
       const params = new URLSearchParams({
         frameElementId: 'tradingview_advanced_chart',
@@ -84,9 +80,6 @@ export function TradingViewAdvancedChart({
         hide_legend: 'false',
         save_image: 'true'
       })
-
-      // Use TradingView's built-in theme handling
-      // The theme parameter already handles all colors and styles
 
       if (tradeData) {
         const entryTime = tradeData.entryTime.getTime() / 1000
@@ -111,9 +104,6 @@ export function TradingViewAdvancedChart({
       containerRef.current.appendChild(iframe)
       widgetRef.current = iframe
 
-      // The iframe approach is complete - no additional error handling needed
-      // as the onload/onerror events handle the widget lifecycle
-
       } catch (error) {
       reportClientError(error, { operation: 'initialize-tradingview-chart', route: '/dashboard/journal' })
       setError('Failed to initialize chart')
@@ -121,11 +111,10 @@ export function TradingViewAdvancedChart({
     }
   }, [tradeData, resolvedTheme])
 
-  // Initialize the TradingView Chart using iframe
   useEffect(() => {
-    // Capture current container ref for cleanup
+
     const container = containerRef.current
-    
+
     const timer = setTimeout(() => {
       initializeChart()
     }, 100)
@@ -134,12 +123,12 @@ export function TradingViewAdvancedChart({
       clearTimeout(timer)
       if (widgetRef.current) {
         try {
-          // If it's an iframe, just clear the container
+
           if (widgetRef.current.tagName === 'IFRAME' && container) {
             container.innerHTML = ''
           }
         } catch (e) {
-          // Ignore cleanup errors
+
         }
       }
     }
@@ -166,8 +155,8 @@ export function TradingViewAdvancedChart({
           </div>
         </div>
       )}
-      <div 
-        ref={containerRef} 
+      <div
+        ref={containerRef}
         style={{ width: '100%', height: '100%' }}
       />
     </div>

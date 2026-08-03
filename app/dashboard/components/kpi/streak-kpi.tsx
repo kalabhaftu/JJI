@@ -46,7 +46,7 @@ const StreakKpi = React.memo(function StreakKpi({ size }: StreakKpiProps) {
   return (
     <WidgetCard isKpi>
       <div className="h-full flex flex-col justify-between">
-        {/* Header */}
+        {}
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-center gap-1.5 min-w-0">
             <span className="text-xs font-medium text-muted-foreground">
@@ -84,10 +84,10 @@ const StreakKpi = React.memo(function StreakKpi({ size }: StreakKpiProps) {
           </div>
         </div>
 
-        {/* Main value area */}
+        {}
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col gap-1">
-            {/* Current streak */}
+            {}
             <div className="flex items-baseline gap-1.5">
               <span className={cn(
                 "text-[1.65rem] min-[768px]:text-[1.85rem] min-[1440px]:text-3xl font-bold tracking-tight tabular-nums",
@@ -111,7 +111,7 @@ const StreakKpi = React.memo(function StreakKpi({ size }: StreakKpiProps) {
               </span>
             </div>
 
-            {/* Longest streaks */}
+            {}
             <div className="flex items-center gap-2">
               <span className="text-[10px] text-muted-foreground/50">
                 Best:

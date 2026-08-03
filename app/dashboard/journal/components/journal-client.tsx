@@ -91,16 +91,14 @@ const DailyNotePanel = dynamic(
 function JournalStats({ statistics }: { statistics: any }) {
   if (!statistics) return null
 
-  // Process the raw numbers safely
   const winRate = typeof statistics.winRate === 'number' ? statistics.winRate : 0;
   const totalPnl = typeof statistics.totalPnL === 'number' ? statistics.totalPnL : (statistics.cumulativePnl || 0);
   const breakEvenThreshold = getBreakEvenThreshold(statistics.breakEvenThreshold)
 
-  // Extract average position time (comes back as "Xh Ym Zs" string)
   const sumSeconds = statistics.totalPositionTime || 0
   const tradeCount = statistics.nbTrades || 1
-  const avgDuration = Math.floor((sumSeconds / tradeCount) / 60) // in minutes
-  
+  const avgDuration = Math.floor((sumSeconds / tradeCount) / 60)
+
   const stats = {
       totalTrades: statistics.nbTrades || 0,
       winRate,
@@ -222,7 +220,7 @@ export function JournalClient() {
   const [currentPage, setCurrentPage] = useState(1)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
   const [tradeToDelete, setTradeToDelete] = useState<Trade | null>(null)
-  // showAIAnalysis state removed
+
   const [viewMode, setViewMode] = useState<'grid' | 'calendar'>('grid')
   const [notePanelDate, setNotePanelDate] = useState<Date | null>(null)
 
@@ -235,7 +233,6 @@ export function JournalClient() {
     return () => window.clearTimeout(timeout)
   }, [searchTerm])
 
-  // Pagination via Backend V1 Endpoint
   const { trades: paginatedTrades, totalCount, statistics, isLoading, refetch } = useJournal({
     page: currentPage,
     search: debouncedSearchTerm,
@@ -253,7 +250,6 @@ export function JournalClient() {
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
   const activeBreakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
 
-  // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1)
   }, [searchTerm, filterBy, selectedTagIds])
@@ -343,7 +339,6 @@ export function JournalClient() {
     return <JournalPageSkeleton />
   }
 
-  // If detail or edit view is active, show the panel instead of journal cards
   if (view === 'details' && matchedTrade) {
     return (
       <div className="w-full h-[calc(100vh-3.5rem)]">
@@ -620,11 +615,11 @@ export function JournalClient() {
             exit={{ opacity: 0 }}
           >
             {viewMode === 'calendar' ? (
-              <JournalCalendar 
-                trades={formattedTrades || []} 
+              <JournalCalendar
+                trades={formattedTrades || []}
                 onDayClick={(date, dayTrades) => {
                   if (dayTrades.length === 0) {
-                    // Open daily note panel for days with no trades too
+
                     setNotePanelDate(date)
                     return
                   }
@@ -722,7 +717,7 @@ export function JournalClient() {
         )}
       </AnimatePresence>
 
-      {/* Panels are now rendered above as early returns */}
+      {                                                    }
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent className="z-[10002]">
@@ -750,7 +745,7 @@ export function JournalClient() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* AIAnalysisDialog removed - redirected to AI Assistant workspace */}
+      {                                                                     }
 
       {notePanelDate && (
         <DailyNotePanel

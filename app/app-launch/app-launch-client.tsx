@@ -73,7 +73,7 @@ export function AppLaunchClient({ nextPath }: AppLaunchClientProps) {
         const supabase = createClient()
         await supabase.auth.signOut({ scope: "local" })
       } catch {
-        // Ignore local sign-out failures and continue to login.
+
       }
     }
 

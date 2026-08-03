@@ -56,7 +56,7 @@ export async function runSubscriptionChecks() {
   const now = new Date()
   const results = { notified: 0, expired: 0, abandonedCleaned: 0, errors: [] as string[] }
 
-  // 1. Clean up abandoned payments first
+
   try {
     const cleanup = await expireAbandonedPayments()
     results.abandonedCleaned = cleanup.expired
@@ -68,7 +68,7 @@ export async function runSubscriptionChecks() {
     results.errors.push(`Abandoned Cleanup: ${err instanceof Error ? err.message : 'unknown error'}`)
   }
 
-  // Find active subscriptions with upcoming due dates (processed in batches of 100)
+
   const BATCH_SIZE = 100
   let cursorId: string | undefined = undefined
   let hasMore = true
@@ -79,8 +79,8 @@ export async function runSubscriptionChecks() {
         inArray(Subscription.status, ['active', 'past_due']),
         isNotNull(Subscription.nextPaymentDue),
         cursorId ? gt(Subscription.id, cursorId) : undefined,
-        // Whop renewals are reconciled from authoritative provider state by
-        // the Whop webhook/reconciliation jobs, never by local due dates.
+
+
         notExists(
           db.select({ id: WhopMembership.id })
             .from(WhopMembership)
@@ -120,7 +120,7 @@ export async function runSubscriptionChecks() {
             'Your subscription payment is due today. Please renew to keep your access.')
           results.notified++
         } else if (daysUntilDue < 0 && daysUntilDue >= -GRACE_DAYS) {
-          // Within grace period
+
           if (sub.status !== 'past_due') {
             await db.update(Subscription).set({ status: 'past_due' }).where(eq(Subscription.id, sub.id))
           }
@@ -128,7 +128,7 @@ export async function runSubscriptionChecks() {
             `Your payment is overdue. You have ${GRACE_DAYS + daysUntilDue} day(s) left before access is suspended.`)
           results.notified++
         } else if (daysUntilDue < -GRACE_DAYS) {
-          // Past grace period - expire
+
           await db.update(Subscription).set({ status: 'expired' }).where(eq(Subscription.id, sub.id))
           await createPaymentNotification(sub.userId, 'SUBSCRIPTION_EXPIRED', 'Subscription Expired',
             'Your subscription has expired. Please renew to regain access.')
@@ -152,3 +152,4 @@ export async function runSubscriptionChecks() {
 export async function reconcilePendingPayments(params?: { userId?: string }) {
   return expireAbandonedPayments(params?.userId)
 }
+

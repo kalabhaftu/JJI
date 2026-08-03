@@ -76,7 +76,7 @@ export function transformDisplayValue({
 
   if (mode === 'rMultiple') {
     if (kind === 'rMultiple') return value
-    if (rValue === null || rValue === undefined || Number.isNaN(rValue)) return value // fallback to dollar
+    if (rValue === null || rValue === undefined || Number.isNaN(rValue)) return value
     return rValue
   }
 
@@ -165,3 +165,4 @@ export function getTradeRMultipleInfo(trade: any) {
     value: hasData ? calculateTradeRMultiple(trade) : null,
   }
 }
+

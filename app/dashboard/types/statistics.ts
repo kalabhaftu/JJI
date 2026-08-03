@@ -13,18 +13,18 @@ export interface StatisticsProps {
   profitFactor: number;
   grossLosses: number;
   grossWin: number;
-  // New metrics for enhanced statistics
+
   biggestWin: number;
   biggestLoss: number;
   averageWin: number;
   averageLoss: number;
-  // Aliased properties for backward compatibility with widgets
+
   avgWin?: number;
   avgLoss?: number;
   riskRewardRatio?: number;
-  // Payout statistics
+
   totalPayouts: number;
   nbPayouts: number;
-  // Aggregated totals
+
   totalPnL: number;
 }

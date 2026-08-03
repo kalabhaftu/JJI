@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Search } from 'lucide-react'
 
-// Define the event type to avoid relying on a global monolithic type
+
 export interface NewsEvent {
     id: string
     name: string
@@ -77,7 +77,7 @@ export function TradeNewsTab({
                         </div>
 
                         <div className="grid grid-cols-1 gap-6 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-                            {/* High-Impact USD Events Section */}
+                            {}
                             {(() => {
                                 const highImpactUsdIds = ['us-nfp', 'us-cpi', 'us-core-cpi', 'us-fomc-rate', 'us-fomc-statement', 'us-fed-chair']
                                 const highImpactEvents = filteredNewsEvents.filter(e => highImpactUsdIds.includes(e.id))

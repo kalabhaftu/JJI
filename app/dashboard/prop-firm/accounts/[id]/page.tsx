@@ -85,7 +85,6 @@ export default function AccountDetailPage() {
     enabled: !!accountId
   })
 
-  // Fetch complete data
   const fetchCompleteData = useCallback(async () => {
     setIsLoadingData(true)
     setDataError(null)
@@ -120,7 +119,6 @@ export default function AccountDetailPage() {
     }
   }, [realtimeError, router])
 
-  // Initial data fetch
   useEffect(() => {
     if (realtimeAccount && accountId && !hasFetchedDataRef.current) {
       hasFetchedDataRef.current = true
@@ -128,12 +126,11 @@ export default function AccountDetailPage() {
     }
   }, [realtimeAccount, accountId, fetchCompleteData])
 
-  // Subscribe to realtime changes for trades and payouts
   useDatabaseRealtime({
     userId: user?.id,
     enabled: !!accountId && !!user?.id,
     onTradeChange: (change) => {
-      // Refresh trades when trade changes for this account's phases
+
       if (realtimeAccount) {
         const tradePhaseAccountId = (change.newRecord?.phaseAccountId || change.oldRecord?.phaseAccountId) as string | undefined
         if (tradePhaseAccountId) {
@@ -145,7 +142,7 @@ export default function AccountDetailPage() {
       }
     },
     onAccountChange: (change) => {
-      // Refresh payouts when PhaseAccount or MasterAccount changes
+
       if (change.table === 'PhaseAccount' || change.table === 'MasterAccount') {
         const changedId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
         if (change.table === 'MasterAccount' && changedId === accountId) {
@@ -160,7 +157,6 @@ export default function AccountDetailPage() {
     }
   })
 
-  // Sync realtime data
   useEffect(() => {
     if (realtimeAccount) {
       const isFunded = isFundedPhase(realtimeAccount.evaluationType, realtimeAccount.currentPhase?.phaseNumber)
@@ -247,7 +243,6 @@ export default function AccountDetailPage() {
     }
   }, [phaseSummaries])
 
-  // Computed values
   const stats = useMemo(() => {
     if (phaseSummaries.size > 0) {
       const values = Array.from(phaseSummaries.values())
@@ -304,12 +299,10 @@ export default function AccountDetailPage() {
     }
   }
 
-  // Loading state
   if (isLoading || (!accountData && !realtimeError)) {
     return <DetailPageSkeleton />
   }
 
-  // Error states
   if (realtimeError) {
     if (realtimeError.includes('404') || realtimeError.includes('not found')) {
       return (
@@ -343,7 +336,7 @@ export default function AccountDetailPage() {
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-        {/* Header */}
+        {            }
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -419,7 +412,7 @@ export default function AccountDetailPage() {
           </div>
         </motion.div>
 
-        {/* Breach Alert */}
+        {                  }
         <AnimatePresence>
           {drawdown.isBreached && (
             <motion.div
@@ -437,7 +430,7 @@ export default function AccountDetailPage() {
           )}
         </AnimatePresence>
 
-        {/* Key Metrics */}
+        {                 }
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -480,7 +473,7 @@ export default function AccountDetailPage() {
           />
         </motion.div>
 
-        {/* Progress Bar (Non-funded only) */}
+        {                                    }
         {!currentPhase.isFunded && currentPhase.profitTarget > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -503,7 +496,7 @@ export default function AccountDetailPage() {
           </motion.div>
         )}
 
-        {/* Tabs */}
+        {          }
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -518,9 +511,9 @@ export default function AccountDetailPage() {
               <TabsTrigger value="settings">Settings</TabsTrigger>
             </TabsList>
 
-            {/* Overview Tab */}
+            {                  }
             <TabsContent value="overview" className="space-y-6">
-              {/* Quick Stats */}
+              {                 }
               {stats && (
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   <Card>
@@ -556,7 +549,7 @@ export default function AccountDetailPage() {
                 </div>
               )}
 
-              {/* Phase Performance */}
+              {                       }
               {accountData.phases?.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -608,7 +601,7 @@ export default function AccountDetailPage() {
                 </Card>
               )}
 
-              {/* Recent Trades Preview */}
+              {                           }
               {tradesData.length > 0 && (
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
@@ -642,7 +635,7 @@ export default function AccountDetailPage() {
               )}
             </TabsContent>
 
-            {/* Trades Tab */}
+            {                }
             <TabsContent value="trades">
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between">
@@ -707,10 +700,10 @@ export default function AccountDetailPage() {
               </Card>
             </TabsContent>
 
-            {/* Payouts Tab */}
+            {                 }
             {currentPhase.isFunded && (
               <TabsContent value="payouts" className="space-y-6">
-                {/* Eligibility */}
+                {                 }
                 {payoutEligibility && (
                   <Card>
                     <CardHeader>
@@ -761,7 +754,7 @@ export default function AccountDetailPage() {
                   </Card>
                 )}
 
-                {/* Payout History */}
+                {                    }
                 <Card>
                   <CardHeader>
                     <CardTitle className="text-base">Payout History</CardTitle>
@@ -794,7 +787,7 @@ export default function AccountDetailPage() {
               </TabsContent>
             )}
 
-            {/* History Tab */}
+            {                 }
             <TabsContent value="history">
               <HistoryTab
                 accountName={account.name}
@@ -822,7 +815,7 @@ export default function AccountDetailPage() {
               />
             </TabsContent>
 
-            {/* Settings Tab */}
+            {                  }
             <TabsContent value="settings" className="space-y-6">
               <Card>
                 <CardHeader>

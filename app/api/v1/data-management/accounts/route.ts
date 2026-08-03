@@ -23,19 +23,19 @@ export async function GET(request: NextRequest) {
     }
     const internalUserId = identity.internalUserId
 
-    // 1. Fetch ALL LIVE accounts (unfiltered)
+
     const liveAccounts = await db.query.Account.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       orderBy: (table, { desc }) => [desc(table.createdAt)]
     });
 
-    // 2. Fetch ALL PROP FIRM accounts (unfiltered)
+
     const propFirmAccounts = await db.query.MasterAccount.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       with: { PhaseAccount: { orderBy: (table, { asc }) => [asc(table.phaseNumber)] } }
     });
 
-    // 3. Fetch all trades once and build grouped execution counts
+
     const allTrades = await db.query.Trade.findMany({
       where: (table, { eq }) => eq(table.userId, internalUserId),
       columns: TRADE_COUNT_SELECT,
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 4. Normalize to UnifiedAccount schema (Unfiltered)
+
     const unified: any[] = []
 
     liveAccounts.forEach(acc => {
@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
     propFirmAccounts.forEach(master => {
       if (master.PhaseAccount && master.PhaseAccount.length > 0) {
         master.PhaseAccount.forEach((phase: any) => {
-          // EXCLUDE 'pending' and 'pending_approval' per user request
+
           if (phase.status === 'pending' || phase.status === 'pending_approval') {
             return
           }

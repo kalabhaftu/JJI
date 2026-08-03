@@ -59,7 +59,7 @@ export async function GET(request: Request) {
              requestId,
              userId: data.user.id,
            })
-           // Auth succeeded; DB sync can happen on the next page load.
+
          }
 
         logActivity({ userId: data.user.id, action: 'USER_LOGIN', entity: 'Auth' })

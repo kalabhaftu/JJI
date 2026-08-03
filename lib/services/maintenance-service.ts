@@ -3,15 +3,7 @@ import { db } from '@/lib/db/client'
 import { ActivityLog, ImportJob } from '@/lib/db/schema'
 import { lt, and, inArray } from 'drizzle-orm'
 
-/**
- * Maintenance Service
- * Handles periodic database cleanup and optimization tasks.
- */
 
-/**
- * Clean up old activity logs.
- * Deletes logs older than the specified number of days.
- */
 async function cleanupActivityLogs(daysOld = 90) {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - daysOld)
@@ -25,10 +17,7 @@ async function cleanupActivityLogs(daysOld = 90) {
   return { deleted: result.length }
 }
 
-/**
- * Clean up old import jobs.
- * Deletes completed or failed import jobs older than the specified number of days.
- */
+
 async function cleanupImportJobs(daysOld = 7) {
   const cutoff = new Date()
   cutoff.setDate(cutoff.getDate() - daysOld)
@@ -47,9 +36,7 @@ async function cleanupImportJobs(daysOld = 7) {
   return { deleted: result.length }
 }
 
-/**
- * Orchestrator for all daily maintenance tasks.
- */
+
 export async function runDailyMaintenance() {
   const results = {
     activityLogs: { deleted: 0 },
@@ -71,3 +58,4 @@ export async function runDailyMaintenance() {
 
   return results
 }
+

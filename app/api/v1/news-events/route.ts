@@ -1,8 +1,4 @@
-/**
- * News Events API (server-only data)
- * Returns major economic news events. Data is loaded server-side only;
- * client components must fetch via this endpoint (never import lib/major-news-events).
- */
+
 
 import { NextRequest } from 'next/server'
 import { MAJOR_NEWS_EVENTS } from '@/lib/constants/major-news-events'

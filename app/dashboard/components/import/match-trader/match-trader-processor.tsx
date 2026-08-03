@@ -37,7 +37,7 @@ const MatchTraderProcessor = ({
 
       const trades: TradeType[] = []
 
-      // Create case-insensitive header lookup helper
+
       const findHeaderIndex = (possibleNames: string[]) => {
         const normalizedHeaders = headers.map(h => h.toLowerCase().trim())
         for (const name of possibleNames) {
@@ -47,24 +47,24 @@ const MatchTraderProcessor = ({
         return -1
       }
 
-      // Parse date in multiple formats (ISO and DD/MM/YYYY)
+
       const parseDate = (dateStr: string): Date => {
         if (!dateStr) return new Date()
-        
-        // Try ISO format first (2025-11-05T14:59:06.38)
+
+
         if (dateStr.includes('T')) {
-          const date = new Date(dateStr + 'Z') // Add 'Z' to indicate UTC
+          const date = new Date(dateStr + 'Z')
           if (!isNaN(date.getTime())) return date
         }
         
-        // Try DD/MM/YYYY HH:MM:SS format (05/11/2025 14:59:06)
+
         const ddmmyyyyMatch = dateStr.match(/(\d{2})\/(\d{2})\/(\d{4})\s+(\d{2}):(\d{2}):(\d{2})/)
         if (ddmmyyyyMatch) {
           const [, day, month, year, hour, minute, second] = ddmmyyyyMatch
-          // Create UTC date from components
+
           return new Date(Date.UTC(
             parseInt(year!), 
-            parseInt(month!) - 1, // Month is 0-indexed
+            parseInt(month!) - 1,
             parseInt(day!),
             parseInt(hour!),
             parseInt(minute!),
@@ -72,11 +72,11 @@ const MatchTraderProcessor = ({
           ))
         }
         
-        // Fallback to direct parsing
+
         return new Date(dateStr)
       }
 
-      // PERFORMANCE FIX: Calculate header indices ONCE before the loop (not for every row!)
+
       const openTimeIdx = findHeaderIndex(['Open time', 'Open Time'])
       const closeTimeIdx = findHeaderIndex(['Close time', 'Close Time'])
       const openPriceIdx = findHeaderIndex(['Open price', 'Open Price'])
@@ -94,27 +94,27 @@ const MatchTraderProcessor = ({
 
       for (const row of csvData) {
 
-        // Get values from row
+
         const entryDateStr = openTimeIdx !== -1 ? row[openTimeIdx] : null
         const closeDateStr = closeTimeIdx !== -1 ? row[closeTimeIdx] : null
         
         if (!entryDateStr || !closeDateStr) {
-          continue // Skip invalid rows (not return null!)
+          continue
         }
 
-        // Parse dates using smart parser
+
         const entryDate = parseDate(entryDateStr)
         const closeDate = parseDate(closeDateStr)
 
-        // Validate dates
+
         if (isNaN(entryDate.getTime()) || isNaN(closeDate.getTime())) {
           continue
         }
 
-        // Calculate time in position in seconds
+
         const timeInPosition = Math.round((closeDate.getTime() - entryDate.getTime()) / 1000)
 
-        // Parse prices and handle potential string/number conversion
+
         const entryPrice = parseFloat(openPriceIdx !== -1 ? (row[openPriceIdx] ?? '0') : '0') || 0
         const closePrice = parseFloat(closePriceIdx !== -1 ? (row[closePriceIdx] ?? '0') : '0') || 0
         const quantity = parseFloat(volumeIdx !== -1 ? (row[volumeIdx] ?? '0') : '0') || 0
@@ -122,13 +122,13 @@ const MatchTraderProcessor = ({
         const commission = parseFloat(commissionIdx !== -1 ? (row[commissionIdx] ?? '0') : '0') || 0
         const swap = parseFloat(swapIdx !== -1 ? (row[swapIdx] ?? '0') : '0') || 0
         
-        // Parse Stop Loss and Take Profit (treat 0.00 as null/incomplete)
+
         const stopLossRaw = stopLossIdx !== -1 ? row[stopLossIdx] : null
         const takeProfitRaw = takeProfitIdx !== -1 ? row[takeProfitIdx] : null
         const stopLoss = stopLossRaw && parseFloat(stopLossRaw) !== 0 ? stopLossRaw : null
         const takeProfit = takeProfitRaw && parseFloat(takeProfitRaw) !== 0 ? takeProfitRaw : null
 
-        // Get instrument and side
+
         const instrument = symbolIdx !== -1 ? (row[symbolIdx] ?? '') : ''
         const side = sideIdx !== -1 ? (row[sideIdx] ?? '') : ''
         const tradeId = idIdx !== -1 ? (row[idIdx] ?? '') : ''
@@ -139,28 +139,28 @@ const MatchTraderProcessor = ({
           accountNumber,
           instrument,
           entryId: tradeId,
-          quantity: Math.abs(quantity), // Ensure positive quantity
+          quantity: Math.abs(quantity),
           entryPrice: entryPrice.toString(),
           closePrice: closePrice.toString(),
           entryDate: entryDate.toISOString(),
           closeDate: closeDate.toISOString(),
-          pnl: pnl + swap, // Include swap in PnL
+          pnl: pnl + swap,
           timeInPosition,
-          side: side.toUpperCase(), // Normalize to uppercase (BUY/SELL)
+          side: side.toUpperCase(),
           commission,
-          phaseAccountId: null, // Will be set by automatic linking during save
+          phaseAccountId: null,
           userId: currentUser.id,
           createdAt: new Date(),
-          comment: null, // Don't set reason as comment - reasons should be displayed separately
-          closeReason: reason || null, // Store close reason in dedicated field
+          comment: null,
+          closeReason: reason || null,
           cardPreviewImage: null,
           tradingModel: null,
           groupId: null,
           tags: null,
-          // Prisma optional fields
+
           symbol: null,
-          entryTime: entryDate, // CRITICAL FIX: Set actual entry time
-          exitTime: closeDate, // CRITICAL FIX: Set actual exit time for historical breach detection
+          entryTime: entryDate,
+          exitTime: closeDate,
           accountId: null,
           stopLoss: stopLoss,
           takeProfit: takeProfit,
@@ -176,7 +176,7 @@ const MatchTraderProcessor = ({
     processData()
   }, [csvData, headers, setProcessedTrades, accountNumber, user, supabaseUser])
 
-  // Show processing message when initially processing
+
   if (isProcessing) {
     return (
       <div className="flex items-center justify-center h-full">

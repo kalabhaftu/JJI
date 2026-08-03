@@ -30,7 +30,6 @@ import { z } from 'zod'
 import { apiRequest } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 
-// Schema for manual mode
 const manualBacktestSchema = z.object({
   pair: z.string().min(1, 'Pair is required'),
   direction: z.enum(['BUY', 'SELL']),
@@ -47,7 +46,6 @@ const manualBacktestSchema = z.object({
   tags: z.string().optional(),
 })
 
-// Schema for simple R:R mode
 const simpleBacktestSchema = z.object({
   pair: z.string().min(1, 'Pair is required'),
   direction: z.enum(['BUY', 'SELL']),
@@ -73,9 +71,8 @@ interface AddBacktestFormProps {
   onDirtyChange?: (isDirty: boolean) => void
 }
 
-// Common trading instruments with their typical price ranges
 const COMMON_INSTRUMENTS = [
-  // Forex Majors
+
   { symbol: 'EUR/USD', category: 'Forex', placeholder: '1.08500' },
   { symbol: 'GBP/USD', category: 'Forex', placeholder: '1.26500' },
   { symbol: 'USD/JPY', category: 'Forex', placeholder: '148.500' },
@@ -84,7 +81,6 @@ const COMMON_INSTRUMENTS = [
   { symbol: 'USD/CAD', category: 'Forex', placeholder: '1.34200' },
   { symbol: 'NZD/USD', category: 'Forex', placeholder: '0.60500' },
 
-  // Forex Crosses
   { symbol: 'EUR/GBP', category: 'Forex', placeholder: '0.85500' },
   { symbol: 'EUR/JPY', category: 'Forex', placeholder: '161.500' },
   { symbol: 'GBP/JPY', category: 'Forex', placeholder: '188.500' },
@@ -217,19 +213,19 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
     const currentOutcome = watch('outcome')
 
     if (inputMode === 'manual' && currentPnL !== 0) {
-      // In manual mode, auto-detect outcome from P&L
+
       const detectedOutcome = currentPnL > 0 ? 'WIN' : currentPnL < 0 ? 'LOSS' : 'BREAKEVEN'
 
       if (currentOutcome !== detectedOutcome) {
         setValue('outcome', detectedOutcome)
       }
     } else if (inputMode === 'simple') {
-      // In simple mode, validate that outcome matches the risk/reward logic
+
       const risk = parseFloat(watch('riskPoints') || '0')
       const reward = parseFloat(watch('rewardPoints') || '0')
 
       if (risk > 0 && reward > 0) {
-        // Ensure P&L calculation matches outcome
+
         const expectedPnL = calculatePnL()
 
         if (currentOutcome === 'WIN' && expectedPnL <= 0) {
@@ -379,7 +375,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
         entryPrice = data.entryPrice
         exitPrice = data.exitPrice
         stopLoss = data.stopLoss
-        takeProfit = data.exitPrice // Use exit price as take profit
+        takeProfit = data.exitPrice
       }
 
       const backtestData = {
@@ -420,7 +416,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Trade Setup */}
+      {                 }
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">

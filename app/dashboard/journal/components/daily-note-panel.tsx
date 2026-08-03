@@ -98,7 +98,6 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
     return () => setIsMounted(false)
   }, [])
 
-  // Fetch existing note for this date
   useEffect(() => {
     if (!date) return
 
@@ -134,7 +133,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
 
     try {
       if (note) {
-        // Update existing
+
         const res = await fetch(`/api/v1/journal/daily/${note.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -146,7 +145,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         queryClient.invalidateQueries({ queryKey: ['journal-data'] })
         toast.success('Daily note updated')
       } else {
-        // Create new
+
         const res = await fetch('/api/v1/journal/daily', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -201,7 +200,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         transition={{ type: 'spring', damping: 25, stiffness: 250 }}
         className="fixed inset-y-0 right-0 z-[10001] w-full sm:w-[480px] bg-background border-l border-border/40 shadow-2xl flex flex-col"
       >
-        {/* Header */}
+        {            }
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/30 bg-card/50">
           <div>
             <h2 className="text-sm font-black uppercase tracking-[0.15em] text-foreground">
@@ -237,7 +236,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
           </div>
         ) : (
           <>
-            {/* Emotion Selector */}
+            {                      }
             <div className="px-6 py-4 border-b border-border/20">
               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-3">How were you feeling?</p>
               <div className="mb-3 rounded-2xl border border-border/25 bg-muted/15 px-3 py-2">
@@ -278,7 +277,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
               </div>
             </div>
 
-            {/* Rich Text Editor */}
+            {                      }
             <div className="flex-1 overflow-y-auto px-6 py-4">
               <p className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-3">Daily Journal Note</p>
               <LexicalEditor
@@ -289,7 +288,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
               />
             </div>
 
-            {/* Actions */}
+            {             }
             <div className="px-6 py-4 border-t border-border/30 bg-card/30 flex items-center justify-between">
               <div>
                 {note && (
@@ -318,7 +317,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         )}
       </motion.div>
 
-      {/* Backdrop */}
+      {              }
       <motion.div
         key={`daily-note-backdrop-${dateStr}`}
         initial={{ opacity: 0 }}

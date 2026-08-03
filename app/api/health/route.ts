@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Check DB
+
     await db.execute('SELECT 1')
     status.database = 'up'
   } catch (error) {

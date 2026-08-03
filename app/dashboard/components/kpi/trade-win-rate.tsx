@@ -35,7 +35,7 @@ const TradeWinRate = React.memo(function TradeWinRate({ size }: TradeWinRateProp
   return (
     <WidgetCard isKpi>
       <div className="h-full flex flex-col justify-between">
-        {/* Header with title and info */}
+        {}
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-muted-foreground">
             Trade win %
@@ -56,13 +56,13 @@ const TradeWinRate = React.memo(function TradeWinRate({ size }: TradeWinRateProp
           </TooltipProvider>
         </div>
 
-        {/* Main content: large value + segmented gauge */}
+        {}
         <div className="flex items-center justify-between gap-3">
           <span className="text-[1.65rem] min-[768px]:text-[1.85rem] min-[1440px]:text-3xl font-bold tracking-tight text-foreground">
             {!hasData ? <span className="text-muted-foreground text-xl">--</span> : isPrivacyMode ? '****%' : `${winRate.toFixed(2)}%`}
           </span>
 
-          {/* Segmented gauge showing wins/breakeven/losses */}
+          {}
           <CircularProgress
             value={!hasData ? 0 : isPrivacyMode ? 0 : winRate}
             size={80}

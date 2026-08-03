@@ -29,16 +29,16 @@ import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
 import { useAccounts } from '@/hooks/use-accounts'
 
-// Common instruments for quick selection
+
 const COMMON_INSTRUMENTS = [
-  'ES', 'NQ', 'YM', 'RTY', // Futures
-  'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD', // Forex majors
-  'XAUUSD', 'XAGUSD', // Metals
-  'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA', // Stocks
-  'BTC/USD', 'ETH/USD', // Crypto
+  'ES', 'NQ', 'YM', 'RTY',
+  'EURUSD', 'GBPUSD', 'USDJPY', 'AUDUSD',
+  'XAUUSD', 'XAGUSD',
+  'AAPL', 'MSFT', 'GOOGL', 'AMZN', 'TSLA',
+  'BTC/USD', 'ETH/USD',
 ] as const
 
-// Trading sessions
+
 const TRADING_SESSIONS = [
   { value: 'asian', label: 'Asian Session' },
   { value: 'london', label: 'London Session' }, 
@@ -46,14 +46,14 @@ const TRADING_SESSIONS = [
   { value: 'overlap', label: 'Session Overlap' },
 ] as const
 
-// Market bias options
+
 const MARKET_BIAS = [
   { value: 'bullish', label: 'Bullish' },
   { value: 'bearish', label: 'Bearish' },
   { value: 'neutral', label: 'Neutral' },
 ] as const
 
-// Trade types
+
 const TRADE_TYPES = [
   { value: 'scalp', label: 'Scalp' },
   { value: 'intraday', label: 'Intraday' },
@@ -61,7 +61,7 @@ const TRADE_TYPES = [
   { value: 'position', label: 'Position' },
 ] as const
 
-// Emotional states
+
 const EMOTIONAL_STATES = [
   { value: 'confident', label: 'Confident' },
   { value: 'calm', label: 'Calm' },
@@ -72,9 +72,9 @@ const EMOTIONAL_STATES = [
   { value: 'anxious', label: 'Anxious' },
 ] as const
 
-// Form schema
+
 const tradeFormSchema = z.object({
-  // Basic execution details
+
   instrument: z.string().min(1, 'Instrument is required'),
   accountNumber: z.string().min(1, 'Account is required'),
   quantity: z.number().min(1, 'Quantity must be at least 1'),
@@ -88,11 +88,11 @@ const tradeFormSchema = z.object({
   pnl: z.number(),
   commission: z.number().default(0),
   
-  // Risk management (required)
+
   stopLoss: z.string().min(1, 'Stop Loss is required'),
   takeProfit: z.string().min(1, 'Take Profit is required'),
   
-  // Analysis fields (optional)
+
   session: z.string().optional(),
   bias: z.string().optional(),
   tradeType: z.string().optional(),
@@ -148,7 +148,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
     }
   })
 
-  // Watch specific form values for calculations (not all values to prevent infinite loops)
+
   const entryPrice = watch('entryPrice')
   const closePrice = watch('closePrice')
   const quantity = watch('quantity')
@@ -180,19 +180,18 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
     }
   }, [entryDate, entryTime, closeDate, closeTime])
 
-  // Get unified accounts for dropdown - same as CSV import
+
   const { accounts: allAccounts, isLoading: isLoadingAccounts } = useAccounts()
   
-  // For manual trade entry, only show active phases (where user can add trades)
-  // Use same logic as account-selection component
+
   const unifiedAccounts = React.useMemo(() => {
     return allAccounts.filter(acc => {
-      // Show all live accounts
+
       if (acc.accountType === 'live') return true
       
-      // For prop-firm accounts: only show active phases (NOT passed or failed)
+
       if (acc.accountType === 'prop-firm') {
-        // Check phase status - must be active (not passed, not failed)
+
         const phaseStatus = (acc as any).currentPhase?.status || acc.status
         return phaseStatus === 'active'
       }
@@ -216,7 +215,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
     setPhaseValidationError(null)
     
     try {
-      // Check if this is a prop firm account and validate phase ID
+
       if (data.accountNumber) {
         try {
           const phaseCheckResponse = await fetch(`/api/v1/prop-firm/accounts/validate-trade`, {
@@ -242,19 +241,19 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
             }
           }
         } catch (error) {
-          // If it's not a prop firm account or validation API doesn't exist, continue normally
+
         }
       }
-      // Combine date and time for entry/close timestamps
+
       const entryDateTime = `${data.entryDate} ${data.entryTime}`
       const closeDateTime = `${data.closeDate} ${data.closeTime}`
       
-      // Calculate time in position (in hours)
+
       const entryDate = new Date(`${data.entryDate}T${data.entryTime}`)
       const closeDate = new Date(`${data.closeDate}T${data.closeTime}`)
       const timeInPosition = (closeDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60)
 
-      // Create trade object
+
       const tradeData: any = {
         accountNumber: data.accountNumber,
         instrument: data.instrument,
@@ -273,7 +272,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
         groupId: null,
       }
 
-      // Generate unique ID for the trade
+
       const tradeId = generateTradeHash({ ...tradeData, userId: currentUser.id })
       const completeTrade: any = {
         ...tradeData,
@@ -301,17 +300,17 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
         description: `Trade successfully saved and linked to ${accountName}`,
       })
 
-      // Invalidate accounts cache to trigger refresh
+
       const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
       invalidateAccountsCache('trade saved')
 
-      // Navigate back to trades list
+
       router.push(`/dashboard/prop-firm/accounts/${accountId}/trades`)
 
     } catch (error) {
       reportClientError(error, { operation: 'save-manual-trade-card', route: '/api/v1/trades' })
       
-      // Provide more specific error messages based on error type
+
       let errorMessage = 'An error occurred while saving the trade. Please try again.'
       let errorTitle = 'Save Failed'
       
@@ -346,7 +345,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
       </CardHeader>
       <CardContent>
         <form id="manual-trade-form" onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
-        {/* Phase Validation Error */}
+        {}
         {phaseValidationError && (
           <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
             <div className="flex items-center">
@@ -360,7 +359,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
           </div>
         )}
         
-        {/* Basic Trade Information */}
+        {}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Trade Execution</CardTitle>
@@ -497,7 +496,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
           </CardContent>
         </Card>
 
-        {/* Date & Time */}
+        {}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Timing</CardTitle>
@@ -549,7 +548,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
           </CardContent>
         </Card>
 
-        {/* P&L and Commission */}
+        {}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center">
@@ -591,7 +590,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
           </CardContent>
         </Card>
 
-        {/* Analysis & Context (Optional) */}
+        {}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base">Analysis & Context (Optional)</CardTitle>
@@ -703,7 +702,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
           </CardContent>
         </Card>
 
-        {/* Form Actions */}
+        {}
         <div className="flex justify-end space-x-3">
           <Button
             type="button"

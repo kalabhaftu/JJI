@@ -52,7 +52,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
       const bgColor = getComputedStyle(document.documentElement).getPropertyValue('--background').trim()
       const resolvedBg = bgColor ? `hsl(${bgColor})` : '#0d0d0d'
 
-      // Load actual logo image
+
       const logoImg = new Image()
       logoImg.crossOrigin = 'anonymous'
       await new Promise<void>((resolve, reject) => {
@@ -80,16 +80,16 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
         },
       })
 
-      // Logo bar height - increased for larger logo
+
       const logoBarHeight = 60
       const cardW = cardCanvas.width
       const cardH = cardCanvas.height
-      // Padding only for gradient (around the entire card+logo unit)
+
       const withGradient = variant !== 'basic'
       const selectedGradient = withGradient ? resolveCalendarGradientPreset(variant) : null
       const padding = withGradient ? Math.round(28 * scale) : 0
       const totalW = cardW + padding * 2
-      // Logo bar is INSIDE the card, so total height = card + logo bar + padding (if gradient)
+
       const totalH = cardH + Math.round(logoBarHeight * scale) + (withGradient ? padding * 2 : 0)
 
       const out = document.createElement('canvas')
@@ -97,7 +97,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
       out.height = totalH
       const ctx = out.getContext('2d')!
 
-      // Combined card height including logo bar
+
       const combinedCardH = cardH + Math.round(logoBarHeight * scale)
       
       if (withGradient && selectedGradient) {
@@ -109,27 +109,26 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
         ctx.shadowOffsetY = 12 * scale
         const r = 16 * scale
         clipCalendarCardSurface(ctx, padding, padding, cardW, combinedCardH, r, resolvedBg)
-        // Draw the card content
+
         ctx.drawImage(cardCanvas, padding, padding)
         ctx.restore()
       } else {
-        // For basic: no padding, logo is attached to card
+
         ctx.fillStyle = resolvedBg
         ctx.fillRect(0, 0, totalW, totalH)
         ctx.drawImage(cardCanvas, 0, 0)
       }
 
-      // Logo bar is INSIDE the card area (same dark background)
-      // For gradient: padding + cardH, for basic: just cardH
+
       const barY = (withGradient ? padding : 0) + cardH
       const logoYPos = barY + Math.round((logoBarHeight / 2) * scale)
       
-      // Draw actual logo image at the calendar marker size.
+
       const logoSize = Math.round(20 * scale)
       const logoX = totalW / 2 - Math.round(35 * scale)
       ctx.drawImage(logoImg, logoX, logoYPos - logoSize / 2, logoSize, logoSize)
       
-      // Draw text - LARGER font
+
       const fontSize = Math.round(14 * scale)
       ctx.font = `800 ${fontSize}px "DM Sans", -apple-system, BlinkMacSystemFont, sans-serif`
       ctx.fillStyle = 'rgba(255,255,255,0.5)'
@@ -180,14 +179,14 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
   }, [calendarData, currentDate])
 
   return (
-    // Outer wrapper is what html2canvas captures - it covers the full widget area
+
     <div ref={calendarRef} className="relative h-full w-full max-[767px]:h-auto max-[767px]:min-h-full">
       <WidgetCard noPadding data-widget-card="true" className="flex h-full flex-col overflow-hidden max-[767px]:h-auto max-[767px]:min-h-full max-[767px]:overflow-visible">
 
-        {/* ── Single-line header ── */}
+        {}
         <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-border/20 bg-muted/5 flex-shrink-0 min-w-0">
 
-          {/* Left: nav + month label */}
+          {}
           <div className="flex items-center gap-1 shrink-0">
             <div className="flex items-center gap-0.5 bg-muted/30 rounded-lg p-0.5 border border-border/30">
               <Button variant="ghost" size="icon" onClick={handlePrev} className="h-6 w-6 hover:bg-background" aria-label="Previous month">
@@ -210,7 +209,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
             </Button>
           </div>
 
-          {/* Right: stats + snapshot (hidden in screenshot) */}
+          {}
           <div className="flex items-center gap-1.5 shrink-0">
             <div className={cn(
               "px-1.5 py-0.5 rounded border text-[10px] font-black",
@@ -223,7 +222,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
             <div className="px-1.5 py-0.5 rounded text-[10px] font-black bg-indigo-100 text-indigo-700 border border-indigo-200 dark:bg-indigo-500/10 dark:text-indigo-300 dark:border-indigo-500/20">
               {tradedDaysCount}d
             </div>
-            {/* Screenshot dropdown - icon only, hidden in screenshot */}
+            {}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -249,7 +248,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
           </div>
         </div>
 
-        {/* Calendar grid - fills available height, no vertical overflow */}
+        {}
         <div className="flex-1 min-h-0 overflow-hidden max-[767px]:overflow-visible">
           <MonthlyView
             hideWeekends

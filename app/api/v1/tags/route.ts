@@ -8,7 +8,7 @@ import { CacheHeaders } from '@/lib/api-cache-headers'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// GET - Fetch all tags for a user
+
 export async function GET(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create a new tag
+
 export async function POST(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')

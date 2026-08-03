@@ -1,21 +1,9 @@
-/**
- * Comprehensive Cache Management System
- *
- * This module provides centralized cache management for:
- * - In-memory caches (React hooks)
- * - LocalStorage (Zustand stores, user preferences)
- * - SessionStorage
- * - Next.js server caches
- * - Service Worker caches
- */
 
 
 const CACHE_VERSION_KEY = 'app_cache_version'
-const CURRENT_CACHE_VERSION = '2.0.0' // Increment to force cache clear
+const CURRENT_CACHE_VERSION = '2.0.0'
 
-/**
- * Cache version management
- */
+
 function checkCacheVersion(): boolean {
   if (typeof window === 'undefined') return true
   
@@ -41,16 +29,14 @@ function updateCacheVersion(): void {
   }
 }
 
-/**
- * LocalStorage cache management
- */
+
 interface LocalStorageCacheItem {
   key?: string
   pattern?: RegExp
   description: string
 }
 
-// All localStorage keys used in the app
+
 const LOCAL_STORAGE_KEYS: LocalStorageCacheItem[] = [
   { key: 'accounts-store', description: 'Account list cache' },
   { key: 'equity-chart-store', description: 'Equity chart settings' },
@@ -65,9 +51,7 @@ const LOCAL_STORAGE_KEYS: LocalStorageCacheItem[] = [
   { pattern: /^table-column-/, description: 'Table column visibility' },
 ]
 
-/**
- * Get all cache keys matching patterns
- */
+
 function getAllCacheKeys(excludeKeys: string[] = []): string[] {
   if (typeof window === 'undefined') return []
   
@@ -86,9 +70,7 @@ function getAllCacheKeys(excludeKeys: string[] = []): string[] {
   return keys
 }
 
-/**
- * Clear specific localStorage cache keys
- */
+
 function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner-dismissed', 'jji-cookie-notice-dismissed', 'jji-telemetry-consent']): number {
   if (typeof window === 'undefined') return 0
   
@@ -117,9 +99,7 @@ function clearLocalStorageCache(keysToKeep: string[] = ['theme', 'consent-banner
   return clearedCount
 }
 
-/**
- * Clear SessionStorage
- */
+
 function clearSessionStorage(): number {
   if (typeof window === 'undefined') return 0
   
@@ -132,9 +112,7 @@ function clearSessionStorage(): number {
   }
 }
 
-/**
- * Clear Service Worker caches
- */
+
 async function clearServiceWorkerCaches(): Promise<number> {
   if (typeof window === 'undefined' || !('caches' in window)) return 0
   
@@ -154,9 +132,7 @@ async function clearServiceWorkerCaches(): Promise<number> {
   return clearedCount
 }
 
-/**
- * Clear browser cache (IndexedDB)
- */
+
 export async function clearIndexedDB(): Promise<number> {
   if (typeof window === 'undefined' || !('indexedDB' in window)) return 0
   
@@ -177,9 +153,7 @@ export async function clearIndexedDB(): Promise<number> {
   return clearedCount
 }
 
-/**
- * Clear Next.js client-side router cache
- */
+
 function clearNextJSCache(): void {
   if (typeof window === 'undefined') return
   
@@ -191,9 +165,7 @@ function clearNextJSCache(): void {
   }
 }
 
-/**
- * Comprehensive cache clear (all except user preferences)
- */
+
 export async function clearAllCaches(options: {
   keepTheme?: boolean
   keepConsent?: boolean
@@ -208,8 +180,8 @@ export async function clearAllCaches(options: {
   const {
     keepTheme = true,
     keepConsent = true,
-    clearServiceWorker = false, // Conservative by default
-    clearIndexedDB: shouldClearIndexedDB = false // Conservative by default
+    clearServiceWorker = false,
+    clearIndexedDB: shouldClearIndexedDB = false
   } = options
   
   const keysToKeep: string[] = []
@@ -236,9 +208,7 @@ export async function clearAllCaches(options: {
   return results
 }
 
-/**
- * Check and auto-clear stale caches on app load
- */
+
 export async function autoCleanStaleCache(): Promise<boolean> {
   if (typeof window === 'undefined') return false
   
@@ -257,9 +227,7 @@ export async function autoCleanStaleCache(): Promise<boolean> {
   return false
 }
 
-/**
- * Clear account-related caches only
- */
+
 export function clearAccountCaches(): number {
   if (typeof window === 'undefined') return 0
   
@@ -289,9 +257,7 @@ export function clearAccountCaches(): number {
   return clearedCount
 }
 
-/**
- * Get cache statistics
- */
+
 export function getCacheStats(): {
   version: string
   localStorageSize: number
@@ -332,3 +298,4 @@ export function getCacheStats(): {
     sessionStorageKeys
   }
 }
+

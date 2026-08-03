@@ -38,9 +38,9 @@ export async function verifyOtp(email: string, token: string, type: 'email' | 's
 
     if (data?.user) {
       const verifiedUser = data.user
-      // After successful OTP verification, ensure user exists in database (if DB is available)
+
       try {
-        // Check if user already exists in our database with this email
+
         const existingUser = await safeDbOperation(
           () => db.query.User.findFirst({
             where: (table, { eq }) => eq(table.email, email)
@@ -49,7 +49,7 @@ export async function verifyOtp(email: string, token: string, type: 'email' | 's
         )
 
         if (existingUser && existingUser.auth_user_id !== verifiedUser.id) {
-          // User exists with different auth ID - update the auth_user_id instead of creating conflict
+
           const newAuthId = verifiedUser.id
           await safeDbOperation(
             () => db.update(schema.User).set({ auth_user_id: newAuthId }).where(eq(schema.User.email, email)),
@@ -76,7 +76,7 @@ export async function verifyOtp(email: string, token: string, type: 'email' | 's
 
       return data
     } else {
-      // No user data means authentication failed
+
       throw new Error('Authentication failed - no user data returned')
     }
 

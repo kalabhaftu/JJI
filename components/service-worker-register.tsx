@@ -38,11 +38,11 @@ export function ServiceWorkerRegister() {
           surface: 'client',
           operation: 'register-service-worker',
           route: '/sw.js',
-          // Privacy tools and browser policies commonly reject this optional
-          // enhancement. The app deliberately continues without offline mode.
+
+
           expected: true,
         })
-        // The app should still work even if service worker registration fails.
+
       }
     }
 

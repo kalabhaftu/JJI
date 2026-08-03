@@ -28,7 +28,7 @@ export function prepareJournalAnalysis(
     return 0
   }
 
-  // Prepare data for AI
+
   const journalSummary = journals.map(j => ({
     date: j.date,
     emotion: j.emotion,
@@ -36,14 +36,14 @@ export function prepareJournalAnalysis(
     account: j.Account?.name || 'All Accounts'
   }))
 
-  // Format prop firm account status for AI
+
   const accountStatusSummary = propFirmAccounts.length > 0
     ? propFirmAccounts.map(acc =>
       `- ${acc.accountName} (${acc.propFirmName}): Status=${acc.status}, Phase=${acc.currentPhase}, Size=$${acc.accountSize}`
     ).join('\n')
     : 'No funded prop firm accounts found'
 
-  // Extract trade notes for analysis
+
   const tradeNotes = analyzedTrades
     .filter(t => t.comment && t.comment.trim().length > 0)
     .map(t => ({
@@ -66,7 +66,7 @@ export function prepareJournalAnalysis(
     tradesWithNotes: tradeNotes.length
   }
 
-  // Calculate profit factor
+
   const grossProfit = analyzedTrades
     .filter(t => getOutcome(t) === 'win')
     .reduce((sum, t) => sum + getNetPnl(t), 0)
@@ -77,11 +77,11 @@ export function prepareJournalAnalysis(
   )
   const profitFactor = grossLoss > 0 ? grossProfit / grossLoss : grossProfit > 0 ? Infinity : 0
 
-  // Calculate average win/loss
+
   const avgWin = tradeStats.winningTrades > 0 ? grossProfit / tradeStats.winningTrades : 0
   const avgLoss = tradeStats.losingTrades > 0 ? grossLoss / tradeStats.losingTrades : 0
 
-  // P&L by instrument
+
   const pnlByInstrument: Record<string, { trades: number, pnl: number, wins: number }> = {}
   analyzedTrades.forEach(t => {
     const netPnL = getNetPnl(t)
@@ -94,12 +94,12 @@ export function prepareJournalAnalysis(
     if (getOutcome(t) === 'win') pnlByInstrument[inst]!.wins++
   })
 
-  // Sort instruments by P&L
+
   const topInstruments = Object.entries(pnlByInstrument)
     .sort((a, b) => b[1].pnl - a[1].pnl)
     .slice(0, 5)
 
-  // P&L by strategy (trading model)
+
   const pnlByStrategy: Record<string, { trades: number, pnl: number, wins: number }> = {}
   analyzedTrades.forEach(t => {
     const strategy = (t as any).TradingModel?.name || 'No Strategy'
@@ -112,7 +112,7 @@ export function prepareJournalAnalysis(
     if (getOutcome(t) === 'win') pnlByStrategy[strategy]!.wins++
   })
 
-  // P&L by weekday
+
   const pnlByWeekday: Record<string, { trades: number, pnl: number }> = {
     Sunday: { trades: 0, pnl: 0 },
     Monday: { trades: 0, pnl: 0 },
@@ -129,7 +129,7 @@ export function prepareJournalAnalysis(
     pnlByWeekday[dayOfWeek]!.pnl += netPnL
   })
 
-  // P&L by hour of day
+
   const pnlByHour: Record<number, { trades: number, pnl: number }> = {}
   analyzedTrades.forEach(t => {
     const hour = new Date(t.entryDate).getHours()
@@ -141,12 +141,12 @@ export function prepareJournalAnalysis(
     pnlByHour[hour]!.pnl += netPnL
   })
 
-  // Find best/worst hours
+
   const hourEntries = Object.entries(pnlByHour).map(([hour, data]) => ({ hour: parseInt(hour), ...data }))
   const bestHours = hourEntries.filter(h => h.trades >= 3).sort((a, b) => b.pnl - a.pnl).slice(0, 3)
   const worstHours = hourEntries.filter(h => h.trades >= 3).sort((a, b) => a.pnl - b.pnl).slice(0, 3)
 
-  // Count emotions
+
   const emotionCounts: Record<string, number> = {}
   journals.forEach(j => {
     if (j.emotion) {
@@ -154,7 +154,7 @@ export function prepareJournalAnalysis(
     }
   })
 
-  // Group trades by emotion (find trades on days with specific emotions)
+
   const emotionPerformance: Record<string, { trades: number, totalPnL: number }> = {}
   journals.forEach(j => {
     if (j.emotion) {
@@ -173,7 +173,7 @@ export function prepareJournalAnalysis(
     }
   })
 
-  // Market Bias Analysis
+
   const biasPerformance: Record<string, { trades: number, pnl: number, wins: number, alignedWithSide: number }> = {
     BULLISH: { trades: 0, pnl: 0, wins: 0, alignedWithSide: 0 },
     BEARISH: { trades: 0, pnl: 0, wins: 0, alignedWithSide: 0 },
@@ -203,7 +203,7 @@ export function prepareJournalAnalysis(
 
   const biasAlignment = tradesWithBias > 0 ? (tradesAlignedWithBias / tradesWithBias) * 100 : 0
 
-  // News Trading Analysis
+
   const newsTradesStats = {
     totalNewsDays: analyzedTrades.filter(t => t.newsDay).length,
     tradedDuringNews: analyzedTrades.filter(t => t.newsDay && t.newsTraded).length,
@@ -225,7 +225,7 @@ export function prepareJournalAnalysis(
   const noNewsDayLosses = analyzedTrades.filter(t => !t.newsDay && getOutcome(t) === 'loss').length
   const noNewsDayWinRate = newsTradesStats.noNewsTraded > 0 ? (noNewsDayWins / newsTradesStats.noNewsTraded) * 100 : 0
 
-  // Extract specific news events that were traded
+
   const newsEventsTrade: Record<string, { trades: number, pnl: number, wins: number, tradedDuring: number }> = {}
   analyzedTrades.forEach(t => {
     if (t.newsDay && t.selectedNews) {
@@ -243,7 +243,7 @@ export function prepareJournalAnalysis(
     }
   })
 
-  // Timeframe Analysis
+
   const timeframeStats: Record<string, { trades: number, pnl: number, wins: number }> = {
     '1m': { trades: 0, pnl: 0, wins: 0 },
     '5m': { trades: 0, pnl: 0, wins: 0 },
@@ -283,7 +283,7 @@ export function prepareJournalAnalysis(
     .filter(([_, data]) => data.trades > 0)
     .sort((a, b) => b[1].pnl - a[1].pnl)
 
-  // Order Type Analysis
+
   const orderTypeStats: Record<string, { trades: number, pnl: number, wins: number }> = {
     'market': { trades: 0, pnl: 0, wins: 0 },
     'limit': { trades: 0, pnl: 0, wins: 0 },
@@ -307,7 +307,7 @@ export function prepareJournalAnalysis(
     .filter(([_, data]) => data.trades > 0)
     .sort((a, b) => b[1].pnl - a[1].pnl)
 
-  // Session Analysis
+
   const sessionStats: Record<string, { trades: number, pnl: number, wins: number }> = {}
 
   analyzedTrades.forEach(t => {

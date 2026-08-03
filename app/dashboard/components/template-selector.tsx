@@ -41,7 +41,7 @@ export function TemplateSelector() {
   const [nameDialogMode, setNameDialogMode] = useState<'create' | 'clone'>('create')
   const [templateName, setTemplateName] = useState('')
 
-  // Delete confirmation dialog state
+
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null)
 
   const handleSwitch = async (templateId: string) => {
@@ -83,12 +83,12 @@ export function TemplateSelector() {
       suggestions.push(candidate)
     }
 
-    // Cleaner first-pass suggestions.
+
     tryAdd(`${base}-1`)
     tryAdd(`${base} copy`)
     tryAdd(`${base} v2`)
 
-    // Fallbacks if the clean suggestions are also taken.
+
     let index = 1
     while (suggestions.length < 3 && index <= 50) {
       tryAdd(`${base}-${index}`)
@@ -188,7 +188,7 @@ export function TemplateSelector() {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
-          {/* Template list */}
+          {}
           {templates.map(t => (
             <DropdownMenuItem
               key={t.id}
@@ -222,7 +222,7 @@ export function TemplateSelector() {
 
           <DropdownMenuSeparator />
 
-          {/* Edit current (only non-default) */}
+          {}
           {!isEditMode && activeTemplate && !activeTemplate.isDefault && (
             <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
               <Pencil className="h-3.5 w-3.5 mr-2" />
@@ -230,7 +230,7 @@ export function TemplateSelector() {
             </DropdownMenuItem>
           )}
 
-          {/* Clone default */}
+          {}
           {activeTemplate?.isDefault && (
             <DropdownMenuItem onClick={openCloneDialog} className="cursor-pointer">
               <Copy className="h-3.5 w-3.5 mr-2" />
@@ -238,7 +238,7 @@ export function TemplateSelector() {
             </DropdownMenuItem>
           )}
 
-          {/* Create new (empty) */}
+          {}
           <DropdownMenuItem onClick={openCreateDialog} className="cursor-pointer">
             <Plus className="h-3.5 w-3.5 mr-2" />
             New Template
@@ -246,7 +246,7 @@ export function TemplateSelector() {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Delete Confirmation Dialog */}
+      {}
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -267,7 +267,7 @@ export function TemplateSelector() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Template Name Dialog (used by both Create and Clone) */}
+      {}
       <Dialog open={nameDialogOpen} onOpenChange={setNameDialogOpen}>
         <DialogContent className="sm:max-w-md" onOpenAutoFocus={(event) => event.preventDefault()}>
           <DialogHeader>

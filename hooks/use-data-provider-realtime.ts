@@ -28,7 +28,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   })
 
   const runRealtimeRefresh = useCallback((scope: RefreshScope) => {
-    // Trade updates should only touch trade/report query domains.
+
     if (scope === 'trades') {
       clearTradesCache()
       queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
@@ -38,8 +38,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
       return
     }
 
-    // Account-level changes require bootstrap reload for account store consumers,
-    // plus targeted stats invalidation.
+
     clearAccountsCache()
     queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
     queryClient.invalidateQueries({ queryKey: ['report-stats'] })

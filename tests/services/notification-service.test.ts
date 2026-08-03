@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as NotificationService from '@/lib/services/notification-service'
 import type { NotificationType, NotificationPriority } from '@/lib/db/schema/users'
 
-// Mock db client
+
 const mockReturning = vi.fn()
 const mockWhere = vi.fn(() => { const p = Promise.resolve({ count: 3 }); p.returning = mockReturning; return p; })
 const mockSet = vi.fn(() => ({ where: mockWhere }))
@@ -23,7 +23,7 @@ vi.mock('@/lib/db/client', () => ({
     }
 }))
 
-// Mock Next.js cache
+
 vi.mock('next/cache', () => ({
     revalidateTag: vi.fn()
 }))
@@ -107,7 +107,7 @@ describe('NotificationService', () => {
         })
 
         it('should CREATE new notification if existing is already read', async () => {
-            // findFirst returns null because no UNREAD notification exists
+
             vi.mocked(db.query.Notification.findFirst).mockResolvedValue(null)
             mockReturning.mockResolvedValueOnce([{
                 id: 'new-id',
@@ -210,7 +210,7 @@ describe('NotificationService', () => {
         })
 
         it('should update same notification when percentage increases', async () => {
-            // Simulate existing 80% alert
+
             vi.mocked(db.query.Notification.findFirst).mockResolvedValue({
                 id: 'existing-alert',
                 userId,
@@ -389,9 +389,9 @@ describe('NotificationService', () => {
             const mockWhereSelect = vi.fn()
             vi.mocked(db.select).mockReturnValue({ from: vi.fn(() => ({ where: mockWhereSelect })) } as any)
             mockWhereSelect
-                .mockResolvedValueOnce([{ value: 25 }]) // total
-                .mockResolvedValueOnce([{ value: 8 }])  // unread
-                .mockResolvedValueOnce([{ value: 2 }])  // critical
+                .mockResolvedValueOnce([{ value: 25 }])
+                .mockResolvedValueOnce([{ value: 8 }])
+                .mockResolvedValueOnce([{ value: 2 }])
 
             const result = await NotificationService.getNotificationStats(userId)
 

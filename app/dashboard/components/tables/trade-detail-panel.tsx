@@ -46,7 +46,7 @@ import { reportClientError } from '@/lib/observability/report-error'
 interface TradeDetailPanelProps {
   trade: TradeType
   onClose: () => void
-  basePath: string // '/dashboard/journal' or '/dashboard/table'
+  basePath: string
 }
 
 async function downloadImage(imageUrl: string, trade: TradeType, imageIndex: number) {
@@ -187,7 +187,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
   return (
     <>
       <div className="flex flex-col h-full">
-        {/* ── Header (compact single row) ── */}
+        {}
         <div className="px-4 sm:px-6 py-3 border-b border-border/40 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -227,11 +227,11 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
           </div>
         </div>
 
-        {/* ── Scrollable Content ── */}
+        {}
         <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5">
           <div className="max-w-5xl mx-auto space-y-8">
 
-            {/* Execution Details */}
+            {}
             <section>
               <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 mb-4">Execution Details</h3>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -262,7 +262,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
                   </div>
                 ))}
               </div>
-              {/* Commission, Swap, Duration row */}
+              {}
               <div className="flex flex-wrap gap-x-6 gap-y-2 mt-4 pt-3 border-t border-border/20 text-xs text-muted-foreground">
                 {tradeData.stopLoss && (
                   <span className="flex items-center gap-1">
@@ -317,9 +317,9 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
               </div>
             </section>
 
-            {/* ── Two Column: Timing | Strategy ── */}
+            {}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-border/20">
-              {/* Timing & Context */}
+              {}
               <section>
                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 mb-4">Timing & Context</h3>
                 <div className="space-y-0">
@@ -343,7 +343,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
                 </div>
               </section>
 
-              {/* Strategy & Tags */}
+              {}
               <section>
                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 mb-4">Strategy & Tags</h3>
                 <div className="space-y-0">
@@ -442,7 +442,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
               </section>
             </div>
 
-            {/* ── Chart Links & News ── */}
+            {}
             {(chartLinks.length > 0 || tradeData.newsDay) && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2 border-t border-border/20">
                 {chartLinks.length > 0 && (
@@ -493,7 +493,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
               </div>
             )}
 
-            {/* ── Trade Notes ── */}
+            {}
             {trade.comment && (
               <section className="pt-2 border-t border-border/20">
                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 mb-3">Trade Journal</h3>
@@ -505,7 +505,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
               </section>
             )}
 
-            {/* ── Screenshots ── */}
+            {}
             {images.length > 0 && (
               <section className="pt-2 border-t border-border/20 pb-4">
                 <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70 mb-3">
@@ -544,7 +544,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
           </div>
         </div>
 
-        {/* ── Footer ── */}
+        {}
         <div className="px-4 sm:px-6 py-3 border-t border-border/40 bg-muted/5 shrink-0 flex flex-col-reverse sm:flex-row items-center justify-between gap-2">
           <Link href={`/dashboard/table?view=replay&tradeId=${trade.id}&backUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname + window.location.search : basePath)}`} className="w-full sm:w-auto">
             <Button variant="default" className="gap-2 h-9 px-5 rounded-xl shadow-lg shadow-primary/10 font-semibold w-full sm:w-auto text-xs">
@@ -558,7 +558,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
         </div>
       </div>
 
-      {/* ── Image Viewer Modal ── */}
+      {}
       {selectedImage && (
         <Dialog open={!!selectedImage} onOpenChange={(open) => { if (!open) setSelectedImageIndex(null) }} modal>
           <DialogContent

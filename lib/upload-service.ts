@@ -1,7 +1,4 @@
-/**
- * Centralized upload service for handling media uploads
- * Fixes inconsistent bucket handling and provides robust fallbacks
- */
+
 
 import { createClient } from '@/lib/supabase'
 import { STORAGE_BUCKETS } from '@/lib/constants/storage'
@@ -16,16 +13,16 @@ interface UploadResult {
 
 interface UploadOptions {
   userId: string
-  folder: string // 'trades', 'notes', 'avatars'
+  folder: string
   tradeId?: string
   maxSizeBytes?: number
   allowedTypes?: string[]
 }
 
-const DEFAULT_MAX_SIZE = 5 * 1024 * 1024 // 5MB (reduced for security)
+const DEFAULT_MAX_SIZE = 5 * 1024 * 1024
 const DEFAULT_ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
 
-// Magic bytes (file signatures) for image validation
+
 const IMAGE_SIGNATURES: Record<string, number[][]> = {
   'image/jpeg': [[0xFF, 0xD8, 0xFF]],
   'image/png': [[0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]],
@@ -70,7 +67,7 @@ class MediaUploadService {
       }
     }
 
-    // Minimum size check (avoid empty files)
+
     if (file.size < 100) {
       return {
         valid: false,
@@ -88,13 +85,10 @@ class MediaUploadService {
     return { valid: true }
   }
 
-  /**
-   * Validate file content by checking magic bytes (file signature)
-   * This prevents malicious files disguised with wrong extensions
-   */
+
   private async validateMagicBytes(file: File): Promise<{ valid: boolean; error?: string }> {
     try {
-      // Read first 12 bytes (enough for all image signatures)
+
       const arrayBuffer = await file.slice(0, 12).arrayBuffer()
       const bytes = new Uint8Array(arrayBuffer)
 
@@ -131,9 +125,8 @@ class MediaUploadService {
       const fileExtension = file.name.split('.').pop() || 'jpg'
       const timestamp = Date.now()
       const randomId = Math.random().toString(36).substr(2, 6)
-      
-      // Format: originalname_timestamp_randomid.ext
-      // This preserves the original name while ensuring uniqueness
+
+
       const fileName = `${nameWithoutExt}_${timestamp}_${randomId}.${fileExtension}`
 
       const filePath = buildTradeImagePath({
@@ -176,3 +169,4 @@ class MediaUploadService {
 }
 
 export const uploadService = new MediaUploadService()
+

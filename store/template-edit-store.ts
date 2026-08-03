@@ -7,7 +7,7 @@ interface TemplateEditState {
   currentLayout: WidgetLayout[] | null
   originalLayout: WidgetLayout[] | null
   
-  // Actions
+
   enterEditMode: (layout: WidgetLayout[]) => void
   exitEditMode: () => void
   updateLayout: (layout: WidgetLayout[]) => void
@@ -25,7 +25,7 @@ export const useTemplateEditStore = create<TemplateEditState>((set, get) => ({
   enterEditMode: (layout) => {
     set({
       isEditMode: true,
-      currentLayout: JSON.parse(JSON.stringify(layout)), // Deep clone
+      currentLayout: JSON.parse(JSON.stringify(layout)),
       originalLayout: JSON.parse(JSON.stringify(layout)),
       hasUnsavedChanges: false,
     })
@@ -42,7 +42,7 @@ export const useTemplateEditStore = create<TemplateEditState>((set, get) => ({
 
   updateLayout: (layout) => {
     const { currentLayout } = get()
-    // Reference check only - avoids JSON.stringify on every drag frame
+
     if (currentLayout === layout) return
     set({
       currentLayout: layout,

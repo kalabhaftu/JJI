@@ -76,7 +76,7 @@ function ScoreBadge({ score, hasData }: { score: number; hasData: boolean }) {
 }
 
 export default function PerformanceScore({ size = 'small-long' }: PerformanceScoreProps) {
-  // DATA HOOKS (PRESERVED - DO NOT MODIFY)
+
   const { data: scoreData, isLoading } = useWidgetData('performanceScore')
 
   if (isLoading) {
@@ -109,7 +109,7 @@ export default function PerformanceScore({ size = 'small-long' }: PerformanceSco
     <WidgetCard title="Performance Score">
         {hasData ? (
           <>
-            {/* Radar Chart */}
+            {}
             <div className="flex-1 relative min-h-[200px]">
               <div className="absolute inset-0">
                 <ResponsiveContainer width="100%" height="100%">
@@ -150,7 +150,7 @@ export default function PerformanceScore({ size = 'small-long' }: PerformanceSco
               </div>
             </div>
 
-            {/* Score Summary */}
+            {}
             <div className="px-4 pb-4">
               <div className="grid grid-cols-2 gap-4 p-3 bg-muted/30 rounded-xl">
                 <div>

@@ -1,5 +1,4 @@
-// Unified Mock Data Store for Demo Mode
-// Decouples massive mock data objects from production client components/hooks
+
 
 import {
   calculateDayOfWeekPerformance,
@@ -382,7 +381,7 @@ export function getMockTradesList() {
     SPX500: 5300.0
   }
 
-  // Generate 80 trades distributed across current and previous month
+
   const trades = Array.from({ length: 80 }).map((_, i) => {
     let entryTime: Date
     if (i < 65) {
@@ -644,11 +643,11 @@ export const MOCK_NOTIFICATIONS = [
 export function getMockDemoData() {
   const trades = getMockTradesList()
 
-  // Format calendarData and calculate statistics
+
   const calendarData = formatCalendarData(trades as any, MOCK_ACCOUNTS as any, 'UTC')
   const stats = calculateStatistics(trades as any, MOCK_ACCOUNTS as any, undefined, 10)
 
-  // Calculate widgets
+
   const widgets = {
     equityCurve: calculateEquityCurve(trades as any),
     netDailyPnl: calculateNetDailyPnl(trades as any, 10),
@@ -679,3 +678,4 @@ export function getMockDemoData() {
     widgets
   }
 }
+

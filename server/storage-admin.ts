@@ -158,7 +158,7 @@ async function listObjectPaths(bucket: string, prefix: string): Promise<string[]
   return objectPaths
 }
 
-/** Deletes canonical and legacy owner-prefixed objects after a DB purge. */
+
 export async function deleteStorageForOwners(ownerIds: string[]) {
   const results: Array<{ bucket: string; removedCount: number }> = []
   const uniqueOwnerIds = Array.from(new Set(ownerIds.filter(Boolean)))

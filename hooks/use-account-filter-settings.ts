@@ -71,11 +71,10 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
       }
       return fetchAccountFilterSettings()
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes - no network call if cache is fresh
-    gcTime: 1000 * 60 * 10,   // keep in memory 10 minutes
-    // initialData seeds the query as if the fetch already succeeded.
-    // Unlike placeholderData, this makes isLoading=false immediately
-    // so the empty state never flashes while the API call is in flight.
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+
+
     initialData: () => {
       if (typeof window === 'undefined') return undefined
       try {
@@ -91,8 +90,8 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
       return undefined
     },
     initialDataUpdatedAt: () => {
-      // Treat initialData as stale immediately so a background refresh still happens,
-      // but it won't block rendering or show isLoading=true.
+
+
       return 0
     },
   })
@@ -128,7 +127,7 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
       try {
         localStorage.setItem(isDemo ? 'settings-cache-demo' : 'settings-cache', JSON.stringify(data))
       } catch {
-        // ignore
+
       }
     },
   })

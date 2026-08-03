@@ -5,9 +5,9 @@ import { calculateMetricsFromTrades } from '@/lib/performance-score'
 import { classifyOutcome } from '@/lib/metrics/outcome'
 import type { TradeType as Trade } from '@/lib/db/schema/trades'
 
-// Helper to create mock trades
+
 function createMockTrade(overrides: Partial<Trade> = {}): Trade {
-  // Generate unique entryId to prevent unwanted grouping
+
   const uniqueId = Math.random().toString(36).substring(7);
   return {
     id: `test-id-${uniqueId}`,
@@ -45,15 +45,13 @@ function createMockTrade(overrides: Partial<Trade> = {}): Trade {
 describe('Financial Calculations - Profit Factor', () => {
   it('should calculate profit factor correctly with wins and losses', () => {
     const trades = [
-      createMockTrade({ pnl: 200, commission: 0 }), // Win
-      createMockTrade({ pnl: 300, commission: 0 }), // Win
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
-      createMockTrade({ pnl: -50, commission: 0 }), // Loss
+      createMockTrade({ pnl: 200, commission: 0 }),
+      createMockTrade({ pnl: 300, commission: 0 }),
+      createMockTrade({ pnl: -100, commission: 0 }),
+      createMockTrade({ pnl: -50, commission: 0 }),
     ]
 
-    // Gross profits: 500
-    // Gross losses: 150
-    // Profit Factor: 500 / 150 = 3.33
+
     const stats = calculateStatistics(trades, [])
     expect(stats.profitFactor).toBeCloseTo(3.33, 2)
   })
@@ -64,7 +62,7 @@ describe('Financial Calculations - Profit Factor', () => {
       createMockTrade({ pnl: 200, commission: 0 }),
     ]
 
-    // No losses means infinite profit factor, but we should return a high number
+
     const stats = calculateStatistics(trades, [])
     expect(stats.profitFactor).toBeGreaterThan(0)
   })
@@ -86,10 +84,7 @@ describe('Financial Calculations - Profit Factor', () => {
       createMockTrade({ pnl: -100, commission: 10 }),
     ]
 
-    // Canonical model: trade.pnl is already the realized result used for outcomes/metrics.
-    // Gross profits: 300
-    // Gross losses: 100
-    // Profit Factor: 300 / 100 = 3
+
     const stats = calculateStatistics(trades, [])
     expect(stats.profitFactor).toBeCloseTo(3.0, 2)
   })
@@ -98,25 +93,25 @@ describe('Financial Calculations - Profit Factor', () => {
 describe('Financial Calculations - Win Rate', () => {
   it('should calculate win rate correctly', () => {
     const trades = [
-      createMockTrade({ pnl: 100, commission: 0 }), // Win
-      createMockTrade({ pnl: 200, commission: 0 }), // Win
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
-      createMockTrade({ pnl: 50, commission: 0 }), // Win
+      createMockTrade({ pnl: 100, commission: 0 }),
+      createMockTrade({ pnl: 200, commission: 0 }),
+      createMockTrade({ pnl: -100, commission: 0 }),
+      createMockTrade({ pnl: 50, commission: 0 }),
     ]
 
-    // 3 wins out of 4 trades = 75%
+
     const stats = calculateStatistics(trades, [])
     expect(stats.winRate).toBe(75)
   })
 
   it('should exclude break-even trades from win rate calculation', () => {
     const trades = [
-      createMockTrade({ pnl: 100, commission: 0 }), // Win
-      createMockTrade({ pnl: 0, commission: 0 }), // Break-even (excluded)
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
+      createMockTrade({ pnl: 100, commission: 0 }),
+      createMockTrade({ pnl: 0, commission: 0 }),
+      createMockTrade({ pnl: -100, commission: 0 }),
     ]
 
-    // 1 win out of 2 tradable trades (excluding break-even) = 50%
+
     const stats = calculateStatistics(trades, [])
     expect(stats.winRate).toBe(50)
   })
@@ -129,7 +124,7 @@ describe('Financial Calculations - Win Rate', () => {
       createMockTrade({ pnl: 200, commission: 50 }),
     ]
 
-    // With threshold ±10: 3 wins (100, 30, 200), 1 loss (-50) => 75%
+
     const stats = calculateStatistics(trades, [])
     expect(stats.winRate).toBeCloseTo(75, 2)
   })
@@ -159,14 +154,13 @@ describe('Financial Calculations - Win Rate', () => {
 describe('Financial Calculations - Average Win/Loss', () => {
   it('should calculate average win and average loss correctly', () => {
     const trades = [
-      createMockTrade({ pnl: 200, commission: 0 }), // Win
-      createMockTrade({ pnl: 400, commission: 0 }), // Win
-      createMockTrade({ pnl: -100, commission: 0 }), // Loss
-      createMockTrade({ pnl: -200, commission: 0 }), // Loss
+      createMockTrade({ pnl: 200, commission: 0 }),
+      createMockTrade({ pnl: 400, commission: 0 }),
+      createMockTrade({ pnl: -100, commission: 0 }),
+      createMockTrade({ pnl: -200, commission: 0 }),
     ]
 
-    // Avg Win: (200 + 400) / 2 = 300
-    // Avg Loss: (100 + 200) / 2 = 150
+
     const stats = calculateStatistics(trades, [])
     expect(stats.averageWin).toBe(300)
     expect(stats.averageLoss).toBe(150)
@@ -179,8 +173,7 @@ describe('Financial Calculations - Average Win/Loss', () => {
       createMockTrade({ pnl: -100, commission: 20 }),
     ]
 
-    // Avg Win: (200 + 400) / 2 = 300
-    // Avg Loss: 100
+
     const stats = calculateStatistics(trades, [])
     expect(stats.averageWin).toBe(300)
     expect(stats.averageLoss).toBe(100)
@@ -217,7 +210,7 @@ describe('Financial Calculations - Net P&L', () => {
       createMockTrade({ pnl: 300, commission: 0 }),
     ]
 
-    // Total: 200 - 100 + 300 = 400
+
     const stats = calculateStatistics(trades, [])
     expect(stats.totalPnL).toBe(400)
   })
@@ -229,7 +222,7 @@ describe('Financial Calculations - Net P&L', () => {
       createMockTrade({ pnl: 300, commission: 30 }),
     ]
 
-    // Total: 200 - 100 + 300 = 400
+
     const stats = calculateStatistics(trades, [])
     expect(stats.totalPnL).toBe(400)
   })
@@ -241,7 +234,7 @@ describe('Financial Calculations - Net P&L', () => {
       createMockTrade({ pnl: -200, commission: 0 }),
     ]
 
-    // Total: 100 - 300 - 200 = -400
+
     const stats = calculateStatistics(trades, [])
     expect(stats.totalPnL).toBe(-400)
   })
@@ -251,29 +244,28 @@ describe('Financial Calculations - Trade Grouping (Partial Closes)', () => {
   it('should group trades by entryId for partial closes', () => {
     const trades = [
       createMockTrade({ entryId: 'E1', pnl: 50, quantity: 1 }),
-      createMockTrade({ entryId: 'E1', pnl: 100, quantity: 1 }), // Partial close
+      createMockTrade({ entryId: 'E1', pnl: 100, quantity: 1 }),
       createMockTrade({ entryId: 'E2', pnl: 200, quantity: 2 }),
     ]
 
     const grouped = groupTradesByExecution(trades)
     
-    // Should have 2 groups (E1 and E2)
+
     expect(grouped.length).toBe(2)
     
-    // E1 group should have combined PnL of 150
+
     const e1Group = grouped.find(g => g.entryId === 'E1')
     expect(e1Group?.pnl).toBe(150)
   })
 
   it('should calculate win rate correctly with partial closes', () => {
     const trades = [
-      createMockTrade({ entryId: 'E1', pnl: 50, commission: 0 }), // Part 1
-      createMockTrade({ entryId: 'E1', pnl: 100, commission: 0 }), // Part 2 (combined: +150 Win)
-      createMockTrade({ entryId: 'E2', pnl: -100, commission: 0 }), // Loss
+      createMockTrade({ entryId: 'E1', pnl: 50, commission: 0 }),
+      createMockTrade({ entryId: 'E1', pnl: 100, commission: 0 }),
+      createMockTrade({ entryId: 'E2', pnl: -100, commission: 0 }),
     ]
 
-    // After grouping: 1 win (E1: 150), 1 loss (E2: -100)
-    // Win rate: 50%
+
     const stats = calculateStatistics(trades, [])
     expect(stats.winRate).toBe(50)
   })
@@ -351,7 +343,7 @@ describe('Financial calculations - performance score metrics', () => {
     
     expect(metrics).not.toBeNull()
     expect(metrics?.profitFactor).toBeCloseTo(3.33, 2)
-    expect(metrics?.tradeWinPercentage).toBe(50) // 2 wins, 2 losses
+    expect(metrics?.tradeWinPercentage).toBe(50)
   })
 
   it('should return null for empty trades array', () => {
@@ -378,7 +370,7 @@ describe('Financial Calculations - Edge Cases', () => {
 
     const stats = calculateStatistics(trades, [])
     expect(stats.totalPnL).toBe(0)
-    expect(stats.winRate).toBe(0) // No tradable trades
+    expect(stats.winRate).toBe(0)
     expect(stats.profitFactor).toBe(0)
   })
 

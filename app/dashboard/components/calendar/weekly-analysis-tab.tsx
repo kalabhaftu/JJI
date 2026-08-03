@@ -36,10 +36,10 @@ export function WeeklyAnalysisTab({
 }: WeeklyAnalysisTabProps) {
   return (
     <>
-{/* Analysis Tab */}
+{}
               <TabsContent value="analysis" className="m-0 px-4 py-5 sm:px-6 lg:px-8 space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Weekly Expectation */}
+                  {}
                   <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <Compass className="h-4 w-4 text-primary" />
@@ -50,60 +50,55 @@ export function WeeklyAnalysisTab({
                       onValueChange={(val) => {
                         if (!selectedDate) return
 
-                        // Create updated review data object with new expectation
-                        // This ensures we use the latest values, not stale closure values
+
                         const updatedReviewData = {
                           ...(reviewData || {}),
                           expectation: val as WeeklyExpectation
                         }
 
-                        // Update local state immediately for instant feedback
+
                         setReviewData(updatedReviewData)
 
-                        // Auto-save expectation immediately for better UX
-                        // Use a request counter to prevent race conditions
+
                         const currentRequest = ++saveRequestRef.current
                         const savedExpectation = val as WeeklyExpectation
                         const saveExpectation = async () => {
                           try {
-                            // Read latest state from ref to avoid stale values from rapid changes
-                            // This ensures we always save the most current state, not the state at change time
+
+
                             const latestReviewData = reviewDataRef.current
 
                             const result = await saveWeeklyReview({
                               startDate: startOfWeek(selectedDate),
                               endDate: endOfWeek(selectedDate),
-                              expectation: savedExpectation, // Use the saved expectation value
+                              expectation: savedExpectation,
                               actualOutcome: latestReviewData?.actualOutcome,
                               isCorrect: latestReviewData?.isCorrect,
                               notes: latestReviewData?.notes,
                               calendarImage: latestReviewData?.calendarImage
                             })
 
-                            // Only update state if this is still the latest request
-                            // This prevents older saves from overwriting newer selections
+
                             if (result.success && result.data && currentRequest === saveRequestRef.current) {
                               const savedData = result.data
 
-                              // CRITICAL: Update baseline since we successfully auto-saved
-                              // This ensures checking for dirty state later works correctly
+
                               if (lastSavedReviewData.current) {
                                 lastSavedReviewData.current = JSON.parse(JSON.stringify(savedData))
                               }
 
-                              // Merge server response with current state to preserve concurrent local changes
-                              // Only update the field that was auto-saved (expectation), preserve other local changes
+
                               setReviewData((prev) => {
                                   if (!prev) {
-                                    // If no previous state, use server response
+
                                     return { ...savedData, expectation: savedExpectation }
                                   }
 
-                                  // Merge: use server data as base, but preserve local changes for non-saved fields
+
                                   return {
                                     ...savedData,
-                                    expectation: savedExpectation, // Always use the saved value
-                                    // Preserve local changes if they exist in prev (including falsy values)
+                                    expectation: savedExpectation,
+
                                     actualOutcome: 'actualOutcome' in prev ? (prev.actualOutcome ?? null) : (savedData.actualOutcome ?? null),
                                     isCorrect: 'isCorrect' in prev ? (prev.isCorrect ?? null) : (savedData.isCorrect ?? null),
                                     notes: 'notes' in prev ? (prev.notes ?? null) : (savedData.notes ?? null),
@@ -117,7 +112,7 @@ export function WeeklyAnalysisTab({
                                 operation: 'auto-save-weekly-expectation',
                                 route: '/dashboard',
                               })
-                              // The explicit Save Review action remains the durable fallback.
+
                             }
                           }
                           saveExpectation()
@@ -198,7 +193,7 @@ export function WeeklyAnalysisTab({
                       </RadioGroup>
                     </div>
 
-                  {/* Actual Outcome */}
+                  {}
                   <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                     <div className="flex items-center gap-2 mb-4">
                       <Target className="h-4 w-4 text-primary" />
@@ -272,7 +267,7 @@ export function WeeklyAnalysisTab({
                   </div>
                 </div>
 
-                {/* Instrument Breakdown */}
+                {}
                 {stats && stats.pairStats.length > 0 && (
                   <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                     <div className="flex items-center gap-2 mb-4">

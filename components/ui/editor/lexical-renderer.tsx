@@ -112,7 +112,7 @@ function normalizeLexicalValue(value?: string | null): LexicalNode[] | null {
       return parsed.root.children as LexicalNode[]
     }
   } catch {
-    // Legacy plain-text journal content intentionally falls back to text rendering.
+
     return null
   }
 

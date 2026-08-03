@@ -122,7 +122,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
 
       setActiveTemplate(buildFallbackTemplate())
 
-      hasLoadedRef.current = false // Allow retry on error
+      hasLoadedRef.current = false
       templateBootstrapCache = null
     } finally {
       setIsLoading(false)
@@ -131,7 +131,6 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
     }
   }, [isDemoMode])
 
-  // Load on mount - only once
   useEffect(() => {
     let mounted = true
 
@@ -147,7 +146,6 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
     }
   }, [loadTemplates])
 
-  // Create new template
   const handleCreateTemplate = useCallback(async (name: string) => {
     if (isDemoMode) {
       const newTemplate: DashboardTemplate = {
@@ -183,7 +181,6 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
     }
   }, [isDemoMode])
 
-  // Delete template
   const handleDeleteTemplate = useCallback(async (templateId: string) => {
     if (isDemoMode) {
       setTemplates(prev => prev.filter(t => t.id !== templateId))
@@ -200,7 +197,6 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       setTemplates(prev => prev.filter(t => t.id !== templateId))
       templateBootstrapCache = null
 
-      // If deleted template was active, reload to get new active template
       if (activeTemplate?.id === templateId) {
         hasLoadedRef.current = false
         await loadTemplates()
@@ -215,7 +211,6 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
     }
   }, [isDemoMode, activeTemplate, loadTemplates])
 
-  // Switch template
   const handleSwitchTemplate = useCallback(async (templateId: string) => {
     if (isDemoMode) {
       const target = templates.find(t => t.id === templateId) || buildFallbackTemplate()
@@ -243,8 +238,7 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
         isActive: t.id === templateId,
       })))
       templateBootstrapCache = null
-      // Toast removed - template-selector shows "Template updated" text instead
-      // setTimeout(() => toast.success('Template switched successfully'), 0)
+
       return updated
     } catch (error) {
       reportClientError(error, { operation: 'switch-dashboard-template', route: '/api/v1/dashboard/templates' })
@@ -254,7 +248,6 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
     }
   }, [isDemoMode, templates])
 
-  // Update template layout
   const handleUpdateLayout = useCallback(async (templateId: string, layout: WidgetLayout[]) => {
     if (isDemoMode) {
       const updated = {

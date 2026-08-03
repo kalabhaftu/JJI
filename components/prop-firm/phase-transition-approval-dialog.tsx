@@ -46,9 +46,6 @@ interface NotificationData {
   evaluationType?: string
 }
 
-/**
- * Helper function to determine if a phase number represents the funded stage
- */
 function isFundedPhase(evaluationType: string | undefined, phaseNumber: number): boolean {
   return isFundedPhaseForEvaluation(evaluationType || '', phaseNumber)
 }
@@ -112,15 +109,12 @@ export function PhaseTransitionApprovalDialog({
         throw new Error(result.error?.message || 'Failed to transition phase')
       }
 
-      // Mark notification as resolved (delete it since action is complete)
       await fetch(`/api/v1/notifications/${notification.id}`, {
         method: 'DELETE'
       })
 
-      // Close modal FIRST for immediate UI feedback
       onOpenChange(false)
 
-      // Reset state synchronously before onComplete to ensure callback sees clean state
       resetState()
 
       toast.success(isTransitioningToFunded ? 'Congratulations!' : 'Phase Transition Complete!', {
@@ -130,19 +124,16 @@ export function PhaseTransitionApprovalDialog({
 
       clearAccountsCache()
 
-      // Clear localStorage caches that might contain stale data
       try {
         localStorage.removeItem('settings-cache')
       } catch (e) {
-        // Ignore storage errors
+
       }
 
       await refreshTrades()
 
-      // Call onComplete callback - state is already reset, so callback sees clean state
       onComplete()
 
-      // Force full page refresh after a small delay to allow modal to close
       setTimeout(() => {
         router.refresh()
       }, 100)

@@ -73,7 +73,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
       const a = document.createElement('a')
       a.href = url
 
-      // Extract filename from Content-Disposition header or use default
+
       const contentDisposition = response.headers.get('Content-Disposition')
       const filenameMatch = contentDisposition?.match(/filename="(.+)"/)
       a.download = filenameMatch?.[1] || 'jji-backup.json'
@@ -128,7 +128,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
       try {
         localStorage.clear()
       } catch (e) {
-        // Ignore storage errors
+
       }
 
       handleClose()

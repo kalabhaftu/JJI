@@ -162,7 +162,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
 
   const watchedValues = watch()
 
-  // Initialize form when trade loads
+
   useEffect(() => {
     if (!trade || isSubmitting) return
     const initializationKey = `${trade.id}:${tradingModelsKey}`
@@ -260,7 +260,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
             maxWidthOrHeight: 1920, useWebWorker: true,
             fileType: 'image/webp', initialQuality: 0.95,
           })
-        } catch (err) { /* continue without compression */ }
+        } catch (err) { }
       }
       const result = await uploadService.uploadImage(fileToUpload, {
         userId: currentUser.id, folder: 'trades', tradeId: (trade as any)?.id,
@@ -330,7 +330,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
     }
   }
 
-  // Trade header info
+
   const tradeData = trade as any
   const threshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
   const netPnL = getTradeNetPnl(trade)
@@ -343,7 +343,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
   return (
     <>
       <div className="flex flex-col h-full">
-        {/* ── Header (compact single row) ── */}
+        {}
         <div className="px-4 sm:px-6 py-3 border-b border-border/40 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -370,7 +370,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
           </div>
         </div>
 
-        {/* ── Tab Navigation + Content ── */}
+        {}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col min-h-0">
           <div className="px-4 sm:px-6 pt-3 shrink-0">
             <TabsList className="w-full sm:w-auto justify-start h-auto p-1 gap-1 bg-muted/50">
@@ -471,7 +471,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
           </div>
         </Tabs>
 
-        {/* ── Sticky Footer ── */}
+        {}
         <div className="px-4 sm:px-6 py-3 border-t border-border/40 shrink-0 flex flex-col-reverse sm:flex-row gap-2 items-center justify-between bg-muted/5">
           <Button type="button" variant="outline" onClick={handleCloseAttempt} disabled={isSubmitting} className="w-full sm:w-auto h-9 px-5 rounded-xl text-xs">
             Cancel
@@ -489,7 +489,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
         </div>
       </div>
 
-      {/* ── Unsaved Changes Alert ── */}
+      {}
       <AlertDialog open={showUnsavedAlert} onOpenChange={setShowUnsavedAlert}>
         <AlertDialogContent>
           <AlertDialogHeader>

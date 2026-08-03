@@ -1,10 +1,4 @@
-/**
- * Prop Firm Analytics API (v1)
- *
- * GET /api/v1/reports/propfirm
- *
- * Returns all funded/challenge account stats computed server-side.
- */
+
 
 import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'

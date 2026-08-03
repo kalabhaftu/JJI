@@ -3,10 +3,7 @@ import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { getClientIp } from '@/lib/security/client-ip'
 
-/**
- * Capture coarse platform-provided location without sending an IP address to a
- * third party or persisting the raw address.
- */
+
 export async function captureUserGeo(userId: string, headers: Headers): Promise<void> {
   try {
     const countryCode = headers.get('x-vercel-ip-country') || undefined

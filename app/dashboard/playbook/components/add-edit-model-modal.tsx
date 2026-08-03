@@ -81,12 +81,11 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
 
-  // Initialize form when model changes or modal opens
   useEffect(() => {
     if (isOpen) {
       if (mode === 'edit' && model) {
         setName(model.name)
-        // Handle migration from string[] to Rule[]
+
         const modelRules = Array.isArray(model.rules) ? model.rules : []
         const formattedRules = modelRules.map(normalizeRule)
         setRules(formattedRules.length > 0 ? [...formattedRules] : DEFAULT_RULES)
@@ -103,7 +102,6 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
     }
   }, [isOpen, model, mode])
 
-  // Track changes
   useEffect(() => {
     if (!isOpen) return
 
@@ -194,7 +192,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
           </DialogHeader>
 
           <div className="space-y-8 py-4">
-            {/* Model Name */}
+            {                }
             <div className="space-y-3">
               <Label htmlFor="name" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">
                 Strategy Designation <span className="text-destructive">*</span>
@@ -210,7 +208,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                 />
             </div>
 
-            {/* Rules */}
+            {           }
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Execution Protocol (Rules)</Label>
@@ -269,7 +267,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
               </p>
             </div>
 
-            {/* Setups */}
+            {            }
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -360,7 +358,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
         </DialogContent>
       </Dialog>
 
-      {/* Unsaved Changes Warning */}
+      {                             }
       <AlertDialog open={showUnsavedWarning} onOpenChange={setShowUnsavedWarning}>
         <AlertDialogContent>
           <AlertDialogHeader>

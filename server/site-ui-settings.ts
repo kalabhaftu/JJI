@@ -26,7 +26,7 @@ async function loadSiteUiSettings(): Promise<SiteUiSettingsPayload> {
       operation: 'load-site-ui-settings',
       extra: { fallbackUsed: true },
     })
-    // During build-time prerendering there's no DB connection - return defaults
+
     return { showDonateButton: true, showFeedbackButton: true }
   }
 }

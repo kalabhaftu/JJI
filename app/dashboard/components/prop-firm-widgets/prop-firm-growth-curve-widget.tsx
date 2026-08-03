@@ -38,7 +38,7 @@ function getReferenceValues(account: PropFirmAccount, data: PropFirmWidgetData):
     ? highWaterMark - (highWaterMark * (Number(phase.maxDrawdownPercent || 0) / 100))
     : accountSize - maxLossLimit
 
-  // Current balance = last growth point or accountSize
+
   const growthPoints = data.growth || []
   const lastPoint = growthPoints[growthPoints.length - 1]
   const currentBalance = lastPoint ? Number(lastPoint.balance) : accountSize
@@ -79,11 +79,11 @@ function buildChartData(data: PropFirmWidgetData, refs: GrowthReferences): Growt
 }
 
 function getYAxisConfig(chartData: GrowthPoint[], refs: GrowthReferences) {
-  // The Y-axis must show exact meaningful values
+
   const balances = chartData.map((p) => Number(p.balance || 0)).filter((v) => !isNaN(v) && v > 0)
   const currentBalance = balances.length > 0 ? balances[balances.length - 1]! : refs.accountSize
 
-  // Gather all reference values that MUST be shown:
+
   const keyRefs = [
     refs.accountSize,
     refs.targetBalance,
@@ -103,14 +103,14 @@ function getYAxisConfig(chartData: GrowthPoint[], refs: GrowthReferences) {
   const rawMax = Math.max(...allValues)
   const range = rawMax - rawMin
 
-  // Domain: small padding so reference lines don't sit on the edge
+
   const pad = Math.max(range * 0.05, 10)
   const domainMin = Math.floor(rawMin - pad)
   const domainMax = Math.ceil(rawMax + pad)
 
   const tickSet = new Set<number>(keyRefs)
 
-  // Find a nice step size
+
   const rawStep = range / 6
   let step = 10
   if (rawStep > 5000) step = 5000
@@ -126,12 +126,12 @@ function getYAxisConfig(chartData: GrowthPoint[], refs: GrowthReferences) {
   else if (rawStep > 2) step = 2
   else if (rawStep > 1) step = 1
 
-  // Minimum distance between ticks to prevent overlapping/cluttering (e.g. 2.5% of range)
+
   const minDistance = Math.max(range * 0.025, 2)
 
   const startTick = Math.ceil(domainMin / step) * step
   for (let t = startTick; t <= domainMax; t += step) {
-    // Only add if it's not too close to any key reference value
+
     const isTooClose = keyRefs.some(ref => Math.abs(ref - t) < minDistance)
     if (!isTooClose) {
       tickSet.add(t)

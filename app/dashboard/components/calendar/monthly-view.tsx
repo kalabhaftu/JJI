@@ -76,33 +76,33 @@ const DayCell = memo(function DayCell({
       aria-label={`Open ${format(date, 'MMMM d, yyyy')}${hasTrades ? `, ${dayData.tradeNumber} trades` : ''}`}
       className={cn(
         "relative flex flex-col items-center justify-center rounded-[4px] md:rounded-[6px] border transition-all duration-150 select-none group h-full",
-        // Mini calendar: taller cells so they are properly rectangular not square
-        // Advanced calendar: cells fill grid space with minimum height
+
+
         isMiniCalendar 
           ? "min-h-[68px] sm:min-h-[76px] lg:min-h-[84px]" 
           : "min-h-[48px] md:min-h-[60px] lg:min-h-[68px] cursor-pointer",
         isMiniCalendar && "disabled:cursor-default",
 
-        // No trades - uses theme tokens so it works in any color scheme
+
         !hasTrades && isCurrentMonth && "bg-muted/30 dark:bg-[#0c0e12]/40 border-border/40 dark:border-border/20 hover:border-border/60 dark:hover:border-border/40",
 
-        // Profit - green tint via CSS token
+
         hasTrades && isProfit && "bg-long/10 border-long/20 hover:bg-long/20 hover:border-long/30 dark:bg-long/20 dark:border-long/35 dark:hover:bg-long/30 dark:hover:border-long/50",
 
-        // Loss - red tint via CSS token
+
         hasTrades && isLoss && "bg-short/10 border-short/20 hover:bg-short/20 hover:border-short/30 dark:bg-short/20 dark:border-short/35 dark:hover:bg-short/30 dark:hover:border-short/50",
 
-        // Breakeven - neutral muted tint
+
         hasTrades && isBreakEven && "bg-muted/40 border border-muted/50 text-foreground hover:bg-muted/50",
 
-        // Not current month
+
         !isCurrentMonth && "opacity-20 pointer-events-none",
         
-        // Today styling - applies to both mini and advanced calendar
+
         isTodayDate && isCurrentMonth && "ring-1 ring-primary ring-offset-0",
       )}
     >
-      {/* Journal Note Indicator */}
+      {}
       {!isMiniCalendar && hasJournal && (
         <CalendarIcon className={cn(
           "absolute top-2 left-2 h-3.5 w-3.5",
@@ -121,7 +121,7 @@ const DayCell = memo(function DayCell({
         "flex flex-col items-center justify-center w-full h-full relative p-1",
         !isMiniCalendar && "min-[1024px]:hidden"
       )}>
-        {/* Centered Date Number for Simple View */}
+        {}
         <span
           className={cn(
             "text-xs md:text-sm font-bold leading-none",
@@ -131,7 +131,7 @@ const DayCell = memo(function DayCell({
                 ? isProfit 
                   ? "text-long/80 dark:text-white/60" 
                   : isLoss 
-                    ? "text-short/80 dark:text-white/60" 
+                    ? "text-short/80 dark:text-white/60"
                     : "text-white/60"
                 : "text-foreground/80",
           )}
@@ -139,7 +139,7 @@ const DayCell = memo(function DayCell({
           {format(date, 'd')}
         </span>
         
-        {/* Mini P&L indicator for cells with trades */}
+        {}
         {hasTrades && (
           <span
             className={cn(
@@ -157,7 +157,7 @@ const DayCell = memo(function DayCell({
         "hidden flex-col w-full h-full relative p-2 justify-center items-center",
         !isMiniCalendar && "min-[1024px]:flex"
       )}>
-        {/* Day number - top right  */}
+        {}
         <span
           className={cn(
             "absolute top-1.5 right-1.5 font-bold leading-none",
@@ -171,9 +171,9 @@ const DayCell = memo(function DayCell({
           {format(date, 'd')}
         </span>
 
-        {/* Main Content Container (P&L, trades, stats) */}
+        {}
         <div className="flex-grow flex flex-col items-center justify-center w-full pt-4 min-h-0">
-          {/* P&L */}
+          {}
           {hasTrades && visibleStats.pnl && (
             <div
               className={cn(
@@ -185,7 +185,7 @@ const DayCell = memo(function DayCell({
             </div>
           )}
 
-          {/* Trade Count */}
+          {}
           {hasTrades && visibleStats.trades && (
             <span className={cn(
               "font-semibold leading-none text-[10px] md:text-[11px] mt-0.5",
@@ -193,7 +193,7 @@ const DayCell = memo(function DayCell({
                 ? isProfit 
                   ? "text-long/60 dark:text-white/60" 
                   : isLoss 
-                    ? "text-short/60 dark:text-white/60" 
+                    ? "text-short/60 dark:text-white/60"
                     : "text-muted-foreground/85"
                 : "text-muted-foreground/80"
             )}>
@@ -201,7 +201,7 @@ const DayCell = memo(function DayCell({
             </span>
           )}
 
-          {/* Secondary Stats Row (R & WinRate) */}
+          {}
           {hasTrades && (visibleStats.rMultiple || visibleStats.winRate) && (
             <div className="flex flex-wrap items-center justify-center gap-1 mt-1 w-full">
               {visibleStats.rMultiple && dayData.dailyRMultiple !== undefined && (
@@ -461,7 +461,7 @@ export default function MonthlyView({
   const timezone = useUserStore((state) => state.timezone)
   const isCompactAdvancedCalendar = useMediaQuery('(max-width: 1439px)')
   const shouldUseWeekdayOnlyLayout = hideWeekends || (!isMiniCalendar && isCompactAdvancedCalendar)
-  // Sunday-start weeks
+
   const weeks = useMemo(() => {
     const start = startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 })
     const end = endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 })
@@ -471,8 +471,7 @@ export default function MonthlyView({
     for (let i = 0; i < days.length; i += 7) {
       let weekDays = days.slice(i, i + 7)
       
-      // Filter out weekends when explicitly requested or when the advanced
-      // calendar switches to its compact weekday-first layout.
+
       if (shouldUseWeekdayOnlyLayout) {
         weekDays = weekDays.filter(day => {
           const dayIndex = day.getDay()
@@ -487,7 +486,7 @@ export default function MonthlyView({
     return weeksArray
   }, [currentDate, shouldUseWeekdayOnlyLayout])
 
-  // Start/End date bounds for journals
+
   const startBound = useMemo(() => startOfWeek(startOfMonth(currentDate), { weekStartsOn: 0 }), [currentDate])
   const endBound = useMemo(() => endOfWeek(endOfMonth(currentDate), { weekStartsOn: 0 }), [currentDate])
   const { journals } = useJournalData(startBound, endBound, null)
@@ -517,9 +516,9 @@ export default function MonthlyView({
 
   return (
     <div className={cn("flex h-full w-full overflow-hidden flex-col", isMiniCalendar ? "" : "md:flex-row")}>
-      {/* Main Calendar Grid Container */}
+      {}
       <div className={cn("flex flex-col flex-1 h-full min-h-0", isMiniCalendar ? "min-w-[300px]" : "min-w-0")}>
-        {/* Weekday Headers */}
+        {}
         <div className={cn("grid gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 md:py-2 shrink-0", shouldUseWeekdayOnlyLayout ? "grid-cols-5" : "grid-cols-7")}>
           {displayWeekdays.map((day) => (
             <div
@@ -531,7 +530,7 @@ export default function MonthlyView({
           ))}
         </div>
 
-        {/* Day Grid - flex-1 to fill remaining space, grid-rows set to number of weeks */}
+        {}
         <div className={cn("flex-1 h-0 grid gap-1 md:gap-1.5 p-2 md:p-3 pt-0 min-h-0", shouldUseWeekdayOnlyLayout ? "grid-cols-5" : "grid-cols-7")} style={{ gridTemplateRows: rowTemplate }}>
           {weeks.map((week, weekIndex) => (
             <React.Fragment key={weekIndex}>
@@ -566,7 +565,7 @@ export default function MonthlyView({
             ? "w-full border-t p-3 bg-muted/5 gap-2" 
             : "h-full min-h-0 w-[90px] border-l min-[420px]:w-[100px] sm:w-[110px] lg:w-[125px] xl:w-[140px] 2xl:w-[150px] pr-2 md:pr-3 pb-2 md:pb-3"
         )}>
-          {/* Desktop Spacer matches weekday-header height exactly */}
+          {}
           {!isMobile ? (
             <div className="grid px-2 md:px-3 py-1.5 md:py-2 shrink-0 grid-cols-1">
               <div className="text-center text-[10px] md:text-[11px] font-semibold text-muted-foreground/80 capitalize invisible select-none">
@@ -574,13 +573,13 @@ export default function MonthlyView({
               </div>
             </div>
           ) : (
-            /* Title on mobile view */
+
             <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.1em] mb-1">
               Weekly Performance
             </div>
           )}
 
-          {/* Week rows - grid to align perfectly with calendar rows */}
+          {}
           <div 
             className={cn(
               "grid gap-1 md:gap-1.5 min-h-0",

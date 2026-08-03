@@ -65,7 +65,7 @@ const SheetContent = React.forwardRef<
       className={cn("max-h-[100dvh] overscroll-contain", sheetVariants({ side }), className)}
       {...props}
     >
-      {/* Fallback a11y title to prevent runtime errors when consumers omit a SheetTitle. */}
+      {}
       <SheetPrimitive.Title className="sr-only">Panel</SheetPrimitive.Title>
       <SheetPrimitive.Description className="sr-only">
         Panel content

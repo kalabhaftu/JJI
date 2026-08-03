@@ -25,8 +25,8 @@ const ProfitFactor = React.memo(function ProfitFactor({ size }: ProfitFactorProp
   const hasData = formattedTrades && formattedTrades.length > 0
 
   const { progressValue, color } = React.useMemo(() => {
-    // Convert profit factor to percentage for circular progress
-    // Map 0-3.0 to 0-100% for better visualization
+
+
     const progress = isPrivacyMode ? 0 : Math.min((safeProfitFactor / 3.0) * 100, 100)
     const colorValue = isPrivacyMode
       ? 'hsl(var(--border))'
@@ -40,7 +40,7 @@ const ProfitFactor = React.memo(function ProfitFactor({ size }: ProfitFactorProp
   return (
     <WidgetCard isKpi>
       <div className="h-full flex flex-col justify-between">
-        {/* Header with title and info */}
+        {}
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-muted-foreground">
             Profit factor
@@ -59,13 +59,13 @@ const ProfitFactor = React.memo(function ProfitFactor({ size }: ProfitFactorProp
           </TooltipProvider>
         </div>
 
-        {/* Main content: large value + bi-color gauge */}
+        {}
         <div className="flex items-center justify-between gap-3">
           <span className="text-[1.65rem] min-[768px]:text-[1.85rem] min-[1440px]:text-3xl font-bold tracking-tight text-foreground">
             {!hasData ? <span className="text-muted-foreground text-xl">--</span> : isPrivacyMode ? '****' : safeProfitFactor.toFixed(2)}
           </span>
 
-          {/* Bi-color full circle (green/red) */}
+          {}
           <CircularProgress
             value={!hasData ? 0 : progressValue}
             size={64}

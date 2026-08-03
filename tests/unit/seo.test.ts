@@ -13,14 +13,14 @@ describe('SEO configuration', () => {
       
       const config = robots();
       
-      // Verify basic rules
+
       expect(config.rules.userAgent).toBe('*');
       expect(config.rules.allow).toBe('/');
       
-      // Verify disallowed private routes
+
       expect(config.rules.disallow).toEqual(['/api/']);
 
-      // Verify absolute sitemap URL
+
       expect(config.sitemap).toBe('https://www.justjournalit.site/sitemap.xml');
     });
   });
@@ -32,13 +32,13 @@ describe('SEO configuration', () => {
       const map = sitemap();
       const urls = map.map(entry => entry.url);
       
-      // Check for expected public routes
+
       expect(urls).toContain('https://www.justjournalit.site');
       expect(urls).toContain('https://www.justjournalit.site/docs');
       expect(urls).toContain('https://www.justjournalit.site/privacy');
       expect(urls).toContain('https://www.justjournalit.site/terms');
       
-      // Ensure private routes are NOT in sitemap
+
       expect(urls).not.toContain('https://www.justjournalit.site/dashboard');
       expect(urls).not.toContain('https://www.justjournalit.site/api');
       expect(urls).not.toContain('https://www.justjournalit.site/donate');
@@ -52,7 +52,7 @@ describe('SEO configuration', () => {
       const map = sitemap();
       const urls = map.map(entry => entry.url);
       
-      // Root should not have a double slash
+
       expect(urls).toContain('https://www.justjournalit.site');
       expect(urls).not.toContain('https://www.justjournalit.site//docs');
     });

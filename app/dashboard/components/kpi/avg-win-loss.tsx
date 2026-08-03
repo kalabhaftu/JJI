@@ -26,7 +26,7 @@ const AvgWinLoss = React.memo(function AvgWinLoss({ size }: AvgWinLossProps) {
   return (
     <WidgetCard isKpi>
       <div className="h-full flex flex-col justify-between">
-        {/* Header with title and info */}
+        {}
         <div className="flex items-center gap-1.5">
           <span className="text-xs font-medium text-muted-foreground">
             Avg win/loss trade
@@ -45,14 +45,14 @@ const AvgWinLoss = React.memo(function AvgWinLoss({ size }: AvgWinLossProps) {
           </TooltipProvider>
         </div>
 
-        {/* Main content */}
+        {}
         <div className="flex flex-col gap-2">
-          {/* Large ratio value */}
+          {}
           <span className="text-[1.65rem] min-[768px]:text-[1.85rem] min-[1440px]:text-3xl font-bold tracking-tight text-foreground">
             {isPrivacyMode ? '****' : riskRewardRatio.toFixed(2)}
           </span>
 
-          {/* Horizontal bar with win/loss values */}
+          {}
           <div className="space-y-1.5">
             <div className="w-full h-2 bg-muted rounded-full overflow-hidden flex">
               <div

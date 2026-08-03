@@ -23,11 +23,11 @@ interface TradeChartModalProps {
 function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
   const timezone = useUserStore(state => state.timezone)
   
-  // Add a key to force remount when trade changes
+
   const modalKey = React.useMemo(() => {
     return trade ? `${trade.id}_${trade.entryDate}_${trade.closeDate}` : 'empty'
   }, [trade])
-  // Validate required trade data
+
   if (!trade || !trade.entryDate || !trade.closeDate || !trade.entryPrice || !trade.closePrice) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -43,12 +43,12 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
     )
   }
 
-  // Extract and validate trade information for the chart
+
   const symbol = trade.instrument || trade.symbol || 'UNKNOWN'
   const entryTime = new Date(trade.entryDate)
   const exitTime = new Date(trade.closeDate)
 
-  // Validate dates
+
   if (isNaN(entryTime.getTime()) || isNaN(exitTime.getTime())) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -67,7 +67,7 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
   const entryPrice = parseFloat(String(trade.entryPrice))
   const exitPrice = parseFloat(String(trade.closePrice))
 
-  // Validate prices
+
   if (isNaN(entryPrice) || isNaN(exitPrice)) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -85,10 +85,10 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
 
   const side = trade.side?.toUpperCase() || 'LONG'
 
-  // Calculate appropriate timeframe for the chart
+
   const timeDiff = exitTime.getTime() - entryTime.getTime()
 
-  // Handle edge case where entry is after exit
+
   if (timeDiff <= 0) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -106,17 +106,17 @@ function TradeChartModal({ isOpen, onClose, trade }: TradeChartModalProps) {
 
   const hours = timeDiff / (1000 * 60 * 60)
 
-  let interval = '5' // Default 5 minutes
+  let interval = '5'
   if (hours < 1) {
-    interval = '1' // 1 minute for very short trades (< 1 hour)
+    interval = '1'
   } else if (hours < 4) {
-    interval = '5' // 5 minutes for short trades (< 4 hours)
+    interval = '5'
   } else if (hours < 24) {
-    interval = '15' // 15 minutes for medium trades (< 24 hours)
+    interval = '15'
   } else if (hours < 72) {
-    interval = '60' // 1 hour for longer trades (< 72 hours)
+    interval = '60'
   } else {
-    interval = 'D' // Daily for very long trades (72+ hours)
+    interval = 'D'
   }
 
   return (

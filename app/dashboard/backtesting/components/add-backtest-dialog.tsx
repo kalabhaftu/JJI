@@ -33,8 +33,8 @@ export function AddBacktestDialog({ isOpen, onClose, onAdd }: AddBacktestDialogP
 
   const handleAdd = async (backtest: any) => {
     await onAdd(backtest)
-    setIsDirty(false) // Reset dirty state on successful add
-    // Dialog will close automatically via onClose in parent after successful add
+    setIsDirty(false)
+
   }
 
   const handleCloseAttempt = (openState: boolean) => {
@@ -43,7 +43,6 @@ export function AddBacktestDialog({ isOpen, onClose, onAdd }: AddBacktestDialogP
       return
     }
 
-    // Reset state and close
     if (!openState) {
       setIsDirty(false)
     }

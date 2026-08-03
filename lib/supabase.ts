@@ -17,7 +17,7 @@ export function createClient() {
       throw new Error('Supabase client is not configured')
     }
 
-    // Build/dev-only inert client. Runtime production must have real Supabase env.
+
     return {
         auth: {
           getUser: async () => ({ data: { user: null }, error: null }),
@@ -105,3 +105,4 @@ export function createClient() {
     }
   })
 }
+

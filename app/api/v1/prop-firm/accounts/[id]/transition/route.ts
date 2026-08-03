@@ -12,15 +12,12 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-// Validation schema for phase transition
+
 const PhaseTransitionSchema = z.object({
   nextPhaseId: z.string().min(1, 'Next phase ID is required')
 })
 
-/**
- * Helper function to determine if a phase number represents the funded stage
- * based on the evaluation type.
- */
+
 async function transitionPropFirmAccount(request: NextRequest, { params }: RouteParams) {
   const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
@@ -36,7 +33,7 @@ async function transitionPropFirmAccount(request: NextRequest, { params }: Route
     const internalUserId = identity.internalUserId
 
     const { id: masterAccountId } = await params
-    // NO PARSING NEEDED - phase transition receives pure masterAccountId, not composite ID
+
     const body = await request.json()
     const { nextPhaseId } = PhaseTransitionSchema.parse(body)
     const { nextPhaseName, ...result } = await advancePropFirmPhaseForUser({

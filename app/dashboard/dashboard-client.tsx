@@ -34,7 +34,6 @@ export function DashboardClient() {
 
   const { error, refreshAllData } = useData()
 
-  // Redirect old ?tab= URLs to new standalone routes (backwards compatibility)
   useEffect(() => {
     const tab = searchParams?.get('tab')
     if (tab) {
@@ -52,7 +51,7 @@ export function DashboardClient() {
 
   useEffect(() => {
     const updateNavbarHeight = () => {
-      // The navbar is now sticky (not fixed), query by sticky class
+
       const navbar = document.querySelector('nav.sticky') as HTMLElement
       if (navbar) {
         const height = navbar.offsetHeight
@@ -60,7 +59,6 @@ export function DashboardClient() {
       }
     }
 
-    // Skip ResizeObserver and event listeners on mobile/tablet screens to prevent layout thrashing
     const isMobileScreen = typeof window !== 'undefined' && window.innerWidth < 1024
     if (isMobileScreen) {
       document.documentElement.style.setProperty('--navbar-height', '48px')
@@ -69,19 +67,17 @@ export function DashboardClient() {
 
     updateNavbarHeight()
 
-    // Use ResizeObserver for navbar height changes
     const navbar = document.querySelector('nav.sticky')
     let resizeObserver: ResizeObserver | null = null
 
     if (navbar) {
       resizeObserver = new ResizeObserver(() => {
-        // Wrap in requestAnimationFrame to avoid "ResizeObserver loop limit exceeded"
+
         requestAnimationFrame(updateNavbarHeight)
       })
       resizeObserver.observe(navbar)
     }
 
-    // Fallback window resize listener
     window.addEventListener('resize', updateNavbarHeight)
 
     return () => {

@@ -64,7 +64,7 @@ function buildTradeFilterWhere(params: URLSearchParams) {
   return conditions.length > 0 ? and(...conditions) : undefined
 }
 
-// GET - List all trading models for user
+
 async function listTradingModels(request: NextRequest) {
   const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes
@@ -93,7 +93,7 @@ async function listTradingModels(request: NextRequest) {
       getRuntimeBreakEvenThreshold(userId)
     ])
 
-    // Parse rules from JSON to array and calculate stats
+
     const formattedModels = models.map((model: (typeof models)[number]) => {
       const trades = model.Trade || []
       const tradeCount = trades.length
@@ -104,7 +104,7 @@ async function listTradingModels(request: NextRequest) {
           ? model.rules
           : []
 
-      // Initialize rule adherence map
+
       const ruleAdherence: Record<string, { followed: number; total: number }> = {}
       modelRules.forEach((rule: any) => {
         const text = typeof rule === 'string' ? rule : rule.text
@@ -129,7 +129,7 @@ async function listTradingModels(request: NextRequest) {
           breakEvenCount++
         }
 
-        // Track rule adherence
+
         const selectedRules = Array.isArray(trade.selectedRules) ? trade.selectedRules : []
         modelRules.forEach((rule: any) => {
           const text = typeof rule === 'string' ? rule : rule.text
@@ -140,10 +140,10 @@ async function listTradingModels(request: NextRequest) {
         })
       })
 
-      // Calculate win rate (excluding break-even from denominator)
+
       const winRate = calculateWinRate(winCount, lossCount)
 
-      // Overall adherence rate
+
       let totalMet = 0
       let totalPossible = 0
       Object.values(ruleAdherence).forEach(stat => {
@@ -152,7 +152,7 @@ async function listTradingModels(request: NextRequest) {
       })
       const avgAdherence = totalPossible > 0 ? (totalMet / totalPossible) * 100 : 0
 
-      // Remove Trade array from response to keep it light
+
       const { Trade, ...modelData } = model
 
       return {
@@ -181,7 +181,7 @@ async function listTradingModels(request: NextRequest) {
   }
 }
 
-// POST - Create new trading model
+
 async function createTradingModel(request: NextRequest) {
   const rateLimitRes = await applyApiRoutePolicy(request)
   if (rateLimitRes) return rateLimitRes

@@ -5,12 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WidgetErrorBoundary } from '@/components/error-boundary'
 import { cn } from '@/lib/utils'
 
-// Calendar components
 import CalendarPnl from '../components/calendar/calendar-widget'
 import MiniCalendarWrapper from '../components/calendar/mini-calendar-wrapper'
 import RecentTradesWidget from '../components/trades/recent-trades-widget'
 
-// KPI components
 import AccountBalancePnl from '../components/kpi/account-balance-pnl'
 import TradeWinRate from '../components/kpi/trade-win-rate'
 import DayWinRate from '../components/kpi/day-win-rate'
@@ -93,7 +91,7 @@ export interface WidgetConfig {
   minWidth?: number
   minHeight?: number
   previewHeight?: number
-  kpiRowOnly?: boolean // If true, can only be placed in row 0 (first KPI row with 5 slots)
+  kpiRowOnly?: boolean
   getComponent: (props: { size: WidgetSize }) => React.ReactElement
   getPreview: () => React.ReactElement
 }
@@ -468,9 +466,9 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetConfig> = {
                const x = Math.random() * 80 + 10
                const y = Math.random() * 80 + 10
                return (
-                 <div 
-                   key={i} 
-                   className={cn("absolute w-2 h-2 rounded-full", Math.random() > 0.5 ? "bg-long" : "bg-short")} 
+                 <div
+                   key={i}
+                   className={cn("absolute w-2 h-2 rounded-full", Math.random() > 0.5 ? "bg-long" : "bg-short")}
                    style={{ left: `${x}%`, top: `${y}%`, opacity: 0.6 }}
                  />
                )
@@ -499,9 +497,9 @@ export const WIDGET_REGISTRY: Record<WidgetType, WidgetConfig> = {
                const x = Math.random() * 80 + 10
                const y = Math.random() * 80 + 10
                return (
-                 <div 
-                   key={i} 
-                   className={cn("absolute w-2 h-2 rounded-full", Math.random() > 0.5 ? "bg-long" : "bg-short")} 
+                 <div
+                   key={i}
+                   className={cn("absolute w-2 h-2 rounded-full", Math.random() > 0.5 ? "bg-long" : "bg-short")}
                    style={{ left: `${x}%`, top: `${y}%`, opacity: 0.6 }}
                  />
                )
@@ -879,11 +877,11 @@ function isKpiRowOnly(type: WidgetType): boolean {
 }
 
 function canPlaceWidgetInRow(type: WidgetType, row: number): boolean {
-  // If widget is KPI-only, it can only be placed in row 0 (first row with 5 KPI slots)
+
   if (isKpiRowOnly(type)) {
     return row === 0
   }
-  // Other widgets can be placed anywhere except row 0 (reserved for KPIs)
+
   return row > 0
 }
 
@@ -897,4 +895,4 @@ function getWidgetComponent(type: WidgetType, size: WidgetSize): React.ReactElem
 
 function getWidgetPreview(type: WidgetType): React.ReactElement {
   return WIDGET_REGISTRY[type].getPreview()
-} 
+}

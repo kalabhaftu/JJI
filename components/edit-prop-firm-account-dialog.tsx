@@ -92,7 +92,7 @@ export function EditPropFirmAccountDialog({
           setValue('accountName', account.accountName || account.name || account.displayName || '')
         }
       } catch (error) {
-        // If draft is corrupted, use current account values
+
         setValue('accountName', account.accountName || account.name || account.displayName || '')
       }
     }
@@ -104,12 +104,12 @@ export function EditPropFirmAccountDialog({
         localStorage.setItem(draftKey, JSON.stringify(formValues))
         setHasUnsavedChanges(true)
       } catch (error) {
-        // Ignore localStorage errors
+
       }
     }
   }, [formValues, isDirty, draftKey, open])
 
-  // Warn before closing with unsaved changes
+
   const handleClose = (forceClose = false) => {
     if (hasUnsavedChanges && isDirty && !forceClose) {
       setShowUnsavedWarning(true)
@@ -119,7 +119,7 @@ export function EditPropFirmAccountDialog({
         try {
           localStorage.removeItem(draftKey)
         } catch (error) {
-          // Ignore localStorage errors
+
         }
       }
       reset()
@@ -134,7 +134,7 @@ export function EditPropFirmAccountDialog({
       try {
         localStorage.removeItem(draftKey)
       } catch (error) {
-        // Ignore localStorage errors
+
       }
     }
     reset()
@@ -155,7 +155,7 @@ export function EditPropFirmAccountDialog({
     try {
       setIsSaving(true)
 
-      // For prop firm accounts, use master account ID
+
       const masterAccountId = account.currentPhaseDetails?.masterAccountId || account.id
       const endpoint = `/api/v1/prop-firm/accounts/${masterAccountId}`
 
@@ -182,7 +182,7 @@ export function EditPropFirmAccountDialog({
         try {
           localStorage.removeItem(draftKey)
         } catch (error) {
-          // Ignore localStorage errors
+
         }
       }
 
@@ -220,7 +220,7 @@ export function EditPropFirmAccountDialog({
           <form 
             onSubmit={handleSubmit(onSubmit)} 
             onKeyDown={(e) => {
-              // Prevent Enter key from submitting the form when in input fields
+
               if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
                 e.preventDefault()
               }

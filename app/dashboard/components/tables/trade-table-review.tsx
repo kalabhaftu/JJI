@@ -542,7 +542,7 @@ export function TradeTableReview() {
       setColumnVisibility((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
         const persistNext: VisibilityState = { ...next }
-        // Never leak tablet auto-hides into the persisted config.
+
         if (isTablet) {
           for (const id of AUTO_HIDDEN_ON_TABLET) {
             if (tableConfig?.columnVisibility?.[id] === undefined) {
@@ -557,8 +557,7 @@ export function TradeTableReview() {
     [updateColumnVisibilityState, isTablet, tableConfig]
   )
 
-  // On tablet widths the full column set overflows, so hide less critical
-  // columns unless the user explicitly configured them.
+
   const effectiveColumnVisibility = React.useMemo<VisibilityState>(() => {
     if (!isTablet) return columnVisibility
     const merged: VisibilityState = { ...columnVisibility }
@@ -591,7 +590,7 @@ export function TradeTableReview() {
     updatePageIndex('trade-table', 0)
   }, [activeTab, updatePageIndex])
 
-  // Server-paginated trades (prevents multi-MB payloads on "All time")
+
   const { data: pagedTradesData, isLoading: isLoadingTrades } = useFilteredTrades({
     accounts: accountNumbers?.length ? accountNumbers : undefined,
     dateFrom: dateRange?.from?.toISOString?.(),
@@ -716,7 +715,7 @@ export function TradeTableReview() {
   const handleBulkTag = React.useCallback(async (tagId: string) => {
     if (selectedTrades.length === 0) return
     try {
-      // For each selected trade, add the tag (append to existing tags)
+
       await appendTagsToTrades(selectedTrades, [tagId])
       tableRef.current?.resetRowSelection()
       setSelectedTrades([])

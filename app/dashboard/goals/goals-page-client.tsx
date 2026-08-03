@@ -319,7 +319,6 @@ export function GoalsPageClient() {
     onError: () => toast.error('Failed to delete goal'),
   })
 
-  // Edit state
   const [editingGoal, setEditingGoal] = useState<Goal | null>(null)
   const [editForm, setEditForm] = useState({
     title: '',
@@ -390,9 +389,9 @@ export function GoalsPageClient() {
       toast.error('Title and target value are required')
       return
     }
-    
+
     const { startDate, endDate, targetValue, ...rest } = form
-    
+
     createMutation.mutate({
       ...rest,
       targetValue: parseFloat(targetValue),
@@ -548,7 +547,7 @@ export function GoalsPageClient() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Goal Dialog */}
+      {                      }
       <Dialog open={!!editingGoal} onOpenChange={(open) => !open && setEditingGoal(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>

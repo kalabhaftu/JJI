@@ -67,9 +67,9 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
           </DialogHeader>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Left Column - Backtest Data */}
+            {                                 }
             <div className="lg:col-span-2 space-y-6">
-              {/* Execution Summary */}
+              {                       }
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -118,7 +118,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                 </CardContent>
               </Card>
 
-              {/* Risk Management */}
+              {                     }
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -148,7 +148,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                 </CardContent>
               </Card>
 
-              {/* Strategy & Session Details */}
+              {                                }
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -178,7 +178,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                 </CardContent>
               </Card>
 
-              {/* Backtest Analysis */}
+              {                       }
               {backtest.notes && (
                 <Card>
                   <CardHeader>
@@ -192,7 +192,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                 </Card>
               )}
 
-              {/* Tags */}
+              {          }
               {backtest.tags && backtest.tags.length > 0 && (
                 <Card>
                   <CardHeader>
@@ -211,7 +211,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               )}
             </div>
 
-            {/* Right Column - Images & Metrics */}
+            {                                     }
             <div className="space-y-6">
               {allImages.length > 0 && (
                 <Card>
@@ -251,7 +251,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                 </Card>
               )}
 
-              {/* Key Metrics Summary */}
+              {                         }
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
@@ -313,7 +313,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
         </DialogContent>
       </Dialog>
 
-      {/* Image Viewer Modal */}
+      {                        }
       {selectedImage && (
         <Dialog open={!!selectedImage} onOpenChange={() => setSelectedImage(null)}>
           <DialogContent className="max-w-[95vw] max-h-[95vh] p-2">

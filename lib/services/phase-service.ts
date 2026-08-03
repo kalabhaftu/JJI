@@ -164,10 +164,6 @@ async function applyPhaseEvaluation(
   })
 }
 
-/**
- * Phase Service
- * Handles bulk evaluation and management of prop firm phase accounts.
- */
 
 export async function evaluateAllActivePhases(options?: {
   masterAccountId?: string
@@ -201,12 +197,12 @@ export async function evaluateAllActivePhases(options?: {
       }
     })
     
-    // Filter to those whose MasterAccount is also active
+
     const activePhases = activePhasesRaw.filter(p => p.MasterAccount?.status === 'active')
 
     results.totalPhases = activePhases.length
 
-    // Evaluate each active phase
+
     for (const phase of activePhases) {
       try {
         const evaluation = await PhaseEvaluationEngine.evaluatePhase(
@@ -244,7 +240,7 @@ export async function evaluateAllActivePhases(options?: {
 
         if (evaluation.isFailed) results.failed++
 
-        // If account passed (profit target met)
+
         if (evaluation.isPassed && !evaluation.isFailed) {
           results.passed++
         }
@@ -272,3 +268,4 @@ export async function evaluateAllActivePhases(options?: {
 
   return results
 }
+

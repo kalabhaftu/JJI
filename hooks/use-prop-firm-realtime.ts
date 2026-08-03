@@ -95,7 +95,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   const { accountId, enabled = true } = options
   const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
   const user = useUserStore(state => state.user)
-  
+
   const [account, setAccount] = useState<PropFirmAccountLocal | null>(null)
   const [drawdown, setDrawdown] = useState<DrawdownData | null>(null)
   const [isLoading, setIsLoading] = useState(false)
@@ -103,14 +103,14 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
   const [isFetching, setIsFetching] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
-  
+
   const previousAccountRef = useRef<PropFirmAccountLocal | null>(null)
   const previousDrawdownRef = useRef<DrawdownData | null>(null)
   const isFetchingRef = useRef(false)
   const hasFetchedRef = useRef(false)
 
   const fetchAccountData = useCallback(async (showLoadingState = true) => {
-    // Use ref to prevent duplicate calls - this avoids dependency issues
+
     if (!accountId || !enabled || isFetchingRef.current) return
 
     try {
@@ -136,7 +136,6 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
         throw new Error('Invalid response format: missing account or drawdown data')
       }
 
-      // Check for status changes and show notifications
       if (previousAccountRef.current && previousAccountRef.current.status !== accountData.status) {
         if (accountData.status === 'failed') {
           toast.error("Account Failed", {
@@ -149,7 +148,6 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
         }
       }
 
-      // Check for breach alerts
       if (drawdownData?.isBreached && (!previousDrawdownRef.current?.isBreached)) {
         toast.error("Drawdown Breach Alert!", {
           description: `Account ${accountData.accountName || accountData.number} has breached ${drawdownData.breachType?.replace('_', ' ')} limits.`,
@@ -179,33 +177,30 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
     await fetchAccountData(true)
   }, [fetchAccountData])
 
-  // Subscribe to realtime changes for MasterAccount, PhaseAccount, and Trade
   useDatabaseRealtime({
     userId: user?.id,
     enabled: enabled && !!accountId && !!user?.id,
     onAccountChange: (change) => {
       if (!accountId) return
-      
-      // Handle MasterAccount changes
+
       if (change.table === 'MasterAccount') {
         const changedAccountId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
         if (changedAccountId === accountId) {
           fetchAccountData(false)
         }
       }
-      // Handle PhaseAccount changes
+
       else if (change.table === 'PhaseAccount') {
         const phaseMasterAccountId = (change.newRecord?.masterAccountId || change.oldRecord?.masterAccountId) as string | undefined
         if (phaseMasterAccountId === accountId) {
           fetchAccountData(false)
         }
       }
-      // Account table changes don't affect Prop Firm accounts
+
     },
     onTradeChange: (change) => {
       if (!accountId || !account) return
-      
-      // Check if trade belongs to this account's phases
+
       const tradePhaseAccountId = (change.newRecord?.phaseAccountId || change.oldRecord?.phaseAccountId) as string | undefined
       if (tradePhaseAccountId) {
         const accountPhaseIds = account.phases.map(p => p.id)
@@ -219,20 +214,19 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
     }
   })
 
-  // Track previous accountId to detect changes and reset hasFetchedRef
   const prevAccountIdRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
     if (!enabled || !accountId) return
-    
+
     if (prevAccountIdRef.current !== accountId) {
       hasFetchedRef.current = false
       prevAccountIdRef.current = accountId
     }
-    
+
     if (hasFetchedRef.current) return
     hasFetchedRef.current = true
-    
+
     fetchAccountData(true)
   }, [enabled, accountId, fetchAccountData])
 

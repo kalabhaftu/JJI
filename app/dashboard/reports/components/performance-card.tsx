@@ -46,19 +46,17 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
         try {
             const html2canvas = (await import('html2canvas')).default
 
-            // Clone into a hidden container at full size to avoid any clipping
             const cardEl = cardRef.current
             const clone = cardEl.cloneNode(true) as HTMLElement
             clone.style.position = 'fixed'
             clone.style.left = '-9999px'
             clone.style.top = '0'
-            clone.style.width = '480px'  // Fixed width for consistent exports
+            clone.style.width = '480px'
             clone.style.height = 'auto'
             clone.style.transform = 'none'
             clone.style.overflow = 'visible'
             document.body.appendChild(clone)
 
-            // Wait for layout
             await new Promise(r => setTimeout(r, 50))
 
             const canvas = await html2canvas(clone, {
@@ -127,7 +125,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
 
     return (
         <div className="space-y-5 w-full">
-            {/* ── The shareable card ── */}
+            {                              }
             <div
                 ref={cardRef}
                 data-performance-card
@@ -138,9 +136,9 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                 )}
                 style={{ minHeight: 280 }}
             >
-                {/* Subtle background glow - using radial gradients supported by html2canvas */}
-                <div 
-                    className="pointer-events-none absolute inset-0 opacity-20 z-0" 
+                {                                                                              }
+                <div
+                    className="pointer-events-none absolute inset-0 opacity-20 z-0"
                     style={{
                         background: `
                             radial-gradient(circle 200px at 100% 0%, ${isProfit ? 'hsl(var(--chart-profit))' : 'hsl(var(--chart-loss))'}, transparent 70%),
@@ -149,7 +147,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     }}
                 />
 
-                {/* Header */}
+                {            }
                 <div className="relative flex items-start justify-between gap-4 z-10">
                     <div>
                         <div className="flex items-center gap-2 mb-1">
@@ -174,7 +172,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     </div>
                 </div>
 
-                {/* Main P&L */}
+                {              }
                 <div className="relative z-10 flex flex-col items-center flex-1 justify-center -mt-2">
                     <span className="text-[9px] font-black uppercase tracking-[0.5em] text-muted-foreground mb-1">
                         Net P&L Result
@@ -193,7 +191,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     </div>
                 </div>
 
-                {/* Stats grid */}
+                {                }
                 <div className="relative z-10 grid grid-cols-3 gap-2">
                     {[
                         { label: 'Trades', value: stats.totalTrades, sub: 'Total executions' },
@@ -208,7 +206,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     ))}
                 </div>
 
-                {/* Footer */}
+                {            }
                 <div className="relative z-10 flex items-center justify-between border-t border-border pt-3">
                     <div className="flex gap-4">
                         <div>
@@ -228,7 +226,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                 </div>
             </div>
 
-            {/* ── Action buttons ── */}
+            {                          }
             <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                     onClick={handleDownload}

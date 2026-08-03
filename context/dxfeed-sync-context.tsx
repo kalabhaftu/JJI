@@ -7,7 +7,6 @@ import { reportError } from '@/lib/observability/report-error'
 import { useUserStore } from '@/store/user-store'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 
-/** Client-safe subset of Synchronization (token stripped, replaced with hasToken) */
 export interface DxFeedSyncAccount {
   id: string
   userId: string
@@ -202,7 +201,6 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
     }
   }, [accounts, disabled, performSyncForAccount])
 
-  // Schedule the next auto-sync check for when a connection actually becomes due
   const clearNextSyncTimer = useCallback(() => {
     if (nextSyncTimerRef.current) {
       clearTimeout(nextSyncTimerRef.current)
@@ -258,7 +256,6 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
 
   checkAndPerformSyncsRef.current = checkAndPerformSyncs
 
-  // Trigger an immediate check when a synchronization row is updated elsewhere
   useDatabaseRealtime({
     userId: user?.id,
     enabled: enableAutoSync && !disabled,
@@ -267,7 +264,6 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
     },
   })
 
-  // Re-check when the tab regains focus or the network comes back
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') void checkAndPerformSyncsRef.current()
@@ -285,7 +281,6 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
     }
   }, [])
 
-  // Reschedule whenever accounts, the toggle, or the interval change
   useEffect(() => {
     scheduleNextSync()
     return clearNextSyncTimer

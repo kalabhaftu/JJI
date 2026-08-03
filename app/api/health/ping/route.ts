@@ -4,12 +4,7 @@ import { sql } from 'drizzle-orm'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-/**
- * Lightweight health-check that touches the database to prevent Supabase
- * free-tier from pausing due to inactivity.
- *
- * No auth required - the query is a harmless `SELECT 1`.
- */
+
 export async function GET(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   try {

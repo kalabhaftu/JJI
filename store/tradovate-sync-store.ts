@@ -24,12 +24,12 @@ interface TradovateOAuthState {
   expiresAt?: string | undefined
   accounts?: TradovateAccount[] | undefined
   lastSync?: string | undefined
-  oauthState?: string | undefined // For OAuth flow security
-  environment: TradovateEnvironment // Add environment selection
+  oauthState?: string | undefined
+  environment: TradovateEnvironment
 }
 
 interface TradovateSyncStore extends TradovateOAuthState {
-  // Actions
+
   setAuthenticated: (authenticated: boolean) => void
   setTokens: (accessToken: string, refreshToken: string, expiresAt: string) => void
   setAccounts: (accounts: TradovateAccount[]) => void
@@ -48,7 +48,7 @@ interface TradovateSyncStore extends TradovateOAuthState {
 export const useTradovateSyncStore = create<TradovateSyncStore>()(
   persist(
     (set, get) => ({
-      // Initial state
+
       isAuthenticated: false,
       accessToken: undefined,
       refreshToken: undefined,
@@ -56,9 +56,9 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
       accounts: undefined,
       lastSync: undefined,
       oauthState: undefined,
-      environment: 'demo', // Default to demo for safety
+      environment: 'demo',
 
-      // Actions
+
       setAuthenticated: (authenticated: boolean) => {
         set({ isAuthenticated: authenticated })
       },
@@ -70,7 +70,7 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
           refreshToken,
           expiresAt
         })
-        // Automatically sync with sessionStorage for web worker
+
         sessionStorage.setItem('tradovate_access_token', accessToken)
         sessionStorage.setItem('tradovate_token_expiration', expiresAt)
         sessionStorage.setItem('tradovate_environment', get().environment)
@@ -101,7 +101,7 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
           accounts: undefined,
           lastSync: undefined,
           oauthState: undefined
-          // Keep environment setting when clearing
+
         })
       },
 
@@ -121,7 +121,7 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
       },
 
       setEnvironment: (environment: TradovateEnvironment) => {
-        // Clear tokens when switching environments
+
         set({
           environment,
           isAuthenticated: false,
@@ -141,7 +141,7 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
           : 'https://live.tradovateapi.com'
       },
 
-      // Sync tokens with sessionStorage for web worker
+
       syncWithSessionStorage: () => {
         const state = get()
         if (state.accessToken && state.expiresAt) {
@@ -155,7 +155,7 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
         }
       },
 
-      // Load tokens from sessionStorage
+
       loadFromSessionStorage: () => {
         const accessToken = sessionStorage.getItem('tradovate_access_token')
         const expiresAt = sessionStorage.getItem('tradovate_token_expiration')
@@ -174,9 +174,9 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
       }
     }),
     {
-      name: 'tradovate-sync-storage', // unique name for localStorage key
+      name: 'tradovate-sync-storage',
       partialize: (state) => ({
-        // Only persist these fields
+
         isAuthenticated: state.isAuthenticated,
         accessToken: state.accessToken,
         refreshToken: state.refreshToken,
@@ -184,7 +184,7 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
         accounts: state.accounts,
         lastSync: state.lastSync,
         environment: state.environment,
-        oauthState: state.oauthState // Temporarily persist for OAuth flow - cleared after use
+        oauthState: state.oauthState
       }),
     }
   )

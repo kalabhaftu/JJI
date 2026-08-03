@@ -66,10 +66,7 @@ export function PhaseTransitionDialog({
   const [isTransitioning, setIsTransitioning] = useState(false)
   const router = useRouter()
 
-  /**
-   * Helper function to determine if a phase number represents the funded stage
-   * based on the evaluation type.
-   */
+
   const isFundedPhase = (phaseNumber: number): boolean => {
     switch (evaluationType) {
       case 'Two Step':
@@ -79,7 +76,7 @@ export function PhaseTransitionDialog({
       case 'Instant':
         return phaseNumber >= 1
       default:
-        return phaseNumber >= 3 // Default to Two Step behavior
+        return phaseNumber >= 3
     }
   }
 
@@ -120,14 +117,14 @@ export function PhaseTransitionDialog({
         icon: <CheckCircle2 className="h-4 w-4" />
       })
 
-      // Close dialog FIRST to prevent re-triggering
+
       onClose()
 
       setNextPhaseId('')
 
-      // Wait a bit before refreshing to allow dialog to close
+
       setTimeout(() => {
-        // Call success callback to refresh data
+
         onSuccess?.()
       }, 500)
 
@@ -167,7 +164,7 @@ export function PhaseTransitionDialog({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[550px]">
         <DialogHeader className="text-center space-y-4">
-          {/* Animated Icon */}
+          {}
           <div className="mx-auto relative">
             <div className="relative p-4 bg-muted/30 rounded-2xl">
               <div className="absolute inset-0 bg-muted/40 rounded-2xl animate-pulse" />
@@ -175,7 +172,7 @@ export function PhaseTransitionDialog({
                 {getTransitionIcon()}
               </div>
             </div>
-            {/* Decorative rings */}
+            {}
             <div className="absolute -inset-2 bg-muted/10 rounded-2xl blur-xl opacity-50 animate-pulse" />
           </div>
 
@@ -190,7 +187,7 @@ export function PhaseTransitionDialog({
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
-          {/* Progress Summary */}
+          {}
           <Card className="border-border bg-muted/30">
             <CardContent className="pt-4 space-y-3">
               <div className="flex items-center justify-between">
@@ -225,7 +222,7 @@ export function PhaseTransitionDialog({
             </CardContent>
           </Card>
 
-          {/* Phase Transition Flow */}
+          {}
           <div className="relative flex items-center justify-center gap-4 py-2">
             <div className="text-center">
               <div className="relative w-14 h-14 bg-long/10 rounded-xl flex items-center justify-center mb-2 transition-all hover:scale-105">
@@ -247,7 +244,7 @@ export function PhaseTransitionDialog({
             </div>
           </div>
 
-          {/* Next Phase ID Input */}
+          {}
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 bg-muted/50 border border-border rounded-lg">
               <div className="p-2 bg-muted rounded-lg">
@@ -281,7 +278,7 @@ export function PhaseTransitionDialog({
             </div>
           </div>
 
-          {/* Action Buttons */}
+          {}
           <div className="flex gap-3 pt-2">
             <Button
               variant="outline"

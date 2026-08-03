@@ -1,10 +1,4 @@
-/**
- * GET /api/cron/check-subscriptions
- * Daily cron job: checks upcoming payment dues, sends notifications,
- * and expires overdue subscriptions past grace period.
- *
- * Runs daily at 8:00 UTC via Vercel Cron.
- */
+
 
 import { NextRequest, NextResponse } from 'next/server'
 import { runSubscriptionChecks } from '@/lib/services/subscription-service'

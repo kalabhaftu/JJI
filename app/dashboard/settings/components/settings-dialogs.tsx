@@ -58,7 +58,7 @@ export function SettingsDialogs({
 }: SettingsDialogsProps) {
   return (
     <>
-      {/* Delete Account Modal */}
+      {                          }
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>

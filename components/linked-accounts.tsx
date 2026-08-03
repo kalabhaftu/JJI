@@ -33,7 +33,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 
-// Type for the Supabase getUserIdentities response
+
 interface UserIdentity {
   id: string
   identity_id: string
@@ -52,7 +52,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
   useEffect(() => {
     loadIdentities()
 
-    // Check if user just returned from linking an account
+
     const urlParams = new URLSearchParams(window.location.search)
     const linked = urlParams.get('linked')
     if (linked) {
@@ -67,7 +67,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
     try {
       setLoading(true)
       const userIdentities = await getUserIdentities()
-      // Handle the response structure - it returns { identities: [...] }
+
       const identitiesArray = (userIdentities?.identities || []) as UserIdentity[]
       setIdentities(identitiesArray)
     } catch (error) {

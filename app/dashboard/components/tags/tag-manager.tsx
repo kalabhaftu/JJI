@@ -38,16 +38,16 @@ interface TagManagerProps {
 }
 
 const DEFAULT_COLORS = [
-  'hsl(var(--chart-1))', // blue
-  'hsl(var(--chart-profit))', // green
-  'hsl(var(--chart-4))', // amber
-  'hsl(var(--chart-loss))', // red
-  'hsl(var(--chart-2))', // purple
-  'hsl(var(--chart-3))', // pink
-  'hsl(var(--chart-5))', // cyan
-  'hsl(var(--primary))', // lime
-  'hsl(var(--muted-foreground))', // orange
-  'hsl(var(--ring))', // indigo
+  'hsl(var(--chart-1))',
+  'hsl(var(--chart-profit))',
+  'hsl(var(--chart-4))',
+  'hsl(var(--chart-loss))',
+  'hsl(var(--chart-2))',
+  'hsl(var(--chart-3))',
+  'hsl(var(--chart-5))',
+  'hsl(var(--primary))',
+  'hsl(var(--muted-foreground))',
+  'hsl(var(--ring))',
 ]
 
 export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
@@ -143,7 +143,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Create New Tag */}
+          {}
           <div className="space-y-3 border rounded-lg p-4 bg-muted/30">
             <h3 className="text-sm font-semibold">Create New Tag</h3>
             <div className="flex gap-2">
@@ -190,7 +190,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
             </div>
           </div>
 
-          {/* Existing Tags */}
+          {}
           <div className="space-y-2">
             <h3 className="text-sm font-semibold">Your Tags ({tags.length})</h3>
             <ScrollArea className="h-[300px] border rounded-lg p-2">
@@ -302,7 +302,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
       </DialogContent>
     </Dialog>
 
-    {/* Delete Tag Confirmation Dialog */}
+    {}
     <AlertDialog open={!!deleteTagTarget} onOpenChange={(open) => !open && setDeleteTagTarget(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>

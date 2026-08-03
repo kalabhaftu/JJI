@@ -28,7 +28,7 @@ function normalizePlanId(value: string, environment: WhopEnvironment): string {
       return segments[1]!
     }
   } catch {
-    // The stable error below covers malformed URLs without reflecting secrets.
+
   }
 
   throw new Error(
@@ -69,3 +69,4 @@ export function isWhopCheckoutConfigured(): boolean {
     return false
   }
 }
+

@@ -30,27 +30,23 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
   const isLoss = backtest.outcome === 'LOSS'
   const hasPreviewImage = backtest.cardPreviewImage
 
-  // Format session display
   const formatSession = (session: string) => {
-    return session.split('_').map(word => 
+    return session.split('_').map(word =>
       word.charAt(0) + word.slice(1).toLowerCase()
     ).join(' ')
   }
 
-  // Format model display
   const formatModel = (model: string, customModel?: string) => {
     if (model === 'CUSTOM' && customModel) return customModel
     return model.replace(/_/g, ' ')
   }
 
-  // Get badge variant based on outcome
   const getOutcomeVariant = (): "default" | "secondary" | "destructive" | "outline" => {
     if (isWin) return 'default'
     if (isLoss) return 'destructive'
     return 'outline'
   }
 
-  // Direction badge uses monochromatic theme
   const getDirectionColor = () => {
     return 'text-foreground'
   }
@@ -94,7 +90,7 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
       </CardHeader>
 
       <CardContent className="space-y-4 flex-1 flex flex-col">
-        {/* Preview Image */}
+        {                   }
         <div className="relative aspect-video overflow-hidden bg-muted rounded-lg">
           {hasPreviewImage && backtest.cardPreviewImage ? (
             <>
@@ -122,7 +118,7 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
           )}
         </div>
 
-        {/* First Row: Outcome & R:R */}
+        {                              }
         <div className="grid grid-cols-2 gap-4">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Result</p>
@@ -138,7 +134,7 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
           </div>
         </div>
 
-        {/* Second Row: Model, Session, Direction */}
+        {                                           }
         <div className="grid grid-cols-3 gap-4">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Model</p>
@@ -160,7 +156,7 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
           </div>
         </div>
 
-        {/* Third Row: Date & Tags */}
+        {                            }
         <div className="grid grid-cols-1 gap-4">
           <div>
             <p className="text-xs text-muted-foreground mb-1">Date</p>
@@ -170,7 +166,7 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
           </div>
         </div>
 
-        {/* Tags */}
+        {          }
         {backtest.tags && backtest.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-auto">
             {backtest.tags.slice(0, 3).map((tag, idx) => (

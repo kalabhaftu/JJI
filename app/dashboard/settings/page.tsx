@@ -565,7 +565,6 @@ export default function SettingsPage() {
     setIsEditingProfile(false)
   }
 
-
   const [activeTab, setActiveTab] = useState<SettingsSectionId>('profile')
 
   useEffect(() => {
@@ -586,7 +585,7 @@ export default function SettingsPage() {
 
   return (
     <SettingsShell>
-      {/* Header */}
+      {            }
       <SettingsHeader>
         <PageHeader title="Settings" className="gap-2" />
       </SettingsHeader>
@@ -594,7 +593,7 @@ export default function SettingsPage() {
       <div className="flex flex-col md:flex-row gap-8 items-start">
         <SettingsNavigation categories={categories} value={activeTab} onValueChange={setActiveTab} />
 
-        {/* Tab Content Panel */}
+        {                       }
         <div className="flex-1 min-w-0 w-full">
           <motion.div
             key={activeTab}

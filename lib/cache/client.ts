@@ -18,7 +18,7 @@ function createRedisClient(): Redis {
 
   if (!url || !token) {
     logger.warn('Redis/KV credentials are not set. Cache will fail-open, but rate limits and cache-backed features will be degraded.')
-    // Build/dev-only fail-open client for unconfigured environments.
+
     return {
       get: async () => null,
       set: async () => 'OK',
@@ -40,3 +40,4 @@ export const redis = global._redis ?? createRedisClient()
 if (process.env.NODE_ENV !== 'production') {
   global._redis = redis
 }
+

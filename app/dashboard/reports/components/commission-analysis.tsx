@@ -50,7 +50,6 @@ export function CommissionAnalysis({ trades }: CommissionAnalysisProps) {
     const commissionPct = totalGrossPnl !== 0 ? (totalCommission / Math.abs(totalGrossPnl)) * 100 : 0
     const avgPerTrade = trades.length > 0 ? totalCommission / trades.length : 0
 
-    // Top instruments by commission
     const topInstruments = Object.entries(byInstrument)
       .map(([name, data]) => ({
         name,
@@ -107,7 +106,7 @@ export function CommissionAnalysis({ trades }: CommissionAnalysisProps) {
     <div className="bg-muted/10 border border-border/40 rounded-2xl p-6">
       <h3 className="text-[10px] uppercase font-black text-muted-foreground mb-4 tracking-[0.2em]">Commission & Fee Impact</h3>
 
-      {/* Summary Cards */}
+      {                   }
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
         <div className="rounded-xl border border-border/20 bg-background/30 p-3">
           <p className="text-[8px] uppercase font-bold text-muted-foreground/50 tracking-widest">Total Fees</p>
@@ -133,7 +132,7 @@ export function CommissionAnalysis({ trades }: CommissionAnalysisProps) {
         </div>
       </div>
 
-      {/* Commission by Instrument Chart */}
+      {                                    }
       {stats.topInstruments.length > 0 && (
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">

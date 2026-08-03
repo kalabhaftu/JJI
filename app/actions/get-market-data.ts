@@ -10,9 +10,6 @@ import { reportError } from '@/lib/observability/report-error'
 
 const yahooFinance = new YahooFinance()
 
-/**
- * Manual fetch wrapper to bypass IP blocks/rate limits by spoofing browser headers.
- */
 async function fetchMarketDataManual(symbol: string, options: any): Promise<any> {
     const { period1, period2, interval } = options;
     const p1 = Math.floor(new Date(period1).getTime() / 1000);
@@ -27,7 +24,7 @@ async function fetchMarketDataManual(symbol: string, options: any): Promise<any>
             'Cache-Control': 'no-cache',
             'Pragma': 'no-cache',
         },
-        next: { revalidate: 300 } // Cache for 5 mins at Next.js level
+        next: { revalidate: 300 }
     });
 
     if (!response.ok) {
@@ -38,7 +35,6 @@ async function fetchMarketDataManual(symbol: string, options: any): Promise<any>
     return await response.json();
 }
 
-// Global map to join concurrent identical requests in the same process
 const inFlightRequests = new Map<string, Promise<{ data: CandleData[], error?: string }>>()
 
 export interface CandleData {
@@ -49,13 +45,6 @@ export interface CandleData {
     close: number
 }
 
-/**
- * Supported Yahoo Finance Intervals:
- * Intraday: 1m (7d limit), 2m, 5m, 15m, 30m, 60m, 90m (60d limit)
- * Hour: 1h (730d limit)
- * Daily+: 1d, 5d, 1wk, 1mo, 3mo
- */
-
 export async function getMarketData(
     rawSymbol: string,
     interval: '1m' | '2m' | '5m' | '15m' | '30m' | '1h' | '1d' = '5m',
@@ -64,21 +53,9 @@ export async function getMarketData(
     tradeId?: string,
     forceRefresh: boolean = false
 ): Promise<{ data: CandleData[], error?: string }> {
-    // NORMALIZE SYMBOL: Strip broker suffixes (e.g. XAUUSDm -> XAUUSD, NAS100.x -> NAS100)
-    // 1. Remove trailing lowercase letters (often broker suffixes like 'm', 'c', 'pro')
-    // 2. Remove anything after a dot or underscore if it looks like a suffix
+
     let symbol = rawSymbol.trim();
 
-    // If it's not a pair that is naturally mixed case or lowercase (crypto/forex are usually uppercase)
-    // We assume the base symbol should be uppercase.
-
-    // Regex to capture the base symbol:
-    // ^([A-Z0-9]+) -> Starts with uppercase alphanumerics
-    // (?:[._][a-zA-Z0-9]+)? -> Optional suffix starting with . or _
-    // [a-z]*$ -> Optional trailing lowercase letters directly attached
-
-    // Simple heuristic: If it ends with lowercase letters, strip them.
-    // E.g. XAUUSDm -> XAUUSD
     if (/[A-Z]+[a-z]+$/.test(symbol)) {
         symbol = symbol.replace(/[a-z]+$/, '');
     }
@@ -93,14 +70,13 @@ export async function getMarketData(
     const endStr = endDate ? endDate.toISOString().split('T')[0] : 'now'
     const requestKey = `${symbol}:${startStr}:${endStr}:${interval}`
 
-    // JOIN CONCURRENT REQUESTS
     if (inFlightRequests.has(requestKey) && !forceRefresh) {
         return inFlightRequests.get(requestKey)!
     }
 
     const fetchPromise = (async () => {
         try {
-            // DB Connectivity Check wrap to prevent hard crashes if Supabase is down
+
             try {
                 await getUserId()
             } catch (dbError: any) {
@@ -115,7 +91,6 @@ export async function getMarketData(
                 }
             }
 
-            // Map common symbols to Yahoo Finance tickers
             let querySymbol = symbol.toUpperCase()
 
             if (YAHOO_FINANCE_SYMBOL_MAP[querySymbol]) {
@@ -130,17 +105,15 @@ export async function getMarketData(
             else if (querySymbol === 'BTC') querySymbol = 'BTC-USD'
             else if (querySymbol === 'ETH') querySymbol = 'ETH-USD'
 
-            // TIMEFRAME LIMITS & FALLBACKS
             const now = new Date()
             const diffDays = (now.getTime() - (startDate?.getTime() || now.getTime())) / (1000 * 60 * 60 * 24)
 
-            // Dynamic intervals based on user requested list and Yahoo limits
             let intervalsToTry: string[] = []
 
             if (diffDays <= 7) {
                 intervalsToTry = ['1m', '2m', '5m', '15m', '30m', '1h', '1d']
             } else if (diffDays <= 60) {
-                // Yahoo says 1m is 7d, but sometimes 2m works up to 60d
+
                 intervalsToTry = ['2m', '5m', '15m', '30m', '1h', '1d']
             } else if (diffDays <= 730) {
                 intervalsToTry = ['1h', '1d']
@@ -148,12 +121,10 @@ export async function getMarketData(
                 intervalsToTry = ['1d']
             }
 
-            // Ensure requested interval is first if valid
             if (intervalsToTry.includes(interval) && intervalsToTry[0] !== interval) {
                 intervalsToTry = [interval, ...intervalsToTry.filter(i => i !== interval)]
             }
 
-            // Cache lookup (base key for symbol/date range)
             const baseCacheKey = `${CachePrefix.MARKET_DATA}${querySymbol}:${startStr}:${endStr}`
             try {
                 const cachedData = await getCached<CandleData[]>(baseCacheKey)
@@ -182,7 +153,7 @@ export async function getMarketData(
                     try {
                         result = await yahooFinance.chart(querySymbol, queryOptions);
                     } catch (libError: any) {
-                        // If rate limited by lib, try manual fetch with spoofed headers
+
                         if (libError.message?.toLowerCase().includes('429') || libError.message?.toLowerCase().includes('too many requests')) {
                             logger.warn(`[LIB_RATE_LIMIT] Switching to manual fetch for ${querySymbol} at ${queryInterval}...`);
                             result = await fetchMarketDataManual(querySymbol, queryOptions);
@@ -191,7 +162,6 @@ export async function getMarketData(
                         }
                     }
 
-                    // Process Results (Support both lib and manual format)
                     let sourceQuotes = result?.quotes;
                     if (!sourceQuotes && result?.chart?.result?.[0]) {
                         const res = result.chart.result[0];
@@ -252,7 +222,7 @@ export async function getMarketData(
             })
             return { data: [], error: e.message || 'Failed to fetch market data' }
         } finally {
-            // Clean up in-flight request after completion
+
             inFlightRequests.delete(requestKey)
         }
     })()

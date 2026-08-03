@@ -81,7 +81,6 @@ export function EditBacktestDialog({
 
   const watchedModel = watch('model')
 
-  // Initialize form with backtest data and cleanup state
   useEffect(() => {
     if (backtest && isOpen) {
       reset({
@@ -93,11 +92,9 @@ export function EditBacktestDialog({
       setImages(backtest.images || [])
       setCardPreview(backtest.cardPreviewImage || '')
 
-      // CRITICAL FIX: Reset fullscreen image state when dialog opens
       setFullscreenImage(null)
     }
 
-    // Cleanup when dialog closes
     if (!isOpen) {
       setFullscreenImage(null)
     }
@@ -162,12 +159,8 @@ export function EditBacktestDialog({
 
   const handleCloseAttempt = (openState: boolean) => {
     if (!openState) {
-      // Note: react-hook-form's isDirty isn't always reliable with complex objects or if fields are touched but value is same
-      // But we can use it as a base. 
-      // Also check if image count changed or preview changed
-      // Simplified: we'll trust useForm's isDirty + check local state
 
-      const hasUnsavedChanges = Object.keys(errors).length > 0 || // If errors, maybe they tried to submit changed data
+      const hasUnsavedChanges = Object.keys(errors).length > 0 ||
         JSON.stringify(watch()) !== JSON.stringify({
           notes: backtest!.notes || '',
           tags: backtest!.tags?.join(', ') || '',
@@ -183,7 +176,6 @@ export function EditBacktestDialog({
       }
     }
 
-    // Normal close
     onClose()
     reset()
     setFullscreenImage(null)
@@ -193,7 +185,7 @@ export function EditBacktestDialog({
     setShowCloseConfirm(false)
     onClose()
     reset()
-    setFullscreenImage(null) // Ensure this is cleared
+    setFullscreenImage(null)
   }
 
   if (!backtest) return null
@@ -231,7 +223,7 @@ export function EditBacktestDialog({
             </DialogDescription>
           </DialogHeader>
 
-          {/* Backtest Summary (Read-only) */}
+          {                                  }
           <Card>
             <CardHeader>
               <CardTitle className="text-base">Backtest Summary (Read-only)</CardTitle>
@@ -277,7 +269,7 @@ export function EditBacktestDialog({
           </Card>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Trading Model */}
+            {                   }
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center">
@@ -322,7 +314,7 @@ export function EditBacktestDialog({
               </CardContent>
             </Card>
 
-            {/* Backtest Notes */}
+            {                    }
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Backtest Notes</CardTitle>
@@ -349,7 +341,7 @@ export function EditBacktestDialog({
               </CardContent>
             </Card>
 
-            {/* Tags */}
+            {          }
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Tags</CardTitle>
@@ -369,7 +361,7 @@ export function EditBacktestDialog({
               </CardContent>
             </Card>
 
-            {/* Screenshots */}
+            {                 }
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center">
@@ -378,7 +370,7 @@ export function EditBacktestDialog({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Card Preview First - Smaller Size */}
+                {                                       }
                 <div className="space-y-2">
                   <Label className="text-sm font-medium">Card Preview Image</Label>
                   <div className="w-full sm:w-64">
@@ -434,10 +426,10 @@ export function EditBacktestDialog({
                   </div>
                 </div>
 
-                {/* Separator */}
+                {               }
                 <div className="border-t pt-4">
                   <Label className="text-sm font-medium mb-3 block">Additional Screenshots (6 Slots)</Label>
-                  {/* Images Grid - Always show 6 slots */}
+                  {                                       }
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                     {Array.from({ length: 6 }).map((_, idx) => {
                       const hasImage = images[idx]
@@ -506,7 +498,7 @@ export function EditBacktestDialog({
               </CardContent>
             </Card>
 
-            {/* Form Actions */}
+            {                  }
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={() => handleCloseAttempt(false)}>
                 Cancel
@@ -519,7 +511,7 @@ export function EditBacktestDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Fullscreen Image Viewer */}
+      {                             }
       {fullscreenImage && (
         <div className="fixed inset-0 z-[10001] flex items-center justify-center bg-black/90 p-4" role="dialog" aria-modal="true" aria-label="Fullscreen backtest image">
           <button type="button" className="absolute inset-0" onClick={() => setFullscreenImage(null)} aria-label="Close fullscreen image" />

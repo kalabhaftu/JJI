@@ -6,17 +6,7 @@ import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 import { reportError } from '@/lib/observability/report-error'
 
-/**
- * Invisible component that triggers weekly AI review generation.
- * Runs once per session on weekends/Mondays. No UI render.
- *
- * Flow:
- * 1. Wait for an authenticated user
- * 2. Check sessionStorage using a user/week specific key
- * 3. Check if today is Saturday, Sunday, or Monday
- * 4. Check if user has autoGenerateInsights enabled
- * 5. Call POST /api/v1/weekly-review (idempotent)
- */
+
 export function WeeklyReviewTrigger() {
   const checkedRef = useRef(false)
   const retryCountRef = useRef(0)
@@ -32,7 +22,7 @@ export function WeeklyReviewTrigger() {
 
     if (typeof window === 'undefined') return
 
-    // Only trigger on Saturday(6), Sunday(0), Monday(1)
+
     const now = new Date()
     const dayOfWeek = now.getDay()
     if (dayOfWeek !== 0 && dayOfWeek !== 1 && dayOfWeek !== 6) return

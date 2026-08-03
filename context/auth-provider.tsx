@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetUser = useUserStore(state => state.resetUser)
   const user = useUserStore(state => state.user)
   
-  // Auto-cleanup stale caches when app loads or user changes
+
   useAutoCacheCleanup({
     ...(user?.id && { userId: user.id }),
     enabled: true
@@ -121,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         lastSyncedSessionRef.current = sessionKey
-        // Notify service worker of current user identity for cache isolation
+
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
           navigator.serviceWorker.controller.postMessage({ type: 'SET_USER_ID', userId: nextSession.user.id })
         }
@@ -143,7 +143,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const isAuthCheckValid = () => {
     if (!authCheckCache) return false
-    return Date.now() - authCheckCache.timestamp < 30000 // 30 seconds
+    return Date.now() - authCheckCache.timestamp < 30000
   }
 
   const performAuthCheck = async (): Promise<boolean> => {
@@ -197,10 +197,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     void mutate(() => true, undefined, { revalidate: false }).catch(() => undefined)
 
     localStorage.removeItem('jji_user_data')
-    // Clear Supabase auth tokens (they start with 'sb-')
+
     clearBrowserAuthStorage()
 
-    // Notify service worker to clear cached API data
+
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' })
     }
@@ -226,7 +226,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const supabase = createClient()
 
-    // Check if we should force clear auth state (e.g., after logout or account deletion)
+
     const urlParams = new URLSearchParams(window.location.search)
     const shouldForceClear = urlParams.get('deleted') === 'true' || urlParams.get('logout') === 'true'
 
@@ -244,14 +244,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error
         setSession(session)
 
-        // Synchronize with user store
+
         if (session?.user) {
           setSupabaseUser(session.user)
           if (shouldSyncSessionForPath(pathname)) {
             await syncSessionToServer(session)
           }
-          // Note: We don't set the database user here as it requires a database call
-          // The database user will be set when the user data is loaded
+
+
         } else {
           setSupabaseUser(null)
           setUser(null)
@@ -286,14 +286,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event: any, session: any) => {
         setSession(session)
 
-        // Synchronize with user store
+
         if (session?.user) {
           setSupabaseUser(session.user)
           if (shouldSyncSessionForPath(pathname)) {
             void syncSessionToServer(session)
           }
-          // Note: We don't set the database user here as it requires a database call
-          // The database user will be set when the user data is loaded
+
+
         } else {
           setSupabaseUser(null)
           setUser(null)

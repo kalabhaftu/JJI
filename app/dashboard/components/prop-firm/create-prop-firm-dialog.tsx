@@ -40,7 +40,7 @@ import { reportClientError } from '@/lib/observability/report-error'
 import { clearAccountsCache } from "@/hooks/use-accounts"
 import { emitTourEvent } from '@/lib/tours/events'
 
-// Schema for form validation
+
 const propFirmSchema = z.object({
   accountName: z.string().min(3, 'Account name must be at least 3 characters').max(50, 'Too long'),
   propFirmName: z.string().min(1, 'Please select a prop firm'),
@@ -48,7 +48,7 @@ const propFirmSchema = z.object({
   evaluationType: z.enum(['One Step', 'Two Step', 'Instant']),
   phase1AccountId: z.string().min(1, 'Phase 1 ID is required'),
 
-  // Phase 1 Rules
+
   phase1ProfitTargetPercent: z.number().min(0).max(100),
   phase1DailyDrawdownPercent: z.number().min(1).max(100),
   phase1MaxDrawdownPercent: z.number().min(1).max(100),
@@ -56,7 +56,7 @@ const propFirmSchema = z.object({
   phase1MinTradingDays: z.number().min(0),
   phase1TimeLimitDays: z.number().min(0).nullable(),
 
-  // Phase 2 Rules (conditional)
+
   phase2ProfitTargetPercent: z.number().min(0).max(100).optional(),
   phase2DailyDrawdownPercent: z.number().min(0).max(100).optional(),
   phase2MaxDrawdownPercent: z.number().min(0).max(100).optional(),
@@ -64,13 +64,13 @@ const propFirmSchema = z.object({
   phase2MinTradingDays: z.number().min(0).optional(),
   phase2TimeLimitDays: z.number().min(0).nullable().optional(),
 
-  // Funded Rules
+
   fundedDailyDrawdownPercent: z.number().min(1).max(100),
   fundedMaxDrawdownPercent: z.number().min(1).max(100),
   fundedMaxDrawdownType: z.enum(['static', 'trailing']),
   fundedProfitSplitPercent: z.number().min(0).max(100),
   fundedPayoutCycleDays: z.number().min(1).max(365),
-  fundedMinProfitForPayout: z.number().min(0).default(100), // Min profit (in $) to request payout
+  fundedMinProfitForPayout: z.number().min(0).default(100),
 })
 
 type PropFirmFormData = z.infer<typeof propFirmSchema>
@@ -128,7 +128,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
   const watchedFirm = watch('propFirmName')
   const watchedEvalType = watch('evaluationType')
 
-  // Load templates on mount
+
   useEffect(() => {
     fetch('/api/v1/prop-firm-templates')
       .then(res => res.json())
@@ -141,7 +141,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       })
   }, [])
 
-  // Auto-fill when firm/program selected
+
   useEffect(() => {
     if (!watchedFirm || !watchedEvalType || !templates[watchedFirm]) return
 
@@ -150,7 +150,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
 
     const { phase1, phase2, funded } = program.phases
 
-    // Apply Phase 1
+
     if (phase1) {
       setValue('phase1ProfitTargetPercent', phase1.profitTargetPercent)
       setValue('phase1DailyDrawdownPercent', phase1.dailyDrawdownPercent)
@@ -160,7 +160,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       setValue('phase1TimeLimitDays', phase1.timeLimitDays || null)
     }
 
-    // Apply Phase 2 if exists
+
     if (phase2) {
       setValue('phase2ProfitTargetPercent', phase2.profitTargetPercent)
       setValue('phase2DailyDrawdownPercent', phase2.dailyDrawdownPercent)
@@ -170,7 +170,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       setValue('phase2TimeLimitDays', phase2.timeLimitDays || null)
     }
 
-    // Apply Funded
+
     if (funded) {
       setValue('fundedDailyDrawdownPercent', funded.dailyDrawdownPercent)
       setValue('fundedMaxDrawdownPercent', funded.maxDrawdownPercent)
@@ -207,7 +207,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
         description: `Your ${data.propFirmName} account has been added.`,
       })
 
-      // Dispatch custom event to notify onboarding system instantly
+
       if (typeof window !== 'undefined' && result.data) {
         const activePhase = result.data.phases?.find((p: any) => p.status === 'active')
         const activeId = activePhase?.id || result.data.masterAccount?.id
@@ -289,15 +289,15 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
           <form
             onSubmit={handleSubmit(onSubmit)}
             onKeyDown={(e) => {
-              // Prevent Enter key from submitting the form when in input fields
-              // This avoids accidental form submission while editing numbers
+
+
               if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
                 e.preventDefault()
               }
             }}
             className="space-y-6"
           >
-            {/* Basic Info */}
+            {}
             <Card>
               <CardHeader>
                 <CardTitle>Account Details</CardTitle>
@@ -403,7 +403,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
               </CardContent>
             </Card>
 
-            {/* Phase Rules Summary - Editable */}
+            {}
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
                 <div>
@@ -427,7 +427,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                 </Button>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Phase 1 Rules */}
+                {}
                 <div>
                   <Label className="text-sm font-medium mb-2 block">Phase 1</Label>
                   <div className="grid grid-cols-3 gap-4">
@@ -512,7 +512,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                   )}
                 </div>
 
-                {/* Phase 2 Rules (Two Step only) */}
+                {}
                 {watchedEvalType === 'Two Step' && (
                   <div className="pt-3 border-t">
                     <Label className="text-sm font-medium mb-2 block">Phase 2</Label>
@@ -599,7 +599,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                   </div>
                 )}
 
-                {/* Funded Rules */}
+                {}
                 <div className="pt-3 border-t">
                   <Label className="text-sm font-medium mb-2 block">Funded Account</Label>
                   <div className="grid grid-cols-4 gap-4">
@@ -700,7 +700,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
               </CardContent>
             </Card>
 
-            {/* Error Display */}
+            {}
             {Object.keys(errors).length > 0 && (
               <Card className="border-destructive">
                 <CardContent className="pt-6">
@@ -719,7 +719,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
               </Card>
             )}
 
-            {/* Actions */}
+            {}
             <div className="flex justify-end gap-3">
               <Button
                 type="button"

@@ -75,10 +75,10 @@ export function FormatPreview({
   const tableContainerRef = useRef<HTMLDivElement>(null);
   const hasStartedRef = useRef(false);
 
-  // Transform headers using mappings
+
   const transformedHeaders = useMemo(() => transformHeaders(headers, mappings), [headers, mappings]);
 
-  // Calculate valid trades only when initialTrades changes
+
   const validTrades = useMemo(() =>
     initialTrades.filter(row => row.length > 0 && row[0] !== ""),
     [initialTrades]
@@ -87,7 +87,7 @@ export function FormatPreview({
   const [error, setError] = useState<string | null>(null);
   const [currentBatch, setCurrentBatch] = useState(0);
 
-  // Optimized batch size - process more trades at once
+
   const batchSize = 25;
   const totalBatches = Math.ceil(validTrades.length / batchSize);
 
@@ -106,12 +106,12 @@ export function FormatPreview({
     }
   });
 
-  // Update parent loading state
+
   useEffect(() => {
     setIsLoading(isProcessing);
   }, [isProcessing, setIsLoading]);
 
-  // Process trades when object updates
+
   useEffect(() => {
     if (object) {
       const newTrades = object.filter((trade): trade is NonNullable<typeof trade> => trade !== undefined) as any[];
@@ -125,23 +125,23 @@ export function FormatPreview({
       if (uniqueTrades.length > 0) {
         setProcessedTrades([...processedTrades, ...uniqueTrades]);
       }
-      // Auto-scroll after processing
+
       setTimeout(scrollToBottom, 100);
     }
   }, [object, processedTrades, setProcessedTrades]);
 
-  // Auto-process next batch when current batch completes
+
   useEffect(() => {
     if (!isProcessing && hasStartedRef.current && currentBatch < totalBatches - 1 && processedTrades.length > 0) {
       const expectedProcessed = (currentBatch + 1) * batchSize;
       if (processedTrades.length >= Math.min(expectedProcessed, validTrades.length) * 0.8) {
-        // Calculate next batch values BEFORE the timeout to avoid stale closure
+
         const nextBatch = currentBatch + 1;
         const nextBatchStart = nextBatch * batchSize;
         const nextBatchEnd = (nextBatch + 1) * batchSize;
         const nextBatchRows = validTrades.slice(nextBatchStart, nextBatchEnd);
 
-        // Auto-advance to next batch
+
         const timer = setTimeout(() => {
           setCurrentBatch(nextBatch);
           submit({
@@ -284,7 +284,7 @@ export function FormatPreview({
 
   return (
     <div className="flex flex-col gap-4 h-full">
-      {/* Status bar */}
+      {}
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export function FormatPreview({
         </div>
       </div>
 
-      {/* Table */}
+      {}
       <div className="flex-1 min-h-0 overflow-hidden border rounded-lg">
         <div className="flex flex-col h-full">
           <Table>
@@ -404,7 +404,7 @@ export function FormatPreview({
         </div>
       </div>
 
-      {/* Stats summary */}
+      {}
       {processedTrades.length > 0 && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}

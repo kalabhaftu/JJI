@@ -1,7 +1,4 @@
-/**
- * POST /api/v1/payments/create-invoice
- * Creates a NOWPayments invoice for the authenticated user's subscription.
- */
+
 
 import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
@@ -30,7 +27,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json().catch(() => ({}))
     const { promoCode, payCurrency } = body as { promoCode?: string; payCurrency?: string }
 
-    // Validate promo code first if provided
+
     if (promoCode) {
       const promo = await validatePromoCode(promoCode, identity.internalUserId)
       if (!promo) {

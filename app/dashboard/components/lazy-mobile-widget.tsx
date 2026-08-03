@@ -9,7 +9,7 @@ interface LazyMobileWidgetProps {
   isEditMode: boolean
 }
 
-/** Defers off-screen mobile widgets without changing their layout footprint. */
+
 export function LazyMobileWidget({ children, minHeight, isEditMode }: LazyMobileWidgetProps) {
   const [isIntersecting, setIsIntersecting] = useState(false)
   const ref = useRef<HTMLDivElement>(null)

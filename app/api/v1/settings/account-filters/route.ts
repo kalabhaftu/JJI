@@ -8,7 +8,7 @@ import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 import { AccountFilterSettings, DEFAULT_FILTER_SETTINGS } from '@/types/account-filter-settings'
 
-// GET /api/settings/account-filters - Get user's account filter settings
+
 export async function GET(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/settings/account-filters - Update user's account filter settings
+
 export async function POST(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')

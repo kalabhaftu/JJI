@@ -77,11 +77,10 @@ export default function AccountPayoutsPage() {
 
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = async () => {
     try {
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch account details')
       }
@@ -100,12 +99,11 @@ export default function AccountPayoutsPage() {
     }
   }
 
-  // Fetch payouts
   const fetchPayouts = async () => {
     try {
       setIsLoading(true)
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}/payouts`)
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch payouts')
       }
@@ -126,7 +124,6 @@ export default function AccountPayoutsPage() {
     }
   }
 
-  // Load data on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()
@@ -214,7 +211,7 @@ export default function AccountPayoutsPage() {
   return (
     <>
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+      {            }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -254,7 +251,7 @@ export default function AccountPayoutsPage() {
         </div>
       </div>
 
-      {/* Account Summary */}
+      {                     }
       <Card>
         <CardHeader>
           <CardTitle>Account Summary</CardTitle>
@@ -277,7 +274,7 @@ export default function AccountPayoutsPage() {
         </CardContent>
       </Card>
 
-      {/* Payouts List */}
+      {                  }
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -315,7 +312,7 @@ export default function AccountPayoutsPage() {
           ) : (
             <div className="space-y-4">
               {payouts
-                .filter(payout => 
+                .filter(payout =>
                   payout.amountRequested.toString().includes(searchTerm) ||
                   payout.status.includes(searchTerm) ||
                   payout.notes?.includes(searchTerm)
@@ -365,7 +362,7 @@ export default function AccountPayoutsPage() {
       </Card>
     </div>
 
-    {/* Delete Payout Confirmation Dialog */}
+    {                                       }
     <AlertDialog open={!!deletePayoutTarget} onOpenChange={(open) => !open && setDeletePayoutTarget(null)}>
       <AlertDialogContent>
         <AlertDialogHeader>

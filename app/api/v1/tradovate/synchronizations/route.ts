@@ -4,7 +4,7 @@ import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { createErrorResponse } from '@/lib/api-response'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// Tradovate live sync is under development — all endpoints are disabled.
+
 export async function GET(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const limited = await applyApiRoutePolicy(request, 'authenticated-read')

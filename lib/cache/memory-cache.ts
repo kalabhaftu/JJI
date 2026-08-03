@@ -1,10 +1,4 @@
-/**
- * In-Memory Cache Fallback
- * 
- * Provides caching when Redis/Upstash is not available
- * Uses LRU (Least Recently Used) eviction strategy
- * Memory-efficient for serverless environments
- */
+
 
 interface CacheEntry<T> {
   value: T
@@ -14,11 +8,11 @@ interface CacheEntry<T> {
 
 class MemoryCache {
   private cache: Map<string, CacheEntry<any>> = new Map()
-  private maxSize: number = 100 // Maximum number of cached items
+  private maxSize: number = 100
   private cleanupInterval: NodeJS.Timeout | null = null
 
   constructor() {
-    // Clean up expired entries every 60 seconds
+
     if (typeof process !== 'undefined' && !this.cleanupInterval) {
       this.cleanupInterval = setInterval(() => {
         this.cleanup()
@@ -26,9 +20,7 @@ class MemoryCache {
     }
   }
 
-  /**
-   * Get value from cache
-   */
+
   get<T>(key: string): T | null {
     const entry = this.cache.get(key)
     
@@ -45,9 +37,7 @@ class MemoryCache {
     return entry.value as T
   }
 
-  /**
-   * Set value in cache with TTL
-   */
+
   set<T>(key: string, value: T, ttlSeconds: number = 60): void {
     if (this.cache.size >= this.maxSize) {
       this.evictLRU()
@@ -60,16 +50,12 @@ class MemoryCache {
     })
   }
 
-  /**
-   * Delete key from cache
-   */
+
   delete(key: string): void {
     this.cache.delete(key)
   }
 
-  /**
-   * Delete keys matching pattern
-   */
+
   deletePattern(pattern: string): number {
     const regex = new RegExp(pattern.replace(/\*/g, '.*'))
     let count = 0
@@ -84,23 +70,17 @@ class MemoryCache {
     return count
   }
 
-  /**
-   * Clear all cache
-   */
+
   clear(): void {
     this.cache.clear()
   }
 
-  /**
-   * Get cache size
-   */
+
   size(): number {
     return this.cache.size
   }
 
-  /**
-   * Evict least recently used entry
-   */
+
   private evictLRU(): void {
     let oldestKey: string | null = null
     let oldestTime: number = Infinity
@@ -117,9 +97,7 @@ class MemoryCache {
     }
   }
 
-  /**
-   * Clean up expired entries
-   */
+
   private cleanup(): void {
     const now = Date.now()
     
@@ -130,9 +108,7 @@ class MemoryCache {
     }
   }
 
-  /**
-   * Destroy cache and cleanup
-   */
+
   destroy(): void {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval)
@@ -152,4 +128,5 @@ export const memDelete = (key: string) => memoryCache.delete(key)
 export const memDeletePattern = (pattern: string) => memoryCache.deletePattern(pattern)
 const memClear = () => memoryCache.clear()
 const memSize = () => memoryCache.size()
+
 

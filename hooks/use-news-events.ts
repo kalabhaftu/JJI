@@ -29,7 +29,7 @@ export function useNewsEvents() {
   const query = useQuery({
     queryKey: ['news-events'],
     queryFn: fetchNewsEvents,
-    staleTime: 1000 * 60 * 60, // 1 hour - data is static
+    staleTime: 1000 * 60 * 60,
   })
 
   const getNewsById = (id: string): NewsEvent | undefined =>

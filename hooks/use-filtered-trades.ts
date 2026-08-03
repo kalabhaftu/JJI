@@ -1,11 +1,4 @@
-/**
- * React Query hook for server-filtered trades
- * 
- * Replaces the `formattedTrades` useMemo + `statistics` useMemo + 
- * `calendarData` useMemo in DataProvider with a single server call.
- * 
- * All 7 filters applied server-side via /api/v1/trades
- */
+
 
 'use client'
 
@@ -47,7 +40,7 @@ export interface FilteredTradesResponse {
 
 function buildQueryString(filters: TradeFilters): string {
   const params = new URLSearchParams()
-  
+
   if (filters.accounts?.length) params.set('accounts', filters.accounts.join(','))
   if (filters.dateFrom) params.set('dateFrom', filters.dateFrom)
   if (filters.dateTo) params.set('dateTo', filters.dateTo)
@@ -66,15 +59,15 @@ function buildQueryString(filters: TradeFilters): string {
   if (filters.metricsOnly) params.set('metricsOnly', 'true')
   if (filters.timezone) params.set('timezone', filters.timezone)
   if (filters.liveOnly) params.set('liveOnly', 'true')
-  
+
   return params.toString()
 }
 
 export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoMode = false) {
   const queryString = buildQueryString(filters)
-  
+
   return useQuery<FilteredTradesResponse>({
-    // IMPORTANT: use stable key (string), not object reference
+
     queryKey: ['v1', 'trades', queryString, isDemoMode],
     queryFn: async () => {
       if (isDemoMode) {
@@ -95,7 +88,7 @@ export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoM
       }
     },
     enabled,
-    staleTime: 2 * 60 * 1000, // 2 min - realtime subscriptions handle live updates
+    staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   })
 }

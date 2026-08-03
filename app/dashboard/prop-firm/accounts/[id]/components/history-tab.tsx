@@ -44,17 +44,13 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
   }
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric' 
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
     })
   }
 
-  /**
-   * Helper function to determine if a phase number represents the funded stage
-   * based on the evaluation type.
-   */
   const isFundedPhase = (phaseNumber: number): boolean => {
     switch (evaluationType) {
       case 'Two Step':
@@ -64,13 +60,13 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
       case 'Instant':
         return phaseNumber >= 1
       default:
-        return phaseNumber >= 3 // Default to Two Step behavior
+        return phaseNumber >= 3
     }
   }
 
   const getPhaseIcon = (status: string, phaseNumber: number) => {
     if (isFundedPhase(phaseNumber) && status === 'active') return <Trophy className="h-5 w-5 text-primary" />
-    
+
     switch (status) {
       case 'active': return <Clock className="h-5 w-5 text-primary" />
       case 'archived':
@@ -89,28 +85,24 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
   const activePhase = phases.find(p => p.status === 'active')
   const failedPhases = phases.filter(p => p.status === 'failed')
 
-  // Calculate milestones
   const totalTrades = phases.reduce((sum, p) => sum + p.totalTrades, 0)
   const totalPnL = phases.reduce((sum, p) => sum + p.totalPnL, 0)
   const avgWinRate = phases.filter(p => p.totalTrades > 0).length > 0
     ? phases.filter(p => p.totalTrades > 0).reduce((sum, p) => sum + p.winRate, 0) / phases.filter(p => p.totalTrades > 0).length
     : 0
-  
-  // Find longest winning streak (simplified - phases with positive P&L)
+
   const profitablePhases = phases.filter(p => p.totalPnL > 0).length
-  
-  // Calculate best phase by P&L
-  const bestPhase = phases.reduce((best, phase) => 
+
+  const bestPhase = phases.reduce((best, phase) =>
     phase.totalPnL > (best?.totalPnL ?? -Infinity) ? phase : best
   , phases[0])
 
-  // Calculate worst drawdown (most negative P&L)
   const worstDrawdown = Math.min(...phases.map(p => p.totalPnL), 0)
   const phasesInDrawdown = phases.filter(p => p.totalPnL < 0).length
 
   return (
     <div className="space-y-6">
-      {/* Account Overview */}
+      {                      }
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -140,7 +132,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         </CardContent>
       </Card>
 
-      {/* Progress Summary */}
+      {                      }
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="pt-6">
@@ -190,9 +182,9 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         </Card>
       </div>
 
-      {/* Overall Performance & Milestones */}
+      {                                      }
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance Stats */}
+        {                       }
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -222,7 +214,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
           </CardContent>
         </Card>
 
-        {/* Milestones & Records */}
+        {                          }
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -231,7 +223,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {/* Best Phase */}
+            {                }
             {bestPhase && bestPhase.totalPnL > 0 && (
               <div className="flex items-start gap-3 p-3 bg-long/5 border border-long/20 rounded-lg">
                 <div className="p-1.5 bg-long/10 rounded">
@@ -246,7 +238,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
               </div>
             )}
 
-            {/* Worst Drawdown */}
+            {                    }
             {worstDrawdown < 0 && (
               <div className="flex items-start gap-3 p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
                 <div className="p-1.5 bg-destructive/10 rounded">
@@ -261,7 +253,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
               </div>
             )}
 
-            {/* Current Streak */}
+            {                    }
             {completedPhases.length > 0 && (
               <div className="flex items-start gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
                 <div className="p-1.5 bg-primary/10 rounded">
@@ -279,7 +271,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         </Card>
       </div>
 
-      {/* Phase Timeline */}
+      {                    }
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -289,17 +281,17 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         </CardHeader>
         <CardContent>
           <div className="relative space-y-4">
-            {/* Timeline Line */}
+            {                   }
             <div className="absolute left-[18px] top-4 bottom-4 w-0.5 bg-border" />
 
             {phases.map((phase, index) => {
-              const phaseDuration = phase.endDate 
+              const phaseDuration = phase.endDate
                 ? Math.floor((new Date(phase.endDate).getTime() - new Date(phase.startDate).getTime()) / (1000 * 60 * 60 * 24))
                 : Math.floor((Date.now() - new Date(phase.startDate).getTime()) / (1000 * 60 * 60 * 24))
-              
+
               return (
                 <div key={phase.id} className="relative flex gap-4">
-                  {/* Timeline Icon */}
+                  {                   }
                   <div className="relative z-10 flex-shrink-0">
                     <div className={cn(
                       "flex items-center justify-center w-9 h-9 rounded-full border-2 bg-background",
@@ -312,14 +304,14 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                     </div>
                   </div>
 
-                  {/* Phase Card */}
+                  {                }
                   <Card className={cn(
                     "flex-1 transition-colors",
                     phase.status === 'active' && "border-primary/30 bg-primary/5",
                     phase.status === 'failed' && "border-destructive/30 bg-destructive/5"
                   )}>
                     <CardContent className="p-4">
-                      {/* Header */}
+                      {            }
                       <div className="flex items-start justify-between mb-4">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
@@ -359,7 +351,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                         </Badge>
                       </div>
 
-                      {/* Stats */}
+                      {           }
                       {phase.status !== 'pending' && (
                         <>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -391,7 +383,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                             </div>
                           </div>
 
-                          {/* Best & Worst Trades */}
+                          {                         }
                           {(phase.bestTrade || phase.worstTrade) && phase.totalTrades > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 pt-4 border-t">
                               {phase.bestTrade && (
@@ -439,7 +431,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         </CardContent>
       </Card>
 
-      {/* Breach History */}
+      {                    }
       {breaches && breaches.length > 0 && (
         <Card>
           <CardHeader>

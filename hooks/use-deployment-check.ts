@@ -4,19 +4,16 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { toast } from 'sonner'
 
 interface DeploymentCheckConfig {
-  checkInterval?: number // in milliseconds, default 5 minutes
+  checkInterval?: number
   enabled?: boolean
   onNewDeployment?: () => void
   autoRefresh?: boolean
-  autoRefreshDelay?: number // in milliseconds
+  autoRefreshDelay?: number
 }
 
-/**
- * Hook to detect new deployments and handle stale client issues
- * Checks build ID periodically and prompts user to refresh when a new deployment is detected
- */
+
 export function useDeploymentCheck({
-  checkInterval = 5 * 60 * 1000, // 5 minutes default
+  checkInterval = 5 * 60 * 1000,
   enabled = true,
   onNewDeployment,
   autoRefresh = false,
@@ -32,7 +29,7 @@ export function useDeploymentCheck({
     if (toastShownRef.current) return
 
     try {
-      // We'll use a cache-busted request to ensure we get fresh data
+
       const response = await fetch('/api/build-id?' + Date.now(), {
         cache: 'no-store',
         headers: {
@@ -88,7 +85,7 @@ export function useDeploymentCheck({
         }
       }
     } catch (error) {
-      // Silently fail - don't want to spam users with errors
+
     }
   }, [buildId, onNewDeployment, autoRefresh, autoRefreshDelay])
 

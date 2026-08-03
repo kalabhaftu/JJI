@@ -106,12 +106,7 @@ export function reportApiHandlerError(
   })
 }
 
-/**
- * Behavior-preserving migration wrapper for JSON route families.
- *
- * It standardizes the public wire contract while leaving the established
- * domain logic, status, cookies, cache headers, redirects, and streams intact.
- */
+
 export function withCanonicalApiResponse<TArgs extends unknown[]>(
   handler: (request: NextRequest, ...args: TArgs) => Promise<Response>,
 ) {
@@ -167,3 +162,4 @@ export function withCanonicalApiResponse<TArgs extends unknown[]>(
     )
   }
 }
+

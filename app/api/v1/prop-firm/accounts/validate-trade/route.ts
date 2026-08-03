@@ -9,7 +9,7 @@ import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// Validation schema
+
 const ValidateTradeSchema = z.object({
   accountNumber: z.string().min(1, 'Account number is required')
 })
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { accountNumber } = ValidateTradeSchema.parse(body)
 
-    // First, check if this is a phase account (prop firm)
+
     const [phaseResult] = await db
       .select({ phaseAccount: schema.PhaseAccount })
       .from(schema.PhaseAccount)
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
     const phaseAccount = phaseResult?.phaseAccount
 
     if (phaseAccount) {
-      // This is a prop firm account - validate phase ID
+
       if (!phaseAccount.phaseId) {
         return createErrorResponse(
           'Please set the ID for the current phase before adding trades.',
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Phase ID is set - validation passed
+
       return createSuccessResponse(
         {
           accountType: 'prop-firm',
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Not a prop firm account - check if it's a regular account
+
     const regularAccount = await db.query.Account.findFirst({
       where: (table, { and, eq }) => and(
         eq(table.number, accountNumber),
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (regularAccount) {
-      // Regular account - no validation needed
+
       return createSuccessResponse(
         {
           accountType: 'regular',
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Account not found
+
     return createErrorResponse('Account not found or unauthorized', 404, undefined, 'NOT_FOUND', requestId)
 
   } catch (error) {

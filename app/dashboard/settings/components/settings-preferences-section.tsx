@@ -114,7 +114,7 @@ export function SettingsPreferencesSection({
         </div>
 
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-1" data-tour="settings-card-preferences">
-          {/* Theme selection */}
+          {                     }
           <SettingRow
             icon={SunMoon}
             label="Theme"
@@ -150,7 +150,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Color Accent selection */}
+          {                            }
           <SettingRow
             icon={Palette}
             label="Color Accent"
@@ -221,7 +221,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Timezone selection */}
+          {                        }
           <SettingRow
             icon={Globe}
             label="Timezone"
@@ -251,7 +251,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Time Format */}
+          {                 }
           <SettingRow
             icon={Clock}
             label="Time Format"
@@ -282,7 +282,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Break-even band */}
+          {                     }
           <SettingRow
             icon={Target}
             label="Break-even threshold"
@@ -311,7 +311,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* P&L display */}
+          {                 }
           <SettingRow
             icon={TrendingUp}
             label="P&L display"
@@ -341,7 +341,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Widget Style */}
+          {                  }
           <SettingRow
             icon={LayoutGrid}
             label="Widget Style"
@@ -369,7 +369,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Chart Style */}
+          {                 }
           <SettingRow
             icon={Activity}
             label="Chart Edge Style"
@@ -397,7 +397,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Privacy Mode */}
+          {                  }
           <SettingRow
             icon={Eye}
             label="Privacy Mode"
@@ -412,7 +412,7 @@ export function SettingsPreferencesSection({
 
           <Separator className="my-1 border-border/30" />
 
-          {/* Auto-adjust date */}
+          {                      }
           <SettingRow
             icon={Calendar}
             label="Auto-adjust Account Date"
@@ -430,7 +430,7 @@ export function SettingsPreferencesSection({
           />
         </div>
 
-        {/* AI Preferences */}
+        {                    }
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
           <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
             <Bot className="h-4 w-4" />

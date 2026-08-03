@@ -7,9 +7,7 @@ export function generateTradeHash(trade: Partial<Trade>): string {
   return hashString
 }
 
-/**
- * Creates a Trade object with schema defaults applied
- */
+
 export function createTradeWithDefaults(input: Partial<Trade>): Trade {
   const now = new Date()
   return {
@@ -58,3 +56,4 @@ export function createTradeWithDefaults(input: Partial<Trade>): Trade {
     modelId: input.modelId || null,
   } as Trade
 }
+

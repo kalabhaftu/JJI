@@ -56,7 +56,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   const [showKpiSelector, setShowKpiSelector] = useState(false)
   const { width: containerWidth, containerRef: gridContainerRef, mounted: gridMounted } = useGridContainerWidth(isMobile)
 
-  // Use current layout if in edit mode, otherwise use active template
+
   const layout = useMemo(
     () => (isEditMode && currentLayout ? currentLayout : activeTemplate?.layout ?? []),
     [isEditMode, currentLayout, activeTemplate?.layout]
@@ -66,14 +66,14 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     return layout.some(w => w.type.startsWith('propFirm'))
   }, [layout])
 
-  // Track initial mount and load state for active prop-firm challenge
+
   const propFirmAccount = useDashboardPropFirmAccount()
   const activePropFirmId = propFirmAccount.selectedMasterAccountId
   const activePropFirmCacheKey = getPropFirmCacheKey(activePropFirmId, propFirmAccount.resetTimezone)
   const propFirmCache = usePropFirmStore(state => state.cache[activePropFirmCacheKey])
   const fetchPropFirmData = usePropFirmStore(state => state.fetchData)
 
-  // Trigger fetch early if we have prop firm widgets so the dashboard skeleton can wait for it
+
   useEffect(() => {
     if (hasPropFirmWidget && activePropFirmId) {
       fetchPropFirmData(activePropFirmId, propFirmAccount.resetTimezone)
@@ -97,17 +97,17 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     y?: number
   } | null>(null)
 
-  // Ref to prevent layout save loops
+
   const isInternalUpdate = useRef(false)
 
-  // Clear targetSlot when dialogs close
+
   useEffect(() => {
     if (!showWidgetLibrary && !showKpiSelector) {
       setTargetSlot(null)
     }
   }, [showWidgetLibrary, showKpiSelector])
 
-  // Separate KPI widgets from other widgets
+
   const kpiWidgets = useMemo(() => {
     return layout
       .filter(isKpiRowWidget)
@@ -115,14 +115,14 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
       .slice(0, 5)
   }, [layout])
 
-  // Fill KPI slots (always 5)
+
   const kpiLayout = useMemo(() => {
     return Array(5).fill(null).map((_, index) => {
       return kpiWidgets.find(w => w.x === index) || null
     }) as (WidgetLayout | null)[]
   }, [kpiWidgets])
 
-  // Non-KPI widgets - these go in the react-grid-layout
+
   const gridWidgets = useMemo(() => {
     return layout.filter(w => !isKpiRowWidget(w))
   }, [layout])
@@ -132,11 +132,11 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     [layout, isEditMode]
   )
 
-  // Handle layout change from react-grid-layout
+
   const handleLayoutChange = useCallback((newLayout: any[], allLayouts: Record<string, any[]>) => {
     if (!isEditMode || isInternalUpdate.current) return
 
-    // Get the current breakpoint layout
+
     const updatedGridWidgets: WidgetLayout[] = newLayout.map(item => {
       const original = gridWidgets.find(w => w.i === item.i)
       return {
@@ -144,25 +144,25 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
         type: original?.type || '',
         size: original?.size || 'medium',
         x: item.x,
-        y: item.y + 1, // Shift back up for KPI row offset
+        y: item.y + 1,
         w: item.w,
         h: item.h,
       }
     })
 
-    // Combine with KPI widgets
+
     const fullLayout = [...kpiWidgets, ...updatedGridWidgets]
     updateLayout(fullLayout)
   }, [isEditMode, gridWidgets, kpiWidgets, updateLayout])
 
-  // Handle widget removal
+
   const handleRemoveWidget = useCallback((widgetId: string) => {
     if (!currentLayout) return
     const updatedLayout = currentLayout.filter(w => w.i !== widgetId)
     updateLayout(updatedLayout)
   }, [currentLayout, updateLayout])
 
-  // Handle add widget
+
   const handleAddWidget = useCallback((slotInfo?: { slotIndex?: number; x?: number; y?: number }) => {
     setTargetSlot(slotInfo || null)
     if (slotInfo?.slotIndex !== undefined && slotInfo.slotIndex < 5) {
@@ -172,7 +172,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     }
   }, [])
 
-  // Handle widget insertion from library
+
   const handleInsertWidget = useCallback((widgetType: string) => {
     if (!currentLayout) return
 
@@ -193,7 +193,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
       x = slotToUse.x
       y = slotToUse.y
     } else {
-      // Place at the bottom
+
       const maxY = currentLayout.reduce((max, widget) => {
         if (isKpiRowWidget(widget)) return max
         return Math.max(max, widget.y + widget.h)
@@ -221,13 +221,12 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     }, 0)
   }, [currentLayout, targetSlot, updateLayout])
 
-  // Handle KPI widget selection
+
   const handleSelectKpiWidget = useCallback((widgetType: string) => {
     handleInsertWidget(widgetType)
   }, [handleInsertWidget])
 
-  // hasAccounts: true if the user has any accounts in context (already loaded) OR has trades
-  // Use contextAccounts first, fall back to checking if trades exist (imported trades don't need a live broker)
+
   const hasAccounts = (contextAccounts && contextAccounts.length > 0) || formattedTrades.length > 0
   const settingsReady = !isLoadingAccountFilterSettings
   const hasSelectedScope = accountNumbers.length > 0
@@ -249,7 +248,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
     return <EmptyAccountState />
   }
 
-  // Whether the grid has finished its initial width measurement
+
   const gridReady = isMobile ? true : (gridMounted && containerWidth > 0)
   const shouldShowTemplateSkeleton = !hasMountedOnce && (isLoading || !activeTemplate || !gridReady || isPropFirmLoading)
   const skeletonLayout = layout.length > 0
@@ -277,7 +276,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
 
   return (
     <div className={cn('space-y-3 lg:isolate', className)}>
-      {/* KPI Row - mobile 1-up, tablet 2+2+1, narrow desktop 3+2, wide desktop 5-up */}
+      {}
       <div className="px-3 sm:px-4 pt-3 sm:pt-4 kpi-row-container lg:isolate lg:relative lg:z-10">
         <div
           className={cn(
@@ -299,7 +298,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
               >
                 {widget ? (
                   <div className="relative group h-full">
-                    {/* Edit mode controls */}
+                    {}
                     {isEditMode && (
                       <>
                         <div className="absolute top-2 left-2 cursor-move z-10 bg-background/80 backdrop-blur-sm rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -341,18 +340,11 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
         </div>
       </div>
 
-      {/* Main Grid - react-grid-layout */}
-      {/* The ref div MUST always be in the DOM so ResizeObserver can measure width */}
+      {}
+      {}
       <div className="px-2 lg:isolate" ref={gridContainerRef} data-tour="widget-canvas">
         {isMobile ? (
-          /* ----------------------------------------------------------------
-           * MOBILE RENDERING PATH - GPU-SAFE
-           *
-           * Flat DOM: no nested flex containers, no stacking contexts,
-           * no relative/z-index, no group hover, no transition-all.
-           * Each wrapper is a plain block div. Off-screen widgets are
-           * skipped by content-visibility: auto (set in globals.css).
-           * ---------------------------------------------------------------- */
+
           <div className="pb-4 space-y-3">
             {gridWidgets.map(widget => {
               const config = WIDGET_REGISTRY[widget.type as WidgetType]
@@ -414,7 +406,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
             return (
               <div key={widget.i} data-is-chart={config.category === 'charts'} className={cn("group", isEditMode && "ring-1 ring-border/30 ring-inset rounded-2xl hover:ring-primary/40 transition-all")}>
                 <div className="relative h-full w-full">
-                  {/* Edit mode overlay controls */}
+                  {}
                   {isEditMode && (
                     <>
                       <div className="widget-drag-handle absolute top-2 left-2 cursor-grab active:cursor-grabbing z-10 bg-background/80 backdrop-blur-sm rounded-md p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-border/50">
@@ -429,7 +421,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                       >
                         <X className="h-3 w-3" />
                       </Button>
-                      {/* Resize hint indicator - bottom right */}
+                      {}
                       <div className="absolute bottom-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <div className="flex items-center gap-1 bg-background/80 backdrop-blur-sm rounded px-1.5 py-0.5 border border-border/50 shadow-sm">
                           <svg className="w-3 h-3 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -441,7 +433,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                     </>
                   )}
 
-                  {/* Widget content */}
+                  {}
                   <div className="h-full w-full overflow-hidden">
                     <WidgetErrorBoundary widgetId={widget.i} title={config.type}>
                       {config.getComponent({ size: widget.size as any })}
@@ -455,7 +447,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
         )}
       </div>
 
-      {/* Add new widget button at bottom in edit mode */}
+      {}
       {isEditMode && (
         <div className="px-4 pb-4">
           <button
@@ -473,7 +465,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
         </div>
       )}
 
-      {/* Widget Library Dialog */}
+      {}
       <WidgetLibraryDialog
         open={showWidgetLibrary}
         onOpenChange={setShowWidgetLibrary}
@@ -481,7 +473,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
         onInsertWidget={handleInsertWidget}
       />
 
-      {/* KPI Widget Selector */}
+      {}
       <KpiWidgetSelector
         open={showKpiSelector}
         onOpenChange={setShowKpiSelector}

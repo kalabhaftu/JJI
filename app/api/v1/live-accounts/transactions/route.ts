@@ -6,7 +6,7 @@ import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 
-// GET /api/live-accounts/transactions - Get all transactions for user's accounts
+
 export async function GET(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const limited = await applyApiRoutePolicy(request, 'authenticated-read')
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
     const userId = identity.internalUserId
 
-    // Get all transactions for user's accounts
+
     const transactions = await db.query.LiveAccountTransaction.findMany({
       where: (table, { eq }) => eq(table.userId, userId),
       orderBy: (table, { desc }) => [desc(table.createdAt)]

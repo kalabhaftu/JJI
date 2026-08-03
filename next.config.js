@@ -1,4 +1,4 @@
-/** @type {import('next').NextConfig} */
+
 
 let withBundleAnalyzer = (config) => config
 try {
@@ -18,7 +18,6 @@ const nextConfig = {
       bodySizeLimit: '10mb',
     },
   },
-
 
 
   serverExternalPackages: [

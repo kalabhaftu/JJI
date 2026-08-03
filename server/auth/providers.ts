@@ -98,7 +98,7 @@ export async function signInWithEmail(email: string, next: string | null = null)
           error: 'Too many sign-in code requests. Please wait before trying again.',
           rateLimited: true,
           isExistingUser: true,
-          emailSent: false // Supabase didn't send the email due to rate limit
+          emailSent: false
         }
       }
 
@@ -129,7 +129,7 @@ export async function signInWithEmail(email: string, next: string | null = null)
           error: 'Too many sign-in code requests. Please wait before trying again.',
           rateLimited: true,
           isExistingUser: false,
-          emailSent: false // Supabase didn't send the email due to rate limit
+          emailSent: false
         }
       }
 
@@ -147,5 +147,5 @@ export async function signInWithEmail(email: string, next: string | null = null)
 
 function generateTemporaryPassword(): string {
   const uuid = crypto.randomUUID().replace(/-/g, '')
-  return uuid.substring(0, 16) + 'A1!' // 16 chars + complexity
+  return uuid.substring(0, 16) + 'A1!'
 }

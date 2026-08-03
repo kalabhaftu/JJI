@@ -38,31 +38,11 @@ export interface NotificationPayload {
     invalidationKey?: string
 }
 
-/**
- * NotificationService - Intelligent notification system with smart invalidation
- * 
- * Core Feature: Updates existing unread notifications instead of creating spam
- * 
- * Use Cases:
- * - Risk alerts that escalate (65% → 80% → 95%)
- * - Import lifecycle (Processing → Complete)
- * - Strategy deviations grouped by day
- */
 
-/**
- * Create or update notification with smart invalidation
- * 
- * Logic:
- * 1. If invalidationKey provided:
- *    - Check for existing UNREAD notification with same key
- *    - If found: UPDATE existing notification (prevents spam)
- *    - If not found OR existing is READ: CREATE new notification
- * 2. If no invalidationKey: CREATE new notification
- */
 export async function createOrUpdateNotification(userId: string, notification: NotificationPayload) {
     try {
         if (notification.invalidationKey) {
-            // Try to find existing unread notification with same invalidation key
+
             const existing = await db.query.Notification.findFirst({
                 where: and(
                     eq(schema.Notification.userId, userId),
@@ -72,7 +52,7 @@ export async function createOrUpdateNotification(userId: string, notification: N
             })
 
             if (existing) {
-                // UPDATE existing unread notification
+
                 const [updated] = await db.update(schema.Notification)
                     .set({
                         type: notification.type,
@@ -81,7 +61,7 @@ export async function createOrUpdateNotification(userId: string, notification: N
                         data: notification.data,
                         priority: notification.priority || NotificationPriority.MEDIUM,
                         actionRequired: notification.actionRequired ?? false,
-                        updatedAt: new Date() // Bump to top of notification list
+                        updatedAt: new Date()
                     })
                     .where(eq(schema.Notification.id, existing.id))
                     .returning()
@@ -91,7 +71,7 @@ export async function createOrUpdateNotification(userId: string, notification: N
             }
         }
 
-        // CREATE new notification (either no invalidation key or existing was already read)
+
         const [created] = await db.insert(schema.Notification).values({
             userId,
             type: notification.type,
@@ -115,12 +95,7 @@ export async function createOrUpdateNotification(userId: string, notification: N
     }
 }
 
-/**
- * Risk Alert: Daily Loss Limit or Max Drawdown
- * Smart invalidation: Updates same notification as percentage increases
- * 
- * Example: Daily loss 65% → 80% → 95% (updates same notification)
- */
+
 export async function createRiskAlert(
     userId: string,
     phaseAccountId: string,
@@ -133,7 +108,7 @@ export async function createRiskAlert(
         used: number
     }
 ) {
-    // Determine severity level
+
     let type: NotificationType
     let priority: NotificationPriority
     let title: string
@@ -198,7 +173,7 @@ export async function createRiskAlert(
              userId,
              entityId: phaseAccountId,
            })
-           /* Notification still persists when email delivery is unavailable. */
+
          }
     }
 
@@ -218,12 +193,7 @@ export async function createRiskAlert(
     })
 }
 
-/**
- * Import Lifecycle: Processing → Complete
- * Smart invalidation: Updates same notification from "processing" to "complete"
- * 
- * Example: "Import in progress" → "Import complete (145 trades)"
- */
+
 export async function createImportNotification(
     userId: string,
     importId: string,
@@ -275,10 +245,7 @@ export async function createImportNotification(
     }
 }
 
-/**
- * System Announcement: Admin-to-user broadcasts
- * No invalidation - each announcement is unique
- */
+
 async function createSystemAnnouncement(
     userId: string,
     title: string,
@@ -291,13 +258,11 @@ async function createSystemAnnouncement(
         message,
         priority,
         actionRequired: false
-        // No invalidationKey - each announcement is unique
+
     })
 }
 
-/**
- * Dismiss all notifications of a specific type
- */
+
 export async function dismissNotificationsByType(userId: string, type: NotificationType) {
     try {
         await db.update(schema.Notification)
@@ -317,9 +282,7 @@ export async function dismissNotificationsByType(userId: string, type: Notificat
     }
 }
 
-/**
- * Get notification statistics (for dashboard)
- */
+
 export async function getNotificationStats(userId: string) {
     try {
         const [[totalRes], [unreadRes], [criticalRes]] = await Promise.all([
@@ -354,3 +317,4 @@ export async function getNotificationStats(userId: string) {
         }
     }
 }
+

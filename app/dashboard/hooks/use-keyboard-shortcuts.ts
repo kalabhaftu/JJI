@@ -8,19 +8,17 @@ export function useKeyboardShortcuts() {
   const router = useRouter();
 
   useEffect(() => {
-    // Configure hotkeys to work properly
+
     hotkeys.filter = function(event) {
       const target = (event.target || event.srcElement) as HTMLElement;
       const tagName = target.tagName;
-      
-      // Allow shortcuts in input fields for specific shortcuts only
+
       if (tagName === 'INPUT' || tagName === 'TEXTAREA' || target.isContentEditable) {
         return ['ctrl+k', 'cmd+k', 'ctrl+/', 'cmd+/', 'shift+ctrl+q', 'shift+cmd+q'].includes(hotkeys.getPressedKeyCodes().join('+').toLowerCase());
       }
       return true;
     };
 
-    // Quick navigation shortcuts
     hotkeys('ctrl+d, cmd+d', (event) => {
       event.preventDefault();
       router.push('/dashboard');
@@ -51,7 +49,6 @@ export function useKeyboardShortcuts() {
       toast.success('Settings', { description: 'Navigated to settings' });
     });
 
-    // Keyboard shortcuts help
     hotkeys('ctrl+k, cmd+k, ctrl+/, cmd+/', (event) => {
       event.preventDefault();
       toast.info('Keyboard Shortcuts', {
@@ -68,13 +65,11 @@ export function useKeyboardShortcuts() {
       });
     });
 
-    // Refresh page
     hotkeys('ctrl+r, cmd+r', (event) => {
       event.preventDefault();
       window.location.reload();
     });
 
-    // Quick logout
     hotkeys('shift+ctrl+q, shift+cmd+q', (event) => {
       event.preventDefault();
       signOut();
@@ -82,7 +77,7 @@ export function useKeyboardShortcuts() {
     });
 
     return () => {
-      // Cleanup all shortcuts
+
       hotkeys.unbind();
     };
   }, [router]);

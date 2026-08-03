@@ -46,8 +46,8 @@ export async function createWhopCheckoutLink(input: {
   }
 
   const purchaseUrl = new URL(assertWhopCheckoutUrl(checkout.purchase_url))
-  // Whop's supported prefill contract. The authenticated JJI email stays
-  // locked so checkout identity cannot be changed through request editing.
+
+
   purchaseUrl.searchParams.set('email', input.email)
   purchaseUrl.searchParams.set('email.disabled', '1')
 
@@ -58,3 +58,4 @@ export async function createWhopCheckoutLink(input: {
     referenceId,
   }
 }
+

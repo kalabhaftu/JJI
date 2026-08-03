@@ -20,7 +20,7 @@ export function DemoNetworkInterceptor() {
       }
       const request = input instanceof Request ? input : null
       const urlString = typeof input === 'string' ? input : request?.url || ''
-      
+
       try {
         const parsedUrl = new URL(urlString, window.location.origin)
         const pathname = parsedUrl.pathname
@@ -35,7 +35,7 @@ export function DemoNetworkInterceptor() {
           )
 
         if (isInternalApi) {
-          // Simulated network lag for realistic feel
+
           await new Promise(resolve => setTimeout(resolve, 80))
 
           if (pathname.match(/^\/api\/build-id$/)) {
@@ -54,7 +54,6 @@ export function DemoNetworkInterceptor() {
             return jsonResponse({ success: true, user: mockData.MOCK_USER_PROFILE })
           }
 
-          // Specific POST/PATCH handlers must come before the generic non-GET blocker
           if (method === 'POST' && pathname.match(/^\/api\/v1\/reports\/stats$/)) {
             return jsonResponse(mockData.getMockReportStats())
           }
@@ -67,12 +66,10 @@ export function DemoNetworkInterceptor() {
             return jsonResponse({ success: true, token: mockData.MOCK_WEBHOOK_TOKEN.token, data: mockData.MOCK_WEBHOOK_TOKEN })
           }
 
-          // Generic non-GET blocker (e.g. simulating actions like settings save)
           if (method !== 'GET') {
             return jsonResponse({ success: true, message: 'Action simulated in Demo Mode', demo: true })
           }
 
-          // GET handlers
           if (pathname.match(/^\/api\/v1\/init$/)) {
             return jsonResponse({
               isAuthenticated: true,
@@ -98,7 +95,7 @@ export function DemoNetworkInterceptor() {
               pagination: { total: mockData.MOCK_ACCOUNTS.length, page: 1, limit: 50, totalPages: 1 }
             })
           }
-          
+
           if (pathname.match(/^\/api\/v1\/accounts\/mock-acc-1$/)) {
             return jsonResponse({ success: true, data: mockData.MOCK_LIVE_ACCOUNT_DETAILS })
           }

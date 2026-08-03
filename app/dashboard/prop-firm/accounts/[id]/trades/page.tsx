@@ -72,8 +72,8 @@ export default function AccountTradesPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('trades')
-  const [phaseFilter, setPhaseFilter] = useState<string>('current') // NEW: Phase filter state
-  const [availablePhases, setAvailablePhases] = useState<PhaseInfo[]>([]) // NEW: Available phases
+  const [phaseFilter, setPhaseFilter] = useState<string>('current')
+  const [availablePhases, setAvailablePhases] = useState<PhaseInfo[]>([])
   const [tradeStatistics, setTradeStatistics] = useState({
     totalTrades: 0,
     winningTrades: 0,
@@ -84,7 +84,6 @@ export default function AccountTradesPage() {
   })
   const accountId = params.id as string
 
-  // Fetch account details
   const fetchAccount = async () => {
     try {
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
@@ -107,11 +106,10 @@ export default function AccountTradesPage() {
     }
   }
 
-  // Fetch trades with phase filter
   const fetchTrades = async (filter: string = phaseFilter) => {
     try {
       setIsLoading(true)
-      // FIXED: Add phase filter to API call
+
       const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}/trades?phase=${filter}`)
 
       if (!response.ok) {
@@ -143,7 +141,6 @@ export default function AccountTradesPage() {
     }
   }
 
-  // Refetch when phase filter changes
   useEffect(() => {
     if (user && accountId) {
       fetchTrades(phaseFilter)
@@ -151,7 +148,6 @@ export default function AccountTradesPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseFilter])
 
-  // Load data on mount
   useEffect(() => {
     if (user && accountId) {
       fetchAccount()
@@ -172,7 +168,6 @@ export default function AccountTradesPage() {
     return new Date(dateString).toLocaleString()
   }
 
-  // The API returns grouped executions; search remains client-side for instant filtering.
   const filteredTrades = trades.filter((trade) =>
     trade.symbol.toLowerCase().includes(searchTerm.toLowerCase())
   )
@@ -207,7 +202,7 @@ export default function AccountTradesPage() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
-      {/* Header */}
+      {            }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
@@ -245,7 +240,7 @@ export default function AccountTradesPage() {
         </div>
       </div>
 
-      {/* NEW: Phase Filter */}
+      {                       }
       {availablePhases.length > 1 && (
         <Card>
           <CardHeader>
@@ -303,7 +298,7 @@ export default function AccountTradesPage() {
         </Card>
       )}
 
-      {/* Stats Overview */}
+      {                    }
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -351,7 +346,7 @@ export default function AccountTradesPage() {
         </Card>
       </div>
 
-      {/* Search and Filter */}
+      {                       }
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -372,7 +367,7 @@ export default function AccountTradesPage() {
         </Button>
       </div>
 
-      {/* Main Content */}
+      {                  }
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <TabsList>
           <TabsTrigger value="trades">All Trades</TabsTrigger>
@@ -381,7 +376,7 @@ export default function AccountTradesPage() {
         </TabsList>
 
         <TabsContent value="trades">
-          {/* Trades List */}
+          {                 }
           {filteredTrades.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center h-64">
@@ -483,7 +478,7 @@ export default function AccountTradesPage() {
         </TabsContent>
 
         <TabsContent value="open">
-          {/* Open Positions */}
+          {                    }
           {(() => {
             const openTrades = filteredTrades.filter((trade: TradeData) => trade.status === 'open')
             return openTrades.length === 0 ? (
@@ -560,7 +555,7 @@ export default function AccountTradesPage() {
         </TabsContent>
 
         <TabsContent value="closed">
-          {/* Closed Trades */}
+          {                   }
           {(() => {
             const closedTrades = filteredTrades.filter((trade: TradeData) => trade.status === 'closed')
             return closedTrades.length === 0 ? (

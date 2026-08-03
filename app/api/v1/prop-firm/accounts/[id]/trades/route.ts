@@ -21,7 +21,7 @@ interface RouteParams {
   params: Promise<{ id: string }>
 }
 
-// Validation schema for adding a trade
+
 const AddTradeSchema = z.object({
   accountNumber: z.string(),
   quantity: z.number(),
@@ -52,11 +52,11 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const internalUserId = identity.internalUserId
 
     const { id: masterAccountId } = await params
-    // ID is pure masterAccountId (UUID), not composite
+
     const body = await request.json()
     const tradeData = AddTradeSchema.parse(body)
 
-    // Get the master account with its phases
+
     const masterAccount = await db.query.MasterAccount.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, masterAccountId), eq(table.userId, internalUserId)),
       with: {
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return createErrorResponse('Master account not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
-    // Find the current phase (regardless of status)
+
     const currentPhase = masterAccount.PhaseAccount.find(
       (phase: (typeof masterAccount.PhaseAccount)[number]) =>
         phase.phaseNumber === masterAccount.currentPhase
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
     
-    // Don't allow adding trades to failed or archived phases
+
     if (currentPhase.status === 'failed' || currentPhase.status === 'archived') {
       return createErrorResponse(
         `Cannot add trades to a ${currentPhase.status} phase. This phase is no longer active.`,
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Check if the phase account has a phaseId set
+
     if (!currentPhase.phaseId) {
       return createErrorResponse(
         'Please set the ID for the current phase before adding trades.',
@@ -106,13 +106,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       )
     }
 
-    // Create the trade
+
     const tradePayload = buildTradePersistenceData({
       id: crypto.randomUUID(),
       ...tradeData,
       userId: internalUserId,
       phaseAccountId: currentPhase.id,
-      accountNumber: currentPhase.phaseId, // Use the phase account ID as account number
+      accountNumber: currentPhase.phaseId,
       entryTime: tradeData.entryTime ? new Date(tradeData.entryTime) : null,
       exitTime: tradeData.exitTime ? new Date(tradeData.exitTime) : null
     } as any)
@@ -199,17 +199,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     const internalUserId = identity.internalUserId
 
     const { id: masterAccountId } = await params
-    // ID is pure masterAccountId (UUID), not composite
+
     const { searchParams } = new URL(request.url)
     
-    // NEW: Support phase filtering via query params
-    // ?phase=current (default) - only active phase
-    // ?phase=all - all phases
-    // ?phase=1 - specific phase number
-    // ?phase=archived - only archived phases
+
     const phaseFilter = searchParams.get('phase') || 'current'
 
-    // Verify the master account exists and belongs to the user
+
     const masterAccount = await db.query.MasterAccount.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, masterAccountId), eq(table.userId, internalUserId)),
       with: {
@@ -227,22 +223,22 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return createErrorResponse('Master account not found', 404, undefined, 'NOT_FOUND', requestId)
     }
 
-    // FIXED: Filter phases based on query parameter
+
     let phasesToInclude = masterAccount.PhaseAccount
     
     if (phaseFilter === 'current') {
-      // Only show trades from the current phase (regardless of status: active, passed, or failed)
+
       phasesToInclude = masterAccount.PhaseAccount.filter(
         (phase: (typeof masterAccount.PhaseAccount)[number]) =>
           phase.phaseNumber === masterAccount.currentPhase
       )
     } else if (phaseFilter === 'archived') {
-      // Only show trades from archived phases
+
       phasesToInclude = masterAccount.PhaseAccount.filter(
         (phase: (typeof masterAccount.PhaseAccount)[number]) => phase.status === 'archived'
       )
     } else if (phaseFilter !== 'all') {
-      // Specific phase number requested
+
       const requestedPhaseNumber = parseInt(phaseFilter)
       if (!isNaN(requestedPhaseNumber)) {
         phasesToInclude = masterAccount.PhaseAccount.filter(
@@ -251,9 +247,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         )
       }
     }
-    // else: phaseFilter === 'all', use all phases
 
-    // Flatten then group trades from filtered phases so every UI "trade" means a grouped execution
+
     const rawTrades = phasesToInclude.flatMap((phase: (typeof masterAccount.PhaseAccount)[number]) =>
       phase.Trade.map((trade: (typeof phase.Trade)[number]) => ({
         ...trade,

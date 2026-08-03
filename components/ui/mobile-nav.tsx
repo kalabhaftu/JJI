@@ -173,7 +173,7 @@ export function MobileBottomNav() {
   )
 }
 
-// Wrapper component for pages that should have bottom nav padding on mobile
+
 export function MobileNavPadding({ children }: { children: React.ReactNode }) {
   return (
     <>

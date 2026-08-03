@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 })
     }
 
-    // Map common futures/indices symbols to Yahoo Finance symbols
+
     let yfSymbol = symbol.toUpperCase()
     const symbolMap: Record<string, string> = {
       'ES': 'ES=F',
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     const mappedSymbol = symbolMap[yfSymbol]
     if (mappedSymbol) {
       yfSymbol = mappedSymbol
-    } else if (yfSymbol.includes('/')) { // e.g. BTC/USD -> BTC-USD
+    } else if (yfSymbol.includes('/')) {
       yfSymbol = yfSymbol.replace('/', '-')
     }
 

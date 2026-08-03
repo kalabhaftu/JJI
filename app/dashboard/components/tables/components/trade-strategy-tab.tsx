@@ -62,7 +62,7 @@ export function TradeStrategyTab({
 
     return (
         <div className="space-y-8 px-1">
-            {/* Market Bias */}
+            {}
             <div className="space-y-4">
                 <div className="space-y-1">
                     <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Contextual Bias</h3>
@@ -87,7 +87,7 @@ export function TradeStrategyTab({
                 </div>
             </div>
 
-            {/* Trade Outcome */}
+            {}
             <div className="space-y-4 pt-2">
                 <div className="space-y-1">
                     <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Trade Outcome</h3>
@@ -107,7 +107,7 @@ export function TradeStrategyTab({
                             type="button"
                             onClick={() => {
                                 setTradeOutcome(value as TradeOutcome)
-                                // Automatically check 'Rule Broken' for bad outcomes
+
                                 if (value.includes('BAD_')) {
                                     setRuleBroken(true)
                                 }
@@ -115,7 +115,7 @@ export function TradeStrategyTab({
                             className={cn(
                                 "py-2 px-1 border rounded-xl text-[10px] font-black uppercase tracking-tighter transition-all text-center leading-tight",
                                 tradeOutcome === value
-                                    ? colorClass.replace('hover:', '').replace('/10', '/30').replace('/20', '/40') // more opaque when active
+                                    ? colorClass.replace('hover:', '').replace('/10', '/30').replace('/20', '/40')
                                     : 'bg-muted/5 hover:bg-muted/10 border-border/20 text-muted-foreground/30'
                             )}
                         >
@@ -126,7 +126,7 @@ export function TradeStrategyTab({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-2">
-                {/* Order Type */}
+                {}
                 <div className="space-y-3">
                     <Label htmlFor="order-type" className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Execution Logic</Label>
                     <Select
@@ -144,7 +144,7 @@ export function TradeStrategyTab({
                     </Select>
                 </div>
 
-                {/* Trading Model */}
+                {}
                 <div className="space-y-3">
                     <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Trading System (Model)</Label>
                     <Select
@@ -238,7 +238,7 @@ export function TradeStrategyTab({
                 </div>
             )}
 
-            {/* Tags */}
+            {}
             <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between">
                     <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Trade Tags</Label>

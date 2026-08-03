@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     return createErrorResponse('Unauthorized', 401, undefined, 'UNAUTHORIZED', requestId)
   }
 
-  // Define unique parameters for cache key with user versioning
+
   const userVersion = await getUserCacheVersion(internalUserId)
   const queryParams = request.nextUrl.searchParams.toString()
   const cacheKey = CacheKeys.widgetData(internalUserId, type, queryParams, userVersion)
@@ -50,11 +50,11 @@ export async function GET(request: NextRequest) {
     cacheKey,
     CacheTTL.widgetData,
     async () => {
-      // Optimize upstream trades query to skip stats and calendar math
+
       request.nextUrl.searchParams.set('includeStats', 'false')
       request.nextUrl.searchParams.set('includeCalendar', 'false')
 
-      // Fetch filtered trades using the existing robust trades API
+
       const tradesResponse = await getTrades(request)
       if (tradesResponse.status !== 200) {
         throw new Error('Failed to fetch trades')
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
       const payload = await tradesResponse.json()
       const trades = payload.data?.trades || []
 
-      // Route to the appropriate math function
+
       let result
       switch (type) {
         case 'dayOfWeekPerformance':
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
           result = calculateDailyCumulativePnl(trades)
           break
         case 'accountBalanceChart':
-          // Fetch user's active accounts to calculate absolute balance
+
           let activeAccounts = []
           activeAccounts = await db.query.Account.findMany({
             where: (table, { eq, and }) => and(eq(table.userId, internalUserId), eq(table.isArchived, false)),

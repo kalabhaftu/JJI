@@ -17,7 +17,7 @@ export default function EquityCurveWidget() {
   const { chartStyle } = useTheme()
   const { formatValue, isPrivacyMode } = useDashboardDisplay()
 
-  // Split gradient offset - green above zero, red below zero
+
   const gradientOffset = React.useMemo(() => {
     if (!Array.isArray(chartData) || chartData.length === 0) return 1
     const dataMax = Math.max(...chartData.map((d: any) => d.equity ?? 0))
@@ -69,14 +69,14 @@ export default function EquityCurveWidget() {
         <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
           <defs>
-            {/* Split gradient for fill */}
+            {}
             <linearGradient id="equityFillGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor={COLORS.bullish} stopOpacity={0.4} />
               <stop offset={`${gradientOffset * 100}%`} stopColor={COLORS.bullish} stopOpacity={0.05} />
               <stop offset={`${gradientOffset * 100}%`} stopColor={COLORS.bearish} stopOpacity={0.05} />
               <stop offset="100%" stopColor={COLORS.bearish} stopOpacity={0.4} />
             </linearGradient>
-            {/* Split gradient for stroke */}
+            {}
             <linearGradient id="equityStrokeGrad" x1="0" y1="0" x2="0" y2="1">
               <stop offset={`${gradientOffset * 100}%`} stopColor={COLORS.bullish} />
               <stop offset={`${gradientOffset * 100}%`} stopColor={COLORS.bearish} />

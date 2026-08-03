@@ -42,7 +42,6 @@ type PnlFilter = 'all' | 'wins' | 'losses'
 
 import useSWR from 'swr'
 
-// Custom fetcher for Data Management
 const fetcher = async (url: string) => {
   try {
     const response = await fetch(url)
@@ -81,7 +80,6 @@ export default function TradeTable() {
   const [selectAll, setSelectAll] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  // URL-based view/edit panel state
   const activeView = searchParams.get('view') as 'details' | 'edit' | null
   const activeTradeId = searchParams.get('tradeId')
   const selectedTradeForView = useMemo(() => {
@@ -97,7 +95,6 @@ export default function TradeTable() {
     router.replace('/dashboard/data?tab=trades')
   }, [router])
 
-  // Modern Filters
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const [sideFilter, setSideFilter] = useState<SideFilter>('all')
@@ -105,7 +102,6 @@ export default function TradeTable() {
   const [instrumentSearchOpen, setInstrumentSearchOpen] = useState(false)
   const [accountSearchOpen, setAccountSearchOpen] = useState(false)
 
-  // Get unique instruments and accounts for filter options
   const availableInstruments = useMemo<string[]>(() => {
     return Array.from(new Set(formattedTrades.map((t: ExtendedTrade) => t.instrument).filter(Boolean)))
   }, [formattedTrades])
@@ -118,12 +114,9 @@ export default function TradeTable() {
   const totalPages = pagination.totalPages || 1
 
   const filteredAndSortedTrades = useMemo(() => {
-    // If we have server-side pagination, we should apply filters on the server.
-    // However, to keep it simple and respect the "independent" request,
-    // we'll treat the current page of trades as the source of truth for display.
+
     let list = [...formattedTrades]
 
-    // Apply client-side filters
     if (selectedInstruments.length > 0) {
       list = list.filter(trade => selectedInstruments.includes(trade.instrument))
     }
@@ -169,14 +162,13 @@ export default function TradeTable() {
 
     setIsDeleting(true)
 
-    // Clear selection immediately for responsive UI
     setSelectedTrades(new Set())
     setSelectAll(false)
 
     let loadingToastId: string | number | null = null
 
     try {
-      // Show loading toast and store the ID
+
       loadingToastId = toast.info("Deleting Trades", {
         description: `Deleting ${ids.length} trade(s)...`,
         duration: Infinity
@@ -187,25 +179,20 @@ export default function TradeTable() {
         body: JSON.stringify({ tradeIds: ids }),
       })
 
-      // Refresh trades data
       refetchTrades()
 
-      // CRITICAL: Force router refresh to update UI everywhere
       router.refresh()
 
-      // Dismiss loading toast before showing success
       if (loadingToastId) {
         toast.dismiss(loadingToastId)
       }
 
-      // Show success toast
       toast.success("Trades Deleted", {
         description: `Successfully deleted ${ids.length} trade(s).`,
       })
     } catch (error) {
       reportClientError(error, { operation: 'delete-data-management-trade', route: '/api/v1/trades' })
 
-      // Dismiss loading toast before showing error
       if (loadingToastId) {
         toast.dismiss(loadingToastId)
       }
@@ -213,7 +200,7 @@ export default function TradeTable() {
       toast.error("Error", {
         description: "Failed to delete trades. Please try again.",
       })
-      // Refresh data even on error to ensure UI is in sync
+
       refetchTrades()
     } finally {
       setIsDeleting(false)
@@ -291,9 +278,9 @@ export default function TradeTable() {
 
   return (
     <div className="w-full space-y-4">
-      {/* Modern Filter Panel */}
+      {                         }
       <div className="space-y-4">
-        {/* Quick Filters Row */}
+        {                       }
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4 text-muted-foreground" />
@@ -305,7 +292,7 @@ export default function TradeTable() {
             )}
           </div>
 
-          {/* Side Filter */}
+          {                 }
           <div className="flex items-center gap-1 border rounded-md p-1">
             <Button
               variant={sideFilter === 'all' ? 'default' : 'ghost'}
@@ -333,7 +320,7 @@ export default function TradeTable() {
             </Button>
           </div>
 
-          {/* PnL Filter */}
+          {                }
           <div className="flex items-center gap-1 border rounded-md p-1">
             <Button
               variant={pnlFilter === 'all' ? 'default' : 'ghost'}
@@ -363,7 +350,7 @@ export default function TradeTable() {
             </Button>
           </div>
 
-          {/* Instrument Filter */}
+          {                       }
           <Popover open={instrumentSearchOpen} onOpenChange={setInstrumentSearchOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="h-9 border-dashed">
@@ -403,7 +390,7 @@ export default function TradeTable() {
             </PopoverContent>
           </Popover>
 
-          {/* Account Filter */}
+          {                    }
           <Popover open={accountSearchOpen} onOpenChange={setAccountSearchOpen}>
             <PopoverTrigger asChild>
               <Button variant="outline" size="sm" className="h-9 border-dashed">
@@ -474,7 +461,7 @@ export default function TradeTable() {
           )}
         </div>
 
-        {/* Active Filters Display */}
+        {                            }
         {activeFiltersCount > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedInstruments.map(instrument => (
@@ -707,7 +694,7 @@ export default function TradeTable() {
         </div>
       </div>
 
-      {/* Trade Detail View Panel (URL-based) */}
+      {                                         }
       {activeView === 'details' && selectedTradeForView && (
         <div className="fixed inset-0 z-50 bg-background">
           <div className="w-full h-screen overflow-hidden">
@@ -720,7 +707,7 @@ export default function TradeTable() {
         </div>
       )}
 
-      {/* Enhanced Edit Trade Panel (URL-based) */}
+      {                                           }
       {activeView === 'edit' && selectedTradeForEdit && (
         <div className="fixed inset-0 z-50 bg-background">
           <div className="w-full h-screen overflow-hidden">

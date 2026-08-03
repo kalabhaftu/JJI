@@ -7,7 +7,7 @@ import { resolveRequestId } from '@/lib/observability/request-id'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 
-// GET - Get backtest input mode preference
+
 export async function GET(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const rateLimitRes = await applyApiRoutePolicy(request, 'authenticated-read')
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Update backtest input mode preference
+
 export async function POST(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const rateLimitRes = await applyApiRoutePolicy(request, 'sensitive')

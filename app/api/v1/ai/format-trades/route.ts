@@ -13,7 +13,7 @@ import { resolveRequestId } from '@/lib/observability/request-id'
 
 export const maxDuration = 30;
 
-// Initialize xAI provider (OpenAI-compatible)
+
 const xai = createOpenAI({
   apiKey: process.env.XAI_API_KEY || '',
   baseURL: process.env.XAI_BASE_URL || 'https://api.x.ai/v1',
@@ -26,7 +26,7 @@ const requestSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const requestId = resolveRequestId(req.headers)
-  // Apply rate limiting
+
   const rateLimitResult = await applyApiRoutePolicy(req);
   if (rateLimitResult) return rateLimitResult;
 

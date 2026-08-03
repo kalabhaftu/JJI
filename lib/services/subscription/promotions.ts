@@ -12,7 +12,7 @@ export async function validateAndGetPromo(code: string, userId: string, context:
   if (promo.applicability === 'signup_only' && context !== 'signup') return null
   if (promo.applicability === 'renewal_only' && context !== 'renewal') return null
 
-  // Check if user already redeemed
+
   const existing = await db.query.PromoRedemption.findFirst({
     where: and(eq(PromoRedemption.promoCodeId, promo.id), eq(PromoRedemption.userId, userId)),
   })
@@ -53,3 +53,4 @@ function getDiscountDescription(promo: { type: string; value: number }) {
     default: return ''
   }
 }
+

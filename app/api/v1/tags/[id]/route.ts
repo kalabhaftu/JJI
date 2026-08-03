@@ -8,7 +8,7 @@ import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
 import { eq, and, sql } from 'drizzle-orm'
 
-// PUT - Update a tag
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -28,7 +28,7 @@ export async function PUT(
     const body = await request.json()
     const { name, color } = body
 
-    // Verify tag ownership
+
     const existingTag = await db.query.TradeTag.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, id), eq(table.userId, userId))
     })
@@ -73,7 +73,7 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete a tag
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -91,7 +91,7 @@ export async function DELETE(
 
     const { id } = await params
 
-    // Verify tag ownership
+
     const existingTag = await db.query.TradeTag.findFirst({
       where: (table, { eq, and }) => and(eq(table.id, id), eq(table.userId, userId))
     })

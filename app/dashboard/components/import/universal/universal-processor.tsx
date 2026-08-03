@@ -84,7 +84,7 @@ export default function UniversalProcessor({
   const [isUsingAI, setIsUsingAI] = useState(false)
   const [aiProcessingState, setAiProcessingState] = useState<'idle' | 'processing' | 'complete' | 'error'>('idle')
 
-  // AI fallback processing
+
   const processWithAI = useCallback(async () => {
     if (csvData.length === 0) return
     
@@ -97,7 +97,7 @@ export default function UniversalProcessor({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           headers,
-          rows: csvData.slice(0, 100) // Limit to 100 rows for AI processing
+          rows: csvData.slice(0, 100)
         })
       })
 
@@ -115,7 +115,7 @@ export default function UniversalProcessor({
         fullText += decoder.decode(value, { stream: true })
       }
 
-      // Parse the streamed JSON response
+
       const jsonMatch = fullText.match(/\[[\s\S]*\]/)
       if (jsonMatch) {
         const trades = JSON.parse(jsonMatch[0])
@@ -182,9 +182,9 @@ export default function UniversalProcessor({
     
     setProcessingResult(result)
     
-    // Auto-trigger AI if universal processing failed or found no trades
+
     if (!result.success || result.trades.length === 0) {
-      // Don't auto-trigger if we already tried AI
+
       if (!isUsingAI && csvData.length > 0) {
         toast.info('Auto-detection unsuccessful. Switching to AI processing...')
         processWithAI()
@@ -279,7 +279,7 @@ export default function UniversalProcessor({
           </CardDescription>
         </div>
         
-        {/* Processing Status */}
+        {}
         <div className="flex items-center gap-2">
           {processingResult.success ? (
             <Badge variant="default" className="bg-long/20 text-long border border-long/30">
@@ -298,7 +298,7 @@ export default function UniversalProcessor({
       <CardContent className="flex-1 min-h-0 overflow-auto p-0">
         <div className="flex flex-col h-full">
           
-          {/* Warnings & Errors */}
+          {}
           {(processingResult.warnings.length > 0 || processingResult.errors.length > 0) && (
             <div className="p-4 space-y-2 border-b">
               {processingResult.errors.map((error, idx) => (
@@ -321,7 +321,7 @@ export default function UniversalProcessor({
             </div>
           )}
 
-          {/* Field Mapping Info */}
+          {}
           <Collapsible open={showFieldMapping} onOpenChange={setShowFieldMapping}>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-4 py-2 rounded-none border-b">
@@ -353,7 +353,7 @@ export default function UniversalProcessor({
             </CollapsibleContent>
           </Collapsible>
 
-          {/* Trades Table */}
+          {}
           {processedTrades.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
               <AlertTriangle className="h-10 w-10 text-amber-500 mb-3" />

@@ -1,8 +1,4 @@
-/**
- * Payout Management API
- * POST /api/prop-firm/payouts - Request a new payout
- * DELETE /api/prop-firm/payouts/[id] - Delete a pending payout
- */
+
 
 import { NextRequest } from 'next/server'
 

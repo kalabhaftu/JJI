@@ -21,7 +21,7 @@ export async function DELETE(request: NextRequest) {
     }
     const internalUserId = identity.internalUserId
 
-    // Verify confirmation in request body
+
     const body = await request.json().catch(() => ({}))
     if (body.confirmation !== 'DELETE ALL DATA') {
       return createErrorResponse(
@@ -58,7 +58,7 @@ export async function DELETE(request: NextRequest) {
       })
     }
 
-    // Invalidate all caches (use internal user ID for consistency with other cache keys)
+
     revalidateTag(`trades-${internalUserId}`)
     revalidateTag(`accounts-${internalUserId}`)
     revalidateTag(`user-data-${internalUserId}`)

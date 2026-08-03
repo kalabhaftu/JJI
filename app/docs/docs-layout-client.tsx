@@ -363,7 +363,6 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
     return docsSearch.search(searchQuery.trim()).slice(0, 8).map((result) => result.item)
   }, [searchQuery])
 
-  // Global Cmd+K / Ctrl+K search focus shortcut
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
@@ -375,7 +374,6 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Smooth scroll handler for anchor links (#hash)
   useEffect(() => {
     setMobileMenuOpen(false)
     setSearchQuery('')
@@ -386,7 +384,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
         const element = document.getElementById(hash) || document.getElementById(`heading-${hash}`)
         if (element) {
           setTimeout(() => {
-            const yOffset = -100 // Offset for sticky navbar + some padding
+            const yOffset = -100
             const y = element.getBoundingClientRect().top + window.scrollY + yOffset
             window.scrollTo({ top: y, behavior: 'smooth' })
           }, 100)

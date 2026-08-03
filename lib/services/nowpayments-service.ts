@@ -1,7 +1,4 @@
-/**
- * NOWPayments API Client
- * Server-only service for creating invoices and verifying IPN callbacks.
- */
+
 
 import crypto from 'crypto'
 import logger from "@/lib/logger"
@@ -214,3 +211,4 @@ export function isSuccessStatus(status: NowPaymentStatus): boolean {
 export function isFailureStatus(status: NowPaymentStatus): boolean {
   return ['failed', 'expired', 'refunded'].includes(status)
 }
+

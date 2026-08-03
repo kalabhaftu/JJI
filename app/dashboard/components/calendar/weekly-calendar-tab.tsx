@@ -29,7 +29,7 @@ export function WeeklyCalendarTab({
 }: WeeklyCalendarTabProps) {
   return (
     <>
-{/* Calendar Image Tab */}
+{}
               <TabsContent value="calendar" className="m-0 px-4 py-5 sm:px-6 lg:px-8">
                 <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                   <div className="flex items-center justify-between gap-4 mb-4">

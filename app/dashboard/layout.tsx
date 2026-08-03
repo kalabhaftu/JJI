@@ -34,7 +34,6 @@ export default async function RootLayout({ children }: { children: ReactNode }) 
     getSiteUiSettings(),
   ])
 
-  // Subscription access gate - admins bypass, unpaid users redirect to /subscribe
   if (initialBootstrapData.isAuthenticated && initialBootstrapData.user?.id) {
     const access = initialBootstrapData.subscriptionAccess
     if (!access) redirect('/login')

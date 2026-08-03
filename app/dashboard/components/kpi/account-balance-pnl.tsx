@@ -90,14 +90,14 @@ const AccountBalancePnl = React.memo(function AccountBalancePnl({ size }: Accoun
     }
   }, [displayedPnl, formatValue, mode, pnlDisplayLabel, rStats.totalTrades, rStats.validTrades])
 
-  // Determine if we should use NumberFlow (dollars $ mode only)
+
   const useNumberFlowBalance = mode === 'dollars' && typeof totalBalance === 'number'
   const useNumberFlowPnl = (mode === 'dollars' || mode === 'percentage') && typeof secondaryValue.rawNumber === 'number'
 
   return (
     <WidgetCard isKpi>
       <div className="h-full flex flex-col justify-between">
-        {/* Header row */}
+        {}
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div className="flex min-w-0 items-center gap-1.5">
             <span className="text-xs font-medium text-muted-foreground">
@@ -131,10 +131,10 @@ const AccountBalancePnl = React.memo(function AccountBalancePnl({ size }: Accoun
           )}
         </div>
 
-        {/* Main value area */}
+        {}
         <div className="flex items-end justify-between gap-3">
           <div className="flex flex-col gap-1 min-w-0">
-            {/* Large balance number */}
+            {}
             {useNumberFlowBalance ? (
               <NumberFlow
                 value={totalBalance}
@@ -147,7 +147,7 @@ const AccountBalancePnl = React.memo(function AccountBalancePnl({ size }: Accoun
               </span>
             )}
 
-            {/* Net PnL below */}
+            {}
             <div className="flex items-center gap-1.5">
               <span className="text-xs text-muted-foreground">{secondaryValue.label}</span>
               {useNumberFlowPnl && secondaryValue.rawNumber !== null ? (
@@ -165,7 +165,7 @@ const AccountBalancePnl = React.memo(function AccountBalancePnl({ size }: Accoun
             </div>
           </div>
 
-          {/* Chart icon */}
+          {}
           <div className="rounded-lg bg-primary/10 p-1.5 min-[1440px]:p-2">
             <Wallet className="h-4 w-4 min-[1440px]:h-5 min-[1440px]:w-5 text-primary/60" />
           </div>

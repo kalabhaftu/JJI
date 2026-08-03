@@ -49,25 +49,25 @@ import { useEffect, useRef, useState } from 'react'
 import { reportClientError, reportError } from '@/lib/observability/report-error'
 import { MOBILE_SYNC_EVENT } from '@/lib/navigation/mobile-nav'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
+import {
+  getActiveNavigationId,
+  getNavigationGroup,
+  resolveNavigationPath,
+  type NavigationContext,
+  type NavigationId,
+} from '@/lib/navigation/registry'
 
-const coreNavItems = [
-  { id: 'widgets', label: 'Overview', icon: LayoutDashboard, href: '/dashboard' },
-  { id: 'journal', label: 'Journal', icon: CalendarDays, href: '/dashboard/journal' },
-  { id: 'reports', label: 'Reports', icon: LineChart, href: '/dashboard/reports' },
-  { id: 'table', label: 'Trades', icon: ListTodo, href: '/dashboard/table' },
-  { id: 'accounts', label: 'Accounts', icon: Briefcase, href: '/dashboard/accounts' },
-]
-
-const toolItems = [
-  { id: 'playbook', label: 'Playbook', icon: BookOpen, href: '/dashboard/playbook' },
-  { id: 'backtesting', label: 'Backtesting', icon: FlaskConical, href: '/dashboard/backtesting' },
-  { id: 'goals', label: 'Goals', icon: Trophy, href: '/dashboard/goals' },
-]
+const navigationIcons: Record<NavigationId, typeof LayoutDashboard> = {
+  overview: LayoutDashboard, journal: CalendarDays, reports: LineChart, table: ListTodo,
+  accounts: Briefcase, playbook: BookOpen, backtesting: FlaskConical, goals: Trophy,
+  assistant: Brain, data: Database, settings: Settings, docs: BookMarked,
+  feedback: MessageSquare, donate: Heart, more: LayoutDashboard,
+}
 
 export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSettingsPayload }) {
   const pathname = usePathname()
   const { refreshTrades, isDemoMode } = useData()
-  const { demoAwarePathname, demoRouteHref, docsHref, exitDemoHref } = usePublicSurfaceRouting()
+  const { hostname, exitDemoHref } = usePublicSurfaceRouting()
   const { state, toggleSidebar, isOverlay, setOpenMobile } = useSidebar()
   
   const tradovateSyncContext = useTradovateSyncContext()
@@ -165,44 +165,25 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
   }, [])
   const isCollapsed = state === 'collapsed' && !isOverlay
 
-  const getDemoAdjustedHref = (href: string): any => {
-    if (href.startsWith('/docs')) return docsHref(href)
-    return demoRouteHref(href, Boolean(isDemoMode))
+  const navigationContext: NavigationContext = {
+    surface: isDemoMode ? 'demo' : 'authenticated',
+    isDemo: Boolean(isDemoMode),
+    hostname,
   }
+  const coreNavItems = getNavigationGroup('core', navigationContext)
+  const toolItems = getNavigationGroup('tools', navigationContext)
 
   const utilityItems = [
     ...(siteUiSettings.showFeedbackButton
-      ? [{ id: 'feedback', label: 'Feedback', icon: MessageSquare, href: '/feedback' }]
+       ? [getNavigationGroup('utilities', navigationContext).find((item) => item.id === 'feedback')!]
       : []),
     ...(siteUiSettings.showDonateButton
-      ? [{ id: 'donate', label: 'Donate', icon: Heart, href: '/donate' }]
-      : []),
-    { id: 'docs', label: 'Documentation', icon: BookMarked, href: '/docs' },
-    { id: 'data', label: 'Data', icon: Database, href: '/dashboard/data' },
-    { id: 'settings', label: 'Settings', icon: Settings, href: '/dashboard/settings' },
+       ? [getNavigationGroup('utilities', navigationContext).find((item) => item.id === 'donate')!]
+       : []),
+    ...getNavigationGroup('utilities', navigationContext).filter((item) => ['docs', 'data', 'settings'].includes(item.id)),
   ]
 
-  const getActiveId = () => {
-    const p = demoAwarePathname(pathname || '', Boolean(isDemoMode))
-    const isDemo = Boolean(isDemoMode)
-    const base = isDemo ? '/demo' : '/dashboard'
-
-    if (p === base) return 'widgets'
-    if (p.startsWith(`${base}/table`)) return 'table'
-    if (p.startsWith(`${base}/accounts`)) return 'accounts'
-    if (p.startsWith(`${base}/journal`)) return 'journal'
-    if (p.startsWith(`${base}/backtesting`)) return 'backtesting'
-    if (p.startsWith(`${base}/playbook`)) return 'playbook'
-    if (p.startsWith(`${base}/goals`)) return 'goals'
-    if (p.startsWith(`${base}/reports`)) return 'reports'
-    if (p.startsWith(`${base}/settings`)) return 'settings'
-    if (p.startsWith(`${base}/data`)) return 'data'
-    if (p.startsWith(`${base}/ai`)) return 'ai'
-    if (p.startsWith('/docs')) return 'docs'
-    return 'widgets'
-  }
-
-  const activeId = getActiveId()
+  const activeId = getActiveNavigationId(pathname || '', navigationContext)
   const collapseLabel = isCollapsed ? 'Expand' : 'Collapse'
   const CollapseIcon = isCollapsed ? PanelLeftOpen : PanelLeftClose
 
@@ -230,7 +211,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                 tooltip="Dashboard Home"
               >
                 <Link
-                  href={demoRouteHref('/dashboard', Boolean(isDemoMode))}
+                   href={resolveNavigationPath('overview', navigationContext)}
                   onClick={handleMobileClose}
                   className={cn('flex w-full items-center', isCollapsed ? 'justify-center' : 'gap-3')}
                 >
@@ -250,7 +231,9 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
               <SidebarGroupLabel className={cn(isOverlay && 'h-7 px-1 text-[11px] tracking-wide')}>Navigation</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className={cn(isOverlay && 'gap-1')}>
-                  {coreNavItems.map((item) => (
+                   {coreNavItems.map((item) => {
+                     const ItemIcon = navigationIcons[item.id]
+                     return (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton
                         size={isOverlay ? 'lg' : 'default'}
@@ -263,13 +246,14 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                           !isOverlay && !isCollapsed && 'px-3'
                         )}
                       >
-                        <Link href={getDemoAdjustedHref(item.href)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
-                          <item.icon />
+                         <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
+                           <ItemIcon />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  ))}
+                     )
+                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -278,7 +262,9 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
               <SidebarGroupLabel className={cn(isOverlay && 'h-7 px-1 text-[11px] tracking-wide')}>Tools</SidebarGroupLabel>
               <SidebarGroupContent>
                 <SidebarMenu className={cn(isOverlay && 'gap-1')}>
-                  {toolItems.map((item) => (
+                   {toolItems.map((item) => {
+                     const ItemIcon = navigationIcons[item.id]
+                     return (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton
                         size={isOverlay ? 'lg' : 'default'}
@@ -291,13 +277,14 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                           !isOverlay && !isCollapsed && 'px-3'
                         )}
                       >
-                        <Link href={getDemoAdjustedHref(item.href)} onClick={handleMobileClose}>
-                          <item.icon />
+                         <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose}>
+                           <ItemIcon />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  ))}
+                     )
+                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>
@@ -311,14 +298,14 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                       size={isOverlay ? 'lg' : 'default'}
                       variant={isCollapsed ? 'icon' : 'default'}
                       tooltip="Assistant"
-                      isActive={activeId === 'ai'}
+                       isActive={activeId === 'assistant'}
                       asChild
                       className={cn(
                         isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
                         !isOverlay && !isCollapsed && 'px-3'
                       )}
                     >
-                      <Link href={getDemoAdjustedHref('/dashboard/ai')} onClick={handleMobileClose}>
+                       <Link href={resolveNavigationPath('assistant', navigationContext)} onClick={handleMobileClose}>
                         <Brain />
                         <span>Assistant</span>
                       </Link>
@@ -352,7 +339,9 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                     </SidebarMenuButton>
                   </SidebarMenuItem>
 
-                  {utilityItems.map((item) => (
+                   {utilityItems.map((item) => {
+                     const ItemIcon = navigationIcons[item.id]
+                     return (
                     <SidebarMenuItem key={item.id}>
                       <SidebarMenuButton
                         size={isOverlay ? 'lg' : 'default'}
@@ -365,13 +354,14 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                           !isOverlay && !isCollapsed && 'px-3'
                         )}
                       >
-                        <Link href={getDemoAdjustedHref(item.href)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
-                          <item.icon />
+                         <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
+                           <ItemIcon />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  ))}
+                     )
+                   })}
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

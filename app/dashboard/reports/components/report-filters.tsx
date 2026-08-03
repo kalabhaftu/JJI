@@ -30,7 +30,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { CustomDateRangePicker, DateRange } from '@/components/ui/custom-date-range-picker'
+import type { DateRange } from '@/components/ui/custom-date-range-picker'
+import { DateRangeFilter } from '@/components/ui/date-range-filter'
 import {
   Collapsible,
   CollapsibleContent,
@@ -93,44 +94,7 @@ export function ReportFilters({
           <div className="hidden h-8 w-px bg-border/12 lg:block" />
 
           <FilterBarGroup className="min-w-[210px] sm:max-w-[260px]">
-            <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    'h-10 w-full justify-start gap-2 px-0 text-[11px] font-bold uppercase tracking-wider hover:bg-transparent',
-                    !dateRange && 'text-muted-foreground'
-                  )}
-                >
-                  <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
-                  <span className="truncate">
-                    {dateRange?.from ? (
-                      dateRange.to ? (
-                        <>{format(dateRange.from, 'MMM dd')} - {format(dateRange.to, 'MMM dd, yy')}</>
-                      ) : (
-                        format(dateRange.from, 'MMM dd, yyyy')
-                      )
-                    ) : (
-                      'Custom Range'
-                    )}
-                  </span>
-                  <ChevronDown className="ml-auto h-3 w-3 opacity-40" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto rounded-[24px] border-border/16 p-0 shadow-lg" align="end">
-                <CustomDateRangePicker
-                  {...(dateRange ? { selected: dateRange } : {})}
-                  onSelect={(range) => {
-                    onDateRangeChange(range)
-                    if (range?.from && range?.to) {
-                      setIsCalendarOpen(false)
-                    }
-                  }}
-                  className="border-none shadow-none"
-                />
-              </PopoverContent>
-            </Popover>
+            <DateRangeFilter value={dateRange} onChange={onDateRangeChange} className="w-full border-0 bg-transparent px-0 text-[11px] font-bold uppercase tracking-wider shadow-none" />
           </FilterBarGroup>
 
           <div className="ml-auto" />

@@ -43,6 +43,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Logo } from '@/components/logo'
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/user-avatar'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
+import { resolveNavigationPath } from '@/lib/navigation/registry'
 
 export default function Navbar() {
   const storeUser = useUserStore(state => state.supabaseUser)
@@ -58,7 +59,7 @@ export default function Navbar() {
 
   const { isMobile, isDemoMode } = useData()
   const { forceClearAuth } = useAuth()
-  const { demoRouteHref } = usePublicSurfaceRouting()
+  const { demoRouteHref, hostname } = usePublicSurfaceRouting()
 
   useKeyboardShortcuts()
 
@@ -89,7 +90,7 @@ export default function Navbar() {
         {}
         <div className="flex items-center gap-3">
           <SidebarTrigger className="lg:hidden" />
-          <Link href="/dashboard" className="lg:hidden flex items-center">
+            <Link href={resolveNavigationPath('overview', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode), hostname })} className="lg:hidden flex items-center">
             <Logo className="h-6 w-6" />
           </Link>
         </div>
@@ -219,7 +220,7 @@ export default function Navbar() {
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={isDemoMode ? demoRouteHref('/dashboard/settings', true) : '/dashboard/settings'}
+                  href={resolveNavigationPath('settings', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode), hostname })}
                   className="cursor-pointer"
                   onClick={() => setProfileMenuOpen(false)}
                 >

@@ -7,6 +7,8 @@ import { PageHeader } from "@/components/ui/page-header"
 import { Briefcase, Table } from "lucide-react"
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
+import { resolveNavigationPath } from '@/lib/navigation/registry'
+import { useData } from '@/context/data-provider'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,6 +23,7 @@ const categories = [
 function DashboardContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { isDemoMode } = useData()
   const activeTab = searchParams.get('tab') || 'accounts'
 
   useEffect(() => {
@@ -28,8 +31,8 @@ function DashboardContent() {
   }, [])
 
   const handleTabChange = useCallback((value: string) => {
-    router.push(`/dashboard/data?tab=${value}`)
-  }, [router])
+    router.push(`${resolveNavigationPath('data', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })}?tab=${value}`)
+  }, [isDemoMode, router])
 
   return (
     <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 pb-20 md:pb-8">

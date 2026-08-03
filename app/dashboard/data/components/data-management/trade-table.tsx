@@ -696,28 +696,22 @@ export default function TradeTable() {
 
       {                                         }
       {activeView === 'details' && selectedTradeForView && (
-        <div className="fixed inset-0 z-50 bg-background">
-          <div className="w-full h-screen overflow-hidden">
-            <TradeDetailPanel
-              trade={selectedTradeForView}
-              onClose={handleClosePanel}
-              basePath="/dashboard/data"
-            />
-          </div>
-        </div>
+        <TradeDetailPanel
+          trade={selectedTradeForView}
+          onClose={handleClosePanel}
+          basePath="/dashboard/data"
+          workspaceMode="dialog"
+        />
       )}
 
       {                                           }
       {activeView === 'edit' && selectedTradeForEdit && (
-        <div className="fixed inset-0 z-50 bg-background">
-          <div className="w-full h-screen overflow-hidden">
-            <TradeEditPanel
-              trade={ensureExtendedTrade(selectedTradeForEdit)}
-              onClose={handleClosePanel}
-              onSave={handleSaveTrade}
-            />
-          </div>
-        </div>
+        <TradeEditPanel
+          trade={ensureExtendedTrade(selectedTradeForEdit)}
+          onClose={handleClosePanel}
+          onSave={handleSaveTrade}
+          workspaceMode="dialog"
+        />
       )}
     </div>
   )

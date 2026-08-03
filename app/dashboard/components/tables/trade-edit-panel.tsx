@@ -2,17 +2,8 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
 import { Button } from '@/components/ui/button'
+import { TradeWorkspace, type TradeWorkspaceProps } from '@/components/ui/trade-workspace'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
 import { useTags } from '@/context/tags-provider'
@@ -53,6 +44,7 @@ interface TradeEditPanelProps {
   trade: ExtendedTrade
   onClose: () => void
   onSave: (updatedTrade: Partial<TradeType>) => Promise<void>
+  workspaceMode?: TradeWorkspaceProps['mode']
 }
 
 const editTradeSchema = z.object({
@@ -97,7 +89,7 @@ interface LocalTradingModel {
   notes?: string | null
 }
 
-export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) {
+export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route' }: TradeEditPanelProps) {
   const { statistics } = useData()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const initializedTradeKeyRef = useRef<string | null>(null)
@@ -320,15 +312,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
     }
   }
 
-  const [showUnsavedAlert, setShowUnsavedAlert] = useState(false)
-
-  const handleCloseAttempt = () => {
-    if (isDirty) {
-      setShowUnsavedAlert(true)
-    } else {
-      onClose()
-    }
-  }
+  const handleCloseAttempt = onClose
 
 
   const tradeData = trade as any
@@ -341,7 +325,7 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
   const isLong = trade.side?.toUpperCase() === 'BUY' || trade.side?.toLowerCase() === 'long'
 
   return (
-    <>
+    <TradeWorkspace mode={workspaceMode} title={`Edit ${trade.instrument} trade`} description="Update journal, strategy, and news context." dirty={isDirty} onRequestClose={onClose}>
       <div className="flex flex-col h-full">
         {}
         <div className="px-4 sm:px-6 py-3 border-b border-border/40 shrink-0">
@@ -489,26 +473,6 @@ export function TradeEditPanel({ trade, onClose, onSave }: TradeEditPanelProps) 
         </div>
       </div>
 
-      {}
-      <AlertDialog open={showUnsavedAlert} onOpenChange={setShowUnsavedAlert}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved changes. Are you sure you want to discard them?
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Keep Editing</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => { setShowUnsavedAlert(false); onClose() }}
-              className="bg-destructive hover:bg-destructive/90"
-            >
-              Discard Changes
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
+    </TradeWorkspace>
   )
 }

@@ -123,13 +123,11 @@ function TableView() {
     const trade = formattedTrades.find((t: any) => t.id === tradeId)
     if (trade) {
       return (
-        <div className="fixed inset-0 z-50 bg-background">
-          <TradeDetailPanel
-            trade={trade}
-            onClose={() => router.replace('/dashboard/table')}
-            basePath="/dashboard/table"
-          />
-        </div>
+        <TradeDetailPanel
+          trade={trade}
+          onClose={() => router.replace('/dashboard/table')}
+          basePath="/dashboard/table"
+        />
       )
     }
   }
@@ -138,15 +136,13 @@ function TableView() {
     const trade = formattedTrades.find((t: any) => t.id === tradeId)
     if (trade) {
       return (
-        <div className="fixed inset-0 z-50 bg-background">
-          <TradeEditPanel
-            trade={ensureExtendedTrade(trade as any)}
-            onClose={() => router.replace('/dashboard/table')}
-            onSave={async (data: any) => {
-              await updateTrades([tradeId], data)
-            }}
-          />
-        </div>
+        <TradeEditPanel
+          trade={ensureExtendedTrade(trade as any)}
+          onClose={() => router.replace('/dashboard/table')}
+          onSave={async (data: any) => {
+            await updateTrades([tradeId], data)
+          }}
+        />
       )
     }
   }

@@ -106,15 +106,20 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
 
   const previousAccountRef = useRef<PropFirmAccountLocal | null>(null)
   const previousDrawdownRef = useRef<DrawdownData | null>(null)
-  const isFetchingRef = useRef(false)
   const hasFetchedRef = useRef(false)
+  const requestControllerRef = useRef<AbortController | null>(null)
+  const requestSequenceRef = useRef(0)
 
   const fetchAccountData = useCallback(async (showLoadingState = true) => {
 
-    if (!accountId || !enabled || isFetchingRef.current) return
+    if (!accountId || !enabled) return
+
+    requestControllerRef.current?.abort()
+    const controller = new AbortController()
+    requestControllerRef.current = controller
+    const requestSequence = ++requestSequenceRef.current
 
     try {
-      isFetchingRef.current = true
       setIsFetching(true)
       if (showLoadingState) {
         setIsLoading(true)
@@ -123,11 +128,16 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
 
       const result = await fetchWithError<{ success: boolean; data: any }>(
         `/api/v1/prop-firm/accounts/${accountId}`,
-        { timeout: API_TIMEOUT }
+        { timeout: API_TIMEOUT, signal: controller.signal }
       )
 
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted) return
+
       if (!result.ok || !result.data?.success) {
-        throw new Error(result.error?.message || 'Failed to fetch account data')
+        if (result.error?.code === 'CANCELLED') return
+        const fetchError = new Error(result.error?.message || 'Failed to fetch account data')
+        Object.assign(fetchError, result.error)
+        throw fetchError
       }
 
       const { account: accountData, drawdown: drawdownData } = result.data.data
@@ -162,13 +172,16 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       setLastUpdated(new Date())
 
     } catch (err) {
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted) return
       reportClientError(err, { operation: 'load-prop-firm-realtime-account', route: '/api/v1/prop-firm/accounts' })
       setError(handleFetchError(err))
     } finally {
-      isFetchingRef.current = false
-      setIsFetching(false)
-      if (showLoadingState) {
-        setIsLoading(false)
+      if (requestSequence === requestSequenceRef.current) {
+        requestControllerRef.current = null
+        setIsFetching(false)
+        if (showLoadingState) {
+          setIsLoading(false)
+        }
       }
     }
   }, [accountId, enabled])
@@ -229,6 +242,11 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
 
     fetchAccountData(true)
   }, [enabled, accountId, fetchAccountData])
+
+  useEffect(() => () => {
+    requestSequenceRef.current++
+    requestControllerRef.current?.abort()
+  }, [])
 
   return {
     account,

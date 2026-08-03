@@ -70,6 +70,8 @@ export default function AccountDetailPage() {
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [dataError, setDataError] = useState<string | null>(null)
   const hasFetchedDataRef = useRef(false)
+  const completeDataControllerRef = useRef<AbortController | null>(null)
+  const completeDataSequenceRef = useRef(0)
 
   const accountId = params.id as string
 
@@ -86,13 +88,17 @@ export default function AccountDetailPage() {
   })
 
   const fetchCompleteData = useCallback(async () => {
+    completeDataControllerRef.current?.abort()
+    const controller = new AbortController()
+    completeDataControllerRef.current = controller
+    const requestSequence = ++completeDataSequenceRef.current
     setIsLoadingData(true)
     setDataError(null)
 
     try {
       const [tradesRes, payoutsRes] = await Promise.all([
-        fetch(`/api/v1/prop-firm/accounts/${accountId}/trades?phase=all`),
-        fetch(`/api/v1/prop-firm/accounts/${accountId}/payouts`)
+        fetch(`/api/v1/prop-firm/accounts/${accountId}/trades?phase=all`, { signal: controller.signal }),
+        fetch(`/api/v1/prop-firm/accounts/${accountId}/payouts`, { signal: controller.signal })
       ])
 
       const [tradesJson, payoutsJson] = await Promise.all([
@@ -100,15 +106,29 @@ export default function AccountDetailPage() {
         payoutsRes.json()
       ])
 
-      setTradesData(tradesJson.success ? tradesJson.data.trades : [])
-      setPayoutsData(payoutsJson.success ? payoutsJson.data : { eligibility: null, history: [] })
+      if (requestSequence !== completeDataSequenceRef.current) return
+      if (!tradesRes.ok || !tradesJson.success || !payoutsRes.ok || !payoutsJson.success) {
+        throw new Error('Failed to refresh account activity')
+      }
+
+      setTradesData(tradesJson.data.trades)
+      setPayoutsData(payoutsJson.data)
     } catch (error) {
+      if (controller.signal.aborted || requestSequence !== completeDataSequenceRef.current) return
       reportClientError(error, { operation: 'load-prop-firm-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
-      setDataError('Failed to load data')
+      setDataError('Could not refresh account activity. Previously loaded trades and payouts are still shown.')
     } finally {
-      setIsLoadingData(false)
+      if (requestSequence === completeDataSequenceRef.current) {
+        completeDataControllerRef.current = null
+        setIsLoadingData(false)
+      }
     }
   }, [accountId])
+
+  useEffect(() => () => {
+    completeDataSequenceRef.current++
+    completeDataControllerRef.current?.abort()
+  }, [])
 
   useEffect(() => {
     if (realtimeError) {
@@ -303,7 +323,7 @@ export default function AccountDetailPage() {
     return <DetailPageSkeleton />
   }
 
-  if (realtimeError) {
+  if (realtimeError && !accountData) {
     if (realtimeError.includes('404') || realtimeError.includes('not found')) {
       return (
         <AccountNotFoundError
@@ -335,6 +355,13 @@ export default function AccountDetailPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+
+        {(realtimeError || dataError) && (
+          <Alert>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{realtimeError || dataError}</AlertDescription>
+          </Alert>
+        )}
 
         {            }
         <motion.div

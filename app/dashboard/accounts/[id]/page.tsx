@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
   ArrowLeft,
   RefreshCw,
@@ -186,6 +187,9 @@ export default function LiveAccountDetailPage() {
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [refreshKey, setRefreshKey] = useState(0)
+  const [accountError, setAccountError] = useState<string | null>(null)
+  const requestControllerRef = useRef<AbortController | null>(null)
+  const requestSequenceRef = useRef(0)
 
   const accountId = params.id as string
   const user = useUserStore(state => state.user)
@@ -193,12 +197,20 @@ export default function LiveAccountDetailPage() {
   const storeAccounts = useUserStore(state => state.accounts)
 
   const fetchAccountData = useCallback(async () => {
+    requestControllerRef.current?.abort()
+    const controller = new AbortController()
+    requestControllerRef.current = controller
+    const requestSequence = ++requestSequenceRef.current
+
     try {
       setIsLoading(true)
+      setAccountError(null)
 
       const response = await fetch(`/api/v1/accounts/${accountId}?t=${Date.now()}`, {
-        cache: 'no-store'
+        cache: 'no-store',
+        signal: controller.signal,
       })
+      if (requestSequence !== requestSequenceRef.current) return
       if (!response.ok) {
         throw new Error('Failed to fetch account')
       }
@@ -217,9 +229,13 @@ export default function LiveAccountDetailPage() {
 
       setAccount(accountData)
     } catch (error) {
-      router.push('/dashboard/accounts')
+      if (controller.signal.aborted || requestSequence !== requestSequenceRef.current) return
+      setAccountError('Could not refresh this account. Your existing account data is still available.')
     } finally {
-      setIsLoading(false)
+      if (requestSequence === requestSequenceRef.current) {
+        requestControllerRef.current = null
+        setIsLoading(false)
+      }
     }
   }, [accountId, router])
 
@@ -271,6 +287,11 @@ export default function LiveAccountDetailPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [accountId, refreshKey])
 
+  useEffect(() => () => {
+    requestSequenceRef.current++
+    requestControllerRef.current?.abort()
+  }, [])
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
   }
@@ -282,11 +303,19 @@ export default function LiveAccountDetailPage() {
   if (!account) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Account Not Found</h1>
-          <Button onClick={() => router.push('/dashboard/accounts')}>
-            Return to Accounts
-          </Button>
+        <div className="mx-auto max-w-lg space-y-4 text-center">
+          <h1 className="text-2xl font-bold">{accountError ? 'Account Unavailable' : 'Account Not Found'}</h1>
+          {accountError && (
+            <Alert className="text-left">
+              <AlertDescription>{accountError}</AlertDescription>
+            </Alert>
+          )}
+          <div className="flex justify-center gap-2">
+            {accountError && <Button onClick={fetchAccountData}>Try Again</Button>}
+            <Button variant="outline" onClick={() => router.push('/dashboard/accounts')}>
+              Return to Accounts
+            </Button>
+          </div>
         </div>
       </div>
     )
@@ -295,6 +324,11 @@ export default function LiveAccountDetailPage() {
   return (
     <div className="container mx-auto p-6">
       <div className="space-y-6">
+        {accountError && (
+          <Alert>
+            <AlertDescription>{accountError}</AlertDescription>
+          </Alert>
+        )}
         {            }
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-col gap-3">

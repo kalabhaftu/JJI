@@ -109,6 +109,8 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   const hasFetchedRef = useRef(false)
   const requestControllerRef = useRef<AbortController | null>(null)
   const requestSequenceRef = useRef(0)
+  const accountIdRef = useRef(accountId)
+  accountIdRef.current = accountId
 
   const fetchAccountData = useCallback(async (showLoadingState = true) => {
 
@@ -131,7 +133,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
         { timeout: API_TIMEOUT, signal: controller.signal }
       )
 
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted) return
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
 
       if (!result.ok || !result.data?.success) {
         if (result.error?.code === 'CANCELLED') return
@@ -172,7 +174,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       setLastUpdated(new Date())
 
     } catch (err) {
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted) return
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
       reportClientError(err, { operation: 'load-prop-firm-realtime-account', route: '/api/v1/prop-firm/accounts' })
       setError(handleFetchError(err))
     } finally {
@@ -233,7 +235,17 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
     if (!enabled || !accountId) return
 
     if (prevAccountIdRef.current !== accountId) {
+      requestSequenceRef.current++
+      requestControllerRef.current?.abort()
+      requestControllerRef.current = null
       hasFetchedRef.current = false
+      previousAccountRef.current = null
+      previousDrawdownRef.current = null
+      setAccount(null)
+      setDrawdown(null)
+      setLastUpdated(null)
+      setError(null)
+      setIsLoading(true)
       prevAccountIdRef.current = accountId
     }
 

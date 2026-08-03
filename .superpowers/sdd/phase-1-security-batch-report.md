@@ -126,3 +126,32 @@ Result: passed.
 ```
 
 The endpoint review confirmed the missing-phase-ID branch was unreachable because lookup required equality with `phaseId`; the dead branch was removed. Missing IDs remain excluded from selectable bootstrap accounts and an arbitrary account number correctly returns not found.
+
+## Final Validation Follow-up
+
+- Runtime inventory confirmed `manual-trade-form-card.tsx` is live through `config/platforms-card.tsx` and `import-trades-card.tsx`; `manual-trade-form.tsx` is also live through `config/platforms.tsx` and `import-button.tsx`. Neither was removed.
+- Removed the disconnected `phase-validation-workflow.tsx` helper and its test-only component test.
+- Added `manual-trade-submission.ts` beneath the live card workflow. Behavioral tests mock the real `importTradesThroughApi` module and prove offline, timeout, malformed, 403, and 5xx validation never import; Retry reuses preserved values and imports only after valid validation; duplicate submissions are ignored while validation is active.
+- Added one shared inline retryable validation-error component consumed by both active manual-entry forms.
+
+RED:
+
+```text
+bun run test -- --run tests/ui/manual-trade-submission.test.ts
+FAIL: production manual-trade-submission module did not exist.
+```
+
+GREEN:
+
+```text
+bun run test -- --run tests/ui/manual-trade-submission.test.ts tests/unit/phase-validation-state-machine.test.ts tests/integration/api-v1-trades.test.ts tests/integration/csv-import.test.ts
+Result: 4 files passed, 36 tests passed.
+
+bunx eslint app/dashboard/components/import/manual-trade-entry/manual-trade-form.tsx app/dashboard/components/import/manual-trade-entry/manual-trade-form-card.tsx app/dashboard/components/import/manual-trade-entry/manual-trade-submission.ts app/dashboard/components/import/manual-trade-entry/manual-trade-validation-error.tsx tests/ui/manual-trade-submission.test.ts
+Result: passed with no findings.
+
+git diff --check
+Result: passed.
+```
+
+`bun run type-check` was run and is blocked by unrelated concurrent Phase 2 changes in `components/ui/custom-date-range-picker.tsx` and `lib/navigation/registry.ts`. No validation-task type errors were reported, and those unrelated files were not modified by this task.

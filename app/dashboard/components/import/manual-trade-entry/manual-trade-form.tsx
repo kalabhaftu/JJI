@@ -25,7 +25,6 @@ import {
   Calculator,
   TrendingUp,
   TrendingDown,
-  AlertCircle,
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
@@ -47,7 +46,7 @@ import { useUserStore } from '@/store/user-store'
 import { useAccounts } from '@/hooks/use-accounts'
 import { cn } from '@/lib/utils'
 import { classifyPhaseValidationResponse } from '@/lib/validation/phase-validation'
-import { PhaseValidationAlert } from './phase-validation-workflow'
+import { ManualTradeValidationError } from './manual-trade-validation-error'
 import { Badge } from '@/components/ui/badge'
 import {
   Command,
@@ -797,7 +796,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       case 5:
         return (
           <div className="space-y-6">
-            {phaseValidationError && <PhaseValidationAlert message={phaseValidationError} onRetry={() => void handleSubmit(onSubmit as any)()} isRetrying={isSubmitting} />}
+            {phaseValidationError && <ManualTradeValidationError message={phaseValidationError} retry={() => void handleSubmit(onSubmit as any)()} disabled={isSubmitting} />}
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg border bg-muted/30">

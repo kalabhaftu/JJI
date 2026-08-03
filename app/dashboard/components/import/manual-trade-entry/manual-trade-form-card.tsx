@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -19,11 +19,13 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
-import { Calculator, TrendingUp, TrendingDown, AlertCircle } from 'lucide-react'
+import { Calculator, TrendingUp, TrendingDown } from 'lucide-react'
 import type { TradeType } from '@/lib/db/schema/trades';
 
 import { generateTradeHash } from '@/lib/trading/trade-grouping'
-import { importTradesThroughApi } from '@/lib/api/trade-import-client'
+import type { importTradesThroughApi } from '@/lib/api/trade-import-client'
+import { createManualTradeSubmission } from './manual-trade-submission'
+import { ManualTradeValidationError } from './manual-trade-validation-error'
 import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
@@ -119,6 +121,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [calculatedPnL, setCalculatedPnL] = useState<number | null>(null)
   const [calculatedDuration, setCalculatedDuration] = useState<string>('')
+  const submissionRef = useRef<ReturnType<typeof createManualTradeSubmission<TradeFormData>> | null>(null)
   
   const user = useUserStore(state => state.user)
   const supabaseUser = useUserStore(state => state.supabaseUser)
@@ -211,79 +214,44 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
       return
     }
 
-    setIsSubmitting(true)
-    setPhaseValidationError(null)
-    
     try {
-
-      if (data.accountNumber) {
-        try {
-          const phaseCheckResponse = await fetch(`/api/v1/prop-firm/accounts/validate-trade`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              accountNumber: data.accountNumber
-            })
-          })
-          
-          const phaseResult = await phaseCheckResponse.json()
-          
-          if (!phaseCheckResponse.ok) {
-            if (phaseCheckResponse.status === 403) {
-              const message = phaseResult.error?.message || 'Please set the ID for the current phase before adding trades.'
-              setPhaseValidationError(message)
-              toast.error("Phase ID Required", {
-                description: message,
-              })
-              return
-            }
-          }
-        } catch (error) {
-
+      const buildImport = (submitted: TradeFormData) => {
+        const entryDateTime = `${submitted.entryDate} ${submitted.entryTime}`
+        const closeDateTime = `${submitted.closeDate} ${submitted.closeTime}`
+        const entryDate = new Date(`${submitted.entryDate}T${submitted.entryTime}`)
+        const closeDate = new Date(`${submitted.closeDate}T${submitted.closeTime}`)
+        const tradeData: any = {
+          ...submitted,
+          entryDate: entryDateTime,
+          closeDate: closeDateTime,
+          timeInPosition: (closeDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60),
+          comment: submitted.comment || null,
+          userId: currentUser.id,
+          entryId: null,
+          groupId: null,
         }
+        return { accountId, trades: [{ ...tradeData, id: generateTradeHash({ ...tradeData, userId: currentUser.id }), createdAt: new Date() }] }
       }
-
-      const entryDateTime = `${data.entryDate} ${data.entryTime}`
-      const closeDateTime = `${data.closeDate} ${data.closeTime}`
-      
-
-      const entryDate = new Date(`${data.entryDate}T${data.entryTime}`)
-      const closeDate = new Date(`${data.closeDate}T${data.closeTime}`)
-      const timeInPosition = (closeDate.getTime() - entryDate.getTime()) / (1000 * 60 * 60)
-
-
-      const tradeData: any = {
-        accountNumber: data.accountNumber,
-        instrument: data.instrument,
-        quantity: data.quantity,
-        side: data.side,
-        entryPrice: data.entryPrice,
-        closePrice: data.closePrice,
-        entryDate: entryDateTime,
-        closeDate: closeDateTime,
-        pnl: data.pnl,
-        commission: data.commission,
-        timeInPosition,
-        comment: data.comment || null,
-        userId: currentUser.id,
-        entryId: null,
-        groupId: null,
+      if (!submissionRef.current) {
+        submissionRef.current = createManualTradeSubmission<TradeFormData>({
+          validate: async (submitted) => {
+            const response = await fetch('/api/v1/prop-firm/accounts/validate-trade', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ accountNumber: submitted.accountNumber }),
+            })
+            return { status: response.status, payload: await response.json().catch(() => null) }
+          },
+          buildImport,
+          onStateChange: (state) => {
+            setIsSubmitting(state.status === 'submitting')
+            setPhaseValidationError(state.status === 'blocked' ? state.message : null)
+          },
+        })
       }
-
-
-      const tradeId = generateTradeHash({ ...tradeData, userId: currentUser.id })
-      const completeTrade: any = {
-        ...tradeData,
-        id: tradeId,
-        createdAt: new Date(),
-      }
-
-      const job = await importTradesThroughApi({
-        accountId,
-        trades: [completeTrade],
-      })
+      const result = await submissionRef.current.submit(data)
+      if (result.status !== 'success') return
+      const job = result.result as Awaited<ReturnType<typeof importTradesThroughApi>>
       const accountName = typeof job.meta?.accountName === 'string'
         ? job.meta.accountName
         : 'the account'
@@ -333,8 +301,6 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
         description: errorMessage,
         duration: 8000,
       })
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -346,18 +312,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
       <CardContent>
         <form id="manual-trade-form" onSubmit={handleSubmit(onSubmit as any)} className="space-y-4">
         {}
-        {phaseValidationError && (
-          <div className="bg-destructive/10 border border-destructive/20 rounded-md p-3">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <AlertCircle className="h-4 w-4 text-destructive" />
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-destructive">{phaseValidationError}</p>
-              </div>
-            </div>
-          </div>
-        )}
+        {phaseValidationError && <ManualTradeValidationError message={phaseValidationError} disabled={isSubmitting} retry={() => void submissionRef.current?.retry()} />}
         
         {}
         <Card>

@@ -1,3 +1,5 @@
+import type { queryKeys } from './query-keys'
+
 export type ServerStateDomain =
   | 'accounts'
   | 'trades'
@@ -13,14 +15,14 @@ export type ServerStateDomain =
 export interface DomainOwnership {
   domain: ServerStateDomain
   owner: 'tanstack-query'
-  queryKeyFactory: string
+  queryKeyFactory: `queryKeys.${keyof typeof queryKeys}` | 'not-established'
   invalidationEvents: readonly string[]
   mutationOwner: string
 }
 
 const ownership = (
   domain: ServerStateDomain,
-  queryKeyFactory: string,
+  queryKeyFactory: DomainOwnership['queryKeyFactory'],
   mutationOwner: string,
 ): DomainOwnership => ({
   domain,
@@ -38,7 +40,7 @@ export const domainOwnership: Record<ServerStateDomain, DomainOwnership> = {
   templates: ownership('templates', 'queryKeys.templates', 'template mutations'),
   notifications: ownership('notifications', 'queryKeys.notifications', 'notification mutations'),
   reports: ownership('reports', 'queryKeys.reportStats', 'report mutations'),
-  'prop-firm': ownership('prop-firm', 'queryKeys.propFirm', 'prop-firm mutations'),
-  goals: ownership('goals', 'queryKeys.goals', 'goal mutations'),
-  settings: ownership('settings', 'queryKeys.settings', 'settings mutations'),
+  'prop-firm': ownership('prop-firm', 'not-established', 'prop-firm mutations'),
+  goals: ownership('goals', 'not-established', 'goal mutations'),
+  settings: ownership('settings', 'not-established', 'settings mutations'),
 }

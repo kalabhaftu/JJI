@@ -74,6 +74,8 @@ export default function AccountDetailPage() {
   const completeDataSequenceRef = useRef(0)
 
   const accountId = params.id as string
+  const accountIdRef = useRef(accountId)
+  accountIdRef.current = accountId
 
   const {
     account: realtimeAccount,
@@ -106,7 +108,7 @@ export default function AccountDetailPage() {
         payoutsRes.json()
       ])
 
-      if (requestSequence !== completeDataSequenceRef.current) return
+      if (requestSequence !== completeDataSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
       if (!tradesRes.ok || !tradesJson.success || !payoutsRes.ok || !payoutsJson.success) {
         throw new Error('Failed to refresh account activity')
       }
@@ -129,6 +131,18 @@ export default function AccountDetailPage() {
     completeDataSequenceRef.current++
     completeDataControllerRef.current?.abort()
   }, [])
+
+  useEffect(() => {
+    completeDataSequenceRef.current++
+    completeDataControllerRef.current?.abort()
+    completeDataControllerRef.current = null
+    hasFetchedDataRef.current = false
+    setAccountData(null)
+    setTradesData([])
+    setPayoutsData(null)
+    setDataError(null)
+    setIsLoadingData(false)
+  }, [accountId])
 
   useEffect(() => {
     if (realtimeError) {

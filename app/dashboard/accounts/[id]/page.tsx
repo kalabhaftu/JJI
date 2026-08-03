@@ -192,6 +192,8 @@ export default function LiveAccountDetailPage() {
   const requestSequenceRef = useRef(0)
 
   const accountId = params.id as string
+  const accountIdRef = useRef(accountId)
+  accountIdRef.current = accountId
   const user = useUserStore(state => state.user)
   const { formattedTrades } = useData()
   const storeAccounts = useUserStore(state => state.accounts)
@@ -210,12 +212,13 @@ export default function LiveAccountDetailPage() {
         cache: 'no-store',
         signal: controller.signal,
       })
-      if (requestSequence !== requestSequenceRef.current) return
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
       if (!response.ok) {
         throw new Error('Failed to fetch account')
       }
 
       const data = await response.json()
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
       if (!data.success) {
         throw new Error(data.error?.message || 'Failed to fetch account data')
       }
@@ -258,6 +261,15 @@ export default function LiveAccountDetailPage() {
       })
     }
   }, [storeAccounts, accountId])
+
+  useEffect(() => {
+    requestSequenceRef.current++
+    requestControllerRef.current?.abort()
+    requestControllerRef.current = null
+    setAccount(null)
+    setIsLoading(true)
+    setAccountError(null)
+  }, [accountId])
 
   useDatabaseRealtime({
     userId: user?.id,

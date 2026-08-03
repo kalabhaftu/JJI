@@ -182,6 +182,7 @@ export class DatabaseRealtimeManager {
       })
       
     } catch (error) {
+      if (!this.isCurrentSession(userId, generation)) return
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown connection error'
       logger.warn({ err: new Error(errorMessage) }, '[Realtime] Failed to connect:')

@@ -33,7 +33,7 @@ function response(id: string) {
     data: {
       success: true,
       data: {
-        account: { id, accountName: id, status: 'active', phases: [], lastUpdated: new Date().toISOString() },
+        account: { id, accountName: id, status: 'active', phases: [{ id: `${id}-phase` }], lastUpdated: new Date().toISOString() },
         drawdown: { isBreached: false },
       },
     },
@@ -90,6 +90,52 @@ describe('account stale-response guards', () => {
     expect(current.account?.id).toBe('account-1')
     expect(current.error).toBe('Service unavailable')
 
+    await act(async () => root.unmount())
+  })
+
+  it('clears account data and request state when changing from account A to account B', async () => {
+    const accountA = deferred<ReturnType<typeof response>>()
+    const accountB = deferred<ReturnType<typeof response>>()
+    fetchMock.mockImplementationOnce(() => accountA.promise).mockImplementationOnce(() => accountB.promise)
+    let current!: Snapshot
+    const root = createRoot(document.createElement('div'))
+
+    await act(async () => root.render(createElement(Probe, { accountId: 'account-a', snapshot: value => { current = value } })))
+    await act(async () => root.render(createElement(Probe, { accountId: 'account-b', snapshot: value => { current = value } })))
+
+    expect(fetchMock.mock.calls[0]?.[1].signal.aborted).toBe(true)
+    expect(current.account).toBeNull()
+    expect(current.drawdown).toBeNull()
+    expect(current.isLoading).toBe(true)
+
+    await act(async () => accountB.resolve(response('account-b')))
+    await act(async () => accountA.resolve(response('account-a')))
+    expect(current.account?.id).toBe('account-b')
+
+    await act(async () => root.unmount())
+  })
+
+  it('does not let a stale trade refresh from account A update account B', async () => {
+    const accountA = deferred<ReturnType<typeof response>>()
+    const accountB = deferred<ReturnType<typeof response>>()
+    fetchMock.mockImplementationOnce(() => accountA.promise)
+    let current!: Snapshot
+    const root = createRoot(document.createElement('div'))
+
+    await act(async () => root.render(createElement(Probe, { accountId: 'account-a', snapshot: value => { current = value } })))
+    await act(async () => accountA.resolve(response('account-a')))
+    expect(current.account?.id).toBe('account-a')
+
+    const tradeRefresh = deferred<ReturnType<typeof response>>()
+    fetchMock.mockImplementationOnce(() => tradeRefresh.promise)
+    await act(async () => { await realtime.options.onTradeChange({ newRecord: { phaseAccountId: 'account-a-phase' } }) })
+
+    fetchMock.mockImplementationOnce(() => accountB.promise)
+    await act(async () => root.render(createElement(Probe, { accountId: 'account-b', snapshot: value => { current = value } })))
+    await act(async () => accountB.resolve(response('account-b')))
+    await act(async () => tradeRefresh.resolve(response('account-a')))
+
+    expect(current.account?.id).toBe('account-b')
     await act(async () => root.unmount())
   })
 })

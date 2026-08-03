@@ -43,4 +43,33 @@ describe('DatabaseRealtimeManager session generations', () => {
     expect(secondChannel.subscribe).toHaveBeenCalled()
     expect(firstStatus).not.toHaveBeenCalled()
   })
+
+  it('does not notify the current session when an old connection rejects during cleanup', async () => {
+    let manager!: DatabaseRealtimeManager
+    const currentStatus = vi.fn()
+    const firstChannel = {
+      on: vi.fn(function (this: unknown) {
+        manager.subscribe({ tables: ['Account'], userId: 'user-b', onChange: vi.fn(), onStatusChange: currentStatus })
+        return this
+      }),
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(() => { throw new Error('stale cleanup failed') }),
+    }
+    const secondChannel = {
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn(),
+      unsubscribe: vi.fn(),
+    }
+    const supabase = {
+      channel: vi.fn()
+        .mockReturnValueOnce(firstChannel)
+        .mockReturnValueOnce(secondChannel),
+    }
+    manager = new DatabaseRealtimeManager(() => supabase as never)
+
+    manager.subscribe({ tables: ['Account'], userId: 'user-a', onChange: vi.fn() })
+    await Promise.resolve()
+
+    expect(currentStatus).not.toHaveBeenCalledWith('error')
+  })
 })

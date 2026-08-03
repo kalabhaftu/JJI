@@ -116,7 +116,9 @@ export function TemplateProvider({ children, initialActiveTemplate = null }: Tem
       }
     } catch (error) {
       reportClientError(error, { operation: 'load-dashboard-templates', route: '/api/v1/dashboard/templates' })
-      setTimeout(() => toast.error('Failed to load templates'), 0)
+      setTimeout(() => toast.error('Failed to load templates', {
+        description: 'Your dashboard layout may look different until you refresh.'
+      }), 0)
 
       setActiveTemplate(buildFallbackTemplate())
 

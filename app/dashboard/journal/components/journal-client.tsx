@@ -272,7 +272,9 @@ export function JournalClient() {
       toast.success('Trades refreshed')
     } catch (error) {
       reportClientError(error, { operation: 'refresh-journal-trades', route: '/dashboard/journal' })
-      toast.error('Failed to refresh')
+      toast.error('Failed to refresh', {
+        description: 'Your trades may be out of date. Please try again.'
+      })
     } finally {
       setIsRefreshing(false)
     }
@@ -319,7 +321,9 @@ export function JournalClient() {
       await refetch()
     } catch (error) {
       reportClientError(error, { operation: 'update-journal-trade', route: '/dashboard/journal' })
-      toast.error('Failed to update trade')
+      toast.error('Failed to update trade', {
+        description: 'Your changes were not saved. Please try again.'
+      })
     }
   }, [matchedTrade, updateTrades, refetch])
 

@@ -26,6 +26,8 @@ import { useQuickAddStore } from '@/store/quick-add-store'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 import { emitTourEvent } from '@/lib/tours/events'
+import { useData } from '@/context/data-provider'
+import { clearTradesCache } from '@/hooks/use-accounts'
 
 interface QuickAddFABProps {
     className?: string
@@ -36,6 +38,7 @@ export function QuickAddFAB({ className }: QuickAddFABProps) {
     const openQuickAdd = useQuickAddStore((state) => state.openQuickAdd)
     const closeQuickAdd = useQuickAddStore((state) => state.closeQuickAdd)
     const setQuickAddOpen = useQuickAddStore((state) => state.setQuickAddOpen)
+    const { refreshTrades } = useData()
     const user = useUserStore((state) => state.user)
     const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
     const [isSubmitting, setIsSubmitting] = useState(false)
@@ -79,7 +82,8 @@ export function QuickAddFAB({ className }: QuickAddFABProps) {
                 toast.success('Trade added successfully')
                 setFormData({ instrument: '', side: 'long', pnl: '' })
                 closeQuickAdd()
-                window.location.reload()
+                clearTradesCache()
+                await refreshTrades()
             } else {
                 throw new Error('Failed to add trade')
             }

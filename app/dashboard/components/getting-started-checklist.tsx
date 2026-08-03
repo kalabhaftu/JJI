@@ -1,10 +1,13 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Check, ChevronRight, Compass } from 'lucide-react'
+import { Check, ChevronRight, Compass, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useTour } from '@/context/tour-context'
 import type { TourId } from '@/lib/tours/types'
+
+const CHECKLIST_DISMISSED_KEY = 'jji_checklist_dismissed'
 
 const ITEMS: Array<{ id: Exclude<TourId, 'onboarding' | 'dashboard' | 'analytics'>; label: string }> = [
   { id: 'overview', label: 'Overview' },
@@ -22,7 +25,26 @@ const ITEMS: Array<{ id: Exclude<TourId, 'onboarding' | 'dashboard' | 'analytics
 
 export function GettingStartedChecklist() {
   const { onboardingStatus, activeTour, startTour } = useTour()
-  if (!onboardingStatus || onboardingStatus.setup === 'not_started' || activeTour) return null
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    try {
+      setDismissed(localStorage.getItem(CHECKLIST_DISMISSED_KEY) === '1')
+    } catch {
+      setDismissed(false)
+    }
+  }, [])
+
+  if (!onboardingStatus || onboardingStatus.setup !== 'not_started' || activeTour || dismissed) return null
+
+  const dismiss = () => {
+    try {
+      localStorage.setItem(CHECKLIST_DISMISSED_KEY, '1')
+    } catch {
+      // ignore
+    }
+    setDismissed(true)
+  }
 
   const completed = ITEMS.filter(({ id }) => onboardingStatus.tours[id]?.state === 'completed').length
   const next = ITEMS.find(({ id }) => onboardingStatus.tours[id]?.state !== 'completed')
@@ -32,9 +54,12 @@ export function GettingStartedChecklist() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="rounded-lg bg-primary/10 p-2 text-primary"><Compass className="h-4 w-4" /></div>
-          <div><h2 id="getting-started-title" className="text-sm font-semibold">Getting started</h2><p className="mt-1 text-sm text-muted-foreground">{completed} of {ITEMS.length} section tours complete. Pick up where you left off.</p></div>
+          <div><h2 id="getting-started-title" className="text-sm font-semibold">Getting started</h2><p className="mt-1 text-sm text-muted-foreground">Complete the section tours to set up your workspace.</p></div>
         </div>
-        <Button asChild variant="ghost" size="sm"><Link href="/dashboard/settings?tab=help">View all tours <ChevronRight className="ml-1 h-4 w-4" /></Link></Button>
+        <div className="flex items-center gap-1">
+          <Button asChild variant="ghost" size="sm"><Link href="/dashboard/settings?tab=help">View all tours <ChevronRight className="ml-1 h-4 w-4" /></Link></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={dismiss} aria-label="Dismiss getting started checklist"><X className="h-4 w-4" /></Button>
+        </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {ITEMS.slice(0, 5).map(({ id, label }) => {

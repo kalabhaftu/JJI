@@ -253,7 +253,9 @@ export function NotificationCenter() {
       setUnreadCount(prev => Math.max(0, prev - 1))
     } catch (error) {
       reportClientError(error, { operation: 'mark-notification-read', route: '/api/v1/notifications' })
-      toast.error('Failed to mark notification as read')
+      toast.error('Failed to mark notification as read', {
+        description: 'Please try again.'
+      })
     }
   }
 
@@ -275,7 +277,9 @@ export function NotificationCenter() {
       toast.success('All notifications marked as read')
     } catch (error) {
       reportClientError(error, { operation: 'mark-all-notifications-read', route: '/api/v1/notifications' })
-      toast.error('Failed to mark all as read')
+      toast.error('Failed to mark all as read', {
+        description: 'Please try again.'
+      })
     }
   }
 
@@ -303,7 +307,9 @@ export function NotificationCenter() {
       toast.success('Notification deleted')
     } catch (error) {
       reportClientError(error, { operation: 'delete-notification', route: '/api/v1/notifications' })
-      toast.error('Failed to delete notification')
+      toast.error('Failed to delete notification', {
+        description: 'Please try again.'
+      })
     }
   }
 
@@ -323,7 +329,9 @@ export function NotificationCenter() {
       toast.success('All notifications cleared')
     } catch (error) {
       reportClientError(error, { operation: 'clear-notifications', route: '/api/v1/notifications' })
-      toast.error('Failed to clear notifications')
+      toast.error('Failed to clear notifications', {
+        description: 'Please try again.'
+      })
     }
   }
 

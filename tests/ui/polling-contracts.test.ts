@@ -119,4 +119,55 @@ describe('client polling contracts', () => {
     expect(dataProvider).not.toContain('setTimeout(resolve, 200)')
     expect(propFirmPage).not.toContain("setTimeout(() => router.push('/dashboard/accounts'), 2000)")
   })
+
+  it('hides less critical columns on tablet widths in the trade tables', () => {
+    const reviewTable = source('app/dashboard/components/tables/trade-table-review.tsx')
+    const dataTable = source('app/dashboard/data/components/data-management/trade-table.tsx')
+
+    expect(reviewTable).toContain('AUTO_HIDDEN_ON_TABLET')
+    expect(reviewTable).toContain('effectiveColumnVisibility')
+    expect(dataTable).toContain('hidden lg:table-cell')
+  })
+
+  it('quick-add refreshes data instead of reloading the page', () => {
+    const quickAdd = source('components/quick-add-fab.tsx')
+
+    expect(quickAdd).not.toContain('window.location.reload()')
+    expect(quickAdd).toContain('clearTradesCache()')
+    expect(quickAdd).toContain('await refreshTrades()')
+  })
+
+  it('adds actionable descriptions to generic error toasts', () => {
+    const notifications = source('components/notifications/notification-center.tsx')
+    const journal = source('app/dashboard/journal/components/journal-client.tsx')
+    const templates = source('context/template-provider.tsx')
+
+    expect(notifications).toContain("description: 'Please try again.'")
+    expect(journal).toContain("description: 'Your trades may be out of date. Please try again.'")
+    expect(templates).toContain("description: 'Your dashboard layout may look different until you refresh.'")
+  })
+
+  it('explains that cleared caches refresh automatically', () => {
+    const cache = source('app/dashboard/settings/components/cache-management.tsx')
+
+    expect(cache).toContain('Data will refresh automatically.')
+  })
+
+  it('validates promo codes live via a dedicated API route', () => {
+    const route = source('app/api/v1/payments/validate-promo/route.ts')
+    const subscribe = source('app/subscribe/subscribe-client.tsx')
+
+    expect(route).toContain("applyApiRoutePolicy(request, 'payment')")
+    expect(route).toContain('validatePromoCode(code.trim().toUpperCase()')
+    expect(subscribe).toContain("'/api/v1/payments/validate-promo'")
+    expect(subscribe).toContain('setPromoValidation({ valid: false')
+  })
+
+  it('shows the getting-started checklist only for new users and allows dismissal', () => {
+    const checklist = source('app/dashboard/components/getting-started-checklist.tsx')
+
+    expect(checklist).toContain("onboardingStatus.setup !== 'not_started'")
+    expect(checklist).toContain('jji_checklist_dismissed')
+    expect(checklist).toContain('Dismiss getting started checklist')
+  })
 })

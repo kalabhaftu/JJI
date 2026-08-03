@@ -84,6 +84,8 @@ const VALID_COLUMN_IDS = [
 
 const DEFAULT_SORTING: SortingState = [{ id: 'tradeDate', desc: true }]
 
+const AUTO_HIDDEN_ON_TABLET = ['expand', 'timeInPosition', 'commission', 'mae', 'mfe']
+
 const normalizeSorting = (sorting?: SortingState): SortingState => {
   const filtered = (sorting ?? []).filter((item) => VALID_COLUMN_IDS.includes(item.id))
   return filtered.length > 0 ? filtered : DEFAULT_SORTING
@@ -442,6 +444,7 @@ export function TradeTableReview() {
   } = useData() as any
   const timezone = useUserStore((state) => state.timezone)
   const isMobile = useMediaQuery('(max-width: 768px)')
+  const isTablet = useMediaQuery('(min-width: 769px) and (max-width: 1023px)')
   const { formatValue, isPrivacyMode, maskSensitiveValue, getTradeRMultipleInfo } = useDashboardDisplay()
   const { tags: availableTags } = useTags()
 
@@ -538,12 +541,34 @@ export function TradeTableReview() {
     (updater) => {
       setColumnVisibility((prev) => {
         const next = typeof updater === 'function' ? updater(prev) : updater
-        updateColumnVisibilityState('trade-table', next)
+        const persistNext: VisibilityState = { ...next }
+        // Never leak tablet auto-hides into the persisted config.
+        if (isTablet) {
+          for (const id of AUTO_HIDDEN_ON_TABLET) {
+            if (tableConfig?.columnVisibility?.[id] === undefined) {
+              delete persistNext[id]
+            }
+          }
+        }
+        updateColumnVisibilityState('trade-table', persistNext)
         return next
       })
     },
-    [updateColumnVisibilityState]
+    [updateColumnVisibilityState, isTablet, tableConfig]
   )
+
+  // On tablet widths the full column set overflows, so hide less critical
+  // columns unless the user explicitly configured them.
+  const effectiveColumnVisibility = React.useMemo<VisibilityState>(() => {
+    if (!isTablet) return columnVisibility
+    const merged: VisibilityState = { ...columnVisibility }
+    for (const id of AUTO_HIDDEN_ON_TABLET) {
+      if (tableConfig?.columnVisibility?.[id] === undefined) {
+        merged[id] = false
+      }
+    }
+    return merged
+  }, [isTablet, columnVisibility, tableConfig])
 
   const handlePageSizeChange = React.useCallback(
     (size: number) => {
@@ -642,7 +667,7 @@ export function TradeTableReview() {
     state: {
       sorting,
       columnFilters,
-      columnVisibility,
+      columnVisibility: effectiveColumnVisibility,
       expanded,
       pagination: {
         pageIndex,

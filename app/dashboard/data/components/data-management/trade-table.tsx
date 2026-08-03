@@ -527,7 +527,7 @@ export default function TradeTable() {
                   {sortConfig.key === 'side' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
-              <TableHead>
+              <TableHead className="hidden lg:table-cell">
                 <Button variant="ghost" onClick={() => handleSort('quantity')}>
                   Quantity
                   {sortConfig.key === 'quantity' && <ArrowUpDown className="ml-2 h-4 w-4" />}
@@ -551,7 +551,7 @@ export default function TradeTable() {
                   {sortConfig.key === 'entryDate' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
-              <TableHead>
+              <TableHead className="hidden lg:table-cell">
                 <Button variant="ghost" onClick={() => handleSort('closeDate')}>
                   Close Date
                   {sortConfig.key === 'closeDate' && <ArrowUpDown className="ml-2 h-4 w-4" />}
@@ -622,11 +622,11 @@ export default function TradeTable() {
                         {formatted.side}
                       </Badge>
                     </TableCell>
-                    <TableCell>{formatted.quantity}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{formatted.quantity}</TableCell>
                     <TableCell>{formatted.entryPrice}</TableCell>
                     <TableCell>{formatted.closePrice}</TableCell>
                     <TableCell>{formatted.entryDateFormatted}</TableCell>
-                    <TableCell>{formatted.closeDateFormatted}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{formatted.closeDateFormatted}</TableCell>
                     <TableCell>{formatted.pnlFormatted}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

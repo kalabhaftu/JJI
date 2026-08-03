@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CreditCard, Shield, Zap, BarChart3, ArrowRight, Tag, CheckCircle2, Loader2, LogOut } from 'lucide-react'
+import { CreditCard, Shield, Zap, BarChart3, ArrowRight, Tag, CheckCircle2, X, Loader2, LogOut } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { Logo } from '@/components/logo'
@@ -34,6 +34,41 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
       router.replace('/login?next=/subscribe')
     }
   }, [isAuthenticated, isAuthLoading, router])
+
+  // Debounced promo code validation as the user types
+  useEffect(() => {
+    const code = promoCode.trim()
+    if (code.length < 3) {
+      setPromoValidation(null)
+      return
+    }
+
+    let cancelled = false
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch('/api/v1/payments/validate-promo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ code }),
+        })
+        const data = await res.json()
+        if (cancelled) return
+
+        if (res.ok && data.success) {
+          setPromoValidation({ valid: true, description: data.data?.discountDescription })
+        } else {
+          setPromoValidation({ valid: false, description: data.error?.message || 'Invalid promo code' })
+        }
+      } catch {
+        if (!cancelled) setPromoValidation(null)
+      }
+    }, 350)
+
+    return () => {
+      cancelled = true
+      clearTimeout(timeout)
+    }
+  }, [promoCode])
 
   async function handleSubscribe() {
     setIsLoading(true)
@@ -181,6 +216,12 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             {promoValidation?.valid && (
               <p className="text-xs text-emerald-500 mt-1.5 flex items-center gap-1">
                 <CheckCircle2 className="h-3 w-3" />
+                {promoValidation.description}
+              </p>
+            )}
+            {promoValidation && !promoValidation.valid && (
+              <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
+                <X className="h-3 w-3" />
                 {promoValidation.description}
               </p>
             )}

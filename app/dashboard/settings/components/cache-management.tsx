@@ -39,7 +39,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
       invalidateAccountsCache('manual clear from settings')
 
       toast.success('Account cache cleared', {
-        description: `Cleared ${cleared} cached items. Refresh the page to see updates.`
+        description: `Cleared ${cleared} cached items. Data will refresh automatically.`
       })
 
       setLastCleared(new Date())

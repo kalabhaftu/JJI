@@ -10,7 +10,7 @@ export interface RouteWorkspaceController {
   closeWorkspace(): void
 }
 
-export function useRouteWorkspace(): RouteWorkspaceController {
+export function useRouteWorkspace(fallbackReturnTo?: string): RouteWorkspaceController {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -28,10 +28,11 @@ export function useRouteWorkspace(): RouteWorkspaceController {
   }, [currentLocation, router])
 
   const closeWorkspace = useCallback(() => {
-    const destination = returnToRef.current
+    const destination = returnToRef.current ?? fallbackReturnTo
     setOpen(false)
+    returnToRef.current = null
     if (destination) router.replace(destination, { scroll: false })
-  }, [router])
+  }, [fallbackReturnTo, router])
 
   return { open, returnTo: returnToRef.current, openWorkspace, closeWorkspace }
 }

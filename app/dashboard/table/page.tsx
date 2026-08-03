@@ -16,6 +16,7 @@ import { Badge } from '@/components/ui/badge'
 import { TablePageSkeleton } from './components/table-page-skeleton'
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { resolveNavigationPath } from '@/lib/navigation/registry'
+import { useRouteWorkspace } from '@/hooks/use-route-workspace'
 
 const TradeReplay = dynamic(() => import('../components/trades/trade-replay'), { ssr: false })
 const TradeDetailPanel = dynamic(
@@ -36,6 +37,7 @@ function TableView() {
   const router = useRouter()
   const { formattedTrades = [], updateTrades, statistics, isDemoMode } = useData()
   const tablePath = resolveNavigationPath('table', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })
+  const routeWorkspace = useRouteWorkspace(tablePath)
   const { formatValue, getTradeRMultipleInfo } = useDashboardDisplay()
   const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
 
@@ -127,7 +129,7 @@ function TableView() {
       return (
         <TradeDetailPanel
           trade={trade}
-           onClose={() => router.replace(tablePath)}
+            onClose={routeWorkspace.closeWorkspace}
            basePath={tablePath}
         />
       )
@@ -140,7 +142,7 @@ function TableView() {
       return (
         <TradeEditPanel
           trade={ensureExtendedTrade(trade as any)}
-           onClose={() => router.replace(tablePath)}
+            onClose={routeWorkspace.closeWorkspace}
           onSave={async (data: any) => {
             await updateTrades([tradeId], data)
           }}

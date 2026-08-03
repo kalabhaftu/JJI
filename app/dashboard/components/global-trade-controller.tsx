@@ -26,7 +26,6 @@ export function GlobalTradeController() {
   const handleSave = async (updatedTrade: any) => {
     if (tradeId) {
       await updateTrades([tradeId], updatedTrade)
-      handleClose()
     }
   }
 

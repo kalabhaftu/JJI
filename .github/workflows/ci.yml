@@ -58,6 +58,12 @@ jobs:
       - name: Observability Paths
         run: bun run architecture:check-observability
 
+      - name: Route Integrity
+        run: bun run architecture:check-routes
+
+      - name: Dead Code
+        run: bun run architecture:check-dead-code
+
       - name: Sentry Alert Manifest
         run: bun run observability:check-alerts
         

@@ -38,6 +38,8 @@
     "architecture:check-services": "node scripts/check-service-integrations.mjs",
     "architecture:check-replacements": "node scripts/check-architecture-replacements.mjs",
     "architecture:check-observability": "node scripts/check-observability-paths.mjs",
+    "architecture:check-routes": "node scripts/check-route-integrity.mjs",
+    "architecture:check-dead-code": "node scripts/check-dead-code.mjs",
     "observability:check-alerts": "node scripts/check-sentry-alert-manifest.mjs",
     "observability:verify-local": "tsx scripts/verify-observability.ts",
     "db:studio": "drizzle-kit studio",

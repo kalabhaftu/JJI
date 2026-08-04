@@ -205,9 +205,9 @@ export default function ImportCallbackPage() {
               <Loader2 className="h-5 w-5 animate-spin" />
             )}
             {status === "success" && (
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-success" />
             )}
-            {status === "error" && <XCircle className="h-5 w-5 text-red-600" />}
+            {status === "error" && <XCircle className="h-5 w-5 text-destructive" />}
             Tradovate Sync Integration
           </CardTitle>
           <CardDescription>
@@ -228,7 +228,7 @@ export default function ImportCallbackPage() {
 
           {status === "success" && (
             <div className="text-center space-y-2">
-              <CheckCircle className="h-12 w-12 text-green-600 mx-auto" />
+              <CheckCircle className="h-12 w-12 text-success mx-auto" />
               <p className="text-sm text-muted-foreground">
                 Redirecting back to dashboard...
               </p>

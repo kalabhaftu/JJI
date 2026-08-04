@@ -86,8 +86,8 @@ export function FeedbackFormClient() {
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
-        <div className="p-4 rounded-full bg-green-500/10 mb-6">
-          <CheckCircle2 className="h-12 w-12 text-green-500" />
+        <div className="p-4 rounded-full bg-success/10 mb-6">
+          <CheckCircle2 className="h-12 w-12 text-success" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Thank You!</h1>
         <p className="text-muted-foreground max-w-md">

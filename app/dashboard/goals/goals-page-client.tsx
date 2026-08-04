@@ -179,10 +179,13 @@ function EmptyGoals() {
 }
 
 import { useUserStore } from "@/store/user-store"
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 
 export function GoalsPageClient() {
   const qc = useQueryClient()
   const user = useUserStore(state => state.user)
+  const scope = useQueryScope()
   const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
   const [isCreateOpen, setIsCreateOpen] = useState(false)
@@ -197,7 +200,7 @@ export function GoalsPageClient() {
   })
 
   const { data, isLoading } = useQuery({
-    queryKey: ['goals', isDemo],
+    queryKey: queryKeys.goals(scope),
     queryFn: async () => {
       if (isDemo) {
         return {
@@ -284,7 +287,7 @@ export function GoalsPageClient() {
           goals: [...(old?.goals || []), resData.goal]
         }))
       } else {
-        qc.invalidateQueries({ queryKey: ['goals', isDemo] })
+        qc.invalidateQueries({ queryKey: queryKeys.goals(scope) })
       }
       setIsCreateOpen(false)
       setForm({
@@ -312,7 +315,7 @@ export function GoalsPageClient() {
           goals: (old?.goals || []).filter(g => g.id !== deletedId)
         }))
       } else {
-        qc.invalidateQueries({ queryKey: ['goals', isDemo] })
+        qc.invalidateQueries({ queryKey: queryKeys.goals(scope) })
       }
       toast.success('Goal deleted')
     },
@@ -341,7 +344,7 @@ export function GoalsPageClient() {
       return updateGoal(id, data)
     },
     onSuccess: () => {
-      if (!isDemo) qc.invalidateQueries({ queryKey: ['goals', isDemo] })
+      if (!isDemo) qc.invalidateQueries({ queryKey: queryKeys.goals(scope) })
       setEditingGoal(null)
       toast.success('Goal updated')
     },

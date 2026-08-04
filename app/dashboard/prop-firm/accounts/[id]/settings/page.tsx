@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -171,27 +172,14 @@ export default function AccountSettingsPage() {
     try {
       setIsSaving(true)
 
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`, {
+      await apiRequestData(`/api/v1/prop-firm/accounts/${accountId}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify(formData),
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to update account')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        toast.success('Account updated successfully', {
-          description: 'Your account settings have been saved'
-        })
-        fetchAccount()
-      } else {
-        throw new Error(data.error?.message || 'Failed to update account')
-      }
+      toast.success('Account updated successfully', {
+        description: 'Your account settings have been saved'
+      })
+      fetchAccount()
     } catch (error) {
       reportClientError(error, { operation: 'update-prop-firm-account-settings', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to update account', {
@@ -209,23 +197,13 @@ export default function AccountSettingsPage() {
   const handleDeleteAccountConfirm = async () => {
     setShowDeleteDialog(false)
     try {
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`, {
+      await apiRequestData(`/api/v1/prop-firm/accounts/${accountId}`, {
         method: 'DELETE',
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to delete account')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        toast.success('Account deleted successfully', {
-          description: 'The account has been permanently deleted'
-        })
-        router.push('/dashboard/prop-firm/accounts')
-      } else {
-        throw new Error(data.error?.message || 'Failed to delete account')
-      }
+      toast.success('Account deleted successfully', {
+        description: 'The account has been permanently deleted'
+      })
+      router.push('/dashboard/prop-firm/accounts')
     } catch (error) {
       reportClientError(error, { operation: 'delete-prop-firm-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
       toast.error('Failed to delete account', {
@@ -286,13 +264,9 @@ export default function AccountSettingsPage() {
             {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
             Refresh
           </Button>
-          <Button
-            onClick={handleSave}
-            size="sm"
-            disabled={isSaving}
-          >
+          <Button onClick={handleSave} size="sm" loading={isSaving} loadingText="Saving changes">
             <Save className="h-4 w-4 mr-2" />
-            {isSaving ? 'Saving...' : 'Save Changes'}
+            Save Changes
           </Button>
         </div>
       </div>

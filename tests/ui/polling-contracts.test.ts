@@ -129,12 +129,12 @@ describe('client polling contracts', () => {
     expect(dataTable).toContain('hidden lg:table-cell')
   })
 
-  it('quick-add refreshes data instead of reloading the page', () => {
+  it('authenticated quick-add opens the canonical route without reloading', () => {
     const quickAdd = source('components/quick-add-fab.tsx')
 
     expect(quickAdd).not.toContain('window.location.reload()')
-    expect(quickAdd).toContain('clearTradesCache()')
-    expect(quickAdd).toContain('await refreshTrades()')
+    expect(quickAdd).toContain('buildTradeEntryHref')
+    expect(quickAdd).toContain("origin: 'quick-add'")
   })
 
   it('adds actionable descriptions to generic error toasts', () => {

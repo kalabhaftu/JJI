@@ -12,12 +12,14 @@ const REALTIME_TABLES = ['Trade', 'Account', 'MasterAccount', 'PhaseAccount', 'P
 const TABLES_WITH_USER_ID_FILTER = new Set<RealtimeTable>(['Trade', 'Account', 'MasterAccount', 'DailyNote', 'Notification', 'Synchronization'])
 
 type ChangeCallback = (change: DatabaseChange) => void
+type StatusCallback = { bivarianceHack(status: RealtimeStatus): void }['bivarianceHack']
+type LegacyRealtimeStatus = Extract<RealtimeStatus, 'connected' | 'disconnected' | 'error'>
 
 export interface SubscriptionOptions {
   tables: readonly RealtimeTable[]
   userId: string
   onChange: ChangeCallback
-  onStatusChange?: (status: 'connected' | 'disconnected' | 'error') => void
+  onStatusChange?: StatusCallback
 }
 
 export function normalizeDatabaseChange(
@@ -40,7 +42,7 @@ export class DatabaseRealtimeManager {
   private isConnected = false
   private userId: string | null = null
   private callbacks: Set<ChangeCallback> = new Set()
-  private statusCallbacks: Set<(status: 'connected' | 'disconnected' | 'error') => void> = new Set()
+  private statusCallbacks: Set<(status: RealtimeStatus) => void> = new Set()
   private reconnectAttempts = 0
   private maxReconnectAttempts = 5
   private reconnectTimeout: NodeJS.Timeout | null = null
@@ -212,7 +214,7 @@ export class DatabaseRealtimeManager {
     }
   }
   
-  private notifyStatus(status: 'connected' | 'disconnected' | 'error') {
+  private notifyStatus(status: RealtimeStatus) {
     for (const callback of this.statusCallbacks) {
       try {
         callback(status)
@@ -233,7 +235,7 @@ export class DatabaseRealtimeManager {
         logger.warn('[Realtime] Max reconnect attempts reached; realtime paused until a later reconnect opportunity')
         this.hasLoggedReconnectExhausted = true
       }
-      this.notifyStatus('error')
+      this.notifyStatus('degraded')
       return
     }
     
@@ -295,7 +297,7 @@ export class DatabaseRealtimeManager {
 const DatabaseRealtime = new DatabaseRealtimeManager()
 
 
-export function useDatabaseRealtime(options: {
+interface DatabaseRealtimeHookOptions {
   userId: string | undefined
   enabled?: boolean
   onTradeChange?: (change: DatabaseChange) => void
@@ -303,7 +305,16 @@ export function useDatabaseRealtime(options: {
   onNotificationChange?: (change: DatabaseChange) => void
   onSynchronizationChange?: (change: DatabaseChange) => void
   onAnyChange?: (change: DatabaseChange) => void
-  onStatusChange?: (status: 'connected' | 'disconnected' | 'error') => void
+}
+
+export function useDatabaseRealtime(options: DatabaseRealtimeHookOptions & {
+  onStatusChange?: (status: LegacyRealtimeStatus) => void
+}): void
+export function useDatabaseRealtime(options: DatabaseRealtimeHookOptions & {
+  onStatusChange?: StatusCallback
+}): void
+export function useDatabaseRealtime(options: DatabaseRealtimeHookOptions & {
+  onStatusChange?: StatusCallback
 }) {
   const { useEffect, useRef, useCallback } = require('react')
   
@@ -353,7 +364,7 @@ export function useDatabaseRealtime(options: {
     }
   }, [])
   
-  const handleStatusChange = useCallback((status: 'connected' | 'disconnected' | 'error') => {
+  const handleStatusChange = useCallback((status: RealtimeStatus) => {
     if (onStatusChangeRef.current) {
       onStatusChangeRef.current(status)
     }

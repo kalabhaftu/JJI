@@ -1,11 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { QueryClient } from '@tanstack/react-query'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { clearAccountsCache, clearTradesCache } from '@/hooks/use-accounts'
 import { invalidateQueriesForRealtimeChange } from '@/lib/realtime/invalidation'
-import type { DatabaseChange } from '@/lib/realtime/types'
+import type { DatabaseChange, FreshnessState, RealtimeStatus } from '@/lib/realtime/types'
 import type { QueryScope } from '@/lib/query/query-scope'
 
 interface UseDataProviderRealtimeOptions {
@@ -17,9 +17,26 @@ interface UseDataProviderRealtimeOptions {
 }
 
 type RefreshScope = 'trades' | 'accounts'
+const DEGRADED_REFRESH_INTERVAL_MS = 60_000
+
+function queryMatchesScope(queryKey: readonly unknown[], scope: QueryScope) {
+  return queryKey.some((part) => {
+    if (!part || typeof part !== 'object') return false
+    const candidate = part as Partial<QueryScope>
+    return candidate.surface === scope.surface && candidate.userId === scope.userId
+  })
+}
 
 export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions) {
   const { userId, enabled, queryClient, scope, reloadBootstrapData } = options
+  const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>('idle')
+  const [freshness, setFreshness] = useState<FreshnessState>(() => ({
+    source: 'unknown',
+    status: typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'stale',
+    updatedAt: null,
+    staleSince: null,
+  }))
+  const degradedRefreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const lastRealtimeRefreshRef = useRef<{ trades: number; accounts: number }>({
     trades: 0,
@@ -38,6 +55,54 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
 
   const scopeRef = useRef(scope)
   scopeRef.current = scope
+
+  const stopDegradedRefresh = useCallback(() => {
+    if (degradedRefreshIntervalRef.current) {
+      clearInterval(degradedRefreshIntervalRef.current)
+      degradedRefreshIntervalRef.current = null
+    }
+  }, [])
+
+  const refreshDegradedData = useCallback(() => {
+    if (!enabled || realtimeStatus !== 'degraded') return
+    if (document.visibilityState !== 'visible' || !navigator.onLine) return
+
+    void queryClient.invalidateQueries({
+      type: 'active',
+      predicate: (query) => queryMatchesScope(query.queryKey, scopeRef.current),
+    })
+    setFreshness((current) => ({ ...current, updatedAt: new Date() }))
+  }, [enabled, queryClient, realtimeStatus])
+
+  const handleStatusChange = useCallback((status: RealtimeStatus) => {
+    if (status === 'connected') {
+      stopDegradedRefresh()
+      const now = new Date()
+      setFreshness((current) => ({
+        source: 'realtime',
+        status: 'current',
+        updatedAt: current.updatedAt ?? now,
+        staleSince: null,
+      }))
+    } else if (status === 'degraded') {
+      const offline = typeof navigator !== 'undefined' && !navigator.onLine
+      setFreshness((current) => ({
+        ...current,
+        source: offline ? 'cache' : 'polling',
+        status: offline ? 'offline' : 'degraded',
+        staleSince: current.staleSince ?? new Date(),
+      }))
+    } else if (status === 'disconnected' || status === 'error' || status === 'reconnecting') {
+      stopDegradedRefresh()
+      setFreshness((current) => ({
+        ...current,
+        source: 'cache',
+        status: typeof navigator !== 'undefined' && !navigator.onLine ? 'offline' : 'stale',
+        staleSince: current.staleSince ?? new Date(),
+      }))
+    }
+    setRealtimeStatus(status)
+  }, [stopDegradedRefresh])
 
   const runRealtimeRefresh = useCallback((refreshScope: RefreshScope) => {
     const change = pendingChangesRef.current[refreshScope]
@@ -85,8 +150,52 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     userId,
     enabled,
     onTradeChange: (change) => scheduleRealtimeRefresh('trades', change),
-    onAccountChange: (change) => scheduleRealtimeRefresh('accounts', change)
+    onAccountChange: (change) => scheduleRealtimeRefresh('accounts', change),
+    onStatusChange: handleStatusChange,
   })
+
+  useEffect(() => {
+    stopDegradedRefresh()
+    if (!enabled || realtimeStatus !== 'degraded') return
+    if (document.visibilityState !== 'visible' || !navigator.onLine) return
+
+    degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
+    return stopDegradedRefresh
+  }, [enabled, realtimeStatus, refreshDegradedData, stopDegradedRefresh])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const restoreDegradedRefresh = () => {
+      if (!enabled || realtimeStatus !== 'degraded') return
+      if (document.visibilityState !== 'visible' || !navigator.onLine) return
+      setFreshness((current) => ({ ...current, source: 'polling', status: 'degraded' }))
+      refreshDegradedData()
+      stopDegradedRefresh()
+      degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
+    }
+    const handleOffline = () => {
+      stopDegradedRefresh()
+      setFreshness((current) => ({ ...current, source: 'cache', status: 'offline' }))
+    }
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        stopDegradedRefresh()
+        return
+      }
+      restoreDegradedRefresh()
+    }
+
+    window.addEventListener('online', restoreDegradedRefresh)
+    window.addEventListener('offline', handleOffline)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => {
+      stopDegradedRefresh()
+      window.removeEventListener('online', restoreDegradedRefresh)
+      window.removeEventListener('offline', handleOffline)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [enabled, realtimeStatus, refreshDegradedData, stopDegradedRefresh])
 
   useEffect(() => {
     const timeouts = realtimeRefreshTimeoutRef.current
@@ -102,4 +211,6 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
       }
     }
   }, [])
+
+  return freshness
 }

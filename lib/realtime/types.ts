@@ -2,6 +2,13 @@ export type RealtimeTable = 'Trade' | 'Account' | 'MasterAccount' | 'PhaseAccoun
 export type ChangeEvent = 'INSERT' | 'UPDATE' | 'DELETE'
 export type RealtimeStatus = 'idle' | 'connecting' | 'connected' | 'disconnected' | 'reconnecting' | 'degraded' | 'error'
 
+export interface FreshnessState {
+  source: 'realtime' | 'polling' | 'cache' | 'unknown'
+  status: 'current' | 'stale' | 'degraded' | 'offline'
+  updatedAt: Date | null
+  staleSince: Date | null
+}
+
 export interface RealtimeSession {
   userId: string
   generation: number

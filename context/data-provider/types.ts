@@ -9,6 +9,7 @@ import type {
   DataProviderWeekdayFilter as WeekdayFilter,
 } from '@/hooks/use-data-provider-filter-state'
 import type { EntitlementCapability } from '@/lib/services/subscription-guard-service'
+import type { FreshnessState } from '@/lib/realtime/types'
 
 export type StatisticsProps = {
   breakEvenThreshold: number
@@ -57,6 +58,7 @@ export interface Account extends Omit<AccountType, 'payouts'> {
 
 export interface DataContextType {
   isDemoMode?: boolean
+  freshness: FreshnessState
   refreshTrades: () => Promise<void>
   refreshAllData: () => Promise<void>
   isPlusUser: () => boolean

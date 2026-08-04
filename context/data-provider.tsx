@@ -454,7 +454,7 @@ export const DataProvider: React.FC<{
   const { data: serverTradeData } = useFilteredTrades(tableTradeFilters, queryEnabled, isDemoMode)
   const { data: serverMetricsData } = useFilteredTrades(metricsTradeFilters, queryEnabled, isDemoMode)
 
-  useDataProviderRealtime({
+  const freshness = useDataProviderRealtime({
     userId: user?.id,
     enabled: !isDemoMode && !!user?.id && !isLoading,
     queryClient,
@@ -588,6 +588,7 @@ export const DataProvider: React.FC<{
 
   const contextValue: DataContextType = {
     isDemoMode,
+    freshness,
     isPlusUser,
     entitlement,
     isLoading,

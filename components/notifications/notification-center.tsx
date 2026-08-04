@@ -25,6 +25,14 @@ import { AdjustDateDialog } from './adjust-date-dialog'
 import { WeeklyReviewDialog } from './weekly-review-dialog'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
+import {
+  clearNotifications,
+  deleteNotification,
+  loadNotifications,
+  loadUnreadCount,
+  markAllNotificationsRead,
+  markNotificationRead,
+} from '@/lib/notifications/api'
 
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import type { RealtimeStatus } from '@/lib/realtime/types'
@@ -92,6 +100,13 @@ export function NotificationCenter() {
     isOpenRef.current = isOpen
   }, [isOpen])
 
+  const notificationsAbortRef = useRef<AbortController | null>(null)
+  useEffect(() => {
+    return () => {
+      notificationsAbortRef.current?.abort()
+    }
+  }, [])
+
   const fetchNotifications = useCallback(async () => {
     if (!user?.id && !isDemo) {
       setIsLoading(false)
@@ -133,17 +148,15 @@ export function NotificationCenter() {
       setIsLoading(false)
       return
     }
+    notificationsAbortRef.current?.abort()
+    const controller = new AbortController()
+    notificationsAbortRef.current = controller
     try {
       setIsLoading(true)
-      const response = await fetch(`/api/v1/notifications?t=${Date.now()}`, {
-        cache: 'no-store'
-      })
-      const result = await response.json()
+      const data = await loadNotifications(controller.signal)
 
-      if (result.success) {
-        setNotifications(result.data.notifications)
-        setUnreadCount(result.data.unreadCount)
-      }
+      setNotifications(data.notifications)
+      setUnreadCount(data.unreadCount)
     } catch (error) {
       reportClientError(error, { operation: 'load-notifications', route: '/api/v1/notifications' })
     } finally {
@@ -154,14 +167,12 @@ export function NotificationCenter() {
   const refreshUnreadCount = useCallback(async () => {
     if (isDemo) return
     if (!user?.id || user.id === 'demo-user') return
+    notificationsAbortRef.current?.abort()
+    const controller = new AbortController()
+    notificationsAbortRef.current = controller
     try {
-      const response = await fetch(`/api/v1/notifications?unreadOnly=true&limit=1&t=${Date.now()}`, {
-        cache: 'no-store'
-      })
-      const result = await response.json()
-      if (result.success) {
-        setUnreadCount(result.data.unreadCount)
-      }
+      const data = await loadUnreadCount(controller.signal)
+      setUnreadCount(data.unreadCount)
     } catch (error) {
       reportClientError(error, { operation: 'load-unread-notification-count', route: '/api/v1/notifications' })
     }
@@ -242,11 +253,7 @@ export function NotificationCenter() {
         return
       }
 
-      await fetch(`/api/v1/notifications/${notificationId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isRead: true })
-      })
+      await markNotificationRead(notificationId)
 
       setNotifications(prev =>
         prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
@@ -269,9 +276,7 @@ export function NotificationCenter() {
         return
       }
 
-      await fetch('/api/v1/notifications', {
-        method: 'PATCH'
-      })
+      await markAllNotificationsRead()
 
       setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
       setUnreadCount(0)
@@ -296,9 +301,7 @@ export function NotificationCenter() {
         return
       }
 
-      await fetch(`/api/v1/notifications/${notificationId}`, {
-        method: 'DELETE'
-      })
+      await deleteNotification(notificationId)
 
       setNotifications(prev => prev.filter(n => n.id !== notificationId))
       const deleted = notifications.find(n => n.id === notificationId)
@@ -323,7 +326,7 @@ export function NotificationCenter() {
         return
       }
 
-      await fetch('/api/v1/notifications', { method: 'DELETE' })
+      await clearNotifications()
 
       setNotifications([])
       setUnreadCount(0)

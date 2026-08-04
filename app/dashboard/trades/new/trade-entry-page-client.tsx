@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/user-store'
 import { clearTradeEntryDraft, loadTradeEntryDraft, parseTradeEntryRouteState, saveTradeEntryDraft } from './trade-entry-draft'
 import type { TradeEntryDraft } from './trade-entry-draft'
 import type { TradeEntryFormValues } from './trade-entry-schema'
+import { Button } from '@/components/ui/button'
 
 export default function TradeEntryPageClient() {
   const router = useRouter()
@@ -40,6 +41,6 @@ export default function TradeEntryPageClient() {
 
   const discard = () => { if (user?.id) clearTradeEntryDraft(user.id, draftId) }
   return <TradeWorkspace mode="route" title="Add trade" description="Record and review a trade before saving." dirty={Object.keys(values).length > 0 && !saved} onRequestClose={close} onConfirmDiscard={discard} returnTo={returnTo}>
-    {saved ? <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center"><h2 className="text-2xl font-semibold">Trade saved</h2><p className="text-muted-foreground">Your trade was added to the journal.</p><button className="underline" onClick={close}>Return to trades</button></div> : <ManualTradeForm initialValues={values as never} onValuesChange={(next) => setValues(next as Partial<TradeEntryFormValues>)} onSuccess={() => { if (user?.id) clearTradeEntryDraft(user.id, draftId); setSaved(true) }} onClose={close} />}
+    {saved ? <div className="flex flex-1 flex-col items-center justify-center gap-4 p-6 text-center"><h2 className="text-2xl font-semibold">Trade saved</h2><p className="text-muted-foreground">Your trade was added to the journal.</p><Button onClick={close}>Return to trades</Button></div> : <ManualTradeForm initialValues={values as never} onValuesChange={(next) => setValues(next as Partial<TradeEntryFormValues>)} onSuccess={() => { if (user?.id) clearTradeEntryDraft(user.id, draftId); setSaved(true) }} onClose={close} />}
   </TradeWorkspace>
 }

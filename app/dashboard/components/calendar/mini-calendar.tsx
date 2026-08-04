@@ -189,13 +189,13 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
           {}
           <div className="flex items-center gap-1 shrink-0">
             <div className="flex items-center gap-0.5 bg-muted/30 rounded-lg p-0.5 border border-border/30">
-              <Button variant="ghost" size="icon" onClick={handlePrev} className="h-6 w-6 hover:bg-background" aria-label="Previous month">
+              <Button variant="icon-only" size="icon" onClick={handlePrev} className="h-11 w-11 hover:bg-background" aria-label="Previous month">
                 <ChevronLeft className="h-3.5 w-3.5" />
               </Button>
               <span className="text-[11px] font-black tracking-tight px-2 min-w-[80px] text-center">
                 {format(currentDate, 'MMM yyyy')}
               </span>
-              <Button variant="ghost" size="icon" onClick={handleNext} className="h-6 w-6 hover:bg-background" aria-label="Next month">
+              <Button variant="icon-only" size="icon" onClick={handleNext} className="h-11 w-11 hover:bg-background" aria-label="Next month">
                 <ChevronRight className="h-3.5 w-3.5" />
               </Button>
             </div>

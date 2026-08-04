@@ -58,7 +58,7 @@ export function GettingStartedChecklist() {
         </div>
         <div className="flex items-center gap-1">
           <Button asChild variant="ghost" size="sm"><Link href="/dashboard/settings?tab=help">View all tours <ChevronRight className="ml-1 h-4 w-4" /></Link></Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={dismiss} aria-label="Dismiss getting started checklist"><X className="h-4 w-4" /></Button>
+          <Button variant="icon-only" size="icon" className="h-11 w-11" onClick={dismiss} aria-label="Dismiss getting started checklist"><X className="h-4 w-4" /></Button>
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">

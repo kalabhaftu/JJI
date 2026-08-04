@@ -1,6 +1,6 @@
 
 
-import { getUserAccessStatus } from './subscription-service'
+import { getUserAccessStatus } from './subscription/access'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
 import { eq } from 'drizzle-orm'

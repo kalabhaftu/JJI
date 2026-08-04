@@ -1,3 +1,5 @@
+import 'server-only'
+
 import type { NotificationType } from '@/lib/db/schema'
 import { reportError } from '@/lib/observability/report-error'
 import { createOrUpdateNotification } from '@/lib/services/notification-service'

@@ -44,8 +44,11 @@ import { Logo } from '@/components/logo'
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/user-avatar'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { resolveNavigationPath } from '@/lib/navigation/registry'
+import { useRouter } from 'next/navigation'
+import { buildTradeEntryHref } from '@/app/dashboard/trades/new/trade-entry-draft'
 
 export default function Navbar() {
+  const router = useRouter()
   const storeUser = useUserStore(state => state.supabaseUser)
   const { user: authUser } = useAuth()
   const user = storeUser ?? authUser
@@ -160,7 +163,7 @@ export default function Navbar() {
           <Button
             variant="nav"
             size="navIcon"
-            onClick={() => { useQuickAddStore.getState().openQuickAdd(); emitTourEvent('trade.quick-add.opened') }}
+            onClick={() => { if (isDemoMode) useQuickAddStore.getState().openQuickAdd(); else router.push(buildTradeEntryHref({ origin: 'navbar', returnTo: '/dashboard' })); emitTourEvent('trade.quick-add.opened') }}
             data-tour="quick-add-btn"
             className="hidden sm:flex"
             title="Quick Add Trade"

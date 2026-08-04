@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useCallback, useContext, useState, type ReactElement, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState, type ReactElement, type ReactNode } from 'react'
 
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
@@ -45,6 +45,12 @@ export function TradeWorkspace({ open = true, mode, title, description, dirty = 
     event.preventDefault()
     requestClose()
   }, [dirty, requestClose])
+  useEffect(() => {
+    if (mode !== 'route' || !dirty) return
+    const handlePopState = () => requestClose()
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [dirty, mode, requestClose])
   const confirmDiscard = () => {
     setDiscardOpen(false)
     onConfirmDiscard?.()

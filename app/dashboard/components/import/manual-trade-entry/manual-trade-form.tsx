@@ -143,10 +143,28 @@ const tradeFormSchema = z.object({
 
 type TradeFormData = z.infer<typeof tradeFormSchema>
 
+export function getManualTradeFormDefaults(initialValues?: Partial<TradeFormData>): Partial<TradeFormData> {
+  const now = new Date()
+  return {
+    entryDate: now.toISOString().split('T')[0] || '',
+    entryTime: now.toTimeString().split(' ')[0]?.slice(0, 5) || '',
+    closeDate: now.toISOString().split('T')[0] || '',
+    closeTime: now.toTimeString().split(' ')[0]?.slice(0, 5) || '',
+    quantity: 1,
+    commission: 0,
+    pnl: 0,
+    isMissedTrade: false,
+    ...initialValues,
+  }
+}
+
 interface ManualTradeFormProps {
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>
   onClose?: () => void
   onBack?: () => void
+  initialValues?: Partial<TradeFormData>
+  onValuesChange?: (values: Partial<TradeFormData>) => void
+  onSuccess?: () => void
 }
 
 type Step = 1 | 2 | 3 | 4 | 5
@@ -161,7 +179,7 @@ const stepInfo = [
   { step: 5, title: 'Review', icon: ShieldCheck },
 ]
 
-export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTradeFormProps) {
+export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialValues, onValuesChange, onSuccess }: ManualTradeFormProps) {
   const handleClose = () => {
     if (onClose) onClose();
     else if (setIsOpen) setIsOpen(false);
@@ -184,21 +202,18 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
     control,
     watch,
     setValue,
+    reset,
     formState: { errors }
   } = useForm<TradeFormData>({
     resolver: zodResolver(tradeFormSchema),
     mode: 'onChange',
-    defaultValues: {
-      entryDate: new Date().toISOString().split('T')[0] || '',
-      entryTime: new Date().toTimeString().split(' ')[0]?.slice(0, 5) || '',
-      closeDate: new Date().toISOString().split('T')[0] || '',
-      closeTime: new Date().toTimeString().split(' ')[0]?.slice(0, 5) || '',
-      quantity: 1,
-      commission: 0,
-      pnl: 0,
-      isMissedTrade: false,
-    }
+    defaultValues: getManualTradeFormDefaults(initialValues)
   })
+
+  const initialValuesKey = JSON.stringify(initialValues ?? {})
+  useEffect(() => {
+    reset(getManualTradeFormDefaults(JSON.parse(initialValuesKey) as Partial<TradeFormData>))
+  }, [initialValuesKey, reset])
 
   const entryPrice = watch('entryPrice')
   const closePrice = watch('closePrice')
@@ -212,6 +227,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
   const instrument = watch('instrument')
   const isMissedTrade = watch('isMissedTrade')
   const watchedValues = watch()
+  const watchedValuesKey = JSON.stringify(watchedValues)
+
+  useEffect(() => { onValuesChange?.(JSON.parse(watchedValuesKey) as Partial<TradeFormData>) }, [onValuesChange, watchedValuesKey])
 
   useEffect(() => {
     if (entryPrice && closePrice && quantity && side) {
@@ -385,8 +403,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       })
 
       const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
-      invalidateAccountsCache('trade saved')
-      handleClose()
+       invalidateAccountsCache('trade saved')
+       onSuccess?.()
+       if (!onSuccess) handleClose()
 
     } catch (error) {
       reportClientError(error, { operation: 'save-manual-trade', route: '/api/v1/trades' })

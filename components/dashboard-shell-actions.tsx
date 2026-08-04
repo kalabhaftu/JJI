@@ -24,6 +24,7 @@ import { useData } from '@/context/data-provider'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import { getNavigationEntry, resolveNavigationPath, type NavigationContext, type NavigationId } from '@/lib/navigation/registry'
+import { buildTradeEntryHref } from '@/app/dashboard/trades/new/trade-entry-draft'
 
 interface DashboardShellAction {
   id: string
@@ -139,9 +140,9 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
           {
             id: 'add-trade',
             title: 'Add New Trade',
-            description: 'Open the lightweight quick-add trade dialog',
+            description: 'Open the full trade entry workflow',
             icon: Plus,
-            perform: openQuickAdd,
+            perform: () => isDemoMode ? openQuickAdd() : router.push(buildTradeEntryHref({ origin: 'command-palette', returnTo: routeHref('overview') })),
             keywords: ['new', 'create', 'entry', 'order', 'quick add'],
           },
           {
@@ -185,6 +186,6 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
         ],
       },
     ],
-    [openQuickAdd, refreshTrades, router, routeHref, setTheme, theme, toggleTheme]
+    [isDemoMode, openQuickAdd, refreshTrades, router, routeHref, setTheme, theme, toggleTheme]
   )
 }

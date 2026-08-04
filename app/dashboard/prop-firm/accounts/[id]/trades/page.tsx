@@ -231,7 +231,7 @@ export default function AccountTradesPage() {
             Refresh
           </Button>
           <Button
-            onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/trades/new`)}
+            onClick={() => router.push(`/dashboard/trades/new?origin=prop-firm&propFirmAccountId=${encodeURIComponent(accountId)}&accountId=${encodeURIComponent(account.number)}&returnTo=${encodeURIComponent(`/dashboard/prop-firm/accounts/${accountId}/trades`)}`)}
             size="sm"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -388,7 +388,7 @@ export default function AccountTradesPage() {
                   {searchTerm ? 'Try a different search term' : 'Add your first trade to get started'}
                 </p>
                 {!searchTerm && (
-                  <Button onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/trades/new`)}>
+                  <Button onClick={() => router.push(`/dashboard/trades/new?origin=prop-firm&propFirmAccountId=${encodeURIComponent(accountId)}&accountId=${encodeURIComponent(account.number)}&returnTo=${encodeURIComponent(`/dashboard/prop-firm/accounts/${accountId}/trades`)}`)}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Trade
                   </Button>

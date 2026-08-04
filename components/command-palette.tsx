@@ -62,7 +62,7 @@ export function CommandPalette() {
                       <div className="truncate font-medium">{item.title}</div>
                       <div className="truncate text-xs text-muted-foreground">{item.description}</div>
                     </div>
-                    {item.id === 'add-trade' && <CommandShortcut>Quick</CommandShortcut>}
+                    {item.id === 'add-trade' && <CommandShortcut>New</CommandShortcut>}
                   </CommandItem>
                 )
               })}

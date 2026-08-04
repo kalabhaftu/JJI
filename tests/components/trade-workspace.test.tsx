@@ -86,4 +86,18 @@ describe('TradeWorkspace', () => {
     expect(document.querySelector('[role="region"]')).toHaveAccessibleName('Edit trade')
     expect(document.querySelector('[role="dialog"]')).toBeNull()
   })
+
+  it('asks before browser Back and closes exactly once after discard', async () => {
+    const onConfirmDiscard = vi.fn()
+    const { onRequestClose } = await renderWorkspace({ mode: 'route', dirty: true, onConfirmDiscard })
+
+    await act(async () => window.dispatchEvent(new PopStateEvent('popstate')))
+
+    expect(document.querySelector('[role="alertdialog"]')).toHaveAccessibleName('Discard unsaved changes?')
+    const discard = Array.from(document.querySelectorAll('button')).find(button => button.textContent === 'Discard changes')
+    await act(async () => discard?.click())
+
+    expect(onConfirmDiscard).toHaveBeenCalledOnce()
+    expect(onRequestClose).toHaveBeenCalledOnce()
+  })
 })

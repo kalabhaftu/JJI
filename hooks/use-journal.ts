@@ -1,24 +1,27 @@
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
 import { type InferSelectModel } from 'drizzle-orm'
 import { Trade as schemaTrade } from '@/lib/db/schema'
 
 type Trade = InferSelectModel<typeof schemaTrade>
 import { useData } from '@/context/data-provider'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { reportClientError } from '@/lib/observability/report-error'
 
-const fetcher = async (url: string) => {
-  try {
-    const response = await fetch(url)
-    const payload = await response.json()
-    if (!response.ok || !payload.success) {
-      throw Object.assign(new Error(payload.error?.message ?? 'Failed to fetch journal trades'), { status: response.status })
-    }
-    return payload.data
-  } catch (error) {
-    reportClientError(error, { operation: 'load-journal-trades', route: url })
-    throw error
-  }
+interface JournalResponse {
+  trades: any[]
+  total: number
+  statistics: any | null
 }
+
+interface DemoJournalResponse {
+  trades: any[]
+  totalCount: number
+  statistics: any | null
+}
+
+type JournalQueryData = JournalResponse | DemoJournalResponse
 
 export interface UseJournalParams {
   page?: number
@@ -43,6 +46,7 @@ export function useJournal(params: UseJournalParams) {
 
   const dataContext = useData()
   const isDemoMode = !!dataContext?.isDemoMode
+  const scope = useQueryScope()
 
   const queryParams = new URLSearchParams()
   const normalizedSearch = search.trim()
@@ -95,35 +99,46 @@ export function useJournal(params: UseJournalParams) {
 
   const url = isDemoMode ? null : `/api/v1/trades?${queryParams.toString()}`
 
-  const { data, error, isLoading, mutate } = useSWR(url, fetcher, {
-    keepPreviousData: true,
+  const query = useQuery<JournalQueryData>({
+    queryKey: queryKeys.journal(scope, {
+      demo: isDemoMode,
+      page,
+      limit,
+      search,
+      tradeDate,
+      filterBy,
+      selectedTagIds,
+      accountNumbers,
+    }),
+    queryFn: async ({ signal }) => {
+      if (isDemoMode) {
+        const { getDemoJournalData } = await import('@/lib/demo/journal-data')
+        return getDemoJournalData({ page, limit, search, tradeDate, filterBy, selectedTagIds })
+      }
+      try {
+        return await apiRequestData<JournalResponse>(url!, { signal, operation: 'load-journal-trades' })
+      } catch (error) {
+        reportClientError(error, { operation: 'load-journal-trades', route: url! })
+        throw error
+      }
+    },
+    enabled: isScopeReady(scope),
+    placeholderData: (previous) => previous,
   })
 
-  const demoKey = isDemoMode
-    ? ['demo-journal', page, limit, search, tradeDate, filterBy, selectedTagIds.join(',')]
-    : null
-  const { data: demoData, isLoading: isDemoLoading } = useSWR(demoKey, async () => {
-    const { getDemoJournalData } = await import('@/lib/demo/journal-data')
-    return getDemoJournalData({ page, limit, search, tradeDate, filterBy, selectedTagIds })
-  })
+  const { data, isLoading, error } = query
 
-  if (isDemoMode) {
-    return {
-      trades: (demoData?.trades as any[]) || [],
-      totalCount: demoData?.totalCount || 0,
-      statistics: demoData?.statistics || null,
-      isLoading: isDemoLoading,
-      isError: null,
-      refetch: async () => undefined,
-    }
-  }
+  const totalCount =
+    data && 'total' in data
+      ? data.total || 0
+      : data?.totalCount || 0
 
   return {
     trades: (data?.trades as Trade[]) || [],
-    totalCount: data?.total || 0,
+    totalCount,
     statistics: data?.statistics || null,
     isLoading,
     isError: error,
-    refetch: mutate
+    refetch: () => query.refetch()
   }
 }

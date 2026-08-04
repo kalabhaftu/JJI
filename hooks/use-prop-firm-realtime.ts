@@ -245,9 +245,9 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   const prevAccountIdRef = useRef<string | undefined>(undefined)
 
   useEffect(() => {
-    if (!enabled || !accountId) return
+    const activeAccountId = enabled ? accountId : undefined
 
-    if (prevAccountIdRef.current !== accountId) {
+    if (prevAccountIdRef.current !== activeAccountId) {
       requestSequenceRef.current++
       requestControllerRef.current?.abort()
       requestControllerRef.current = null
@@ -259,10 +259,12 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       setDrawdown(null)
       setLastUpdated(null)
       setError(null)
-      setIsLoading(true)
-      prevAccountIdRef.current = accountId
+      setIsFetching(false)
+      setIsLoading(!!activeAccountId)
+      prevAccountIdRef.current = activeAccountId
     }
 
+    if (!activeAccountId) return
     if (hasFetchedRef.current) return
     hasFetchedRef.current = true
 
@@ -272,7 +274,9 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   useEffect(() => () => {
     requestSequenceRef.current++
     requestControllerRef.current?.abort()
+    requestControllerRef.current = null
     pendingRealtimeRefreshRef.current = false
+    hasFetchedRef.current = false
   }, [])
 
   return {

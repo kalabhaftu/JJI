@@ -71,8 +71,19 @@ function accountResponse(id: string) {
   }
 }
 
-function PropFirmProbe() {
-  usePropFirmRealtime({ accountId: 'account-1' })
+type PropFirmSnapshot = ReturnType<typeof usePropFirmRealtime>
+
+function PropFirmProbe({
+  accountId,
+  enabled = true,
+  snapshot,
+}: {
+  accountId?: string
+  enabled?: boolean
+  snapshot?: (value: PropFirmSnapshot) => void
+}) {
+  const value = usePropFirmRealtime({ accountId, enabled })
+  snapshot?.(value)
   return null
 }
 
@@ -117,7 +128,7 @@ describe('realtime refresh coalescing', () => {
       .mockImplementationOnce(() => activeRefresh.promise)
       .mockImplementationOnce(() => followUpRefresh.promise)
     const root = createRoot(document.createElement('div'))
-    await act(async () => root.render(createElement(PropFirmProbe)))
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId: 'account-1' })))
 
     act(() => realtime.options?.onAccountChange?.({
       ...change,
@@ -137,6 +148,98 @@ describe('realtime refresh coalescing', () => {
 
     await act(async () => activeRefresh.resolve(accountResponse('account-1')))
     expect(fetchMock).toHaveBeenCalledTimes(3)
+
+    await act(async () => followUpRefresh.resolve(accountResponse('account-1')))
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+
+    await act(async () => root.unmount())
+  })
+
+  it.each([
+    { lifecycle: 'disabled', accountId: 'account-1', enabled: false },
+    { lifecycle: 'removed', accountId: undefined, enabled: true },
+  ])('clears an active and pending prop firm refresh when the account is $lifecycle', async ({ accountId, enabled }) => {
+    const activeRefresh = deferred<ReturnType<typeof accountResponse>>()
+    fetchMock
+      .mockResolvedValueOnce(accountResponse('account-1'))
+      .mockImplementationOnce(() => activeRefresh.promise)
+      .mockResolvedValueOnce(accountResponse('account-1'))
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId: 'account-1' })))
+
+    act(() => {
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+    })
+    const activeSignal = fetchMock.mock.calls[1]?.[1].signal as AbortSignal
+
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId, enabled })))
+    expect(activeSignal.aborted).toBe(true)
+
+    await act(async () => activeRefresh.resolve(accountResponse('account-1')))
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId: 'account-1' })))
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+
+    await act(async () => root.unmount())
+  })
+
+  it('clears the old queued refresh and starts the replacement account lifecycle', async () => {
+    const activeRefresh = deferred<ReturnType<typeof accountResponse>>()
+    const replacementRefresh = deferred<ReturnType<typeof accountResponse>>()
+    fetchMock
+      .mockResolvedValueOnce(accountResponse('account-1'))
+      .mockImplementationOnce(() => activeRefresh.promise)
+      .mockImplementationOnce(() => replacementRefresh.promise)
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId: 'account-1' })))
+
+    act(() => {
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+    })
+    const activeSignal = fetchMock.mock.calls[1]?.[1].signal as AbortSignal
+
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId: 'account-2' })))
+    expect(activeSignal.aborted).toBe(true)
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(fetchMock.mock.calls[2]?.[0]).toBe('/api/v1/prop-firm/accounts/account-2')
+
+    await act(async () => activeRefresh.resolve(accountResponse('account-1')))
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+
+    await act(async () => replacementRefresh.resolve(accountResponse('account-2')))
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+
+    await act(async () => root.unmount())
+  })
+
+  it('runs one queued follow-up after an active refresh fails and preserves prior data', async () => {
+    const activeRefresh = deferred<any>()
+    const followUpRefresh = deferred<ReturnType<typeof accountResponse>>()
+    fetchMock
+      .mockResolvedValueOnce(accountResponse('account-1'))
+      .mockImplementationOnce(() => activeRefresh.promise)
+      .mockImplementationOnce(() => followUpRefresh.promise)
+    let current!: PropFirmSnapshot
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId: 'account-1', snapshot: value => { current = value } })))
+
+    act(() => {
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+    })
+
+    await act(async () => activeRefresh.resolve({
+      ok: false,
+      data: null,
+      error: { message: 'Service unavailable', status: 503 },
+      status: 503,
+    }))
+    expect(fetchMock).toHaveBeenCalledTimes(3)
+    expect(current.account?.id).toBe('account-1')
 
     await act(async () => followUpRefresh.resolve(accountResponse('account-1')))
     expect(fetchMock).toHaveBeenCalledTimes(3)

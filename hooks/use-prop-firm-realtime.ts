@@ -109,6 +109,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   const hasFetchedRef = useRef(false)
   const requestControllerRef = useRef<AbortController | null>(null)
   const requestSequenceRef = useRef(0)
+  const pendingRealtimeRefreshRef = useRef(false)
   const accountIdRef = useRef(accountId)
   accountIdRef.current = accountId
 
@@ -184,9 +185,21 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
         if (showLoadingState) {
           setIsLoading(false)
         }
+        if (pendingRealtimeRefreshRef.current && accountIdRef.current === accountId) {
+          pendingRealtimeRefreshRef.current = false
+          void fetchAccountData(false)
+        }
       }
     }
   }, [accountId, enabled])
+
+  const scheduleRealtimeRefresh = useCallback(() => {
+    if (requestControllerRef.current) {
+      pendingRealtimeRefreshRef.current = true
+      return
+    }
+    void fetchAccountData(false)
+  }, [fetchAccountData])
 
   const refetch = useCallback(async () => {
     await fetchAccountData(true)
@@ -201,14 +214,14 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       if (change.table === 'MasterAccount') {
         const changedAccountId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
         if (changedAccountId === accountId) {
-          fetchAccountData(false)
+          scheduleRealtimeRefresh()
         }
       }
 
       else if (change.table === 'PhaseAccount') {
         const phaseMasterAccountId = (change.newRecord?.masterAccountId || change.oldRecord?.masterAccountId) as string | undefined
         if (phaseMasterAccountId === accountId) {
-          fetchAccountData(false)
+          scheduleRealtimeRefresh()
         }
       }
 
@@ -220,7 +233,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       if (tradePhaseAccountId) {
         const accountPhaseIds = account.phases.map(p => p.id)
         if (accountPhaseIds.includes(tradePhaseAccountId)) {
-          fetchAccountData(false)
+          scheduleRealtimeRefresh()
         }
       }
     },
@@ -238,6 +251,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       requestSequenceRef.current++
       requestControllerRef.current?.abort()
       requestControllerRef.current = null
+      pendingRealtimeRefreshRef.current = false
       hasFetchedRef.current = false
       previousAccountRef.current = null
       previousDrawdownRef.current = null
@@ -258,6 +272,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   useEffect(() => () => {
     requestSequenceRef.current++
     requestControllerRef.current?.abort()
+    pendingRealtimeRefreshRef.current = false
   }, [])
 
   return {

@@ -33,6 +33,7 @@ import { TradeDurationChart } from '@/app/dashboard/reports/components/trade-dur
 import { InstrumentBreakdown } from '@/app/dashboard/reports/components/instrument-breakdown'
 import { CommissionAnalysis } from '@/app/dashboard/reports/components/commission-analysis'
 import { format } from 'date-fns'
+import { fetchLiveAccountDetail } from '@/lib/accounts/api'
 
 interface LiveAccountData {
   id: string
@@ -208,29 +209,15 @@ export default function LiveAccountDetailPage() {
       setIsLoading(true)
       setAccountError(null)
 
-      const response = await fetch(`/api/v1/accounts/${accountId}?t=${Date.now()}`, {
-        cache: 'no-store',
-        signal: controller.signal,
-      })
+      const accountData = await fetchLiveAccountDetail(accountId, controller.signal)
       if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
-      if (!response.ok) {
-        throw new Error('Failed to fetch account')
-      }
-
-      const data = await response.json()
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
-      if (!data.success) {
-        throw new Error(data.error?.message || 'Failed to fetch account data')
-      }
-
-      const accountData = data.data
 
       if (!accountData || accountData.accountType !== 'live') {
         router.push('/dashboard/accounts')
         return
       }
 
-      setAccount(accountData)
+      setAccount(accountData as LiveAccountData)
     } catch (error) {
       if (controller.signal.aborted || requestSequence !== requestSequenceRef.current) return
       setAccountError('Could not refresh this account. Your existing account data is still available.')

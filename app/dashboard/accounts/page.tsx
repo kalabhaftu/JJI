@@ -6,6 +6,7 @@ import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
 import { useAccounts, clearAccountsCache } from "@/hooks/use-accounts"
+import { deleteAccountRequest, setAccountArchived } from '@/lib/accounts/api'
 import { useData } from '@/context/data-provider'
 import { useTradesStore } from '@/store/trades-store'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
@@ -332,13 +333,7 @@ export default function AccountsPage() {
         ? (deletingAccount.currentPhaseDetails?.masterAccountId || deletingAccount.id)
         : deletingAccount.id
 
-      const endpoint = deletingAccount.accountType === 'prop-firm'
-        ? `/api/v1/prop-firm/accounts/${accountId}`
-        : `/api/v1/accounts/${accountId}`
-
-      const response = await fetch(endpoint, { method: 'DELETE' })
-
-      if (!response.ok) throw new Error('Failed to delete account')
+      await deleteAccountRequest({ accountType: deletingAccount.accountType, accountId })
 
       toast.success(`${accountName} deleted permanently`)
       clearAccountsCache()
@@ -361,17 +356,7 @@ export default function AccountsPage() {
         ? (account.currentPhaseDetails?.masterAccountId || account.id)
         : account.id
 
-      const endpoint = account.accountType === 'prop-firm'
-        ? `/api/v1/prop-firm/accounts/${accountId}`
-        : `/api/v1/accounts/${accountId}`
-
-      const response = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isArchived: !isArchived })
-      })
-
-      if (!response.ok) throw new Error('Failed to update account')
+      await setAccountArchived({ accountType: account.accountType, accountId }, !isArchived)
 
       toast.success(isArchived ? `${accountName} restored` : `${accountName} archived`)
       clearAccountsCache()

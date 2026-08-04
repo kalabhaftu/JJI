@@ -23,6 +23,7 @@ export function FeedbackFormClient() {
   const [files, setFiles] = useState<File[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,6 +51,7 @@ export function FeedbackFormClient() {
       return
     }
     setSubmitting(true)
+    setSubmitError(null)
     try {
       const formData = new FormData()
       formData.append('category', category)
@@ -65,11 +67,17 @@ export function FeedbackFormClient() {
       if (data.success) {
         setSubmitted(true)
       } else {
-        toast.error(data.error?.message || 'Failed to submit feedback')
+        const message = data.error?.message || 'Failed to submit feedback'
+        setSubmitError(message)
+        toast.error(message)
       }
     } catch (error) {
       reportClientError(error, { operation: 'submit-feedback', route: '/api/feedback' })
-      toast.error('Something went wrong. Please try again.')
+      const message = typeof navigator !== 'undefined' && !navigator.onLine
+        ? 'You are offline. Reconnect and submit again; your message is still here.'
+        : 'Something went wrong. Please try again.'
+      setSubmitError(message)
+      toast.error(message)
     } finally {
       setSubmitting(false)
     }
@@ -165,9 +173,9 @@ export function FeedbackFormClient() {
                   <div key={i} className="flex items-center gap-1 bg-muted px-2 py-1 rounded text-xs">
                     <span className="truncate max-w-32">{f.name}</span>
                     <span className="text-muted-foreground">({(f.size / 1024).toFixed(0)}KB)</span>
-                    <button type="button" aria-label={`Remove ${f.name}`} onClick={() => removeFile(i)} className="ml-1 hover:text-destructive">
+                    <Button type="button" variant="icon-only" size="icon" aria-label={`Remove ${f.name}`} onClick={() => removeFile(i)} className="ml-1 h-11 w-11 hover:text-destructive">
                       <X className="h-3 w-3" />
-                    </button>
+                    </Button>
                   </div>
                 ))}
                 {files.length < MAX_FILES && (
@@ -190,8 +198,9 @@ export function FeedbackFormClient() {
               </p>
             </div>
 
-            <Button type="submit" className="w-full" disabled={submitting || !category || !subject.trim() || !message.trim()}>
-              {submitting ? 'Submitting...' : 'Submit Feedback'}
+            {submitError && <p role="alert" className="text-sm text-destructive">{submitError}</p>}
+            <Button type="submit" className="w-full" loading={submitting} loadingText="Submitting feedback" disabled={!category || !subject.trim() || !message.trim()}>
+              Submit Feedback
             </Button>
           </form>
         </CardContent>

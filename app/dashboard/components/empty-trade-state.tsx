@@ -3,10 +3,14 @@
 import { WalletCards } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { useQuickAddStore } from '@/store/quick-add-store';
+import { resolveNavigationPath } from '@/lib/navigation/registry';
+import { useData } from '@/context/data-provider';
+import { useRouter } from 'next/navigation';
+import { buildTradeEntryHref } from '@/app/dashboard/trades/new/trade-entry-draft';
 
 export function EmptyTradeState({ variant = 'no-account' }: { variant?: 'no-account' | 'no-trades' | 'filtered' }) {
-  const openQuickAdd = useQuickAddStore((state) => state.openQuickAdd)
+  const router = useRouter()
+  const { isDemoMode } = useData()
   const isNoAccount = variant === 'no-account'
   const isFiltered = variant === 'filtered'
 
@@ -30,11 +34,11 @@ export function EmptyTradeState({ variant = 'no-account' }: { variant?: 'no-acco
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         {isNoAccount ? (
-          <Button asChild><Link href="/dashboard/accounts">Create account</Link></Button>
+          <Button asChild><Link href={resolveNavigationPath('accounts', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })}>Create account</Link></Button>
         ) : isFiltered ? (
           <Button onClick={handleClearFilter}>Change account filter</Button>
         ) : (
-          <Button onClick={openQuickAdd}>Add trade manually</Button>
+          <Button onClick={() => router.push(buildTradeEntryHref({ origin: 'empty-state', returnTo: '/dashboard' }))}>Add trade manually</Button>
         )}
         <Button variant="outline" onClick={handleImport}>{isNoAccount ? 'Import after setup' : 'Import trades'}</Button>
       </div>

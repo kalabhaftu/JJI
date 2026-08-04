@@ -37,6 +37,7 @@ import {
   MOBILE_NAV_DESTINATIONS,
   type MobileNavId,
 } from '@/lib/navigation/mobile-nav'
+import { getMoreNavigation, resolveNavigationPath, type NavigationContext, type NavigationId } from '@/lib/navigation/registry'
 
 interface MobileNavItem {
   id: MobileNavId
@@ -62,20 +63,16 @@ export function MobileBottomNav() {
   const pathname = usePathname()
   const data = useData()
   const isDemoMode = data?.isDemoMode
-  const { docsHref, hostname } = usePublicSurfaceRouting()
+  const { hostname } = usePublicSurfaceRouting()
   const [moreOpen, setMoreOpen] = useState(false)
 
   const activeTab = getActiveMobileNavId(pathname || '', Boolean(isDemoMode), hostname)
-  const moreItems = [
-    { label: 'Accounts', href: '/dashboard/accounts', icon: Briefcase },
-    { label: 'Playbook', href: '/dashboard/playbook', icon: BookOpen },
-    { label: 'Backtesting', href: '/dashboard/backtesting', icon: FlaskConical },
-    { label: 'Goals', href: '/dashboard/goals', icon: Trophy },
-    { label: 'Assistant', href: '/dashboard/ai', icon: Brain },
-    { label: 'Data', href: '/dashboard/data', icon: Database },
-    { label: 'Settings', href: '/dashboard/settings', icon: Settings },
-    { label: 'Docs', href: '/docs', icon: BookMarked },
-  ] as const
+  const navigationContext: NavigationContext = { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode), hostname }
+  const moreIcons: Partial<Record<NavigationId, typeof Briefcase>> = {
+    accounts: Briefcase, playbook: BookOpen, backtesting: FlaskConical, goals: Trophy,
+    assistant: Brain, data: Database, settings: Settings, docs: BookMarked,
+  }
+  const moreItems = getMoreNavigation(navigationContext)
 
   return (
     <nav aria-label="Primary mobile navigation" className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background lg:hidden">
@@ -143,17 +140,18 @@ export function MobileBottomNav() {
             <DialogDescription>Open tools, account settings, documentation, or sync your data.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-2">
-            {moreItems.map(({ label, href, icon: MoreIcon }) => (
-              <Button key={label} asChild variant="outline" className="h-12 justify-start gap-3">
-                <Link
-                  href={(href.startsWith('/docs') ? docsHref(href) : getMobileNavHref(href, Boolean(isDemoMode), hostname)) as any}
+             {moreItems.map((item) => {
+               const MoreIcon = moreIcons[item.id]!
+               return <Button key={item.id} asChild variant="outline" className="h-12 justify-start gap-3">
+                 <Link
+                   href={resolveNavigationPath(item, navigationContext) as any}
                   onClick={() => setMoreOpen(false)}
                 >
                   <MoreIcon className="h-4 w-4" />
-                  {label}
-                </Link>
-              </Button>
-            ))}
+                   {item.label}
+                 </Link>
+               </Button>
+             })}
           </div>
           <Button
             type="button"

@@ -3,12 +3,15 @@
 import { WalletCards } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { resolveNavigationPath } from '@/lib/navigation/registry';
+import { useData } from '@/context/data-provider';
 
 interface EmptyAccountStateProps {
   onOpenAccountSelector?: () => void;
 }
 
 export function EmptyAccountState({ onOpenAccountSelector }: EmptyAccountStateProps) {
+  const { isDemoMode } = useData();
   const handleSelectAccount = () => {
     if (onOpenAccountSelector) {
       onOpenAccountSelector();
@@ -29,7 +32,7 @@ export function EmptyAccountState({ onOpenAccountSelector }: EmptyAccountStatePr
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button onClick={handleSelectAccount}>Select Account</Button>
         <Button variant="outline" asChild>
-          <Link href="/dashboard/accounts">Create Account</Link>
+          <Link href={resolveNavigationPath('accounts', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })}>Create Account</Link>
         </Button>
       </div>
     </div>

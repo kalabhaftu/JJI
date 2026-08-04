@@ -2,7 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -25,7 +25,6 @@ import {
   Calculator,
   TrendingUp,
   TrendingDown,
-  AlertCircle,
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
@@ -46,6 +45,8 @@ import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useAccounts } from '@/hooks/use-accounts'
 import { cn } from '@/lib/utils'
+import { classifyPhaseValidationResponse } from '@/lib/validation/phase-validation'
+import { ManualTradeValidationError } from './manual-trade-validation-error'
 import { Badge } from '@/components/ui/badge'
 import {
   Command,
@@ -142,10 +143,28 @@ const tradeFormSchema = z.object({
 
 type TradeFormData = z.infer<typeof tradeFormSchema>
 
+export function getManualTradeFormDefaults(initialValues?: Partial<TradeFormData>): Partial<TradeFormData> {
+  const now = new Date()
+  return {
+    entryDate: now.toISOString().split('T')[0] || '',
+    entryTime: now.toTimeString().split(' ')[0]?.slice(0, 5) || '',
+    closeDate: now.toISOString().split('T')[0] || '',
+    closeTime: now.toTimeString().split(' ')[0]?.slice(0, 5) || '',
+    quantity: 1,
+    commission: 0,
+    pnl: 0,
+    isMissedTrade: false,
+    ...initialValues,
+  }
+}
+
 interface ManualTradeFormProps {
   setIsOpen?: React.Dispatch<React.SetStateAction<boolean>>
   onClose?: () => void
   onBack?: () => void
+  initialValues?: Partial<TradeFormData>
+  onValuesChange?: (values: Partial<TradeFormData>) => void
+  onSuccess?: () => void
 }
 
 type Step = 1 | 2 | 3 | 4 | 5
@@ -160,7 +179,7 @@ const stepInfo = [
   { step: 5, title: 'Review', icon: ShieldCheck },
 ]
 
-export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTradeFormProps) {
+export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialValues, onValuesChange, onSuccess }: ManualTradeFormProps) {
   const handleClose = () => {
     if (onClose) onClose();
     else if (setIsOpen) setIsOpen(false);
@@ -172,6 +191,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
   const [calculatedDuration, setCalculatedDuration] = useState<string>('')
   const [instrumentOpen, setInstrumentOpen] = useState(false)
   const [instrumentSearch, setInstrumentSearch] = useState('')
+  const submitInFlightRef = useRef(false)
 
   const user = useUserStore(state => state.user)
   const supabaseUser = useUserStore(state => state.supabaseUser)
@@ -182,21 +202,18 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
     control,
     watch,
     setValue,
+    reset,
     formState: { errors }
   } = useForm<TradeFormData>({
     resolver: zodResolver(tradeFormSchema),
     mode: 'onChange',
-    defaultValues: {
-      entryDate: new Date().toISOString().split('T')[0] || '',
-      entryTime: new Date().toTimeString().split(' ')[0]?.slice(0, 5) || '',
-      closeDate: new Date().toISOString().split('T')[0] || '',
-      closeTime: new Date().toTimeString().split(' ')[0]?.slice(0, 5) || '',
-      quantity: 1,
-      commission: 0,
-      pnl: 0,
-      isMissedTrade: false,
-    }
+    defaultValues: getManualTradeFormDefaults(initialValues)
   })
+
+  const initialValuesKey = JSON.stringify(initialValues ?? {})
+  useEffect(() => {
+    reset(getManualTradeFormDefaults(JSON.parse(initialValuesKey) as Partial<TradeFormData>))
+  }, [initialValuesKey, reset])
 
   const entryPrice = watch('entryPrice')
   const closePrice = watch('closePrice')
@@ -210,6 +227,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
   const instrument = watch('instrument')
   const isMissedTrade = watch('isMissedTrade')
   const watchedValues = watch()
+  const watchedValuesKey = JSON.stringify(watchedValues)
+
+  useEffect(() => { onValuesChange?.(JSON.parse(watchedValuesKey) as Partial<TradeFormData>) }, [onValuesChange, watchedValuesKey])
 
   useEffect(() => {
     if (entryPrice && closePrice && quantity && side) {
@@ -287,12 +307,14 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
   }
 
   const onSubmit = async (data: TradeFormData) => {
+    if (submitInFlightRef.current) return
     const currentUser = user || supabaseUser
     if (!currentUser?.id) {
       toast.error('Authentication Error', { description: 'Please sign in to add trades.' })
       return
     }
 
+    submitInFlightRef.current = true
     setIsSubmitting(true)
     setPhaseValidationError(null)
 
@@ -306,17 +328,19 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
             body: JSON.stringify({ accountNumber: data.accountNumber })
           })
 
-          const phaseResult = await phaseCheckResponse.json()
-
-          if (!phaseCheckResponse.ok && phaseCheckResponse.status === 403) {
-            const message = phaseResult.error?.message || 'Please set the ID for the current phase before adding trades.'
-            setPhaseValidationError(message)
-            toast.error("Phase ID Required", { description: message })
-            return
-          }
-        } catch (error) {
-
-        }
+           const phaseResult = await phaseCheckResponse.json().catch(() => null)
+           const validation = classifyPhaseValidationResponse(phaseCheckResponse.status, phaseResult)
+           if (validation.status !== 'valid') {
+             setPhaseValidationError(validation.message)
+             toast.error('Trade Validation Blocked', { description: validation.message })
+             return
+           }
+         } catch (error) {
+           const message = 'Unable to validate the account. Retry before saving.'
+           setPhaseValidationError(message)
+           reportClientError(error, { operation: 'validate-manual-trade-phase', route: '/api/v1/prop-firm/accounts/validate-trade' })
+           return
+         }
       }
 
       const entryDateTime = `${data.entryDate} ${data.entryTime}`
@@ -379,8 +403,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       })
 
       const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
-      invalidateAccountsCache('trade saved')
-      handleClose()
+       invalidateAccountsCache('trade saved')
+       onSuccess?.()
+       if (!onSuccess) handleClose()
 
     } catch (error) {
       reportClientError(error, { operation: 'save-manual-trade', route: '/api/v1/trades' })
@@ -390,6 +415,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       }
       toast.error('Save Failed', { description: errorMessage })
     } finally {
+      submitInFlightRef.current = false
       setIsSubmitting(false)
     }
   }
@@ -789,14 +815,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack }: ManualTr
       case 5:
         return (
           <div className="space-y-6">
-            {phaseValidationError && (
-              <div className="p-4 rounded-lg border border-destructive/50 bg-destructive/10">
-                <div className="flex items-center gap-2 text-destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <p className="text-sm">{phaseValidationError}</p>
-                </div>
-              </div>
-            )}
+            {phaseValidationError && <ManualTradeValidationError message={phaseValidationError} retry={() => void handleSubmit(onSubmit as any)()} disabled={isSubmitting} />}
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg border bg-muted/30">

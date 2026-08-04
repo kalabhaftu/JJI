@@ -15,6 +15,8 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { TablePageSkeleton } from './components/table-page-skeleton'
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
+import { resolveNavigationPath } from '@/lib/navigation/registry'
+import { useRouteWorkspace } from '@/hooks/use-route-workspace'
 
 const TradeReplay = dynamic(() => import('../components/trades/trade-replay'), { ssr: false })
 const TradeDetailPanel = dynamic(
@@ -33,7 +35,9 @@ const TradeTableReview = dynamic(
 function TableView() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const { formattedTrades = [], updateTrades, statistics } = useData()
+  const { formattedTrades = [], updateTrades, statistics, isDemoMode } = useData()
+  const tablePath = resolveNavigationPath('table', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })
+  const routeWorkspace = useRouteWorkspace(tablePath)
   const { formatValue, getTradeRMultipleInfo } = useDashboardDisplay()
   const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
 
@@ -123,13 +127,11 @@ function TableView() {
     const trade = formattedTrades.find((t: any) => t.id === tradeId)
     if (trade) {
       return (
-        <div className="fixed inset-0 z-50 bg-background">
-          <TradeDetailPanel
-            trade={trade}
-            onClose={() => router.replace('/dashboard/table')}
-            basePath="/dashboard/table"
-          />
-        </div>
+        <TradeDetailPanel
+          trade={trade}
+            onClose={routeWorkspace.closeWorkspace}
+           basePath={tablePath}
+        />
       )
     }
   }
@@ -138,15 +140,13 @@ function TableView() {
     const trade = formattedTrades.find((t: any) => t.id === tradeId)
     if (trade) {
       return (
-        <div className="fixed inset-0 z-50 bg-background">
-          <TradeEditPanel
-            trade={ensureExtendedTrade(trade as any)}
-            onClose={() => router.replace('/dashboard/table')}
-            onSave={async (data: any) => {
-              await updateTrades([tradeId], data)
-            }}
-          />
-        </div>
+        <TradeEditPanel
+          trade={ensureExtendedTrade(trade as any)}
+            onClose={routeWorkspace.closeWorkspace}
+          onSave={async (data: any) => {
+            await updateTrades([tradeId], data)
+          }}
+        />
       )
     }
   }

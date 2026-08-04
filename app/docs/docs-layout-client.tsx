@@ -28,6 +28,7 @@ import { Input } from '@/components/ui/input'
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { cn } from '@/lib/utils'
+import { resolveNavigationPath } from '@/lib/navigation/registry'
 
 type DocsNavItem = {
   title: string
@@ -100,7 +101,7 @@ const docsNavigation: DocsNavSection[] = [
         ],
       },
       { title: 'Feedback Guide', href: '/docs/feedback', description: 'Report bugs and request features' },
-      { title: 'Support the Project', href: '/docs/donate', description: 'Donation and contribution options' },
+       { title: 'Support the Project', href: resolveNavigationPath('donate', { surface: 'docs', isDemo: false }), description: 'Donation and contribution options' },
     ],
   },
   {
@@ -350,7 +351,13 @@ function OpenSourceNotice() {
 
 export function DocsLayoutClient({ children }: { children: ReactNode }) {
   const pathname = usePathname()
-  const { docsHref } = usePublicSurfaceRouting()
+  const { docsHref, hostname } = usePublicSurfaceRouting()
+  const navigationHref = useCallback(
+    (href = '/docs') => href === '/donate'
+      ? resolveNavigationPath('donate', { surface: 'docs', isDemo: false, hostname })
+      : docsHref(href),
+    [docsHref, hostname],
+  )
   const [searchQuery, setSearchQuery] = useState('')
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -420,7 +427,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
                   searchQuery={searchQuery}
                   setSearchQuery={setSearchQuery}
                   searchResults={searchResults}
-                  docsHref={docsHref}
+                  docsHref={navigationHref}
                   inputRef={searchInputRef}
                 />
                 <div className="mt-3">
@@ -429,7 +436,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
               </div>
 
               <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-                <DocsNav pathname={pathname} docsHref={docsHref} />
+                <DocsNav pathname={pathname} docsHref={navigationHref} />
               </div>
           </div>
         </aside>
@@ -457,7 +464,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
                         searchQuery={searchQuery}
                         setSearchQuery={setSearchQuery}
                         searchResults={searchResults}
-                        docsHref={docsHref}
+                        docsHref={navigationHref}
                       />
                     </div>
                     <div className="mt-3">
@@ -465,7 +472,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
                     </div>
                   </div>
                   <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-                    <DocsNav pathname={pathname} docsHref={docsHref} onNavigate={() => setMobileMenuOpen(false)} />
+                    <DocsNav pathname={pathname} docsHref={navigationHref} onNavigate={() => setMobileMenuOpen(false)} />
                   </div>
                 </div>
               </SheetContent>

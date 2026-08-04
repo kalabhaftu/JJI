@@ -48,26 +48,18 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   }, [queryClient, reloadBootstrapData])
 
   const scheduleRealtimeRefresh = useCallback((scope: RefreshScope) => {
+    if (realtimeRefreshTimeoutRef.current[scope]) return
+
     const now = Date.now()
     const cooldown = scope === 'trades' ? 500 : 1000
     const timeSinceLastRefresh = now - lastRealtimeRefreshRef.current[scope]
+    const delay = timeSinceLastRefresh < cooldown ? cooldown - timeSinceLastRefresh : 250
 
-    if (timeSinceLastRefresh < cooldown) {
-      if (realtimeRefreshTimeoutRef.current[scope]) {
-        clearTimeout(realtimeRefreshTimeoutRef.current[scope] as NodeJS.Timeout)
-      }
-
-      realtimeRefreshTimeoutRef.current[scope] = setTimeout(() => {
-        lastRealtimeRefreshRef.current[scope] = Date.now()
-        runRealtimeRefresh(scope)
-      }, cooldown - timeSinceLastRefresh)
-      return
-    }
-
-    setTimeout(() => {
+    realtimeRefreshTimeoutRef.current[scope] = setTimeout(() => {
+      realtimeRefreshTimeoutRef.current[scope] = null
       lastRealtimeRefreshRef.current[scope] = Date.now()
       runRealtimeRefresh(scope)
-    }, 250)
+    }, delay)
   }, [runRealtimeRefresh])
 
   useDatabaseRealtime({
@@ -78,15 +70,16 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   })
 
   useEffect(() => {
-    const tradesTimeout = realtimeRefreshTimeoutRef.current.trades
-    const accountsTimeout = realtimeRefreshTimeoutRef.current.accounts
+    const timeouts = realtimeRefreshTimeoutRef.current
 
     return () => {
-      if (tradesTimeout) {
-        clearTimeout(tradesTimeout)
+      if (timeouts.trades) {
+        clearTimeout(timeouts.trades)
+        timeouts.trades = null
       }
-      if (accountsTimeout) {
-        clearTimeout(accountsTimeout)
+      if (timeouts.accounts) {
+        clearTimeout(timeouts.accounts)
+        timeouts.accounts = null
       }
     }
   }, [])

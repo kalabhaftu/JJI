@@ -47,17 +47,6 @@ export async function POST(request: NextRequest) {
 
     if (phaseAccount) {
 
-      if (!phaseAccount.phaseId) {
-        return createErrorResponse(
-          'Please set the ID for the current phase before adding trades.',
-          403,
-          undefined,
-          'PHASE_ID_REQUIRED',
-          requestId,
-        )
-      }
-
-
       return createSuccessResponse(
         {
           accountType: 'prop-firm',

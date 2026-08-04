@@ -19,8 +19,6 @@ type TradovateEnvironment = 'demo' | 'live'
 
 interface TradovateOAuthState {
   isAuthenticated: boolean
-  accessToken?: string | undefined
-  refreshToken?: string | undefined
   expiresAt?: string | undefined
   accounts?: TradovateAccount[] | undefined
   lastSync?: string | undefined
@@ -31,18 +29,47 @@ interface TradovateOAuthState {
 interface TradovateSyncStore extends TradovateOAuthState {
 
   setAuthenticated: (authenticated: boolean) => void
-  setTokens: (accessToken: string, refreshToken: string, expiresAt: string) => void
   setAccounts: (accounts: TradovateAccount[]) => void
   setOAuthState: (state: string) => void
   clearOAuthState: () => void
   updateLastSync: () => void
   clearAll: () => void
-  isTokenExpired: () => boolean
-  getValidToken: () => string | null
   setEnvironment: (environment: TradovateEnvironment) => void
   getApiBaseUrl: () => string
-  syncWithSessionStorage: () => void
-  loadFromSessionStorage: () => boolean
+}
+
+export function persistedTradovateState(state: TradovateOAuthState & { accessToken?: unknown; refreshToken?: unknown }) {
+  return {
+    isAuthenticated: state.isAuthenticated,
+    expiresAt: state.expiresAt,
+    accounts: state.accounts,
+    lastSync: state.lastSync,
+    environment: state.environment,
+    oauthState: state.oauthState,
+  }
+}
+type PersistedTradovateState = ReturnType<typeof persistedTradovateState>
+
+export function clearTradovateLegacyStorage(storage: Pick<Storage, 'removeItem'> = sessionStorage) {
+  for (const key of ['tradovate_access_token', 'tradovate_refresh_token', 'tradovate_token_expiration', 'tradovate_environment']) storage.removeItem(key)
+}
+
+export const tradovateStorage: Storage = typeof window === 'undefined'
+  ? { length: 0, clear() {}, getItem: () => null, key: () => null, removeItem() {}, setItem() {} }
+  : window.localStorage
+
+export function migrateTradovatePersistedState(input: unknown) {
+  const wrapper = input && typeof input === 'object' ? input as { state?: unknown } : {}
+  const source = wrapper.state && typeof wrapper.state === 'object' ? wrapper.state as Record<string, unknown> : {}
+  const state: Record<string, unknown> = {
+    isAuthenticated: Boolean(source.isAuthenticated) && !source.accessToken && !source.refreshToken,
+    environment: source.environment === 'live' ? 'live' : 'demo',
+  }
+  if (typeof source.expiresAt === 'string') state.expiresAt = source.expiresAt
+  if (Array.isArray(source.accounts)) state.accounts = source.accounts
+  if (typeof source.lastSync === 'string') state.lastSync = source.lastSync
+  if (typeof source.oauthState === 'string') state.oauthState = source.oauthState
+  return { state, version: 1 }
 }
 
 export const useTradovateSyncStore = create<TradovateSyncStore>()(
@@ -50,8 +77,6 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
     (set, get) => ({
 
       isAuthenticated: false,
-      accessToken: undefined,
-      refreshToken: undefined,
       expiresAt: undefined,
       accounts: undefined,
       lastSync: undefined,
@@ -61,19 +86,6 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
 
       setAuthenticated: (authenticated: boolean) => {
         set({ isAuthenticated: authenticated })
-      },
-
-      setTokens: (accessToken: string, refreshToken: string, expiresAt: string) => {
-        set({
-          isAuthenticated: true,
-          accessToken,
-          refreshToken,
-          expiresAt
-        })
-
-        sessionStorage.setItem('tradovate_access_token', accessToken)
-        sessionStorage.setItem('tradovate_token_expiration', expiresAt)
-        sessionStorage.setItem('tradovate_environment', get().environment)
       },
 
       setAccounts: (accounts: TradovateAccount[]) => {
@@ -95,8 +107,6 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
       clearAll: () => {
         set({
           isAuthenticated: false,
-          accessToken: undefined,
-          refreshToken: undefined,
           expiresAt: undefined,
           accounts: undefined,
           lastSync: undefined,
@@ -105,28 +115,11 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
         })
       },
 
-      isTokenExpired: () => {
-        const state = get()
-        if (!state.expiresAt) return true
-        const bufferTime = 5 * 60 * 1000
-        return Date.now() > (new Date(state.expiresAt).getTime() - bufferTime)
-      },
-
-      getValidToken: () => {
-        const state = get()
-        if (!state.accessToken || state.isTokenExpired()) {
-          return null
-        }
-        return state.accessToken
-      },
-
       setEnvironment: (environment: TradovateEnvironment) => {
 
         set({
           environment,
           isAuthenticated: false,
-          accessToken: undefined,
-          refreshToken: undefined,
           expiresAt: undefined,
           accounts: undefined,
           lastSync: undefined,
@@ -142,50 +135,18 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
       },
 
 
-      syncWithSessionStorage: () => {
-        const state = get()
-        if (state.accessToken && state.expiresAt) {
-          sessionStorage.setItem('tradovate_access_token', state.accessToken)
-          sessionStorage.setItem('tradovate_token_expiration', state.expiresAt)
-          sessionStorage.setItem('tradovate_environment', state.environment)
-        } else {
-          sessionStorage.removeItem('tradovate_access_token')
-          sessionStorage.removeItem('tradovate_token_expiration')
-          sessionStorage.removeItem('tradovate_environment')
-        }
-      },
 
-
-      loadFromSessionStorage: () => {
-        const accessToken = sessionStorage.getItem('tradovate_access_token')
-        const expiresAt = sessionStorage.getItem('tradovate_token_expiration')
-        const environment = sessionStorage.getItem('tradovate_environment') as 'demo' | 'live' || 'demo'
-        
-        if (accessToken && expiresAt) {
-          set({
-            isAuthenticated: true,
-            accessToken,
-            expiresAt,
-            environment
-          })
-          return true
-        }
-        return false
-      }
     }),
     {
       name: 'tradovate-sync-storage',
-      partialize: (state) => ({
-
-        isAuthenticated: state.isAuthenticated,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
-        expiresAt: state.expiresAt,
-        accounts: state.accounts,
-        lastSync: state.lastSync,
-        environment: state.environment,
-        oauthState: state.oauthState
-      }),
+      partialize: (state) => persistedTradovateState(state),
+      version: 1,
+      migrate: (state) => migrateTradovatePersistedState({ state }).state as PersistedTradovateState,
+      merge: (persisted, current) => ({ ...current, ...migrateTradovatePersistedState({ state: persisted }).state }),
+      onRehydrateStorage: () => (state) => {
+        clearTradovateLegacyStorage()
+        if (state) tradovateStorage.setItem('tradovate-sync-storage', JSON.stringify({ state: persistedTradovateState(state), version: 1 }))
+      },
     }
   )
 )

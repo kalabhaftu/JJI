@@ -43,8 +43,12 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Logo } from '@/components/logo'
 import { getUserAvatarUrl, getUserDisplayName } from '@/lib/user-avatar'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
+import { resolveNavigationPath } from '@/lib/navigation/registry'
+import { useRouter } from 'next/navigation'
+import { buildTradeEntryHref } from '@/app/dashboard/trades/new/trade-entry-draft'
 
 export default function Navbar() {
+  const router = useRouter()
   const storeUser = useUserStore(state => state.supabaseUser)
   const { user: authUser } = useAuth()
   const user = storeUser ?? authUser
@@ -58,7 +62,7 @@ export default function Navbar() {
 
   const { isMobile, isDemoMode } = useData()
   const { forceClearAuth } = useAuth()
-  const { demoRouteHref } = usePublicSurfaceRouting()
+  const { demoRouteHref, hostname } = usePublicSurfaceRouting()
 
   useKeyboardShortcuts()
 
@@ -89,7 +93,7 @@ export default function Navbar() {
         {}
         <div className="flex items-center gap-3">
           <SidebarTrigger className="lg:hidden" />
-          <Link href="/dashboard" className="lg:hidden flex items-center">
+            <Link href={resolveNavigationPath('overview', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode), hostname })} className="lg:hidden flex items-center">
             <Logo className="h-6 w-6" />
           </Link>
         </div>
@@ -159,7 +163,7 @@ export default function Navbar() {
           <Button
             variant="nav"
             size="navIcon"
-            onClick={() => { useQuickAddStore.getState().openQuickAdd(); emitTourEvent('trade.quick-add.opened') }}
+            onClick={() => { if (isDemoMode) useQuickAddStore.getState().openQuickAdd(); else router.push(buildTradeEntryHref({ origin: 'navbar', returnTo: '/dashboard' })); emitTourEvent('trade.quick-add.opened') }}
             data-tour="quick-add-btn"
             className="hidden sm:flex"
             title="Quick Add Trade"
@@ -219,7 +223,7 @@ export default function Navbar() {
 
               <DropdownMenuItem asChild>
                 <Link
-                  href={isDemoMode ? demoRouteHref('/dashboard/settings', true) : '/dashboard/settings'}
+                  href={resolveNavigationPath('settings', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode), hostname })}
                   className="cursor-pointer"
                   onClick={() => setProfileMenuOpen(false)}
                 >

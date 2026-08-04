@@ -26,7 +26,6 @@ export function GlobalTradeController() {
   const handleSave = async (updatedTrade: any) => {
     if (tradeId) {
       await updateTrades([tradeId], updatedTrade)
-      handleClose()
     }
   }
 
@@ -38,25 +37,23 @@ export function GlobalTradeController() {
 
   if (action === 'edit') {
     return (
-      <div className="fixed inset-0 z-50 bg-background">
-        <TradeEditPanel
-          trade={ensureExtendedTrade(trade)}
-          onClose={handleClose}
-          onSave={handleSave}
-        />
-      </div>
+      <TradeEditPanel
+        trade={ensureExtendedTrade(trade)}
+        onClose={handleClose}
+        onSave={handleSave}
+        workspaceMode="dialog"
+      />
     )
   }
 
   if (action === 'view') {
     return (
-      <div className="fixed inset-0 z-50 bg-background">
-        <TradeDetailPanel
-          trade={trade}
-          onClose={handleClose}
-          basePath={pathname}
-        />
-      </div>
+      <TradeDetailPanel
+        trade={trade}
+        onClose={handleClose}
+        basePath={pathname}
+        workspaceMode="dialog"
+      />
     )
   }
 

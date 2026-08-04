@@ -42,11 +42,13 @@ import { stripTradePreviewImageConfig } from '@/lib/trade-preview-image'
 import { getPnlDisplayLabel, getTradeGrossPnl, getTradeNetPnl, getTradePnlByMode, normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { parseTradeChartLinks } from '@/lib/trade-core'
 import { reportClientError } from '@/lib/observability/report-error'
+import { TradeWorkspace, type TradeWorkspaceProps } from '@/components/ui/trade-workspace'
 
 interface TradeDetailPanelProps {
   trade: TradeType
   onClose: () => void
   basePath: string
+  workspaceMode?: TradeWorkspaceProps['mode']
 }
 
 async function downloadImage(imageUrl: string, trade: TradeType, imageIndex: number) {
@@ -70,7 +72,7 @@ async function downloadImage(imageUrl: string, trade: TradeType, imageIndex: num
   }
 }
 
-export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelProps) {
+export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'route' }: TradeDetailPanelProps) {
   const { statistics } = useData()
   const { tags } = useTags()
   const { getNewsById } = useNewsEvents()
@@ -185,7 +187,7 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
   }
 
   return (
-    <>
+    <TradeWorkspace mode={workspaceMode} title={`${trade.instrument} trade details`} description="Review execution, strategy, journal, and trade evidence." onRequestClose={onClose}>
       <div className="flex flex-col h-full">
         {}
         <div className="px-4 sm:px-6 py-3 border-b border-border/40 shrink-0">
@@ -623,6 +625,6 @@ export function TradeDetailPanel({ trade, onClose, basePath }: TradeDetailPanelP
           </DialogContent>
         </Dialog>
       )}
-    </>
+    </TradeWorkspace>
   )
 }

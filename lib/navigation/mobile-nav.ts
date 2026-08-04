@@ -1,4 +1,11 @@
 import { getDemoAwarePathname, getDemoRouteHref } from '@/lib/public-surface-routing'
+import {
+  getActiveNavigationId,
+  getMoreNavigation,
+  getPrimaryMobileNavigation,
+  resolveNavigationPath,
+  type NavigationContext,
+} from '@/lib/navigation/registry'
 
 export type MobileNavId =
   | 'widgets'
@@ -23,7 +30,8 @@ export const MOBILE_NAV_DESTINATIONS: ReadonlyArray<{
 
 export function getMobileNavHref(href: string, isDemoMode: boolean, hostname?: string | null): string {
   if (href.startsWith('#')) return href
-  return getDemoRouteHref(href, isDemoMode, hostname)
+  const entry = [...getPrimaryMobileNavigation({ surface: isDemoMode ? 'demo' : 'authenticated', isDemo: isDemoMode, hostname }), ...getMoreNavigation({ surface: isDemoMode ? 'demo' : 'authenticated', isDemo: isDemoMode, hostname })].find((candidate) => candidate.path === href)
+  return entry ? resolveNavigationPath(entry, { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: isDemoMode, hostname }) : getDemoRouteHref(href, isDemoMode, hostname)
 }
 
 export function getActiveMobileNavId(
@@ -31,13 +39,12 @@ export function getActiveMobileNavId(
   isDemoMode: boolean,
   hostname?: string | null,
 ): MobileNavId | null {
-  const resolvedPathname = getDemoAwarePathname(pathname, isDemoMode, hostname)
-  const base = isDemoMode ? '/demo' : '/dashboard'
-
-  if (resolvedPathname === base) return 'widgets'
-  if (resolvedPathname.startsWith(`${base}/reports`)) return 'reports'
-  if (resolvedPathname.startsWith(`${base}/table`)) return 'table'
-  if (resolvedPathname.startsWith(`${base}/journal`)) return 'journal'
-  if (resolvedPathname.startsWith(base)) return 'more'
+  const context: NavigationContext = { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: isDemoMode, hostname }
+  const active = getActiveNavigationId(pathname, context)
+  if (active === 'overview') return 'widgets'
+  if (active === 'reports') return 'reports'
+  if (active === 'table') return 'table'
+  if (active === 'journal') return 'journal'
+  if (active) return 'more'
   return null
 }

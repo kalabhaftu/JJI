@@ -2,7 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/store/user-store'
 import type { TradeType as Trade } from '@/lib/db/schema';
@@ -31,14 +31,14 @@ import { ExtendedTrade } from '@/types/trade-extended'
 import { DataTradeTableSkeleton } from '../data-page-skeleton'
 import { useData } from '@/context/data-provider'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
+import { decodeFilterState, encodeFilterState, reconcileFilterQuery, type PnlFilter, type SideFilter } from '@/lib/filters/filter-state'
+import { RemovableFilterChip } from '@/components/ui/removable-filter-chip'
+import { resolveNavigationPath } from '@/lib/navigation/registry'
 
 type SortConfig = {
   key: keyof Trade
   direction: 'asc' | 'desc'
 }
-
-type SideFilter = 'all' | 'buy' | 'sell'
-type PnlFilter = 'all' | 'wins' | 'losses'
 
 import useSWR from 'swr'
 
@@ -58,8 +58,9 @@ export default function TradeTable() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const user = useUserStore((state: any) => state.user)
-  const { statistics } = useData()
+  const { statistics, isDemoMode } = useData()
   const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
+  const dataPath = resolveNavigationPath('data', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })
   const [currentPage, setCurrentPage] = useState(1)
   const [tradesPerPage, setTradesPerPage] = useState(50)
   const { data: tradesResponse, isLoading: tradesLoading, mutate: refetchTrades } = useSWR(
@@ -92,13 +93,15 @@ export default function TradeTable() {
   }, [activeView, activeTradeId, formattedTrades])
 
   const handleClosePanel = useCallback(() => {
-    router.replace('/dashboard/data?tab=trades')
-  }, [router])
+    router.replace(`${dataPath}?tab=trades`)
+  }, [dataPath, router])
 
-  const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])
-  const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
-  const [sideFilter, setSideFilter] = useState<SideFilter>('all')
-  const [pnlFilter, setPnlFilter] = useState<PnlFilter>('all')
+  const initialFilters = useMemo(() => decodeFilterState(searchParams), [searchParams])
+  const [selectedInstruments, setSelectedInstruments] = useState<string[]>(initialFilters.instruments)
+  const [selectedAccounts, setSelectedAccounts] = useState<string[]>(initialFilters.accounts)
+  const [sideFilter, setSideFilter] = useState<SideFilter>(initialFilters.side)
+  const [pnlFilter, setPnlFilter] = useState<PnlFilter>(initialFilters.pnl)
+  const filterQueryStateRef = useRef({ committedQuery: searchParams.toString(), requestedQueries: [] as string[] })
   const [instrumentSearchOpen, setInstrumentSearchOpen] = useState(false)
   const [accountSearchOpen, setAccountSearchOpen] = useState(false)
 
@@ -271,6 +274,28 @@ export default function TradeTable() {
     sideFilter !== 'all',
     pnlFilter !== 'all'
   ].filter(Boolean).length
+
+  useEffect(() => {
+    const currentQuery = searchParams.toString()
+    const params = encodeFilterState({
+      instruments: selectedInstruments,
+      accounts: selectedAccounts,
+      side: sideFilter,
+      pnl: pnlFilter,
+    }, new URLSearchParams(currentQuery))
+    const query = params.toString()
+    const reconciliation = reconcileFilterQuery(currentQuery, query, filterQueryStateRef.current)
+    filterQueryStateRef.current = reconciliation.state
+    if (reconciliation.action === 'hydrate') {
+      const filtersFromUrl = decodeFilterState(searchParams)
+      setSelectedInstruments(filtersFromUrl.instruments)
+      setSelectedAccounts(filtersFromUrl.accounts)
+      setSideFilter(filtersFromUrl.side)
+      setPnlFilter(filtersFromUrl.pnl)
+      return
+    }
+    if (reconciliation.action === 'replace') router.replace(`${dataPath}?${query}`, { scroll: false })
+  }, [dataPath, pnlFilter, router, searchParams, selectedAccounts, selectedInstruments, sideFilter])
 
   if (tradesLoading && formattedTrades.length === 0) {
     return <DataTradeTableSkeleton />
@@ -464,24 +489,12 @@ export default function TradeTable() {
         {                            }
         {activeFiltersCount > 0 && (
           <div className="flex flex-wrap gap-2">
-            {selectedInstruments.map(instrument => (
-              <Badge key={instrument} variant="secondary" className="gap-1">
-                {instrument}
-                <X
-                  className="h-3 w-3 cursor-pointer hover:text-destructive"
-                  onClick={() => setSelectedInstruments(prev => prev.filter(i => i !== instrument))}
-                />
-              </Badge>
-            ))}
-            {selectedAccounts.map(account => (
-              <Badge key={account} variant="secondary" className="gap-1">
-                {account}
-                <X
-                  className="h-3 w-3 cursor-pointer hover:text-destructive"
-                  onClick={() => setSelectedAccounts(prev => prev.filter(a => a !== account))}
-                />
-              </Badge>
-            ))}
+             {selectedInstruments.map(instrument => (
+               <RemovableFilterChip key={instrument} label="Instrument" value={instrument} onRemove={() => setSelectedInstruments(prev => prev.filter(i => i !== instrument))} />
+             ))}
+             {selectedAccounts.map(account => (
+               <RemovableFilterChip key={account} label="Account" value={account} onRemove={() => setSelectedAccounts(prev => prev.filter(a => a !== account))} />
+             ))}
           </div>
         )}
       </div>
@@ -620,14 +633,14 @@ export default function TradeTable() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/dashboard/data?tab=trades&view=details&tradeId=${trade.id}`)}
+                           onClick={() => router.push(`${dataPath}?tab=trades&view=details&tradeId=${trade.id}`)}
                         >
                           View
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/dashboard/data?tab=trades&view=edit&tradeId=${trade.id}`)}
+                           onClick={() => router.push(`${dataPath}?tab=trades&view=edit&tradeId=${trade.id}`)}
                         >
                           <Pencil className="w-4 h-4 mr-1" />
                           Edit
@@ -696,28 +709,22 @@ export default function TradeTable() {
 
       {                                         }
       {activeView === 'details' && selectedTradeForView && (
-        <div className="fixed inset-0 z-50 bg-background">
-          <div className="w-full h-screen overflow-hidden">
-            <TradeDetailPanel
-              trade={selectedTradeForView}
-              onClose={handleClosePanel}
-              basePath="/dashboard/data"
-            />
-          </div>
-        </div>
+        <TradeDetailPanel
+          trade={selectedTradeForView}
+          onClose={handleClosePanel}
+           basePath={dataPath}
+          workspaceMode="dialog"
+        />
       )}
 
       {                                           }
       {activeView === 'edit' && selectedTradeForEdit && (
-        <div className="fixed inset-0 z-50 bg-background">
-          <div className="w-full h-screen overflow-hidden">
-            <TradeEditPanel
-              trade={ensureExtendedTrade(selectedTradeForEdit)}
-              onClose={handleClosePanel}
-              onSave={handleSaveTrade}
-            />
-          </div>
-        </div>
+        <TradeEditPanel
+          trade={ensureExtendedTrade(selectedTradeForEdit)}
+          onClose={handleClosePanel}
+          onSave={handleSaveTrade}
+          workspaceMode="dialog"
+        />
       )}
     </div>
   )

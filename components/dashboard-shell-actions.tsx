@@ -23,6 +23,8 @@ import { useTheme } from '@/context/theme-provider'
 import { useData } from '@/context/data-provider'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { useQuickAddStore } from '@/store/quick-add-store'
+import { getNavigationEntry, resolveNavigationPath, type NavigationContext, type NavigationId } from '@/lib/navigation/registry'
+import { buildTradeEntryHref } from '@/app/dashboard/trades/new/trade-entry-draft'
 
 interface DashboardShellAction {
   id: string
@@ -43,12 +45,13 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
   const router = useRouter()
   const { theme, toggleTheme, setTheme } = useTheme()
   const { refreshTrades, isDemoMode } = useData()
-  const { demoRouteHref } = usePublicSurfaceRouting()
+  const { hostname } = usePublicSurfaceRouting()
   const openQuickAdd = useQuickAddStore((state) => state.openQuickAdd)
-  const routeHref = useCallback(
-    (href: string) => demoRouteHref(href, Boolean(isDemoMode)),
-    [demoRouteHref, isDemoMode]
-  )
+  const routeHref = useCallback((id: NavigationId) => {
+    const context: NavigationContext = { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode), hostname }
+    return resolveNavigationPath(id, context)
+  }, [hostname, isDemoMode])
+  const navigationEntry = (id: NavigationId) => getNavigationEntry(id)
 
   return useMemo(
     () => [
@@ -57,19 +60,19 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
         heading: 'Navigation',
         items: [
           {
-            id: 'dashboard',
-            title: 'Dashboard',
-            description: 'Go to the main dashboard',
+            id: navigationEntry('overview').id,
+            title: navigationEntry('overview').label,
+            description: navigationEntry('overview').description!,
             icon: SquaresFour,
-            perform: () => router.push(routeHref('/dashboard')),
-            keywords: ['home', 'main', 'widgets'],
+            perform: () => router.push(routeHref('overview')),
+            keywords: [...(navigationEntry('overview').keywords ?? [])],
           },
           {
             id: 'reports',
             title: 'Reports',
             description: 'Open performance reports',
             icon: ChartBar,
-            perform: () => router.push(routeHref('/dashboard/reports')),
+            perform: () => router.push(routeHref('reports')),
             keywords: ['stats', 'analytics', 'performance'],
           },
           {
@@ -77,7 +80,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Journal',
             description: 'Open your trading journal',
             icon: BookOpen,
-            perform: () => router.push(routeHref('/dashboard/journal')),
+            perform: () => router.push(routeHref('journal')),
             keywords: ['notes', 'log', 'review'],
           },
           {
@@ -85,7 +88,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Accounts',
             description: 'Manage live and prop-firm accounts',
             icon: Users,
-            perform: () => router.push(routeHref('/dashboard/accounts')),
+            perform: () => router.push(routeHref('accounts')),
             keywords: ['broker', 'prop firm'],
           },
           {
@@ -93,7 +96,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Trades',
             description: 'Open the trade table',
             icon: Table,
-            perform: () => router.push(routeHref('/dashboard/table')),
+            perform: () => router.push(routeHref('table')),
             keywords: ['history', 'list', 'executions'],
           },
           {
@@ -101,7 +104,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Playbook',
             description: 'Open your setups and strategy rules',
             icon: FileText,
-            perform: () => router.push(routeHref('/dashboard/playbook')),
+            perform: () => router.push(routeHref('playbook')),
             keywords: ['strategies', 'setups', 'rules'],
           },
           {
@@ -109,7 +112,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Backtesting',
             description: 'Review and log backtests',
             icon: Flask,
-            perform: () => router.push(routeHref('/dashboard/backtesting')),
+            perform: () => router.push(routeHref('backtesting')),
             keywords: ['test', 'simulate', 'paper'],
           },
           {
@@ -117,7 +120,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Settings',
             description: 'Open app settings',
             icon: SettingsIcon,
-            perform: () => router.push(routeHref('/dashboard/settings')),
+            perform: () => router.push(routeHref('settings')),
             keywords: ['preferences', 'config', 'options'],
           },
           {
@@ -125,7 +128,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             title: 'Calendar View',
             description: 'Jump to the dashboard calendar',
             icon: CalendarBlank,
-            perform: () => router.push(routeHref('/dashboard')),
+            perform: () => router.push(routeHref('overview')),
             keywords: ['dates', 'pnl', 'monthly'],
           },
         ],
@@ -137,9 +140,9 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
           {
             id: 'add-trade',
             title: 'Add New Trade',
-            description: 'Open the lightweight quick-add trade dialog',
+            description: 'Open the full trade entry workflow',
             icon: Plus,
-            perform: openQuickAdd,
+            perform: () => isDemoMode ? openQuickAdd() : router.push(buildTradeEntryHref({ origin: 'command-palette', returnTo: routeHref('overview') })),
             keywords: ['new', 'create', 'entry', 'order', 'quick add'],
           },
           {
@@ -183,6 +186,6 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
         ],
       },
     ],
-    [openQuickAdd, refreshTrades, router, routeHref, setTheme, theme, toggleTheme]
+    [isDemoMode, openQuickAdd, refreshTrades, router, routeHref, setTheme, theme, toggleTheme]
   )
 }

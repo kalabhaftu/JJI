@@ -132,7 +132,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
       return { success: false, message: errorMsg }
     }
 
-    if (!account.token) {
+    if (!account.tokenExpiresAt || new Date(account.tokenExpiresAt).getTime() <= Date.now()) {
       const errorMsg = `Token for account ${accountId} is expired`
       return { success: false, message: errorMsg }
     }
@@ -140,7 +140,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     try {
       const runSync = async () => {
         logger.debug({ accountId }, 'Starting Tradovate sync')
-        if (!account.token) {
+        if (!account.tokenExpiresAt || new Date(account.tokenExpiresAt).getTime() <= Date.now()) {
           const errorMsg = `Token for account ${accountId} is expired`
           return errorMsg
         }
@@ -212,7 +212,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     setIsAutoSyncing(true)
 
     try {
-      const validAccounts = accounts.filter(acc => acc.token)
+      const validAccounts = accounts.filter(acc => acc.tokenExpiresAt && new Date(acc.tokenExpiresAt).getTime() > Date.now())
       if (validAccounts.length === 0) {
         return
       }
@@ -266,7 +266,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
       for (const account of accounts) {
 
-        if (!account.token) continue
+        if (!account.tokenExpiresAt || new Date(account.tokenExpiresAt).getTime() <= Date.now()) continue
 
         const lastSyncTime = new Date(account.lastSyncedAt).getTime()
         const minutesSinceLastSync = (now - lastSyncTime) / (1000 * 60)

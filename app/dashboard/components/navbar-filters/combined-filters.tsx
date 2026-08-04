@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils"
 import { useData } from "@/context/data-provider"
 import { toast } from "sonner"
 import { CustomDateRangePicker } from "@/components/ui/custom-date-range-picker"
+import { DateRangeFilter } from '@/components/ui/date-range-filter'
 
 type FilterView = 'menu' | 'instrument' | 'date'
 
@@ -224,24 +225,6 @@ export function CombinedFilters({
       toast.success(
         `Date range: ${format(range.from, 'MMM d, yyyy')} - ${format(range.to, 'MMM d, yyyy')}`
       )
-    }
-
-    onSave?.()
-  }
-
-  const handleApplyDate = () => {
-    const newRange = startDate && endDate ? { from: startDate, to: endDate } : undefined
-    setDateRange(newRange)
-    setIsDatePickerOpen(false)
-
-    if (!startDate && !endDate) {
-      toast.success("Showing all dates")
-    } else if (startDate && endDate) {
-      toast.success(
-        `Date range: ${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`
-      )
-    } else if (startDate) {
-      toast.success(`Starting from: ${format(startDate, 'MMM d, yyyy')}`)
     }
 
     onSave?.()
@@ -489,50 +472,16 @@ export function CombinedFilters({
 
       {}
       <div className="flex flex-col gap-2">
-        <Popover open={isDatePickerOpen} onOpenChange={setIsDatePickerOpen}>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className="w-full justify-start text-left font-normal h-10 sm:h-11 text-sm border-border bg-background hover:bg-muted/50 transition-colors"
-            >
-              <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-              <span className="text-foreground">
-                {startDate && endDate
-                  ? `${format(startDate, 'MMM d, yyyy')} - ${format(endDate, 'MMM d, yyyy')}`
-                  : startDate
-                    ? `From ${format(startDate, 'MMM d, yyyy')}`
-                    : "Select date range"}
-              </span>
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <CustomDateRangePicker
-              selected={{ from: startDate || undefined, to: endDate || undefined }}
-              onSelect={(range) => {
-                if (range) {
-                  setStartDate(range.from || null)
-                  setEndDate(range.to || null)
-
-
-                  if (range.from && range.to) {
-                    const newRange = { from: range.from, to: range.to }
-                    setDateRange(newRange)
-                    toast.success(
-                      `Date range: ${format(range.from, 'MMM d, yyyy')} - ${format(range.to, 'MMM d, yyyy')}`
-                    )
-                    setIsDatePickerOpen(false)
-                    onSave?.()
-                  }
-                } else {
-                  setStartDate(null)
-                  setEndDate(null)
-                  setDateRange(undefined)
-                }
-              }}
-              className="w-fit"
-            />
-          </PopoverContent>
-        </Popover>
+        <DateRangeFilter
+          value={startDate || endDate ? { from: startDate || undefined, to: endDate || undefined } : undefined}
+          onChange={(range) => {
+            setStartDate(range?.from || null)
+            setEndDate(range?.to || null)
+            setDateRange(range?.from && range.to ? { from: range.from, to: range.to } : undefined)
+            onSave?.()
+          }}
+          className="w-full"
+        />
       </div>
 
       <Separator />
@@ -546,13 +495,6 @@ export function CombinedFilters({
           className="flex-1 h-8 sm:h-9 text-sm"
         >
           Clear
-        </Button>
-        <Button
-          size="sm"
-          onClick={handleApplyDate}
-          className="flex-1 h-8 sm:h-9 text-sm"
-        >
-          Apply
         </Button>
       </div>
     </div>

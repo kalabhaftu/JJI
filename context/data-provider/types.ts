@@ -8,6 +8,7 @@ import type {
   DataProviderTimeRange as TimeRange,
   DataProviderWeekdayFilter as WeekdayFilter,
 } from '@/hooks/use-data-provider-filter-state'
+import type { EntitlementCapability } from '@/lib/services/subscription-guard-service'
 
 export type StatisticsProps = {
   breakEvenThreshold: number
@@ -59,6 +60,7 @@ export interface DataContextType {
   refreshTrades: () => Promise<void>
   refreshAllData: () => Promise<void>
   isPlusUser: () => boolean
+  entitlement: EntitlementCapability
   isLoading: boolean
   isLoadingAccountFilterSettings: boolean
   accountFilterSettings: AccountFilterSettings | null

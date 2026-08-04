@@ -12,9 +12,14 @@ interface ProgressProps extends React.ComponentPropsWithoutRef<typeof ProgressPr
 const Progress = React.forwardRef<
   React.ElementRef<typeof ProgressPrimitive.Root>,
   ProgressProps
->(({ className, value, indicatorClassName, ...props }, ref) => (
+>(({ className, value, max = 100, indicatorClassName, ...props }, ref) => {
+  const effectiveMax = typeof max === "number" && Number.isFinite(max) && max > 0 ? max : 100
+
+  return (
   <ProgressPrimitive.Root
     ref={ref}
+    value={value}
+    max={effectiveMax}
     className={cn(
       "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
       className
@@ -27,12 +32,13 @@ const Progress = React.forwardRef<
         indicatorClassName || "bg-foreground"
       )}
       style={{ 
-        '--progress-val': `-${100 - (value || 0)}%`,
+        '--progress-val': `-${100 - Math.min(Math.max(((value ?? 0) / effectiveMax) * 100, 0), 100)}%`,
         transform: 'translateX(var(--progress-val))'
       } as React.CSSProperties}
     />
   </ProgressPrimitive.Root>
-))
+  )
+})
 Progress.displayName = ProgressPrimitive.Root.displayName
 
 export { Progress }

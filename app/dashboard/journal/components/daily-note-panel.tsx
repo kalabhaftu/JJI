@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createPortal } from 'react-dom'
 import { format } from 'date-fns'
 import {
-  X,
   Save,
   Trash2,
   Loader2,
@@ -40,6 +38,7 @@ import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
 import { motion, AnimatePresence } from 'framer-motion'
+import { TradeWorkspace } from '@/components/ui/trade-workspace'
 
 interface DailyNote {
   id: string
@@ -92,6 +91,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
   const [isDeleting, setIsDeleting] = useState(false)
 
   const dateStr = date ? format(date, 'yyyy-MM-dd') : ''
+  const isDirty = Boolean(date) && (noteContent !== (note?.note || '') || selectedEmotion !== (note?.emotion || null))
 
   useEffect(() => {
     setIsMounted(true)
@@ -190,7 +190,8 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
 
   if (!date || !isMounted) return null
 
-  return createPortal(
+  return (
+    <TradeWorkspace mode="sheet" title={format(date, 'EEEE, MMMM d, yyyy')} description="Daily journal note" dirty={isDirty} onRequestClose={onClose}>
     <AnimatePresence>
       <motion.div
         key={`daily-note-panel-${dateStr}`}
@@ -198,7 +199,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         animate={{ x: 0, opacity: 1 }}
         exit={{ x: '100%', opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 250 }}
-        className="fixed inset-y-0 right-0 z-[10001] w-full sm:w-[480px] bg-background border-l border-border/40 shadow-2xl flex flex-col"
+        className="flex h-full min-h-0 flex-col"
       >
         {            }
         <div className="flex items-center justify-between px-6 py-4 border-b border-border/30 bg-card/50">
@@ -225,9 +226,6 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
               </div>
             )}
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8" aria-label="Close daily note panel">
-            <X className="h-4 w-4" />
-          </Button>
         </div>
 
         {isLoading ? (
@@ -317,16 +315,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         )}
       </motion.div>
 
-      {              }
-      <motion.div
-        key={`daily-note-backdrop-${dateStr}`}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        onClick={onClose}
-        className="fixed inset-0 z-[10000] bg-black/40 backdrop-blur-sm"
-      />
-    </AnimatePresence>,
-    document.body
+    </AnimatePresence>
+    </TradeWorkspace>
   )
 }

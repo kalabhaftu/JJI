@@ -15,7 +15,7 @@
   --color-card-foreground: hsl(var(--card-foreground));
   --color-popover: hsl(var(--popover));
   --color-popover-foreground: hsl(var(--popover-foreground));
-  --color-primary: hsl(var(--primary));
+  --color-primary: hsl(var(--brand-primary));
   --color-primary-foreground: hsl(var(--primary-foreground));
   --color-primary-hover: hsl(var(--primary-hover));
   --color-primary-press: hsl(var(--primary-press));
@@ -26,24 +26,40 @@
   --color-muted-foreground: hsl(var(--muted-foreground));
   --color-accent: hsl(var(--accent));
   --color-accent-foreground: hsl(var(--accent-foreground));
-  --color-destructive: hsl(var(--destructive));
+  --color-destructive: hsl(var(--semantic-destructive));
   --color-destructive-foreground: hsl(var(--destructive-foreground));
   --color-border: hsl(var(--border));
   --color-border-strong: hsl(var(--border-strong));
   --color-input: hsl(var(--input));
   --color-ring: hsl(var(--ring));
-  --color-success: hsl(var(--success));
+  --color-success: hsl(var(--semantic-success));
   --color-success-foreground: hsl(var(--success-foreground));
-  --color-long: hsl(var(--success));
+  --color-long: hsl(var(--financial-long));
   --color-long-foreground: hsl(var(--success-foreground));
-  --color-short: hsl(var(--destructive));
+  --color-short: hsl(var(--financial-short));
   --color-short-foreground: hsl(var(--destructive-foreground));
-  --color-profit: hsl(var(--chart-profit));
-  --color-loss: hsl(var(--chart-loss));
-  --color-chart-bullish: hsl(var(--chart-bullish));
-  --color-chart-bearish: hsl(var(--chart-bearish));
-  --color-warning: hsl(var(--warning));
+  --color-profit: hsl(var(--financial-profit));
+  --color-loss: hsl(var(--financial-loss));
+  --color-chart-bullish: hsl(var(--financial-bullish));
+  --color-chart-bearish: hsl(var(--financial-bearish));
+  --color-warning: hsl(var(--semantic-warning));
   --color-warning-foreground: hsl(var(--warning-foreground));
+  --color-brand-primary: hsl(var(--brand-primary));
+  --color-brand-selected: hsl(var(--brand-selected));
+  --color-brand-navigation-active: hsl(var(--brand-navigation-active));
+  --color-semantic-success: hsl(var(--semantic-success));
+  --color-semantic-warning: hsl(var(--semantic-warning));
+  --color-semantic-destructive: hsl(var(--semantic-destructive));
+  --color-semantic-error: hsl(var(--semantic-error));
+  --color-semantic-permission: hsl(var(--semantic-permission));
+  --color-semantic-disabled: hsl(var(--semantic-disabled));
+  --color-financial-profit: hsl(var(--financial-profit));
+  --color-financial-loss: hsl(var(--financial-loss));
+  --color-financial-long: hsl(var(--financial-long));
+  --color-financial-short: hsl(var(--financial-short));
+  --color-financial-bullish: hsl(var(--financial-bullish));
+  --color-financial-bearish: hsl(var(--financial-bearish));
+  --color-financial-neutral: hsl(var(--financial-neutral));
   --color-surface-raised: hsl(var(--surface-raised));
   --color-surface-subtle: hsl(var(--surface-subtle));
   --color-sidebar: hsl(var(--sidebar-background));
@@ -480,6 +496,11 @@
 
     /* 2. LAYER 2: ACCENTS & INTERACTIVE STATES */
     --primary: 222 47% 11%;              /* #0F172A - deep indigo/slate main brand color */
+    --brand-primary: 222 47% 11%;
+    --brand-selected: 222 47% 18%;
+    --brand-navigation-active: 222 47% 11%;
+    --brand-chart-accent-1: 221 83% 53%;
+    --brand-chart-accent-2: 262 83% 58%;
     --primary-foreground: 210 40% 98%;    /* #F8FAFC - crisp off-white primary text */
     --primary-hover: 222 47% 18%;        /* #1E293B - hover state */
     --primary-press: 222 47% 5%;         /* #090D16 - press state */
@@ -499,6 +520,12 @@
 
     --warning: 38 92% 50%;               /* #F59E0B - amber-500 */
     --warning-foreground: 222 47% 11%;   /* dark text meets AA on amber */
+    --semantic-success: 162 76% 36%;
+    --semantic-warning: 38 92% 50%;
+    --semantic-destructive: 354 84% 48%;
+    --semantic-error: 354 84% 48%;
+    --semantic-permission: 38 92% 50%;
+    --semantic-disabled: 220 10% 44%;
 
     --ring: 222 47% 11%;                 /* Match primary */
     --radius: 0.75rem;
@@ -508,6 +535,13 @@
     --chart-loss: 354 84% 54%;           /* #EF4444 */
     --chart-bullish: 162 76% 45%;        /* Modern green candle */
     --chart-bearish: 354 84% 58%;        /* Modern red candle */
+    --financial-profit: 162 76% 30%;
+    --financial-loss: 354 84% 48%;
+    --financial-long: 162 76% 36%;
+    --financial-short: 354 84% 48%;
+    --financial-bullish: 162 76% 45%;
+    --financial-bearish: 354 84% 58%;
+    --financial-neutral: 220 10% 44%;
 
     --chart-1: 221 83% 53%;              /* #2563EB - Blue */
     --chart-2: 262 83% 58%;              /* #7C3AED - Purple */
@@ -566,6 +600,11 @@
 
     /* 2. LAYER 2: ACCENTS & INTERACTIVE STATES */
     --primary: 210 40% 98%;             /* #F8FAFC */
+    --brand-primary: 210 40% 98%;
+    --brand-selected: 214 32% 91%;
+    --brand-navigation-active: 210 40% 98%;
+    --brand-chart-accent-1: 213 97% 68%;
+    --brand-chart-accent-2: 255 92% 76%;
     --primary-foreground: 222 33% 6%;   /* #0A0D14 */
     --primary-hover: 0 0% 100%;         /* #FFFFFF */
     --primary-press: 214 32% 91%;       /* #E2E8F0 */
@@ -585,6 +624,12 @@
 
     --warning: 38 92% 50%;               /* #F59E0B - amber-500 */
     --warning-foreground: 222 33% 6%;    /* dark text meets AA on amber */
+    --semantic-success: 160 84% 39%;
+    --semantic-warning: 38 92% 50%;
+    --semantic-destructive: 0 84% 60%;
+    --semantic-error: 0 84% 60%;
+    --semantic-permission: 38 92% 50%;
+    --semantic-disabled: 216 16% 60%;
 
     --ring: 210 40% 98%;                /* Match primary */
 
@@ -593,6 +638,13 @@
     --chart-loss: 0 84% 60%;            /* #EF4444 */
     --chart-bullish: 123 27% 62%;       /* #83b885 */
     --chart-bearish: 25 70% 45%;         /* Deep amber/copper */
+    --financial-profit: 160 84% 39%;
+    --financial-loss: 0 84% 60%;
+    --financial-long: 160 84% 39%;
+    --financial-short: 0 84% 60%;
+    --financial-bullish: 123 27% 62%;
+    --financial-bearish: 25 70% 45%;
+    --financial-neutral: 216 16% 60%;
 
     --chart-1: 213 97% 68%;             /* #60A5FA - Blue */
     --chart-2: 255 92% 76%;             /* #A78BFA - Purple */
@@ -619,75 +671,61 @@
   /* Accent Pack: Forest - sage green + deep amber */
   .accent-reports {
     --primary: 123 27% 36%;
-    --success: 123 27% 62%;
-    --success-foreground: 222 47% 11%;
-    --destructive: 25 70% 45%;
-    --destructive-foreground: 222 47% 6%;
-    --chart-profit: 123 27% 62%;
-    --chart-loss: 25 70% 45%;
+    --brand-primary: 123 27% 36%;
+    --brand-selected: 123 27% 30%;
+    --brand-navigation-active: 123 27% 36%;
+    --brand-chart-accent-1: 123 27% 36%;
+    --brand-chart-accent-2: 25 70% 45%;
   }
 
   .dark.accent-reports,
   .accent-reports.dark {
     --primary: 123 27% 62%;
-    --success: 123 27% 62%;
-    --success-foreground: 222 33% 6%;
-    --destructive: 25 70% 50%;
-    --destructive-foreground: 222 33% 6%;
-    --chart-profit: 123 27% 62%;
-    --chart-loss: 25 70% 50%;
+    --brand-primary: 123 27% 62%;
+    --brand-selected: 123 27% 54%;
+    --brand-navigation-active: 123 27% 62%;
+    --brand-chart-accent-1: 123 27% 62%;
+    --brand-chart-accent-2: 25 70% 50%;
   }
 
   /* Accent Pack: Orchid - violet + pink */
   .accent-violet {
     --primary: 255 85% 60%;
-    --success: 255 85% 60%;
-    --success-foreground: 0 0% 100%;
-    --destructive: 329 80% 55%;
-    --destructive-foreground: 222 47% 6%;
-    --chart-profit: 255 85% 60%;
-    --chart-loss: 329 80% 55%;
-    --chart-bullish: 255 85% 60%;
-    --chart-bearish: 329 80% 55%;
+    --brand-primary: 255 85% 60%;
+    --brand-selected: 255 85% 52%;
+    --brand-navigation-active: 255 85% 60%;
+    --brand-chart-accent-1: 255 85% 60%;
+    --brand-chart-accent-2: 329 80% 55%;
   }
 
   .dark.accent-violet,
   .accent-violet.dark {
     --primary: 255 92% 76%;
-    --success: 255 92% 76%;
-    --success-foreground: 222 33% 6%;
-    --destructive: 329 86% 70%;
-    --destructive-foreground: 222 33% 6%;
-    --chart-profit: 255 92% 76%;
-    --chart-loss: 329 86% 70%;
-    --chart-bullish: 255 92% 76%;
-    --chart-bearish: 329 86% 70%;
+    --brand-primary: 255 92% 76%;
+    --brand-selected: 255 92% 68%;
+    --brand-navigation-active: 255 92% 76%;
+    --brand-chart-accent-1: 255 92% 76%;
+    --brand-chart-accent-2: 329 86% 70%;
   }
 
   /* Accent Pack: Graphite - slate + smoke */
   .accent-slate {
     --primary: 215 25% 27%;
-    --success: 210 40% 98%;
-    --success-foreground: 222 33% 6%;
-    --destructive: 215 16% 47%;
-    --destructive-foreground: 0 0% 100%;
-    --chart-profit: 210 40% 98%;
-    --chart-loss: 215 16% 47%;
-    --chart-bullish: 210 40% 98%;
-    --chart-bearish: 215 16% 47%;
+    --brand-primary: 215 25% 27%;
+    --brand-selected: 215 25% 20%;
+    --brand-navigation-active: 215 25% 27%;
+    --brand-chart-accent-1: 215 25% 27%;
+    --brand-chart-accent-2: 215 16% 47%;
   }
 
   .dark.accent-slate,
   .accent-slate.dark {
     --primary: 210 40% 98%;
-    --success: 210 40% 98%;
-    --success-foreground: 222 33% 6%;
-    --destructive: 215 16% 47%;
-    --destructive-foreground: 0 0% 100%;
-    --chart-profit: 210 40% 98%;
-    --chart-loss: 215 16% 47%;
-    --chart-bullish: 210 40% 98%;
-    --chart-bearish: 215 16% 47%;
+    --brand-primary: 210 40% 98%;
+    --brand-selected: 214 32% 91%;
+    --brand-navigation-active: 210 40% 98%;
+    --brand-chart-accent-1: 210 40% 98%;
+    --brand-chart-accent-2: 215 16% 47%;
   }
 
   /* Accent Pack Light-Mode Overrides (dynamic contrast adjustments) */
@@ -696,14 +734,9 @@
     --primary-foreground: 210 40% 98%;
     --primary-hover: 222 47% 18%;
     --primary-press: 222 47% 5%;
-    --success: 215 25% 35%;
-    --success-foreground: 0 0% 100%;
-    --chart-profit: 215 25% 35%;
-    --chart-bullish: 215 25% 35%;
-  }
-
-  .accent-reports:not(.dark) {
-    --success-foreground: 222 47% 11%;
+    --brand-primary: 222 47% 11%;
+    --brand-selected: 222 47% 18%;
+    --brand-navigation-active: 222 47% 11%;
   }
 }
 

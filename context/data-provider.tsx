@@ -451,14 +451,15 @@ export const DataProvider: React.FC<{
     }
   }, [tradeFilters])
   const queryEnabled = isDemoMode ? true : !!supabaseUser?.id
-  const { data: serverTradeData } = useFilteredTrades(tableTradeFilters, queryEnabled, isDemoMode)
-  const { data: serverMetricsData } = useFilteredTrades(metricsTradeFilters, queryEnabled, isDemoMode)
+  const queryScope = isDemoMode ? { surface: 'demo' as const } : { surface: 'authenticated' as const, ...(user?.id ? { userId: user.id } : {}) }
+  const { data: serverTradeData } = useFilteredTrades(queryScope, tableTradeFilters, queryEnabled, isDemoMode)
+  const { data: serverMetricsData } = useFilteredTrades(queryScope, metricsTradeFilters, queryEnabled, isDemoMode)
 
   const freshness = useDataProviderRealtime({
     userId: user?.id,
     enabled: !isDemoMode && !!user?.id && !isLoading,
     queryClient,
-    scope: isDemoMode ? { surface: 'demo' } : { surface: 'authenticated', ...(user?.id ? { userId: user.id } : {}) },
+    scope: queryScope,
     reloadBootstrapData: loadData,
   })
 

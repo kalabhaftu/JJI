@@ -296,6 +296,10 @@ export class DatabaseRealtimeManager {
 
 const DatabaseRealtime = new DatabaseRealtimeManager()
 
+export function reconnectDatabaseRealtime() {
+  DatabaseRealtime.reconnect()
+}
+
 
 interface DatabaseRealtimeHookOptions {
   userId: string | undefined

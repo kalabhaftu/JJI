@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { QueryClient } from '@tanstack/react-query'
-import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
-import { clearAccountsCache, clearTradesCache } from '@/hooks/use-accounts'
-import { invalidateQueriesForRealtimeChange } from '@/lib/realtime/invalidation'
+import { reconnectDatabaseRealtime, useDatabaseRealtime } from '@/lib/realtime/database-realtime'
+import { getRealtimeInvalidationMap, invalidateQueriesForRealtimeChange } from '@/lib/realtime/invalidation'
 import type { DatabaseChange, FreshnessState, RealtimeStatus } from '@/lib/realtime/types'
 import type { QueryScope } from '@/lib/query/query-scope'
 
@@ -18,13 +17,29 @@ interface UseDataProviderRealtimeOptions {
 
 type RefreshScope = 'trades' | 'accounts'
 const DEGRADED_REFRESH_INTERVAL_MS = 60_000
+const CANONICAL_SCOPE_INDEX = new Map<string, number>([
+  ['accounts', 1],
+  ['trades', 1],
+  ['journal', 1],
+  ['tags', 1],
+  ['templates', 1],
+  ['reports', 2],
+  ['notifications', 1],
+  ['prop-firm', 2],
+  ['settings', 1],
+  ['goals', 1],
+  ['playbook', 1],
+  ['backtests', 1],
+  ['synchronizations', 1],
+])
 
 function queryMatchesScope(queryKey: readonly unknown[], scope: QueryScope) {
-  return queryKey.some((part) => {
-    if (!part || typeof part !== 'object') return false
-    const candidate = part as Partial<QueryScope>
-    return candidate.surface === scope.surface && candidate.userId === scope.userId
-  })
+  const scopeIndex = typeof queryKey[0] === 'string' ? CANONICAL_SCOPE_INDEX.get(queryKey[0]) : undefined
+  if (scopeIndex === undefined) return false
+  const candidate = queryKey[scopeIndex]
+  if (!candidate || typeof candidate !== 'object') return false
+  const queryScope = candidate as Partial<QueryScope>
+  return queryScope.surface === scope.surface && queryScope.userId === scope.userId
 }
 
 export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions) {
@@ -37,6 +52,21 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     staleSince: null,
   }))
   const degradedRefreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const restorationAttemptedRef = useRef(false)
+  const lifecycleRef = useRef({ enabled, status: realtimeStatus, scope, generation: 0 })
+  const previousLifecycleRef = useRef({ enabled, status: realtimeStatus, scopeKey: JSON.stringify(scope) })
+  const scopeKey = JSON.stringify(scope)
+  if (
+    previousLifecycleRef.current.enabled !== enabled ||
+    previousLifecycleRef.current.status !== realtimeStatus ||
+    previousLifecycleRef.current.scopeKey !== scopeKey
+  ) {
+    lifecycleRef.current.generation++
+    previousLifecycleRef.current = { enabled, status: realtimeStatus, scopeKey }
+  }
+  lifecycleRef.current.enabled = enabled
+  lifecycleRef.current.status = realtimeStatus
+  lifecycleRef.current.scope = scope
 
   const lastRealtimeRefreshRef = useRef<{ trades: number; accounts: number }>({
     trades: 0,
@@ -63,18 +93,33 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     }
   }, [])
 
-  const refreshDegradedData = useCallback(() => {
+  const refreshDegradedData = useCallback(async () => {
     if (!enabled || realtimeStatus !== 'degraded') return
     if (document.visibilityState !== 'visible' || !navigator.onLine) return
 
-    void queryClient.invalidateQueries({
-      type: 'active',
-      predicate: (query) => queryMatchesScope(query.queryKey, scopeRef.current),
-    })
-    setFreshness((current) => ({ ...current, updatedAt: new Date() }))
+    const generation = lifecycleRef.current.generation
+    const refreshScope = scopeRef.current
+    try {
+      await queryClient.invalidateQueries({
+        type: 'active',
+        predicate: (query) => queryMatchesScope(query.queryKey, refreshScope),
+      })
+      const lifecycle = lifecycleRef.current
+      if (
+        lifecycle.generation !== generation ||
+        !lifecycle.enabled ||
+        lifecycle.status !== 'degraded' ||
+        JSON.stringify(lifecycle.scope) !== JSON.stringify(refreshScope)
+      ) return
+      setFreshness((current) => ({ ...current, updatedAt: new Date() }))
+    } catch {
+      // Keep the existing stale timestamps; the next bounded refresh can retry.
+    }
   }, [enabled, queryClient, realtimeStatus])
 
   const handleStatusChange = useCallback((status: RealtimeStatus) => {
+    lifecycleRef.current.status = status
+    lifecycleRef.current.generation++
     if (status === 'connected') {
       stopDegradedRefresh()
       const now = new Date()
@@ -85,6 +130,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
         staleSince: null,
       }))
     } else if (status === 'degraded') {
+      restorationAttemptedRef.current = false
       const offline = typeof navigator !== 'undefined' && !navigator.onLine
       setFreshness((current) => ({
         ...current,
@@ -110,23 +156,10 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
 
     if (change) {
       void invalidateQueriesForRealtimeChange(queryClient, change, scopeRef.current)
+      if (getRealtimeInvalidationMap(change.table)?.mode === 'refresh-bootstrap') {
+        reloadBootstrapData()
+      }
     }
-
-    if (refreshScope === 'trades') {
-      clearTradesCache()
-      queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
-      queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['report-stats'] })
-      queryClient.invalidateQueries({ queryKey: ['propfirm-stats'] })
-      return
-    }
-
-    clearAccountsCache()
-    queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] })
-    queryClient.invalidateQueries({ queryKey: ['report-stats'] })
-    queryClient.invalidateQueries({ queryKey: ['propfirm-stats'] })
-    queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
-    reloadBootstrapData()
   }, [queryClient, reloadBootstrapData])
 
   const scheduleRealtimeRefresh = useCallback((refreshScope: RefreshScope, change: DatabaseChange) => {
@@ -151,6 +184,12 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     enabled,
     onTradeChange: (change) => scheduleRealtimeRefresh('trades', change),
     onAccountChange: (change) => scheduleRealtimeRefresh('accounts', change),
+    onSynchronizationChange: (change) => {
+      void invalidateQueriesForRealtimeChange(queryClient, change, scopeRef.current)
+      if (getRealtimeInvalidationMap(change.table)?.mode === 'refresh-bootstrap') {
+        reloadBootstrapData()
+      }
+    },
     onStatusChange: handleStatusChange,
   })
 
@@ -169,17 +208,22 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     const restoreDegradedRefresh = () => {
       if (!enabled || realtimeStatus !== 'degraded') return
       if (document.visibilityState !== 'visible' || !navigator.onLine) return
+      if (restorationAttemptedRef.current) return
+      restorationAttemptedRef.current = true
       setFreshness((current) => ({ ...current, source: 'polling', status: 'degraded' }))
-      refreshDegradedData()
+      void refreshDegradedData()
       stopDegradedRefresh()
       degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
+      reconnectDatabaseRealtime()
     }
     const handleOffline = () => {
+      restorationAttemptedRef.current = false
       stopDegradedRefresh()
       setFreshness((current) => ({ ...current, source: 'cache', status: 'offline' }))
     }
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
+        restorationAttemptedRef.current = false
         stopDegradedRefresh()
         return
       }

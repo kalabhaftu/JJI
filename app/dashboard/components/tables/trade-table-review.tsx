@@ -19,6 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { useData } from '@/context/data-provider'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { useFilteredTrades } from '@/hooks/use-filtered-trades'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { useMediaQuery } from '@/hooks/use-media-query'
 import { cn } from '@/lib/utils'
 import {
@@ -591,7 +592,8 @@ export function TradeTableReview() {
   }, [activeTab, updatePageIndex])
 
 
-  const { data: pagedTradesData, isLoading: isLoadingTrades } = useFilteredTrades({
+  const queryScope = useQueryScope()
+  const { data: pagedTradesData, isLoading: isLoadingTrades } = useFilteredTrades(queryScope, {
     accounts: accountNumbers?.length ? accountNumbers : undefined,
     dateFrom: dateRange?.from?.toISOString?.(),
     dateTo: dateRange?.to?.toISOString?.(),

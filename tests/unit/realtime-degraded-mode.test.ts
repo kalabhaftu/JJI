@@ -5,6 +5,7 @@ import type { FreshnessState, RealtimeStatus } from '@/lib/realtime/types'
 
 const realtime = vi.hoisted(() => ({
   options: null as null | { onStatusChange?: (status: RealtimeStatus) => void },
+  reconnect: vi.fn(),
 }))
 
 vi.mock('@/lib/realtime/database-realtime', async (importOriginal) => {
@@ -12,6 +13,7 @@ vi.mock('@/lib/realtime/database-realtime', async (importOriginal) => {
   return {
     ...original,
     useDatabaseRealtime: (options: typeof realtime.options) => { realtime.options = options },
+    reconnectDatabaseRealtime: realtime.reconnect,
   }
 })
 vi.mock('@/hooks/use-accounts', () => ({ clearTradesCache: vi.fn(), clearAccountsCache: vi.fn() }))
@@ -33,16 +35,18 @@ function Probe({
   enabled = true,
   invalidateQueries,
   snapshot,
+  scope = { surface: 'authenticated', userId: 'user-1' },
 }: {
   enabled?: boolean
   invalidateQueries: ReturnType<typeof vi.fn>
   snapshot: (freshness: FreshnessState) => void
+  scope?: { surface: 'authenticated'; userId: string }
 }) {
   const freshness = useDataProviderRealtime({
     userId: 'user-1',
     enabled,
     queryClient: { invalidateQueries } as never,
-    scope: { surface: 'authenticated', userId: 'user-1' },
+    scope,
     reloadBootstrapData: vi.fn(),
   })
   snapshot(freshness)
@@ -101,8 +105,12 @@ describe('degraded realtime mode', () => {
     expect(invalidateQueries).toHaveBeenCalledTimes(1)
     const filter = invalidateQueries.mock.calls[0][0]
     expect(filter.type).toBe('active')
-    expect(filter.predicate({ queryKey: ['trades', { surface: 'authenticated', userId: 'user-1' }] })).toBe(true)
+    expect(filter.predicate({ queryKey: ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] })).toBe(true)
+    expect(filter.predicate({ queryKey: ['reports', 'stats', { surface: 'authenticated', userId: 'user-1' }, 'filters'] })).toBe(true)
+    expect(filter.predicate({ queryKey: ['prop-firm', 'accounts', { surface: 'authenticated', userId: 'user-1' }] })).toBe(true)
     expect(filter.predicate({ queryKey: ['trades', { surface: 'authenticated', userId: 'other-user' }] })).toBe(false)
+    expect(filter.predicate({ queryKey: ['trades', { surface: 'demo' }] })).toBe(false)
+    expect(filter.predicate({ queryKey: ['public-data', { surface: 'authenticated', userId: 'user-1' }] })).toBe(false)
     expect(filter.predicate({ queryKey: ['public-data'] })).toBe(false)
     expect(freshness.updatedAt).toEqual(new Date('2026-08-03T12:01:00Z'))
 
@@ -136,6 +144,7 @@ describe('degraded realtime mode', () => {
 
     act(() => setVisibility('visible'))
     expect(invalidateQueries).toHaveBeenCalledTimes(1)
+    expect(realtime.reconnect).toHaveBeenCalledTimes(1)
 
     act(() => {
       setOnline(false)
@@ -151,6 +160,7 @@ describe('degraded realtime mode', () => {
     })
     expect(freshness.status).toBe('degraded')
     expect(invalidateQueries).toHaveBeenCalledTimes(2)
+    expect(realtime.reconnect).toHaveBeenCalledTimes(2)
 
     await act(async () => root.render(createElement(Probe, {
       enabled: false,
@@ -160,6 +170,46 @@ describe('degraded realtime mode', () => {
     await act(async () => vi.advanceTimersByTimeAsync(120_000))
     expect(invalidateQueries).toHaveBeenCalledTimes(2)
 
+    await act(async () => root.unmount())
+  })
+
+  it('automatically returns to current when restoration reconnect succeeds', async () => {
+    vi.useFakeTimers()
+    let freshness!: FreshnessState
+    realtime.reconnect.mockImplementationOnce(() => realtime.options?.onStatusChange?.('connected'))
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      invalidateQueries: vi.fn().mockResolvedValue(undefined),
+      snapshot: (value) => { freshness = value },
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+    act(() => setVisibility('hidden'))
+
+    await act(async () => setVisibility('visible'))
+
+    expect(realtime.reconnect).toHaveBeenCalledTimes(1)
+    expect(freshness.status).toBe('current')
+    expect(freshness.source).toBe('realtime')
+    await act(async () => root.unmount())
+  })
+
+  it('attempts realtime reconnect only once per restoration cycle', async () => {
+    vi.useFakeTimers()
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      invalidateQueries: vi.fn().mockResolvedValue(undefined),
+      snapshot: vi.fn(),
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+    act(() => setVisibility('hidden'))
+
+    act(() => {
+      setVisibility('visible')
+      document.dispatchEvent(new Event('visibilitychange'))
+      window.dispatchEvent(new Event('online'))
+    })
+
+    expect(realtime.reconnect).toHaveBeenCalledTimes(1)
     await act(async () => root.unmount())
   })
 
@@ -183,6 +233,51 @@ describe('degraded realtime mode', () => {
       updatedAt: new Date('2026-08-03T12:00:00Z'),
       staleSince: new Date('2026-08-03T12:01:00Z'),
     })
+    await act(async () => root.unmount())
+  })
+
+  it('retains degraded timestamps when polling rejects without an unhandled rejection', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-03T12:00:00Z'))
+    const invalidateQueries = vi.fn().mockRejectedValue(new Error('refresh failed'))
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      invalidateQueries,
+      snapshot: (value) => { freshness = value },
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    expect(freshness.status).toBe('degraded')
+    expect(freshness.updatedAt).toBeNull()
+    expect(freshness.staleSince).toEqual(new Date('2026-08-03T12:00:00Z'))
+    await act(async () => root.unmount())
+  })
+
+  it('ignores a degraded refresh that resolves after disable or scope replacement', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-03T12:00:00Z'))
+    let resolveRefresh!: () => void
+    const invalidateQueries = vi.fn(() => new Promise<void>((resolve) => { resolveRefresh = resolve }))
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    const render = (enabled: boolean, userId: string) => createElement(Probe, {
+      enabled,
+      invalidateQueries,
+      scope: { surface: 'authenticated', userId },
+      snapshot: (value) => { freshness = value },
+    })
+    await act(async () => root.render(render(true, 'user-1')))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    await act(async () => root.render(render(false, 'user-2')))
+    vi.setSystemTime(new Date('2026-08-03T12:01:00Z'))
+    await act(async () => resolveRefresh())
+
+    expect(freshness.updatedAt).toBeNull()
     await act(async () => root.unmount())
   })
 })

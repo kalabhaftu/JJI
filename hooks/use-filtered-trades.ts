@@ -3,7 +3,9 @@
 'use client'
 
 import { useQuery } from '@tanstack/react-query'
-import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import type { QueryScope } from '@/lib/query/query-scope'
 
 export interface TradeFilters {
   accounts?: string[]
@@ -63,29 +65,20 @@ function buildQueryString(filters: TradeFilters): string {
   return params.toString()
 }
 
-export function useFilteredTrades(filters: TradeFilters, enabled = true, isDemoMode = false) {
+export function useFilteredTrades(scope: QueryScope, filters: TradeFilters, enabled = true, isDemoMode = false) {
   const queryString = buildQueryString(filters)
 
   return useQuery<FilteredTradesResponse>({
-
-    queryKey: ['v1', 'trades', queryString, isDemoMode],
-    queryFn: async () => {
+    queryKey: queryKeys.trades(scope, queryString),
+    queryFn: async ({ signal }) => {
       if (isDemoMode) {
         const { getMockDemoData } = await import('@/lib/demo/mock-data')
-        return getMockDemoData();
+        return getMockDemoData()
       }
-      try {
-        const res = await fetch(`/api/v1/trades?${queryString}`)
-        if (!res.ok) throw Object.assign(new Error('Failed to fetch trades'), { status: res.status })
-        const payload = await res.json()
-        if (!payload.success) throw Object.assign(new Error(payload.error?.message ?? 'Failed to fetch trades'), { status: res.status })
-        return payload.data
-      } catch (error) {
-        if (!(error instanceof TypeError)) {
-          reportClientError(error, { operation: 'load-filtered-trades', route: '/api/v1/trades' })
-        }
-        throw error
-      }
+      return apiRequestData<FilteredTradesResponse>(`/api/v1/trades?${queryString}`, {
+        signal,
+        operation: 'load-filtered-trades',
+      })
     },
     enabled,
     staleTime: 2 * 60 * 1000,

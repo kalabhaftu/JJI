@@ -9,16 +9,11 @@ const realtime = vi.hoisted(() => ({ options: null as null | {
   onAccountChange?: (change: DatabaseChange) => void
 } }))
 
-const cache = vi.hoisted(() => ({ clearTrades: vi.fn(), clearAccounts: vi.fn() }))
 const fetchMock = vi.hoisted(() => vi.fn())
 const toastMock = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn() }))
 
 vi.mock('@/lib/realtime/database-realtime', () => ({
   useDatabaseRealtime: (options: typeof realtime.options) => { realtime.options = options },
-}))
-vi.mock('@/hooks/use-accounts', () => ({
-  clearTradesCache: cache.clearTrades,
-  clearAccountsCache: cache.clearAccounts,
 }))
 vi.mock('@/lib/utils/fetch-with-error', () => ({
   fetchWithError: fetchMock,
@@ -113,14 +108,14 @@ describe('realtime refresh coalescing', () => {
       realtime.options?.onTradeChange?.(change)
     })
     await act(async () => vi.advanceTimersByTimeAsync(250))
-    expect(cache.clearTrades).toHaveBeenCalledTimes(1)
+    expect(invalidate).toHaveBeenCalledTimes(3)
 
     act(() => {
       realtime.options?.onTradeChange?.(change)
       realtime.options?.onTradeChange?.(change)
     })
     await act(async () => vi.advanceTimersByTimeAsync(500))
-    expect(cache.clearTrades).toHaveBeenCalledTimes(2)
+    expect(invalidate).toHaveBeenCalledTimes(6)
 
     await act(async () => root.unmount())
   })

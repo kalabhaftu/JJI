@@ -57,15 +57,12 @@ describe('client polling contracts', () => {
     }
   })
 
-  it('invalidates SWR caches on realtime refresh', () => {
-    const accountsHook = source('hooks/use-accounts.ts')
+  it('uses only canonical scoped invalidation on realtime refresh', () => {
     const realtimeHook = source('hooks/use-data-provider-realtime.ts')
 
-    expect(accountsHook).toContain("export function invalidateAccountsCache(_reason?: string) {\n  clearAccountsCache()")
-    expect(accountsHook).toContain("'/api/v1/accounts', '/api/v1/data-management/accounts'")
-    expect(accountsHook).toContain("'/api/v1/trades', '/api/v1/data-management/trades'")
-    expect(realtimeHook).toContain("clearTradesCache()")
-    expect(realtimeHook).toContain("clearAccountsCache()")
+    expect(realtimeHook).toContain('invalidateQueriesForRealtimeChange')
+    expect(realtimeHook).not.toContain('clearTradesCache')
+    expect(realtimeHook).not.toContain('clearAccountsCache')
   })
 
   it('checks for new deployments only while visible and stops after detection', () => {

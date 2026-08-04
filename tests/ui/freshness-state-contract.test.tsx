@@ -28,4 +28,15 @@ describe('data freshness state contract', () => {
     expect(realtimeHook).toContain("type: 'active'")
     expect(realtimeHook).toContain('predicate:')
   })
+
+  it('does not use legacy cache clearing or broad query invalidation', () => {
+    const realtimeHook = source('hooks/use-data-provider-realtime.ts')
+
+    expect(realtimeHook).not.toContain('clearTradesCache')
+    expect(realtimeHook).not.toContain('clearAccountsCache')
+    expect(realtimeHook).not.toContain("['v1', 'trades']")
+    expect(realtimeHook).not.toContain("['dashboard-stats']")
+    expect(realtimeHook).not.toContain("['report-stats']")
+    expect(realtimeHook).not.toContain("['propfirm-stats']")
+  })
 })

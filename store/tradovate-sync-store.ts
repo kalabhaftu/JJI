@@ -29,13 +29,9 @@ interface TradovateOAuthState {
 interface TradovateSyncStore extends TradovateOAuthState {
 
   setAuthenticated: (authenticated: boolean) => void
-  setAccounts: (accounts: TradovateAccount[]) => void
-  setOAuthState: (state: string) => void
-  clearOAuthState: () => void
-  updateLastSync: () => void
+  setSessionState: (session: { expiresAt?: string; accounts?: TradovateAccount[] }) => void
   clearAll: () => void
-  setEnvironment: (environment: TradovateEnvironment) => void
-  getApiBaseUrl: () => string
+  isSessionExpired: () => boolean
 }
 
 export function persistedTradovateState(state: TradovateOAuthState & { accessToken?: unknown; refreshToken?: unknown }) {
@@ -88,20 +84,8 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
         set({ isAuthenticated: authenticated })
       },
 
-      setAccounts: (accounts: TradovateAccount[]) => {
-        set({ accounts })
-      },
-
-      setOAuthState: (oauthState: string) => {
-        set({ oauthState })
-      },
-
-      clearOAuthState: () => {
-        set({ oauthState: undefined })
-      },
-
-      updateLastSync: () => {
-        set({ lastSync: new Date().toISOString() })
+      setSessionState: (session: { expiresAt?: string; accounts?: TradovateAccount[] }) => {
+        set(session)
       },
 
       clearAll: () => {
@@ -115,25 +99,12 @@ export const useTradovateSyncStore = create<TradovateSyncStore>()(
         })
       },
 
-      setEnvironment: (environment: TradovateEnvironment) => {
-
-        set({
-          environment,
-          isAuthenticated: false,
-          expiresAt: undefined,
-          accounts: undefined,
-          lastSync: undefined,
-          oauthState: undefined
-        })
+      isSessionExpired: () => {
+        const { expiresAt } = get()
+        if (!expiresAt) return true
+        const expiry = new Date(expiresAt).getTime()
+        return !(Number.isFinite(expiry) && expiry > Date.now())
       },
-
-      getApiBaseUrl: () => {
-        const state = get()
-        return state.environment === 'demo' 
-          ? 'https://demo.tradovateapi.com' 
-          : 'https://live.tradovateapi.com'
-      },
-
 
 
     }),

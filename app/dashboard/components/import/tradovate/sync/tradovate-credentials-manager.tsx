@@ -73,7 +73,6 @@ export function TradovateCredentialsManager() {
   const [isReloading, setIsReloading] = useState(false);
   const [dailySyncTime, setDailySyncTime] = useState<string>("");
   const [isSavingTime, setIsSavingTime] = useState(false);
-  const tradovateStore = useTradovateSyncStore();
 
   const handleDelete = useCallback(
     async (accountId: string) => {
@@ -110,7 +109,7 @@ export function TradovateCredentialsManager() {
       }
 
 
-      tradovateStore.setOAuthState(result.state);
+      useTradovateSyncStore.setState({ oauthState: result.state });
 
 
       sessionStorage.setItem("tradovate_oauth_state", result.state);
@@ -127,7 +126,7 @@ export function TradovateCredentialsManager() {
     } finally {
       setIsLoading(false);
     }
-  }, [tradovateStore]);
+  }, []);
 
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleString();

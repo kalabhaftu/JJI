@@ -149,7 +149,7 @@ export default function ImportCallbackPage() {
           return;
         }
 
-        tradovateStore.clearOAuthState();
+        useTradovateSyncStore.setState({ oauthState: undefined });
         if (typeof sessionStorage !== "undefined") {
           sessionStorage.removeItem("tradovate_oauth_state");
         }

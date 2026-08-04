@@ -9,7 +9,7 @@ try {
 
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
-  typedRoutes: true,
+  typedRoutes: false,
   env: {
     NEXT_PUBLIC_BUILD_ID: process.env.VERCEL_GIT_COMMIT_SHA || 'local-dev',
   },

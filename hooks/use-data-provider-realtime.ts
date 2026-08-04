@@ -16,6 +16,7 @@ interface UseDataProviderRealtimeOptions {
 }
 
 type RefreshScope = 'trades' | 'accounts'
+type ReconciliationMode = 'connected' | 'degraded'
 const DEGRADED_REFRESH_INTERVAL_MS = 60_000
 const CANONICAL_SCOPE_INDEX = new Map<string, number>([
   ['accounts', 1],
@@ -51,7 +52,10 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     updatedAt: null,
     staleSince: null,
   }))
-  const degradedRefreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const degradedRefreshTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const reconciliationInFlightRef = useRef(false)
+  const pendingReconciliationRef = useRef<ReconciliationMode | null>(null)
+  const requestReconciliationRef = useRef<(mode: ReconciliationMode) => void>(() => undefined)
   const restorationAttemptedRef = useRef(false)
   const mountedRef = useRef(true)
   const lifecycleRef = useRef({ enabled, status: realtimeStatus, scope, generation: 0 })
@@ -59,7 +63,6 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   const scopeKey = JSON.stringify(scope)
   if (
     previousLifecycleRef.current.enabled !== enabled ||
-    previousLifecycleRef.current.status !== realtimeStatus ||
     previousLifecycleRef.current.scopeKey !== scopeKey
   ) {
     lifecycleRef.current.generation++
@@ -88,54 +91,98 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   scopeRef.current = scope
 
   const stopDegradedRefresh = useCallback(() => {
-    if (degradedRefreshIntervalRef.current) {
-      clearInterval(degradedRefreshIntervalRef.current)
-      degradedRefreshIntervalRef.current = null
+    if (degradedRefreshTimeoutRef.current) {
+      clearTimeout(degradedRefreshTimeoutRef.current)
+      degradedRefreshTimeoutRef.current = null
     }
   }, [])
 
-  const refreshDegradedData = useCallback(async () => {
-    const hasAuthenticatedScope = scope.surface === 'authenticated' && Boolean(scope.userId) && scope.userId === userId
-    if (!enabled || !hasAuthenticatedScope || realtimeStatus !== 'degraded') return
-    if (document.visibilityState !== 'visible' || !navigator.onLine) return
+  const requestReconciliation = useCallback((mode: ReconciliationMode) => {
+    const lifecycle = lifecycleRef.current
+    const hasAuthenticatedScope = lifecycle.scope.surface === 'authenticated' && Boolean(lifecycle.scope.userId) && lifecycle.scope.userId === userId
+    if (!lifecycle.enabled || !hasAuthenticatedScope || lifecycle.status !== mode) return
+    if (mode === 'degraded' && (document.visibilityState !== 'visible' || !navigator.onLine)) return
 
-    const generation = lifecycleRef.current.generation
-    const refreshScope = scopeRef.current
-    const matchingActiveQueries = queryClient.getQueryCache().findAll({
-      type: 'active',
-      predicate: (query) => queryMatchesScope(query.queryKey, refreshScope),
-    })
-    if (matchingActiveQueries.length === 0) return
-    const previousUpdateTimes = new Map(
-      matchingActiveQueries.map((query) => [query.queryHash, query.state.dataUpdatedAt]),
-    )
-    try {
-      await queryClient.invalidateQueries({
-        type: 'active',
-        refetchType: 'active',
-        predicate: (query) => queryMatchesScope(query.queryKey, refreshScope),
-      }, { throwOnError: true })
-      const refreshedActiveQuery = queryClient.getQueryCache().findAll({
-        type: 'active',
-        predicate: (query) => {
-          const previousUpdateTime = previousUpdateTimes.get(query.queryHash)
-          return previousUpdateTime !== undefined && query.state.dataUpdatedAt > previousUpdateTime
-        },
-      }).length > 0
-      if (!refreshedActiveQuery) return
-      const lifecycle = lifecycleRef.current
-      if (
-        lifecycle.generation !== generation ||
-        !mountedRef.current ||
-        !lifecycle.enabled ||
-        lifecycle.status !== 'degraded' ||
-        JSON.stringify(lifecycle.scope) !== JSON.stringify(refreshScope)
-      ) return
-      setFreshness((current) => ({ ...current, updatedAt: new Date() }))
-    } catch {
-      // Keep the existing stale timestamps; the next bounded refresh can retry.
+    if (reconciliationInFlightRef.current) {
+      if (mode === 'connected' || pendingReconciliationRef.current !== 'connected') {
+        pendingReconciliationRef.current = mode
+      }
+      return
     }
-  }, [enabled, queryClient, realtimeStatus, scope, userId])
+
+    reconciliationInFlightRef.current = true
+    const generation = lifecycle.generation
+    const reconciliationScope = lifecycle.scope
+
+    void (async () => {
+      try {
+        const matchingActiveQueries = queryClient.getQueryCache().findAll({
+          type: 'active',
+          predicate: (query) => queryMatchesScope(query.queryKey, reconciliationScope),
+        })
+        if (matchingActiveQueries.length === 0) return
+        const previousUpdateTimes = new Map(
+          matchingActiveQueries.map((query) => [query.queryHash, query.state.dataUpdatedAt]),
+        )
+
+        await queryClient.invalidateQueries({
+          type: 'active',
+          refetchType: 'active',
+          predicate: (query) => queryMatchesScope(query.queryKey, reconciliationScope),
+        }, { throwOnError: true })
+
+        const refreshedActiveQuery = queryClient.getQueryCache().findAll({
+          type: 'active',
+          predicate: (query) => {
+            const previousUpdateTime = previousUpdateTimes.get(query.queryHash)
+            return previousUpdateTime !== undefined && query.state.dataUpdatedAt > previousUpdateTime
+          },
+        }).length > 0
+        if (!refreshedActiveQuery) return
+
+        const currentLifecycle = lifecycleRef.current
+        if (
+          currentLifecycle.generation !== generation ||
+          !mountedRef.current ||
+          !currentLifecycle.enabled ||
+          currentLifecycle.status !== mode ||
+          JSON.stringify(currentLifecycle.scope) !== JSON.stringify(reconciliationScope)
+        ) return
+
+        const now = new Date()
+        setFreshness((current) => mode === 'connected'
+          ? { source: 'realtime', status: 'current', updatedAt: now, staleSince: null }
+          : { ...current, updatedAt: now })
+      } catch {
+        // Keep stale freshness; a later bounded reconciliation can retry.
+      } finally {
+        reconciliationInFlightRef.current = false
+        const pendingMode = pendingReconciliationRef.current
+        pendingReconciliationRef.current = null
+        if (pendingMode) {
+          requestReconciliationRef.current(pendingMode)
+          return
+        }
+
+        const currentLifecycle = lifecycleRef.current
+        if (
+          currentLifecycle.enabled &&
+          currentLifecycle.status === 'degraded' &&
+          currentLifecycle.scope.surface === 'authenticated' &&
+          currentLifecycle.scope.userId === userId &&
+          document.visibilityState === 'visible' &&
+          navigator.onLine
+        ) {
+          stopDegradedRefresh()
+          degradedRefreshTimeoutRef.current = setTimeout(
+            () => requestReconciliationRef.current('degraded'),
+            DEGRADED_REFRESH_INTERVAL_MS,
+          )
+        }
+      }
+    })()
+  }, [queryClient, stopDegradedRefresh, userId])
+  requestReconciliationRef.current = requestReconciliation
 
   const handleStatusChange = useCallback((status: RealtimeStatus) => {
     lifecycleRef.current.status = status
@@ -143,13 +190,18 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     if (status === 'connected') {
       restorationAttemptedRef.current = false
       stopDegradedRefresh()
-      const now = new Date()
+      pendingReconciliationRef.current = null
+      const activePrivateQueries = queryClient.getQueryCache().findAll({
+        type: 'active',
+        predicate: (query) => queryMatchesScope(query.queryKey, scopeRef.current),
+      })
       setFreshness((current) => ({
-        source: 'realtime',
-        status: 'current',
-        updatedAt: current.updatedAt ?? now,
-        staleSince: null,
+        ...current,
+        source: activePrivateQueries.length > 0 ? 'realtime' : 'unknown',
+        status: 'stale',
+        staleSince: current.staleSince ?? new Date(),
       }))
+      requestReconciliationRef.current('connected')
     } else if (status === 'degraded') {
       const offline = typeof navigator !== 'undefined' && !navigator.onLine
       setFreshness((current) => ({
@@ -168,7 +220,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
       }))
     }
     setRealtimeStatus(status)
-  }, [stopDegradedRefresh])
+  }, [queryClient, stopDegradedRefresh])
 
   const runRealtimeRefresh = useCallback((refreshScope: RefreshScope) => {
     const changes = pendingChangesRef.current[refreshScope]
@@ -219,9 +271,12 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     if (!enabled || !hasAuthenticatedScope || realtimeStatus !== 'degraded') return
     if (document.visibilityState !== 'visible' || !navigator.onLine) return
 
-    degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
+    degradedRefreshTimeoutRef.current = setTimeout(
+      () => requestReconciliationRef.current('degraded'),
+      DEGRADED_REFRESH_INTERVAL_MS,
+    )
     return stopDegradedRefresh
-  }, [enabled, realtimeStatus, refreshDegradedData, scope, stopDegradedRefresh, userId])
+  }, [enabled, realtimeStatus, scope, stopDegradedRefresh, userId])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -231,9 +286,8 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     const restoreDegradedRefresh = () => {
       if (document.visibilityState !== 'visible' || !navigator.onLine) return
       setFreshness((current) => ({ ...current, source: 'polling', status: 'degraded' }))
-      void refreshDegradedData()
       stopDegradedRefresh()
-      degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
+      requestReconciliationRef.current('degraded')
       if (!restorationAttemptedRef.current) {
         restorationAttemptedRef.current = true
         recoverDatabaseRealtimeOnce()
@@ -260,7 +314,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
       window.removeEventListener('offline', handleOffline)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [enabled, realtimeStatus, refreshDegradedData, scope, stopDegradedRefresh, userId])
+  }, [enabled, realtimeStatus, scope, stopDegradedRefresh, userId])
 
   useEffect(() => {
     mountedRef.current = true
@@ -269,6 +323,8 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     return () => {
       mountedRef.current = false
       lifecycleRef.current.generation++
+      pendingReconciliationRef.current = null
+      stopDegradedRefresh()
       if (timeouts.trades) {
         clearTimeout(timeouts.trades)
         timeouts.trades = null
@@ -278,7 +334,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
         timeouts.accounts = null
       }
     }
-  }, [])
+  }, [stopDegradedRefresh])
 
   return freshness
 }

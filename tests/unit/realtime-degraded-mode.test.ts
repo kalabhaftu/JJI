@@ -33,6 +33,16 @@ function setVisibility(visibilityState: DocumentVisibilityState) {
   document.dispatchEvent(new Event('visibilitychange'))
 }
 
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  let reject!: (reason?: unknown) => void
+  const promise = new Promise<T>((nextResolve, nextReject) => {
+    resolve = nextResolve
+    reject = nextReject
+  })
+  return { promise, resolve, reject }
+}
+
 function Probe({
   enabled = true,
   invalidateQueries,
@@ -135,14 +145,13 @@ describe('degraded realtime mode', () => {
     expect(freshness.updatedAt).toEqual(new Date('2026-08-03T12:01:00Z'))
 
     act(() => realtime.options?.onStatusChange?.('connected'))
-    expect(freshness).toEqual({
-      source: 'realtime',
-      status: 'current',
-      updatedAt: new Date('2026-08-03T12:01:00Z'),
-      staleSince: null,
-    })
+    expect(freshness.status).toBe('stale')
+    await act(async () => vi.advanceTimersByTimeAsync(1))
+    expect(freshness.status).toBe('current')
+    expect(freshness.source).toBe('realtime')
+    expect(freshness.staleSince).toBeNull()
     await act(async () => vi.advanceTimersByTimeAsync(120_000))
-    expect(invalidateQueries).toHaveBeenCalledTimes(1)
+    expect(invalidateQueries).toHaveBeenCalledTimes(2)
 
     await act(async () => root.unmount())
   })
@@ -276,10 +285,142 @@ describe('degraded realtime mode', () => {
     expect(freshness).toEqual({
       source: 'cache',
       status: 'stale',
-      updatedAt: new Date('2026-08-03T12:00:00Z'),
-      staleSince: new Date('2026-08-03T12:01:00Z'),
+      updatedAt: null,
+      staleSince: new Date('2026-08-03T12:00:00Z'),
     })
     await act(async () => root.unmount())
+  })
+
+  it('keeps connected freshness stale while scoped reconciliation is pending', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-03T12:00:00Z'))
+    const refresh = deferred<string[]>()
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryKey = ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] as const
+    queryClient.setQueryData(queryKey, ['cached'])
+    const observer = new QueryObserver(queryClient, { queryKey, queryFn: () => refresh.promise, staleTime: Infinity })
+    const unsubscribe = observer.subscribe(() => undefined)
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, { queryClient, snapshot: value => { freshness = value } })))
+
+    act(() => realtime.options?.onStatusChange?.('connected'))
+
+    expect(freshness).toEqual({ source: 'realtime', status: 'stale', updatedAt: null, staleSince: expect.any(Date) })
+    vi.setSystemTime(new Date('2026-08-03T12:00:00.001Z'))
+    await act(async () => refresh.resolve(['fresh']))
+    expect(freshness.status).toBe('current')
+    expect(freshness.updatedAt).toEqual(new Date('2026-08-03T12:00:00.001Z'))
+    unsubscribe()
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('keeps connected freshness stale when reconciliation fails', async () => {
+    vi.useFakeTimers()
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryKey = ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] as const
+    queryClient.setQueryData(queryKey, ['cached'])
+    const observer = new QueryObserver(queryClient, { queryKey, queryFn: () => Promise.reject(new Error('failed')), staleTime: Infinity })
+    const unsubscribe = observer.subscribe(() => undefined)
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, { queryClient, snapshot: value => { freshness = value } })))
+
+    await act(async () => realtime.options?.onStatusChange?.('connected'))
+    await act(async () => Promise.resolve())
+
+    expect(freshness.source).toBe('realtime')
+    expect(freshness.status).toBe('stale')
+    expect(freshness.updatedAt).toBeNull()
+    unsubscribe()
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('keeps connected freshness unknown and stale with no active private query', async () => {
+    vi.useFakeTimers()
+    const queryClient = new QueryClient()
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, { queryClient, snapshot: value => { freshness = value } })))
+
+    act(() => realtime.options?.onStatusChange?.('connected'))
+    await act(async () => Promise.resolve())
+
+    expect(freshness).toEqual({ source: 'unknown', status: 'stale', updatedAt: null, staleSince: expect.any(Date) })
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('reconciles connected status after an overlapping degraded refresh settles', async () => {
+    vi.useFakeTimers()
+    const first = deferred<string[]>()
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryKey = ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] as const
+    queryClient.setQueryData(queryKey, ['cached'])
+    const second = deferred<string[]>()
+    const queryFn = vi.fn()
+      .mockImplementationOnce(() => first.promise)
+      .mockImplementationOnce(() => second.promise)
+      .mockResolvedValue(['later'])
+    const observer = new QueryObserver(queryClient, { queryKey, queryFn, staleTime: Infinity })
+    const unsubscribe = observer.subscribe(() => undefined)
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, { queryClient, snapshot: value => { freshness = value } })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    act(() => realtime.options?.onStatusChange?.('connected'))
+    expect(freshness.status).toBe('stale')
+    expect(queryFn).toHaveBeenCalledTimes(1)
+    await act(async () => first.resolve(['degraded-fresh']))
+
+    expect(queryFn).toHaveBeenCalledTimes(2)
+    await act(async () => vi.advanceTimersByTimeAsync(1))
+    await act(async () => second.resolve(['connected-fresh']))
+    expect(freshness.status).toBe('current')
+    unsubscribe()
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('coalesces slow degraded reconciliation into one pending follow-up', async () => {
+    vi.useFakeTimers()
+    const first = deferred<string[]>()
+    const second = deferred<string[]>()
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryKey = ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] as const
+    queryClient.setQueryData(queryKey, ['cached'])
+    const queryFn = vi.fn()
+      .mockImplementationOnce(() => first.promise)
+      .mockImplementationOnce(() => second.promise)
+    const observer = new QueryObserver(queryClient, { queryKey, queryFn, staleTime: Infinity })
+    const unsubscribe = observer.subscribe(() => undefined)
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, { queryClient, snapshot: vi.fn() })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    await act(async () => vi.advanceTimersByTimeAsync(180_000))
+    act(() => {
+      setVisibility('hidden')
+      setVisibility('visible')
+      window.dispatchEvent(new Event('online'))
+      document.dispatchEvent(new Event('visibilitychange'))
+    })
+    expect(queryFn).toHaveBeenCalledTimes(1)
+
+    await act(async () => first.resolve(['fresh-1']))
+    expect(queryFn).toHaveBeenCalledTimes(2)
+    await act(async () => vi.advanceTimersByTimeAsync(180_000))
+    expect(queryFn).toHaveBeenCalledTimes(2)
+
+    await act(async () => second.resolve(['fresh-2']))
+    unsubscribe()
+    await act(async () => root.unmount())
+    queryClient.clear()
   })
 
   it('retains degraded timestamps when polling rejects without an unhandled rejection', async () => {

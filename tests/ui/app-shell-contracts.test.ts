@@ -108,6 +108,8 @@ describe('app shell navigation contracts', () => {
     expect(menuButton).not.toContain('tooltipOpen')
     expect(menuButton).not.toContain('hidden={state !== "collapsed" || isMobile}')
     expect(tooltip).toContain('disableHoverableContent')
+    expect(tooltip).toContain('data-[state=closed]:hidden')
+    expect(tooltip).not.toContain('data-[state=closed]:animate-out')
   })
 
   it('lets the root metadata template add the JJI title suffix once', () => {

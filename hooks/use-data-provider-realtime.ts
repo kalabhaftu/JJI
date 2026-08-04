@@ -101,6 +101,11 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
 
     const generation = lifecycleRef.current.generation
     const refreshScope = scopeRef.current
+    const matchingActiveQueries = queryClient.getQueryCache().findAll({
+      type: 'active',
+      predicate: (query) => queryMatchesScope(query.queryKey, refreshScope),
+    })
+    if (matchingActiveQueries.length === 0) return
     try {
       await queryClient.invalidateQueries({
         type: 'active',
@@ -125,6 +130,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     lifecycleRef.current.status = status
     lifecycleRef.current.generation++
     if (status === 'connected') {
+      restorationAttemptedRef.current = false
       stopDegradedRefresh()
       const now = new Date()
       setFreshness((current) => ({
@@ -134,7 +140,6 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
         staleSince: null,
       }))
     } else if (status === 'degraded') {
-      restorationAttemptedRef.current = false
       const offline = typeof navigator !== 'undefined' && !navigator.onLine
       setFreshness((current) => ({
         ...current,
@@ -214,22 +219,21 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
 
     const restoreDegradedRefresh = () => {
       if (document.visibilityState !== 'visible' || !navigator.onLine) return
-      if (restorationAttemptedRef.current) return
-      restorationAttemptedRef.current = true
       setFreshness((current) => ({ ...current, source: 'polling', status: 'degraded' }))
       void refreshDegradedData()
       stopDegradedRefresh()
       degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
-      recoverDatabaseRealtimeOnce()
+      if (!restorationAttemptedRef.current) {
+        restorationAttemptedRef.current = true
+        recoverDatabaseRealtimeOnce()
+      }
     }
     const handleOffline = () => {
-      restorationAttemptedRef.current = false
       stopDegradedRefresh()
       setFreshness((current) => ({ ...current, source: 'cache', status: 'offline' }))
     }
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
-        restorationAttemptedRef.current = false
         stopDegradedRefresh()
         return
       }

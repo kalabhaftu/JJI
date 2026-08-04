@@ -51,7 +51,10 @@ function Probe({
   const freshness = useDataProviderRealtime({
     userId,
     enabled,
-    queryClient: queryClient ?? { invalidateQueries } as never,
+    queryClient: queryClient ?? {
+      invalidateQueries,
+      getQueryCache: () => ({ findAll: () => [{}] }),
+    } as never,
     scope,
     reloadBootstrapData: vi.fn(),
   })
@@ -62,6 +65,7 @@ function Probe({
 afterEach(() => {
   vi.useRealTimers()
   vi.clearAllMocks()
+  realtime.recoverOnce.mockReset()
   realtime.options = null
   setOnline(true)
   Object.defineProperty(document, 'visibilityState', { configurable: true, value: 'visible' })
@@ -166,7 +170,7 @@ describe('degraded realtime mode', () => {
     })
     expect(freshness.status).toBe('degraded')
     expect(invalidateQueries).toHaveBeenCalledTimes(2)
-    expect(realtime.recoverOnce).toHaveBeenCalledTimes(2)
+    expect(realtime.recoverOnce).toHaveBeenCalledTimes(1)
 
     await act(async () => root.render(createElement(Probe, {
       enabled: false,
@@ -212,6 +216,32 @@ describe('degraded realtime mode', () => {
     act(() => {
       setVisibility('visible')
       document.dispatchEvent(new Event('visibilitychange'))
+      window.dispatchEvent(new Event('online'))
+    })
+
+    expect(realtime.recoverOnce).toHaveBeenCalledTimes(1)
+    await act(async () => root.unmount())
+  })
+
+  it('does not rearm restoration when one-shot recovery emits error and degraded', async () => {
+    vi.useFakeTimers()
+    realtime.recoverOnce.mockImplementation(() => {
+      realtime.options?.onStatusChange?.('error')
+      realtime.options?.onStatusChange?.('degraded')
+    })
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      invalidateQueries: vi.fn().mockResolvedValue(undefined),
+      snapshot: vi.fn(),
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+    act(() => setVisibility('hidden'))
+    act(() => setVisibility('visible'))
+
+    act(() => {
+      window.dispatchEvent(new Event('online'))
+      setVisibility('hidden')
+      setVisibility('visible')
       window.dispatchEvent(new Event('online'))
     })
 
@@ -287,6 +317,25 @@ describe('degraded realtime mode', () => {
     expect(queryFn).toHaveBeenCalledTimes(1)
     expect(freshness.updatedAt).toBeNull()
     unsubscribe()
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('does not advance freshness when no active scoped query matches', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-03T12:00:00Z'))
+    const queryClient = new QueryClient()
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      queryClient,
+      snapshot: (value) => { freshness = value },
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    expect(freshness.updatedAt).toBeNull()
     await act(async () => root.unmount())
     queryClient.clear()
   })
@@ -405,6 +454,29 @@ describe('degraded realtime mode', () => {
     await vi.runAllTimersAsync()
 
     expect(channel.subscribe).toHaveBeenCalledTimes(7)
+    unsubscribe()
+  })
+
+  it('keeps one-shot CLOSED recovery degraded', async () => {
+    vi.useFakeTimers()
+    let subscription = 0
+    const channel = {
+      on: vi.fn().mockReturnThis(),
+      subscribe: vi.fn((callback: (status: string) => void) => {
+        callback(subscription++ < 6 ? 'CHANNEL_ERROR' : 'CLOSED')
+      }),
+      unsubscribe: vi.fn(),
+    }
+    const manager = new DatabaseRealtimeManager(() => ({ channel: vi.fn(() => channel) }) as never)
+    const onStatusChange = vi.fn()
+    const unsubscribe = manager.subscribe({ tables: ['Trade'], userId: 'user-1', onChange: vi.fn(), onStatusChange })
+    await vi.runAllTimersAsync()
+    expect(onStatusChange).toHaveBeenLastCalledWith('degraded')
+
+    manager.recoverOnce()
+    await Promise.resolve()
+
+    expect(onStatusChange).toHaveBeenLastCalledWith('degraded')
     unsubscribe()
   })
 })

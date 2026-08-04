@@ -179,7 +179,7 @@ export class DatabaseRealtimeManager {
           else this.notifyStatus('degraded')
         } else if (status === 'CLOSED') {
           this.isConnected = false
-          this.notifyStatus('disconnected')
+          this.notifyStatus(allowReconnect ? 'disconnected' : 'degraded')
         }
       })
       

@@ -283,7 +283,7 @@ export function GoalsPageClient() {
     },
     onSuccess: (resData) => {
       if (isDemo) {
-        qc.setQueryData<{ goals: Goal[] }>(['goals', isDemo], (old) => ({
+        qc.setQueryData<{ goals: Goal[] }>(queryKeys.goals(scope), (old) => ({
           goals: [...(old?.goals || []), resData.goal]
         }))
       } else {
@@ -311,7 +311,7 @@ export function GoalsPageClient() {
     },
     onSuccess: (_, deletedId) => {
       if (isDemo) {
-        qc.setQueryData<{ goals: Goal[] }>(['goals', isDemo], (old) => ({
+        qc.setQueryData<{ goals: Goal[] }>(queryKeys.goals(scope), (old) => ({
           goals: (old?.goals || []).filter(g => g.id !== deletedId)
         }))
       } else {
@@ -336,7 +336,7 @@ export function GoalsPageClient() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<Goal> }) => {
       if (isDemo) {
-        qc.setQueryData<{ goals: Goal[] }>(['goals', isDemo], (old) => ({
+        qc.setQueryData<{ goals: Goal[] }>(queryKeys.goals(scope), (old) => ({
           goals: (old?.goals || []).map(g => g.id === id ? { ...g, ...data } : g)
         }))
         return { goal: { ...data, id } as Goal }

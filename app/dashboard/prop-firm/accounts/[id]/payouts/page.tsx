@@ -45,10 +45,9 @@ import {
 
 interface PayoutData {
   id: string
-  amountRequested: number
-  amountPaid: number
+  amount: number
   status: 'pending' | 'approved' | 'paid' | 'rejected'
-  requestedAt: string
+  requestDate: string
   paidAt?: string
   notes?: string
 }
@@ -88,7 +87,10 @@ export default function AccountPayoutsPage() {
   })
   const payoutsQuery = useQuery({
     queryKey: queryKeys.payouts(scope, { accountId }),
-    queryFn: ({ signal }) => apiRequestData<PayoutData[]>(`/api/v1/prop-firm/accounts/${accountId}/payouts`, { signal, operation: 'load-prop-firm-payouts' }),
+    queryFn: async ({ signal }) => {
+      const result = await apiRequestData<{ history: PayoutData[] }>(`/api/v1/prop-firm/accounts/${accountId}/payouts`, { signal, operation: 'load-prop-firm-payouts' })
+      return result.history ?? []
+    },
     enabled: Boolean(user && accountId && isScopeReady(scope)),
     placeholderData: (previous) => previous,
     staleTime: 30_000,
@@ -272,7 +274,7 @@ export default function AccountPayoutsPage() {
             <div className="space-y-4">
               {payouts
                 .filter(payout =>
-                  payout.amountRequested.toString().includes(searchTerm) ||
+                   payout.amount.toString().includes(searchTerm) ||
                   payout.status.includes(searchTerm) ||
                   payout.notes?.includes(searchTerm)
                 )
@@ -283,9 +285,9 @@ export default function AccountPayoutsPage() {
                         {getStatusIcon(payout.status)}
                       </div>
                       <div>
-                        <p className="font-semibold">{formatCurrency(payout.amountRequested)}</p>
+                         <p className="font-semibold">{formatCurrency(payout.amount)}</p>
                         <p className="text-sm text-muted-foreground">
-                          Requested {new Date(payout.requestedAt).toLocaleDateString()}
+                           Requested {new Date(payout.requestDate).toLocaleDateString()}
                         </p>
                         {payout.notes && (
                           <p className="text-xs text-muted-foreground mt-1 max-w-md">

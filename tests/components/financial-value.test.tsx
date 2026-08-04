@@ -19,4 +19,16 @@ describe('FinancialValue', () => {
     expect(markup).toContain('Unavailable')
     expect(markup).not.toContain('$0.00')
   })
+
+  it('uses neutral semantics for non-finite or unavailable values', () => {
+    for (const props of [
+      { value: Number.NaN },
+      { value: 1250, quality: 'unavailable' as const },
+    ]) {
+      const markup = renderToStaticMarkup(<FinancialValue kind="pnl" {...props} />)
+      expect(markup).toContain('financial-neutral')
+      expect(markup).not.toContain('financial-profit')
+      expect(markup).not.toContain('financial-loss')
+    }
+  })
 })

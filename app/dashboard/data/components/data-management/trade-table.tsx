@@ -2,7 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUserStore } from '@/store/user-store'
 import type { TradeType as Trade } from '@/lib/db/schema';
@@ -31,7 +31,7 @@ import { ExtendedTrade } from '@/types/trade-extended'
 import { DataTradeTableSkeleton } from '../data-page-skeleton'
 import { useData } from '@/context/data-provider'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
-import { decodeFilterState, encodeFilterState, type PnlFilter, type SideFilter } from '@/lib/filters/filter-state'
+import { decodeFilterState, encodeFilterState, reconcileFilterQuery, type PnlFilter, type SideFilter } from '@/lib/filters/filter-state'
 import { RemovableFilterChip } from '@/components/ui/removable-filter-chip'
 import { resolveNavigationPath } from '@/lib/navigation/registry'
 
@@ -101,6 +101,7 @@ export default function TradeTable() {
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>(initialFilters.accounts)
   const [sideFilter, setSideFilter] = useState<SideFilter>(initialFilters.side)
   const [pnlFilter, setPnlFilter] = useState<PnlFilter>(initialFilters.pnl)
+  const filterQueryStateRef = useRef({ committedQuery: searchParams.toString(), requestedQueries: [] as string[] })
   const [instrumentSearchOpen, setInstrumentSearchOpen] = useState(false)
   const [accountSearchOpen, setAccountSearchOpen] = useState(false)
 
@@ -275,14 +276,25 @@ export default function TradeTable() {
   ].filter(Boolean).length
 
   useEffect(() => {
+    const currentQuery = searchParams.toString()
     const params = encodeFilterState({
       instruments: selectedInstruments,
       accounts: selectedAccounts,
       side: sideFilter,
       pnl: pnlFilter,
-    }, new URLSearchParams(searchParams.toString()))
+    }, new URLSearchParams(currentQuery))
     const query = params.toString()
-    if (query !== searchParams.toString()) router.replace(`${dataPath}?${query}`, { scroll: false })
+    const reconciliation = reconcileFilterQuery(currentQuery, query, filterQueryStateRef.current)
+    filterQueryStateRef.current = reconciliation.state
+    if (reconciliation.action === 'hydrate') {
+      const filtersFromUrl = decodeFilterState(searchParams)
+      setSelectedInstruments(filtersFromUrl.instruments)
+      setSelectedAccounts(filtersFromUrl.accounts)
+      setSideFilter(filtersFromUrl.side)
+      setPnlFilter(filtersFromUrl.pnl)
+      return
+    }
+    if (reconciliation.action === 'replace') router.replace(`${dataPath}?${query}`, { scroll: false })
   }, [dataPath, pnlFilter, router, searchParams, selectedAccounts, selectedInstruments, sideFilter])
 
   if (tradesLoading && formattedTrades.length === 0) {

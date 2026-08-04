@@ -16,4 +16,11 @@ describe('Progress', () => {
     expect(markup).toContain('aria-valuenow="0"')
     expect(markup).toContain('--progress-val:-100%')
   })
+
+  it('scales against custom and invalid maxima without invalid CSS', () => {
+    expect(renderToStaticMarkup(<Progress value={50} max={200} />)).toContain('--progress-val:-75%')
+    const markup = renderToStaticMarkup(<Progress value={50} max={0} />)
+    expect(markup).toContain('aria-valuemax="100"')
+    expect(markup).not.toContain('NaN')
+  })
 })

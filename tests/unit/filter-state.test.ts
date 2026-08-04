@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { decodeFilterState, encodeFilterState } from '@/lib/filters/filter-state'
+import { decodeFilterState, encodeFilterState, reconcileFilterQuery } from '@/lib/filters/filter-state'
 
 describe('filter URL state', () => {
   it('round-trips dates and repeated selections without losing unrelated parameters', () => {
@@ -31,5 +31,17 @@ describe('filter URL state', () => {
       side: 'all',
       pnl: 'all',
     })
+  })
+
+  it('tracks rapid local URL requests, including out-of-order commits', () => {
+    const initial = { committedQuery: 'tab=trades', requestedQueries: [] }
+    const first = reconcileFilterQuery('tab=trades', 'tab=trades&side=buy', initial)
+    const second = reconcileFilterQuery('tab=trades', 'tab=trades&side=sell', first.state)
+    const newer = reconcileFilterQuery('tab=trades&side=sell', 'tab=trades&side=sell', second.state)
+    expect(newer.action).toBe('none')
+    expect(newer.state.requestedQueries).toEqual(['tab=trades&side=buy'])
+    const older = reconcileFilterQuery('tab=trades&side=buy', 'tab=trades&side=buy', newer.state)
+    expect(older.action).toBe('none')
+    expect(older.state.requestedQueries).toEqual([])
   })
 })

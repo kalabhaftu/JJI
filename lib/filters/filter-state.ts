@@ -11,6 +11,24 @@ export interface FilterState {
   pnl: PnlFilter
 }
 
+export interface FilterQueryReconciliationState {
+  committedQuery: string
+  requestedQueries: string[]
+}
+
+export type FilterQueryReconciliationAction = 'none' | 'hydrate' | 'replace'
+
+export function reconcileFilterQuery(currentQuery: string, desiredQuery: string, state: FilterQueryReconciliationState) {
+  if (currentQuery !== state.committedQuery) {
+    if (state.requestedQueries.includes(currentQuery)) {
+      return { action: 'none' as const, state: { committedQuery: currentQuery, requestedQueries: state.requestedQueries.filter((query) => query !== currentQuery) } }
+    }
+    return { action: 'hydrate' as const, state: { committedQuery: currentQuery, requestedQueries: [] } }
+  }
+  if (desiredQuery === currentQuery) return { action: 'none' as const, state }
+  return { action: 'replace' as const, state: { committedQuery: currentQuery, requestedQueries: [...state.requestedQueries, desiredQuery] } }
+}
+
 function formatDate(date: Date): string {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')

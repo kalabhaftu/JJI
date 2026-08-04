@@ -41,7 +41,9 @@ function formatValue({ kind, value, currency = "USD", locale = "en-US", unit, ex
 
 export function FinancialValue(props: FinancialValueProps): React.ReactElement {
   const { value, quality = value == null ? "unavailable" : "current", label, description, className } = props
-  const tone = value == null || value === 0
+  const isAvailable = value != null && Number.isFinite(value) && quality !== "unavailable"
+  const displayValue = isAvailable ? formatValue(props) : "Unavailable"
+  const tone = !isAvailable || value === 0
     ? "text-financial-neutral"
     : value > 0
       ? "text-financial-profit"
@@ -49,9 +51,9 @@ export function FinancialValue(props: FinancialValueProps): React.ReactElement {
   const qualityLabel = qualityLabels[quality]
 
   return (
-    <span className={cn("inline-flex flex-wrap items-baseline gap-x-1 font-mono tabular-nums", tone, className)} aria-label={[label, formatValue(props), quality !== "current" ? qualityLabel : null, description].filter(Boolean).join(", ")}>
-      <span>{formatValue(props)}</span>
-      {quality !== "current" && <span className="font-sans text-xs font-medium text-muted-foreground">{qualityLabel}</span>}
+    <span className={cn("inline-flex flex-wrap items-baseline gap-x-1 font-mono tabular-nums", tone, className)} aria-label={[label, displayValue, quality !== "current" && quality !== "unavailable" ? qualityLabel : null, description].filter(Boolean).join(", ")}>
+      <span>{displayValue}</span>
+      {quality !== "current" && quality !== "unavailable" && <span className="font-sans text-xs font-medium text-muted-foreground">{qualityLabel}</span>}
     </span>
   )
 }

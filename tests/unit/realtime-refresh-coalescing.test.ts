@@ -34,6 +34,7 @@ function Probe({ invalidate }: { invalidate: ReturnType<typeof vi.fn> }) {
     userId: 'user-1',
     enabled: true,
     queryClient: { invalidateQueries: invalidate } as never,
+    scope: { surface: 'authenticated', userId: 'user-1' },
     reloadBootstrapData: vi.fn(),
   })
   return null

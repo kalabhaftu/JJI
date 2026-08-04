@@ -17,6 +17,7 @@ function Probe() {
     userId: 'user-1',
     enabled: true,
     queryClient: { invalidateQueries: vi.fn() } as never,
+    scope: { surface: 'authenticated', userId: 'user-1' },
     reloadBootstrapData: vi.fn(),
   })
   return null

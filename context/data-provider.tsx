@@ -458,6 +458,7 @@ export const DataProvider: React.FC<{
     userId: user?.id,
     enabled: !isDemoMode && !!user?.id && !isLoading,
     queryClient,
+    scope: isDemoMode ? { surface: 'demo' } : { surface: 'authenticated', ...(user?.id ? { userId: user.id } : {}) },
     reloadBootstrapData: loadData,
   })
 

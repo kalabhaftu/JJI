@@ -30,7 +30,7 @@ import type { DataContextType } from './data-provider/types';
 export type { Account } from './data-provider/types';
 import { useDataProviderAccountActions } from '@/hooks/use-data-provider-account-actions';
 import { reportClientError } from '@/lib/observability/report-error';
-import { deriveEntitlementCapability } from '@/lib/services/subscription-guard-service'
+import { deriveEntitlementCapability } from '@/lib/services/entitlement-capability'
 
 
 const DataContext = createContext<DataContextType | undefined>(undefined);

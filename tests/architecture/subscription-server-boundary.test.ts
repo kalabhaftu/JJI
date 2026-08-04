@@ -7,4 +7,10 @@ describe('subscription server boundary', () => {
     const source = readFileSync(join(process.cwd(), 'lib/services/subscription/access.ts'), 'utf8')
     expect(source).not.toContain("from '@/lib/services/subscription/checks'")
   })
+
+  it('keeps client entitlement derivation free of server database imports', () => {
+    const provider = readFileSync(join(process.cwd(), 'context/data-provider.tsx'), 'utf8')
+    expect(provider).toContain("from '@/lib/services/entitlement-capability'")
+    expect(provider).not.toContain("from '@/lib/services/subscription-guard-service'")
+  })
 })

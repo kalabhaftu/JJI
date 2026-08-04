@@ -127,7 +127,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
               size="icon"
               aria-label={`Edit goal ${goal.title}`}
               title="Edit goal"
-              className="h-6 w-6 opacity-30 hover:opacity-100"
+               className="h-11 w-11 text-muted-foreground"
               onClick={(e) => { e.stopPropagation(); onEdit(goal) }}
             >
               <Pencil className="h-3 w-3" />
@@ -138,7 +138,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
             size="icon"
             aria-label={`Delete goal ${goal.title}`}
             title="Delete goal"
-            className="h-6 w-6 opacity-30 hover:opacity-100 hover:text-short"
+             className="h-11 w-11 text-muted-foreground hover:text-short"
             onClick={(e) => { e.stopPropagation(); onDelete(goal.id) }}
           >
             <Trash2 className="h-3 w-3" />

@@ -34,6 +34,7 @@ import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { decodeFilterState, encodeFilterState, reconcileFilterQuery, type PnlFilter, type SideFilter } from '@/lib/filters/filter-state'
 import { RemovableFilterChip } from '@/components/ui/removable-filter-chip'
 import { resolveNavigationPath } from '@/lib/navigation/registry'
+import { DestructiveActionDialog } from '@/components/ui/states'
 
 type SortConfig = {
   key: keyof Trade
@@ -80,6 +81,7 @@ export default function TradeTable() {
   const [selectedTrades, setSelectedTrades] = useState<Set<string>>(new Set())
   const [selectAll, setSelectAll] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [pendingDeleteIds, setPendingDeleteIds] = useState<string[]>([])
 
   const activeView = searchParams.get('view') as 'details' | 'edit' | null
   const activeTradeId = searchParams.get('tradeId')
@@ -475,7 +477,7 @@ export default function TradeTable() {
 
           {selectedTrades.size > 0 && (
             <Button
-              onClick={() => handleDelete(Array.from(selectedTrades))}
+              onClick={() => setPendingDeleteIds(Array.from(selectedTrades))}
               disabled={isDeleting}
               variant="destructive"
               size="sm"
@@ -726,6 +728,18 @@ export default function TradeTable() {
           workspaceMode="dialog"
         />
       )}
+      <DestructiveActionDialog
+        open={pendingDeleteIds.length > 0}
+        onOpenChange={(open) => !open && setPendingDeleteIds([])}
+        title={`Delete ${pendingDeleteIds.length} trade${pendingDeleteIds.length === 1 ? '' : 's'}?`}
+        description="This permanently removes the selected trades and cannot be undone."
+        actionLabel="Delete trades"
+        pending={isDeleting}
+        onConfirm={async () => {
+          await handleDelete(pendingDeleteIds)
+          setPendingDeleteIds([])
+        }}
+      />
     </div>
   )
 }

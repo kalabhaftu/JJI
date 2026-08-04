@@ -571,22 +571,12 @@ const SidebarMenuButton = React.forwardRef<
       size = "default",
       tooltip,
       className,
-      onBlur,
-      onClick,
-      onPointerLeave,
       ...props
     },
     ref
   ) => {
     const Comp = asChild ? Slot : "button"
     const { isMobile, state } = useSidebar()
-    const [tooltipOpen, setTooltipOpen] = React.useState(false)
-
-    React.useEffect(() => {
-      if (state !== "collapsed" || isMobile) {
-        setTooltipOpen(false)
-      }
-    }, [isMobile, state])
 
     const button = (
       <Comp
@@ -595,18 +585,6 @@ const SidebarMenuButton = React.forwardRef<
         data-size={size}
         data-active={isActive}
         className={cn(sidebarMenuButtonVariants({ variant, size }), className)}
-        onBlur={(event) => {
-          onBlur?.(event)
-          setTooltipOpen(false)
-        }}
-        onClick={(event) => {
-          onClick?.(event)
-          setTooltipOpen(false)
-        }}
-        onPointerLeave={(event) => {
-          onPointerLeave?.(event)
-          setTooltipOpen(false)
-        }}
         {...props}
       />
     )
@@ -626,7 +604,7 @@ const SidebarMenuButton = React.forwardRef<
     }
 
     return (
-      <Tooltip open={tooltipOpen} onOpenChange={setTooltipOpen}>
+      <Tooltip>
         <TooltipTrigger asChild>{button}</TooltipTrigger>
         <TooltipContent
           side="right"

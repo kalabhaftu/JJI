@@ -99,15 +99,14 @@ describe('app shell navigation contracts', () => {
     expect(importTrigger).not.toContain('Import Trades</span>')
   })
 
-  it('closes collapsed sidebar tooltips instead of keeping hidden tooltip content mounted', () => {
+  it('lets Radix dismiss collapsed sidebar tooltips instead of controlling stale open state', () => {
     const sidebar = source('components/ui/sidebar.tsx')
     const menuButton = sidebar.slice(sidebar.indexOf('const SidebarMenuButton'))
+    const tooltip = source('components/ui/tooltip.tsx')
 
-    expect(menuButton).toContain('open={tooltipOpen}')
-    expect(menuButton).toContain('onOpenChange={setTooltipOpen}')
-    expect(menuButton).toContain('onPointerLeave={(event) =>')
-    expect(menuButton).toContain('onBlur={(event) =>')
-    expect(menuButton).toContain('onClick={(event) =>')
+    expect(menuButton).toContain('<Tooltip>')
+    expect(menuButton).not.toContain('tooltipOpen')
     expect(menuButton).not.toContain('hidden={state !== "collapsed" || isMobile}')
+    expect(tooltip).toContain('disableHoverableContent')
   })
 })

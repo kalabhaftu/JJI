@@ -13,9 +13,22 @@ const useData = vi.hoisted(() => vi.fn())
 const useQueryScope = vi.hoisted(() => vi.fn())
 const isScopeReady = vi.hoisted(() => vi.fn())
 const reportClientError = vi.hoisted(() => vi.fn())
+const ApiClientError = vi.hoisted(() =>
+  class ApiClientError extends Error {
+    kind: string
+    isCancellation: boolean
+    isTimeout: boolean
+    constructor(opts: { message: string; kind: string; isCancellation?: boolean; isTimeout?: boolean }) {
+      super(opts.message)
+      this.kind = opts.kind
+      this.isCancellation = opts.isCancellation ?? false
+      this.isTimeout = opts.isTimeout ?? false
+    }
+  },
+)
 
 vi.mock('@tanstack/react-query', () => ({ useQuery }))
-vi.mock('@/lib/api/client', () => ({ apiRequestData }))
+vi.mock('@/lib/api/client', () => ({ apiRequestData, ApiClientError }))
 vi.mock('@/lib/demo/journal-data', () => ({ getDemoJournalData: () => demoData }))
 vi.mock('@/context/data-provider', () => ({ useData }))
 vi.mock('@/lib/query/use-query-scope', () => ({ useQueryScope, isScopeReady }))
@@ -148,6 +161,32 @@ describe('useJournal query contract', () => {
     await expect(options.queryFn({ signal: new AbortController().signal })).rejects.toThrow('boom')
     expect(reportClientError).toHaveBeenCalledWith(
       expect.any(Error),
+      {
+        operation: 'load-journal-trades',
+        route: '/api/v1/trades?pageLimit=21&pageOffset=0&includeStats=true&includeCalendar=false&groupByExecution=true',
+      },
+    )
+  })
+
+  it('does not re-report network failures already reported by the canonical client', async () => {
+    apiRequestData.mockRejectedValue(new ApiClientError({ message: 'Network request failed', kind: 'offline' }))
+
+    useJournal({ page: 1 })
+    const options = journalOptions()
+
+    await expect(options.queryFn({ signal: new AbortController().signal })).rejects.toBeInstanceOf(ApiClientError)
+    expect(reportClientError).not.toHaveBeenCalled()
+  })
+
+  it('still reports timeout failures that the canonical client does not report', async () => {
+    apiRequestData.mockRejectedValue(new ApiClientError({ message: 'Request timed out', kind: 'timeout' }))
+
+    useJournal({ page: 1 })
+    const options = journalOptions()
+
+    await expect(options.queryFn({ signal: new AbortController().signal })).rejects.toBeInstanceOf(ApiClientError)
+    expect(reportClientError).toHaveBeenCalledWith(
+      expect.any(ApiClientError),
       {
         operation: 'load-journal-trades',
         route: '/api/v1/trades?pageLimit=21&pageOffset=0&includeStats=true&includeCalendar=false&groupByExecution=true',

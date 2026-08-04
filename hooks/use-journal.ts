@@ -4,7 +4,7 @@ import { Trade as schemaTrade } from '@/lib/db/schema'
 
 type Trade = InferSelectModel<typeof schemaTrade>
 import { useData } from '@/context/data-provider'
-import { apiRequestData } from '@/lib/api/client'
+import { apiRequestData, ApiClientError } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/query-keys'
 import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -118,7 +118,9 @@ export function useJournal(params: UseJournalParams) {
       try {
         return await apiRequestData<JournalResponse>(url!, { signal, operation: 'load-journal-trades' })
       } catch (error) {
-        reportClientError(error, { operation: 'load-journal-trades', route: url! })
+        if (!(error instanceof ApiClientError && error.kind === 'offline')) {
+          reportClientError(error, { operation: 'load-journal-trades', route: url! })
+        }
         throw error
       }
     },

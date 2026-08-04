@@ -34,6 +34,7 @@ import {
   resolveRequestId,
 } from '@/lib/observability/request-id'
 import { scrubSentryEvent } from '@/lib/observability/sentry-scrub'
+import { ApiClientError } from '@/lib/api/errors'
 
 describe('request IDs', () => {
   it('accepts bounded safe IDs and rejects unsafe values', () => {
@@ -107,6 +108,28 @@ describe('reportError', () => {
       route: '/api/v1/user/delete',
     })).toBeNull()
     expect(captureException).toHaveBeenCalledTimes(2)
+  })
+
+  it('suppresses expected cancellations but still reports timeouts', () => {
+    expect(reportClientError(new ApiClientError({
+      message: 'Request cancelled',
+      status: 0,
+      isCancellation: true,
+    }), {
+      operation: 'load-notifications',
+      route: '/api/v1/notifications',
+    })).toBeNull()
+    expect(captureException).not.toHaveBeenCalled()
+
+    expect(reportClientError(new ApiClientError({
+      message: 'Request timed out',
+      status: 0,
+      isTimeout: true,
+    }), {
+      operation: 'load-notifications',
+      route: '/api/v1/notifications',
+    })).toBe('event-id')
+    expect(captureException).toHaveBeenCalledTimes(1)
   })
 })
 

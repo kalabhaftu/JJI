@@ -1,3 +1,5 @@
+import { ApiClientError } from '@/lib/api/errors'
+
 const IGNORED_ERROR_PATTERNS = [
   'ResizeObserver loop',
   'The play() request was interrupted',
@@ -34,5 +36,6 @@ export function isExpectedError(
 
   const message = error instanceof Error ? error.message : String(error ?? '')
   const name = error instanceof Error ? error.name : ''
+  if (error instanceof ApiClientError && error.isCancellation) return true
   return name === 'AbortError' || shouldIgnoreError(message)
 }

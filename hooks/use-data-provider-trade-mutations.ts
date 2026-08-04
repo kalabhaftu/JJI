@@ -7,6 +7,7 @@ import { Trade as schemaTrade } from '@/lib/db/schema'
 
 type PrismaTrade = InferSelectModel<typeof schemaTrade>
 import { apiRequest } from '@/lib/api/client'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
 
 interface UseDataProviderTradeMutationsParams {
   userId: string | undefined
@@ -17,8 +18,11 @@ export function useDataProviderTradeMutations({
   userId,
   queryClient,
 }: UseDataProviderTradeMutationsParams) {
+  const scope = userId ? { surface: 'authenticated' as const, userId } : null
+  const tradeQueryPrefix = scope ? queryKeyPrefixes.trades(scope) : null
+
   const updateTrades = useCallback(async (tradeIds: string[], update: Partial<PrismaTrade>) => {
-    if (!userId) return
+    if (!userId || !tradeQueryPrefix) return
 
     const applyTradePatch = (trade: PrismaTrade) =>
       tradeIds.includes(trade.id) ? { ...trade, ...update } : trade
@@ -40,7 +44,7 @@ export function useDataProviderTradeMutations({
       return nextCalendarData
     }
 
-    queryClient.setQueriesData({ queryKey: ['v1', 'trades'] }, (oldData: any) => {
+    queryClient.setQueriesData({ queryKey: tradeQueryPrefix }, (oldData: any) => {
       if (!oldData || !Array.isArray(oldData.trades)) return oldData
 
       return {
@@ -65,35 +69,35 @@ export function useDataProviderTradeMutations({
       if (updatedCount < tradeIds.length) {
         throw new Error('Trade update did not save. Refresh and try again.')
       }
-      await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
+      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
     } catch (error) {
-      await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
+      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
       throw error
     }
-  }, [userId, queryClient])
+  }, [userId, queryClient, tradeQueryPrefix])
 
   const groupTrades = useCallback(async (tradeIds: string[]) => {
-    if (!userId) return
+    if (!userId || !tradeQueryPrefix) return
 
     await apiRequest('/api/v1/trades/batch/group', {
       method: 'POST',
       body: JSON.stringify({ tradeIds }),
     })
-    await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
-  }, [userId, queryClient])
+    await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+  }, [userId, queryClient, tradeQueryPrefix])
 
   const ungroupTrades = useCallback(async (tradeIds: string[]) => {
-    if (!userId) return
+    if (!userId || !tradeQueryPrefix) return
 
     await apiRequest('/api/v1/trades/batch/ungroup', {
       method: 'POST',
       body: JSON.stringify({ tradeIds }),
     })
-    await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
-  }, [userId, queryClient])
+    await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+  }, [userId, queryClient, tradeQueryPrefix])
 
   const appendTagsToTrades = useCallback(async (tradeIds: string[], tagIds: string[]) => {
-    if (!userId) return
+    if (!userId || !tradeQueryPrefix) return
 
     const applyTagAppend = (trade: PrismaTrade) => {
       if (!tradeIds.includes(trade.id)) return trade
@@ -119,7 +123,7 @@ export function useDataProviderTradeMutations({
       return nextCalendarData
     }
 
-    queryClient.setQueriesData({ queryKey: ['v1', 'trades'] }, (oldData: any) => {
+    queryClient.setQueriesData({ queryKey: tradeQueryPrefix }, (oldData: any) => {
       if (!oldData || !Array.isArray(oldData.trades)) return oldData
 
       return {
@@ -140,12 +144,12 @@ export function useDataProviderTradeMutations({
         method: 'POST',
         body: JSON.stringify({ tradeIds, tags: tagIds, mode: 'append' }),
       })
-      await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
+      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
     } catch (error) {
-      await queryClient.invalidateQueries({ queryKey: ['v1', 'trades'] })
+      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
       throw error
     }
-  }, [userId, queryClient])
+  }, [userId, queryClient, tradeQueryPrefix])
 
   return {
     updateTrades,

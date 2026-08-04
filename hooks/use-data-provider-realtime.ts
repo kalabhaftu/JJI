@@ -106,12 +106,23 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
       predicate: (query) => queryMatchesScope(query.queryKey, refreshScope),
     })
     if (matchingActiveQueries.length === 0) return
+    const previousUpdateTimes = new Map(
+      matchingActiveQueries.map((query) => [query.queryHash, query.state.dataUpdatedAt]),
+    )
     try {
       await queryClient.invalidateQueries({
         type: 'active',
         refetchType: 'active',
         predicate: (query) => queryMatchesScope(query.queryKey, refreshScope),
       }, { throwOnError: true })
+      const refreshedActiveQuery = queryClient.getQueryCache().findAll({
+        type: 'active',
+        predicate: (query) => {
+          const previousUpdateTime = previousUpdateTimes.get(query.queryHash)
+          return previousUpdateTime !== undefined && query.state.dataUpdatedAt > previousUpdateTime
+        },
+      }).length > 0
+      if (!refreshedActiveQuery) return
       const lifecycle = lifecycleRef.current
       if (
         lifecycle.generation !== generation ||

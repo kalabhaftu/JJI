@@ -47,4 +47,14 @@ describe('data freshness state contract', () => {
     expect(realtime).not.toContain('bivarianceHack')
     expect(realtime).toContain('onStatusChange?: (status: RealtimeStatus) => void')
   })
+
+  it('keeps trade mutation and manual refresh owners on canonical scoped keys', () => {
+    const mutations = source('hooks/use-data-provider-trade-mutations.ts')
+    const provider = source('context/data-provider.tsx')
+
+    expect(mutations).toContain('queryKeyPrefixes.trades(scope)')
+    expect(mutations).not.toContain("['v1', 'trades']")
+    expect(provider).toContain('queryKeyPrefixes.trades({ surface: \'authenticated\', userId: user.id })')
+    expect(provider).not.toContain("queryKey: ['v1']")
+  })
 })

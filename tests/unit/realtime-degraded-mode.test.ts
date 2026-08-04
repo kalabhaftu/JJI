@@ -48,13 +48,23 @@ function Probe({
   scope?: QueryScope
   userId?: string
 }) {
+  const query = {
+    queryHash: 'mock-query',
+    queryKey: ['trades', { surface: 'authenticated', userId: 'user-1' }],
+    state: { dataUpdatedAt: 0 },
+  }
+  const mockQueryClient = {
+    invalidateQueries: async (...args: unknown[]) => {
+      const result = await invalidateQueries?.(...args)
+      query.state.dataUpdatedAt++
+      return result
+    },
+    getQueryCache: () => ({ findAll: () => [query] }),
+  }
   const freshness = useDataProviderRealtime({
     userId,
     enabled,
-    queryClient: queryClient ?? {
-      invalidateQueries,
-      getQueryCache: () => ({ findAll: () => [{}] }),
-    } as never,
+    queryClient: queryClient ?? mockQueryClient as never,
     scope,
     reloadBootstrapData: vi.fn(),
   })
@@ -336,6 +346,87 @@ describe('degraded realtime mode', () => {
     await act(async () => vi.advanceTimersByTimeAsync(60_000))
 
     expect(freshness.updatedAt).toBeNull()
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('advances freshness after a matching active query demonstrably refreshes', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-03T12:00:00Z'))
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryKey = ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] as const
+    queryClient.setQueryData(queryKey, ['cached'])
+    const queryFn = vi.fn().mockResolvedValue(['fresh'])
+    const observer = new QueryObserver(queryClient, { queryKey, queryFn, staleTime: Infinity })
+    const unsubscribe = observer.subscribe(() => undefined)
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      queryClient,
+      snapshot: (value) => { freshness = value },
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    expect(queryFn).toHaveBeenCalledTimes(1)
+    expect(freshness.updatedAt).toEqual(new Date('2026-08-03T12:01:00Z'))
+    unsubscribe()
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('does not advance freshness when a matching query becomes inactive during refetch', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-03T12:00:00Z'))
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryKey = ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] as const
+    queryClient.setQueryData(queryKey, ['cached'])
+    let unsubscribe = () => undefined
+    const queryFn = vi.fn(async () => {
+      unsubscribe()
+      return ['fresh']
+    })
+    const observer = new QueryObserver(queryClient, { queryKey, queryFn, staleTime: Infinity })
+    unsubscribe = observer.subscribe(() => undefined)
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      queryClient,
+      snapshot: (value) => { freshness = value },
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    expect(queryFn).toHaveBeenCalledTimes(1)
+    expect(freshness.updatedAt).toBeNull()
+    await act(async () => root.unmount())
+    queryClient.clear()
+  })
+
+  it('does not advance freshness when a static active query skips refetch', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-08-03T12:00:00Z'))
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const queryKey = ['trades', { surface: 'authenticated', userId: 'user-1' }, 'filters'] as const
+    queryClient.setQueryData(queryKey, ['cached'])
+    const queryFn = vi.fn().mockResolvedValue(['fresh'])
+    const observer = new QueryObserver(queryClient, { queryKey, queryFn, staleTime: 'static' })
+    const unsubscribe = observer.subscribe(() => undefined)
+    let freshness!: FreshnessState
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, {
+      queryClient,
+      snapshot: (value) => { freshness = value },
+    })))
+    act(() => realtime.options?.onStatusChange?.('degraded'))
+
+    await act(async () => vi.advanceTimersByTimeAsync(60_000))
+
+    expect(queryFn).not.toHaveBeenCalled()
+    expect(freshness.updatedAt).toBeNull()
+    unsubscribe()
     await act(async () => root.unmount())
     queryClient.clear()
   })

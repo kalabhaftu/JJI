@@ -31,6 +31,7 @@ export type { Account } from './data-provider/types';
 import { useDataProviderAccountActions } from '@/hooks/use-data-provider-account-actions';
 import { reportClientError } from '@/lib/observability/report-error';
 import { deriveEntitlementCapability } from '@/lib/services/entitlement-capability'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
 
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -507,7 +508,9 @@ export const DataProvider: React.FC<{
       
       usePropFirmStore.getState().clearCache()
       
-      await queryClient.invalidateQueries({ queryKey: ['v1'] })
+      await queryClient.invalidateQueries({
+        queryKey: queryKeyPrefixes.trades({ surface: 'authenticated', userId: user.id }),
+      })
       
       await loadData()
     } catch (error) {

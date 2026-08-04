@@ -12,14 +12,12 @@ const REALTIME_TABLES = ['Trade', 'Account', 'MasterAccount', 'PhaseAccount', 'P
 const TABLES_WITH_USER_ID_FILTER = new Set<RealtimeTable>(['Trade', 'Account', 'MasterAccount', 'DailyNote', 'Notification', 'Synchronization'])
 
 type ChangeCallback = (change: DatabaseChange) => void
-type StatusCallback = { bivarianceHack(status: RealtimeStatus): void }['bivarianceHack']
-type LegacyRealtimeStatus = Extract<RealtimeStatus, 'connected' | 'disconnected' | 'error'>
 
 export interface SubscriptionOptions {
   tables: readonly RealtimeTable[]
   userId: string
   onChange: ChangeCallback
-  onStatusChange?: StatusCallback
+  onStatusChange?: (status: RealtimeStatus) => void
 }
 
 export function normalizeDatabaseChange(
@@ -88,7 +86,7 @@ export class DatabaseRealtimeManager {
     }
   }
   
-  private async connect(tables: readonly RealtimeTable[], userId: string, generation: number) {
+  private async connect(tables: readonly RealtimeTable[], userId: string, generation: number, allowReconnect = true) {
     try {
       const supabase = this.clientFactory()
 
@@ -172,11 +170,13 @@ export class DatabaseRealtimeManager {
           } else {
             logger.warn({ err: new Error('Connection issue') }, '[Realtime] Channel error:')
           }
-          this.scheduleReconnect(tables, userId, generation)
+          if (allowReconnect) this.scheduleReconnect(tables, userId, generation)
+          else this.notifyStatus('degraded')
         } else if (status === 'TIMED_OUT') {
           this.isConnected = false
           this.notifyStatus('disconnected')
-          this.scheduleReconnect(tables, userId, generation)
+          if (allowReconnect) this.scheduleReconnect(tables, userId, generation)
+          else this.notifyStatus('degraded')
         } else if (status === 'CLOSED') {
           this.isConnected = false
           this.notifyStatus('disconnected')
@@ -190,7 +190,8 @@ export class DatabaseRealtimeManager {
       logger.warn({ err: new Error(errorMessage) }, '[Realtime] Failed to connect:')
       this.notifyStatus('error')
 
-      this.scheduleReconnect(tables, userId, generation)
+      if (allowReconnect) this.scheduleReconnect(tables, userId, generation)
+      else this.notifyStatus('degraded')
     }
   }
   
@@ -285,19 +286,18 @@ export class DatabaseRealtimeManager {
   }
 
 
-  reconnect() {
+  recoverOnce() {
     if (this.userId) {
       this.disconnect()
-      this.reconnectAttempts = 0
-      void this.connect(REALTIME_TABLES, this.userId, this.generation)
+      void this.connect(REALTIME_TABLES, this.userId, this.generation, false)
     }
   }
 }
 
 const DatabaseRealtime = new DatabaseRealtimeManager()
 
-export function reconnectDatabaseRealtime() {
-  DatabaseRealtime.reconnect()
+export function recoverDatabaseRealtimeOnce() {
+  DatabaseRealtime.recoverOnce()
 }
 
 
@@ -309,17 +309,10 @@ interface DatabaseRealtimeHookOptions {
   onNotificationChange?: (change: DatabaseChange) => void
   onSynchronizationChange?: (change: DatabaseChange) => void
   onAnyChange?: (change: DatabaseChange) => void
+  onStatusChange?: (status: RealtimeStatus) => void
 }
 
-export function useDatabaseRealtime(options: DatabaseRealtimeHookOptions & {
-  onStatusChange?: (status: LegacyRealtimeStatus) => void
-}): void
-export function useDatabaseRealtime(options: DatabaseRealtimeHookOptions & {
-  onStatusChange?: StatusCallback
-}): void
-export function useDatabaseRealtime(options: DatabaseRealtimeHookOptions & {
-  onStatusChange?: StatusCallback
-}) {
+export function useDatabaseRealtime(options: DatabaseRealtimeHookOptions) {
   const { useEffect, useRef, useCallback } = require('react')
   
   const {

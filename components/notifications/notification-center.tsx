@@ -27,6 +27,7 @@ import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
 
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
+import type { RealtimeStatus } from '@/lib/realtime/types'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 import { Spinner } from '@/components/ui/spinner'
@@ -82,7 +83,7 @@ export function NotificationCenter() {
   const [adjustDateDialogOpen, setAdjustDateDialogOpen] = useState(false)
   const [weeklyReviewDialogOpen, setWeeklyReviewDialogOpen] = useState(false)
   const [announcementDialogOpen, setAnnouncementDialogOpen] = useState(false)
-  const [realtimeStatus, setRealtimeStatus] = useState<'connected' | 'disconnected' | 'error'>('disconnected')
+  const [realtimeStatus, setRealtimeStatus] = useState<RealtimeStatus>('disconnected')
   const [weeklyReviewId, setWeeklyReviewId] = useState<string | undefined>(undefined)
   const [selectedNotification, setSelectedNotification] = useState<Notification | null>(null)
 

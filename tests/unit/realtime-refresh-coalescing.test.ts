@@ -120,6 +120,29 @@ describe('realtime refresh coalescing', () => {
     await act(async () => root.unmount())
   })
 
+  it('invalidates the union of heterogeneous account changes in one burst', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-01-01T00:00:10Z'))
+    const invalidate = vi.fn()
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(Probe, { invalidate })))
+
+    act(() => {
+      realtime.options?.onAccountChange?.({ ...change, table: 'Account' })
+      realtime.options?.onAccountChange?.({ ...change, table: 'Payout' })
+    })
+    await act(async () => vi.advanceTimersByTimeAsync(250))
+
+    const keys = invalidate.mock.calls.map(([options]) => options.queryKey)
+    expect(keys).toEqual(expect.arrayContaining([
+      ['accounts', { surface: 'authenticated', userId: 'user-1' }],
+      ['prop-firm', 'payouts', { surface: 'authenticated', userId: 'user-1' }],
+      ['prop-firm', 'accounts', { surface: 'authenticated', userId: 'user-1' }],
+    ]))
+    expect(invalidate).toHaveBeenCalledTimes(3)
+    await act(async () => root.unmount())
+  })
+
   it('keeps one prop firm refresh active and coalesces a burst into one follow-up', async () => {
     const activeRefresh = deferred<ReturnType<typeof accountResponse>>()
     const followUpRefresh = deferred<ReturnType<typeof accountResponse>>()

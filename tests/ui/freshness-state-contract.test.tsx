@@ -39,4 +39,12 @@ describe('data freshness state contract', () => {
     expect(realtimeHook).not.toContain("['report-stats']")
     expect(realtimeHook).not.toContain("['propfirm-stats']")
   })
+
+  it('uses RealtimeStatus without legacy callback overloads', () => {
+    const realtime = source('lib/realtime/database-realtime.ts')
+
+    expect(realtime).not.toContain('LegacyRealtimeStatus')
+    expect(realtime).not.toContain('bivarianceHack')
+    expect(realtime).toContain('onStatusChange?: (status: RealtimeStatus) => void')
+  })
 })

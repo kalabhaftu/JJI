@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
+import type { RealtimeStatus } from '@/lib/realtime/types'
 import { useUserStore } from '@/store/user-store'
 
 interface RealtimeAccountsOptions {
@@ -10,7 +11,7 @@ interface RealtimeAccountsOptions {
 interface RealtimeAccountsResult {
   isConnected: boolean
   lastUpdate: Date | null
-  connectionStatus: 'connecting' | 'connected' | 'disconnected' | 'error'
+  connectionStatus: RealtimeStatus
 }
 
 export function useRealtimeAccounts(options: RealtimeAccountsOptions = {}): RealtimeAccountsResult {
@@ -19,7 +20,7 @@ export function useRealtimeAccounts(options: RealtimeAccountsOptions = {}): Real
 
   const [isConnected, setIsConnected] = useState(false)
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null)
-  const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected')
+  const [connectionStatus, setConnectionStatus] = useState<RealtimeStatus>('disconnected')
 
   useEffect(() => {
     if (!enabled) {

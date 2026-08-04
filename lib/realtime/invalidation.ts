@@ -105,10 +105,16 @@ export function resolveInvalidationKeys(
 
 export async function invalidateQueriesForRealtimeChange(
   queryClient: QueryClient,
-  change: DatabaseChange,
+  change: DatabaseChange | readonly DatabaseChange[],
   scope: QueryScope,
 ): Promise<void> {
-  const keys = resolveInvalidationKeys(change, scope)
+  const changes = Array.isArray(change) ? change : [change]
+  const keys = Array.from(
+    new Map(
+      changes.flatMap((entry) => resolveInvalidationKeys(entry, scope))
+        .map((queryKey) => [JSON.stringify(queryKey), queryKey]),
+    ).values(),
+  )
   if (keys.length === 0) return
 
   await Promise.all(

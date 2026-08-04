@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { QueryClient } from '@tanstack/react-query'
-import { reconnectDatabaseRealtime, useDatabaseRealtime } from '@/lib/realtime/database-realtime'
+import { recoverDatabaseRealtimeOnce, useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { getRealtimeInvalidationMap, invalidateQueriesForRealtimeChange } from '@/lib/realtime/invalidation'
 import type { DatabaseChange, FreshnessState, RealtimeStatus } from '@/lib/realtime/types'
 import type { QueryScope } from '@/lib/query/query-scope'
@@ -53,6 +53,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   }))
   const degradedRefreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const restorationAttemptedRef = useRef(false)
+  const mountedRef = useRef(true)
   const lifecycleRef = useRef({ enabled, status: realtimeStatus, scope, generation: 0 })
   const previousLifecycleRef = useRef({ enabled, status: realtimeStatus, scopeKey: JSON.stringify(scope) })
   const scopeKey = JSON.stringify(scope)
@@ -78,9 +79,9 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     accounts: null
   })
 
-  const pendingChangesRef = useRef<{ trades: DatabaseChange | null; accounts: DatabaseChange | null }>({
-    trades: null,
-    accounts: null
+  const pendingChangesRef = useRef<{ trades: DatabaseChange[]; accounts: DatabaseChange[] }>({
+    trades: [],
+    accounts: []
   })
 
   const scopeRef = useRef(scope)
@@ -94,7 +95,8 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   }, [])
 
   const refreshDegradedData = useCallback(async () => {
-    if (!enabled || realtimeStatus !== 'degraded') return
+    const hasAuthenticatedScope = scope.surface === 'authenticated' && Boolean(scope.userId) && scope.userId === userId
+    if (!enabled || !hasAuthenticatedScope || realtimeStatus !== 'degraded') return
     if (document.visibilityState !== 'visible' || !navigator.onLine) return
 
     const generation = lifecycleRef.current.generation
@@ -102,11 +104,13 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     try {
       await queryClient.invalidateQueries({
         type: 'active',
+        refetchType: 'active',
         predicate: (query) => queryMatchesScope(query.queryKey, refreshScope),
-      })
+      }, { throwOnError: true })
       const lifecycle = lifecycleRef.current
       if (
         lifecycle.generation !== generation ||
+        !mountedRef.current ||
         !lifecycle.enabled ||
         lifecycle.status !== 'degraded' ||
         JSON.stringify(lifecycle.scope) !== JSON.stringify(refreshScope)
@@ -115,7 +119,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
     } catch {
       // Keep the existing stale timestamps; the next bounded refresh can retry.
     }
-  }, [enabled, queryClient, realtimeStatus])
+  }, [enabled, queryClient, realtimeStatus, scope, userId])
 
   const handleStatusChange = useCallback((status: RealtimeStatus) => {
     lifecycleRef.current.status = status
@@ -151,19 +155,19 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   }, [stopDegradedRefresh])
 
   const runRealtimeRefresh = useCallback((refreshScope: RefreshScope) => {
-    const change = pendingChangesRef.current[refreshScope]
-    pendingChangesRef.current[refreshScope] = null
+    const changes = pendingChangesRef.current[refreshScope]
+    pendingChangesRef.current[refreshScope] = []
 
-    if (change) {
-      void invalidateQueriesForRealtimeChange(queryClient, change, scopeRef.current)
-      if (getRealtimeInvalidationMap(change.table)?.mode === 'refresh-bootstrap') {
+    if (changes.length > 0) {
+      void invalidateQueriesForRealtimeChange(queryClient, changes, scopeRef.current)
+      if (changes.some((change) => getRealtimeInvalidationMap(change.table)?.mode === 'refresh-bootstrap')) {
         reloadBootstrapData()
       }
     }
   }, [queryClient, reloadBootstrapData])
 
   const scheduleRealtimeRefresh = useCallback((refreshScope: RefreshScope, change: DatabaseChange) => {
-    pendingChangesRef.current[refreshScope] = change
+    pendingChangesRef.current[refreshScope].push(change)
 
     if (realtimeRefreshTimeoutRef.current[refreshScope]) return
 
@@ -195,18 +199,20 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
 
   useEffect(() => {
     stopDegradedRefresh()
-    if (!enabled || realtimeStatus !== 'degraded') return
+    const hasAuthenticatedScope = scope.surface === 'authenticated' && Boolean(scope.userId) && scope.userId === userId
+    if (!enabled || !hasAuthenticatedScope || realtimeStatus !== 'degraded') return
     if (document.visibilityState !== 'visible' || !navigator.onLine) return
 
     degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
     return stopDegradedRefresh
-  }, [enabled, realtimeStatus, refreshDegradedData, stopDegradedRefresh])
+  }, [enabled, realtimeStatus, refreshDegradedData, scope, stopDegradedRefresh, userId])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
+    const hasAuthenticatedScope = scope.surface === 'authenticated' && Boolean(scope.userId) && scope.userId === userId
+    if (!enabled || !hasAuthenticatedScope || realtimeStatus !== 'degraded') return
 
     const restoreDegradedRefresh = () => {
-      if (!enabled || realtimeStatus !== 'degraded') return
       if (document.visibilityState !== 'visible' || !navigator.onLine) return
       if (restorationAttemptedRef.current) return
       restorationAttemptedRef.current = true
@@ -214,7 +220,7 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
       void refreshDegradedData()
       stopDegradedRefresh()
       degradedRefreshIntervalRef.current = setInterval(refreshDegradedData, DEGRADED_REFRESH_INTERVAL_MS)
-      reconnectDatabaseRealtime()
+      recoverDatabaseRealtimeOnce()
     }
     const handleOffline = () => {
       restorationAttemptedRef.current = false
@@ -239,12 +245,15 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
       window.removeEventListener('offline', handleOffline)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
     }
-  }, [enabled, realtimeStatus, refreshDegradedData, stopDegradedRefresh])
+  }, [enabled, realtimeStatus, refreshDegradedData, scope, stopDegradedRefresh, userId])
 
   useEffect(() => {
+    mountedRef.current = true
     const timeouts = realtimeRefreshTimeoutRef.current
 
     return () => {
+      mountedRef.current = false
+      lifecycleRef.current.generation++
       if (timeouts.trades) {
         clearTimeout(timeouts.trades)
         timeouts.trades = null

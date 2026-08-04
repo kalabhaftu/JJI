@@ -109,4 +109,25 @@ describe('app shell navigation contracts', () => {
     expect(menuButton).not.toContain('hidden={state !== "collapsed" || isMobile}')
     expect(tooltip).toContain('disableHoverableContent')
   })
+
+  it('lets the root metadata template add the JJI title suffix once', () => {
+    const rootLayout = source('app/layout.tsx')
+
+    expect(rootLayout).toContain('template: `%s | ${SITE_NAME}`')
+
+    for (const path of [
+      'app/contact/page.tsx',
+      'app/dashboard/goals/page.tsx',
+      'app/dashboard/page.tsx',
+      'app/docs/layout.tsx',
+      'app/donate/page.tsx',
+      'app/feedback/page.tsx',
+      'app/privacy/layout.tsx',
+      'app/reports/shared/[slug]/page.tsx',
+      'app/subscribe/page.tsx',
+      'app/terms/layout.tsx',
+    ]) {
+      expect(source(path), path).not.toMatch(/title:.*\| (?:JJI|\$\{BRAND\.name\})/)
+    }
+  })
 })

@@ -8,7 +8,7 @@ import { BRAND } from '@/lib/constants/brand'
 import { DOCS_ORIGIN } from '@/lib/public-surface-routing'
 
 export const metadata = {
-  title: `Contact | ${BRAND.name}`,
+  title: 'Contact',
   description: `Contact the ${BRAND.fullName} team for support, feedback, and questions.`,
 }
 

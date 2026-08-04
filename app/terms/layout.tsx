@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { BRAND } from '@/lib/constants/brand'
 
 export const metadata: Metadata = {
-  title: `Terms of Service | ${BRAND.name}`,
+  title: 'Terms of Service',
   description: `Terms governing use of ${BRAND.fullName}.`,
 }
 

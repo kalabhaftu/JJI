@@ -7,7 +7,7 @@ import { DocsLayoutClient } from './docs-layout-client'
 import { BRAND } from '@/lib/constants/brand'
 
 export const metadata = {
-  title: `Docs | ${BRAND.name}`,
+  title: 'Docs',
   description: `Guides for using the ${BRAND.fullName} web workspace and mobile app.`,
 }
 

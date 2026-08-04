@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Fixed collapsed-sidebar tooltips sticking after hover and removed duplicated `JJI` browser-title suffixes.
 - Rebuilt the AI area as a consent-gated evidence workspace with selectable data sources, bounded context, saved chats, insights, mappings, and weekly reviews.
 - Fixed duplicated global navigation/footer surfaces and made mobile navigation, widget sizing, safe-area spacing, and touch targets consistent.
 - Introduced a shared surface, card, button, and theme hierarchy to reduce nested containers and inconsistent page controls.

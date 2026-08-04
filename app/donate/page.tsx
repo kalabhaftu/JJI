@@ -2,7 +2,7 @@ import { Heart } from 'lucide-react'
 import { DonateCardsClient } from './donate-cards-client'
 
 export const metadata = {
-  title: 'Support JJI | Donate',
+  title: 'Donate',
   description: 'Support the ongoing development of JJI.'
 }
 

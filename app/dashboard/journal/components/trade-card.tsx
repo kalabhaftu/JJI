@@ -15,6 +15,7 @@ import {
 import { formatTradePrice } from '@/lib/trading/precision'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { RevealAction } from '@/components/ui/reveal-action'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   DropdownMenu,
@@ -212,9 +213,9 @@ export function TradeCard({
             )}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Trade options">
+                <RevealAction size="icon" className="h-10 w-10" aria-label="Trade options">
                   <MoreVertical className="h-4 w-4" />
-                </Button>
+                </RevealAction>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={onView}>

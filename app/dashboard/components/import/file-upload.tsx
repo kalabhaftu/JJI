@@ -8,6 +8,7 @@ import { Progress } from "@/components/ui/progress"
 import { X, File, AlertCircle, ArrowUpCircle } from 'lucide-react'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
+import { RevealAction } from "@/components/ui/reveal-action"
 import { cn } from "@/lib/utils"
 import { platforms } from './config/platforms'
 import { Step } from './import-button'
@@ -237,17 +238,16 @@ export default function FileUpload({
                     value={uploadProgress[file.name] || 0} 
                     className="w-16 sm:w-24 h-1.5"
                   />
-                  <Button 
-                    variant="ghost" 
+                  <RevealAction
                     size="icon"
                     aria-label={`Remove ${file.name}`}
                     title="Remove file"
                     onClick={() => removeFile(index)}
-                    className="opacity-0 group-hover:opacity-100 hover:bg-destructive/10 hover:text-destructive text-muted-foreground h-8 w-8 rounded-lg transition-all"
+                    className="h-10 w-10 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
                     <X className="h-3.5 w-3.5" />
                     <span className="sr-only">Remove file</span>
-                  </Button>
+                  </RevealAction>
                 </div>
               </div>
             ))}

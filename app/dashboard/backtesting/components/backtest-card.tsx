@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { Target, MoreHorizontal, Eye, Pencil as Edit, Trash2 as Trash } from "lucide-react"
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { RevealAction } from '@/components/ui/reveal-action'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import {
   DropdownMenu,
@@ -66,9 +67,9 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity" aria-label="Backtest options">
+              <RevealAction size="icon" className="h-10 w-10" aria-label="Backtest options">
                 <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              </RevealAction>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onView}>

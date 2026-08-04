@@ -14,6 +14,7 @@ import { useUserStore } from '@/store/user-store'
 import { usePublicSurfaceRouting } from '@/hooks/use-public-surface-routing'
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { RevealAction } from "@/components/ui/reveal-action"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
@@ -864,14 +865,14 @@ function AccountCard({
           <div className="pointer-events-auto relative z-10">
           <DropdownMenu>
             <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-              <Button
-                variant="ghost"
+              <RevealAction
+                variant="icon-only"
                 size="icon"
-                className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                className="h-10 w-10 flex-shrink-0"
                 aria-label="Account options"
               >
                 <MoreHorizontal className="h-4 w-4" />
-              </Button>
+              </RevealAction>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView() }}>

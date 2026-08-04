@@ -4,6 +4,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTemplates } from '@/context/template-provider'
 import { useTemplateEditStore } from '@/store/template-edit-store'
 import { Button } from '@/components/ui/button'
+import { RevealAction } from '@/components/ui/reveal-action'
 import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
@@ -205,17 +206,17 @@ export function TemplateSelector() {
                 {t.isDefault && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
               </div>
               {!t.isDefault && (
-                <button
-                  type="button"
+                <RevealAction
+                  size="icon"
                   aria-label={`Delete template ${t.name}`}
-                  className="opacity-0 group-hover:opacity-100 hover:text-destructive p-0.5"
+                  className="h-10 w-10 text-muted-foreground hover:text-destructive"
                   onClick={(e) => {
                     e.stopPropagation()
                     handleDeleteClick(t.id, t.name)
                   }}
                 >
                   <Trash2 className="h-3 w-3" />
-                </button>
+                </RevealAction>
               )}
             </DropdownMenuItem>
           ))}

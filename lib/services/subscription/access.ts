@@ -2,7 +2,6 @@ import { eq } from 'drizzle-orm'
 
 import { db } from '@/lib/db/client'
 import { FreeAccessInvite, Subscription, User } from '@/lib/db/schema'
-import { reconcilePendingPayments } from '@/lib/services/subscription/checks'
 import type { SubscriptionStatus } from '@/lib/services/subscription/types'
 
 const GRACE_DAYS = Number.parseInt(process.env.SUBSCRIPTION_GRACE_DAYS || '3', 10)
@@ -79,11 +78,6 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
   }
 
 
-  if (subscription.status === 'unpaid' || subscription.status === 'past_due') {
-    await reconcilePendingPayments({ userId })
-  }
-
-
   if (subscription.status === 'past_due') {
     const graceCutoff = subscription.currentPeriodEnd
       ? new Date(subscription.currentPeriodEnd.getTime() + GRACE_DAYS * 86400000)
@@ -100,4 +94,3 @@ export async function getUserAccessStatus(userId: string, userRole?: string): Pr
 
   return { hasAccess: false, status: subscription.status as string, subscription, reason: `Status: ${subscription.status}` }
 }
-

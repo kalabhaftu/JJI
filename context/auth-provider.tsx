@@ -11,6 +11,7 @@ import { useAutoCacheCleanup } from '@/hooks/use-auto-cache-cleanup'
 import { useQueryClient } from '@tanstack/react-query'
 import { mutate } from 'swr'
 import { useTradesStore } from '@/store/trades-store'
+import { createAuthTransitionCacheCoordinator, isAuthIdentityChange, runAuthTransition } from '@/lib/query/auth-transition-cache'
 import { reportClientError } from '@/lib/observability/report-error'
 
 interface AuthContextType {
@@ -41,11 +42,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const lastSyncedSessionRef = useRef<string | null>(null)
   const syncInFlightRef = useRef<Map<string, Promise<boolean>>>(new Map())
   const lastRefreshKeyRef = useRef<string | null>(null)
+  const lastIdentityRef = useRef<string | null | undefined>(undefined)
 
   const setUser = useUserStore(state => state.setUser)
   const setSupabaseUser = useUserStore(state => state.setSupabaseUser)
   const resetUser = useUserStore(state => state.resetUser)
   const user = useUserStore(state => state.user)
+
+  const cacheCoordinator = useRef(
+    createAuthTransitionCacheCoordinator({
+      queryClient,
+      clearModuleCaches: () => useTradesStore.getState().setTrades([]),
+    })
+  ).current
+
+  const handleIdentityTransition = useCallback(async (nextUserId: string | null) => {
+    if (lastIdentityRef.current === undefined) {
+      lastIdentityRef.current = nextUserId
+      return
+    }
+    if (!isAuthIdentityChange(lastIdentityRef.current, nextUserId)) return
+
+    lastIdentityRef.current = nextUserId
+    await runAuthTransition(cacheCoordinator, nextUserId)
+  }, [cacheCoordinator])
   
 
   useAutoCacheCleanup({
@@ -193,7 +213,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthCheckCache(null)
     setIsLoading(false)
     lastSyncedSessionRef.current = null
-    
+    lastIdentityRef.current = null
+
     useTradesStore.getState().setTrades([])
     queryClient.clear()
     void mutate(() => true, undefined, { revalidate: false }).catch(() => undefined)
@@ -246,6 +267,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (error) throw error
         setSession(session)
 
+        await handleIdentityTransition(session?.user?.id ?? null)
+
 
         if (session?.user) {
           setSupabaseUser(session.user)
@@ -288,6 +311,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       async (event: any, session: any) => {
         setSession(session)
 
+        await handleIdentityTransition(session?.user?.id ?? null)
 
         if (session?.user) {
           setSupabaseUser(session.user)
@@ -309,7 +333,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router, pathname, forceClearAuth, setSupabaseUser, setUser, clearBrowserAuthStorage, isRecoverableSessionError, syncSessionToServer, shouldSyncSessionForPath, refreshOnceForAuthEvent])
+  }, [router, pathname, forceClearAuth, setSupabaseUser, setUser, clearBrowserAuthStorage, isRecoverableSessionError, syncSessionToServer, shouldSyncSessionForPath, refreshOnceForAuthEvent, handleIdentityTransition])
 
   return (
     <AuthContext.Provider

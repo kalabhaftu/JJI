@@ -1,10 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -68,69 +72,31 @@ export default function AccountPayoutsPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuth()
-  const [payouts, setPayouts] = useState<PayoutData[]>([])
-  const [account, setAccount] = useState<AccountData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const [searchTerm, setSearchTerm] = useState('')
   const [deletingPayoutId, setDeletingPayoutId] = useState<string | null>(null)
   const [deletePayoutTarget, setDeletePayoutTarget] = useState<string | null>(null)
 
   const accountId = params.id as string
 
-  const fetchAccount = async () => {
-    try {
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch account details')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        setAccount(data.data.account)
-      } else {
-        throw new Error(data.error?.message || 'Failed to fetch account details')
-      }
-    } catch (error) {
-      reportClientError(error, { operation: 'load-prop-firm-account-for-payouts', route: `/api/v1/prop-firm/accounts/${accountId}` })
-      toast.error('Failed to fetch account details', {
-        description: 'An error occurred while fetching account details'
-      })
-    }
-  }
-
-  const fetchPayouts = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}/payouts`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch payouts')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        setPayouts(data.data)
-      } else {
-        throw new Error(data.error?.message || 'Failed to fetch payouts')
-      }
-    } catch (error) {
-      reportClientError(error, { operation: 'load-prop-firm-payouts', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
-      toast.error('Failed to fetch payouts', {
-        description: 'An error occurred while fetching payouts'
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    if (user && accountId) {
-      fetchAccount()
-      fetchPayouts()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, accountId])
+  const accountQuery = useQuery({
+    queryKey: queryKeys.propFirmAccount(scope, accountId),
+    queryFn: ({ signal }) => apiRequestData<{ account: AccountData }>(`/api/v1/prop-firm/accounts/${accountId}`, { signal, operation: 'load-prop-firm-account-for-payouts' }),
+    enabled: Boolean(user && accountId && isScopeReady(scope)),
+    staleTime: 30_000,
+  })
+  const payoutsQuery = useQuery({
+    queryKey: queryKeys.payouts(scope, { accountId }),
+    queryFn: ({ signal }) => apiRequestData<PayoutData[]>(`/api/v1/prop-firm/accounts/${accountId}/payouts`, { signal, operation: 'load-prop-firm-payouts' }),
+    enabled: Boolean(user && accountId && isScopeReady(scope)),
+    placeholderData: (previous) => previous,
+    staleTime: 30_000,
+  })
+  const account = accountQuery.data?.account ?? null
+  const payouts = payoutsQuery.data ?? []
+  const isLoading = accountQuery.isLoading || payoutsQuery.isLoading
+  const refresh = () => Promise.all([accountQuery.refetch(), payoutsQuery.refetch()])
 
   if (isLoading && !account) {
     return <AccountPayoutsPageSkeleton />
@@ -167,18 +133,11 @@ export default function AccountPayoutsPage() {
     try {
       setDeletingPayoutId(deletePayoutTarget)
 
-      const response = await fetch(`/api/v1/prop-firm/payouts/${deletePayoutTarget}`, {
+      await apiRequestData(`/api/v1/prop-firm/payouts/${deletePayoutTarget}`, {
         method: 'DELETE'
       })
-
-      const data = await response.json()
-
-      if (data.success) {
-        toast.success('Payout request deleted successfully')
-        fetchPayouts()
-      } else {
-        throw new Error(data.error?.message || 'Failed to delete payout')
-      }
+      toast.success('Payout request deleted successfully')
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.payouts(scope) })
     } catch (error) {
       reportClientError(error, { operation: 'delete-prop-firm-payout', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
       toast.error(error instanceof Error ? error.message : 'Failed to delete payout')
@@ -233,10 +192,10 @@ export default function AccountPayoutsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchPayouts}
-            disabled={isLoading}
+            onClick={() => void refresh()}
+            disabled={accountQuery.isFetching || payoutsQuery.isFetching}
           >
-            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+            {accountQuery.isFetching || payoutsQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
             Refresh
           </Button>
           {account.isEligibleForPayout && (

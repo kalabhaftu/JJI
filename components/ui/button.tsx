@@ -10,6 +10,11 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
+        primary: "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-press disabled:bg-primary-disabled disabled:text-muted-foreground disabled:opacity-100",
+        tertiary: "hover:bg-muted/50 hover:text-foreground",
+        "icon-only": "hover:bg-muted/50 hover:text-foreground",
+        toolbar: "hover:bg-muted/50 hover:text-foreground",
+        "table-row": "hover:bg-muted/50 hover:text-foreground",
         default: "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-press disabled:bg-primary-disabled disabled:text-muted-foreground disabled:opacity-100",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
@@ -42,12 +47,15 @@ export interface ButtonProps
   asChild?: boolean
   loading?: boolean
   loadingText?: string
+  disabledReason?: string
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, loading = false, loadingText = 'Loading…', children, disabled, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, loading = false, loadingText = 'Loading…', children, disabled, disabledReason, ...props }, ref) => {
+    const reasonId = React.useId()
     if (asChild) {
       return (
+        <>
         <Slot
           className={cn(
             buttonVariants({ variant, size, className }),
@@ -56,24 +64,31 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           ref={ref}
           aria-disabled={disabled || loading || undefined}
           aria-busy={loading || undefined}
+          aria-describedby={disabled && disabledReason ? reasonId : undefined}
           {...props}
         >
           {children}
         </Slot>
+        {disabled && disabledReason && <span id={reasonId} className="sr-only">{disabledReason}</span>}
+        </>
       )
     }
 
     return (
+      <>
       <button
         className={cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         disabled={disabled || loading}
         aria-busy={loading || undefined}
+        aria-describedby={disabled && disabledReason ? reasonId : undefined}
         {...props}
       >
         {loading && <LoaderCircle className="animate-spin" aria-hidden />}
-        {loading ? loadingText : children}
+        {loading ? <><span>{loadingText}</span><span className="sr-only">: {children}</span></> : children}
       </button>
+      {disabled && disabledReason && <span id={reasonId} className="sr-only">{disabledReason}</span>}
+      </>
     )
   }
 )

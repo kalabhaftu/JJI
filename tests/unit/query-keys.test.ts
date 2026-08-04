@@ -19,6 +19,14 @@ describe('query key factories', () => {
     )
   })
 
+  it('scopes prop-firm, payout, and settings state', () => {
+    expect(queryKeys.propFirmAccounts(authenticatedScope)).not.toEqual(queryKeys.propFirmAccounts(demoScope))
+    expect(queryKeys.payouts(authenticatedScope, { accountId: 'account-1' })).not.toEqual(
+      queryKeys.payouts(demoScope, { accountId: 'account-1' }),
+    )
+    expect(queryKeys.settings(authenticatedScope)).not.toEqual(queryKeys.settings({ surface: 'authenticated', userId: 'user-2' }))
+  })
+
   it('includes scope in every supported query key', () => {
     const factories = [
       () => queryKeys.accounts(authenticatedScope, {}),
@@ -28,6 +36,9 @@ describe('query key factories', () => {
       () => queryKeys.templates(authenticatedScope),
       () => queryKeys.reportStats(authenticatedScope, {}),
       () => queryKeys.notifications(authenticatedScope),
+      () => queryKeys.propFirmAccounts(authenticatedScope),
+      () => queryKeys.payouts(authenticatedScope, {}),
+      () => queryKeys.settings(authenticatedScope),
     ]
 
     for (const factory of factories) {

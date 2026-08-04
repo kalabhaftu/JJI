@@ -9,8 +9,12 @@ export type ServerStateDomain =
   | 'notifications'
   | 'reports'
   | 'prop-firm'
+  | 'payouts'
   | 'goals'
   | 'settings'
+  | 'playbook'
+  | 'backtests'
+  | 'synchronizations'
 
 export interface DomainOwnership {
   domain: ServerStateDomain
@@ -40,7 +44,11 @@ export const domainOwnership: Record<ServerStateDomain, DomainOwnership> = {
   templates: ownership('templates', 'queryKeys.templates', 'template mutations'),
   notifications: ownership('notifications', 'queryKeys.notifications', 'notification mutations'),
   reports: ownership('reports', 'queryKeys.reportStats', 'report mutations'),
-  'prop-firm': ownership('prop-firm', 'not-established', 'prop-firm mutations'),
-  goals: ownership('goals', 'not-established', 'goal mutations'),
-  settings: ownership('settings', 'not-established', 'settings mutations'),
+  'prop-firm': ownership('prop-firm', 'queryKeys.propFirmAccounts', 'usePropFirmQueries'),
+  payouts: ownership('payouts', 'queryKeys.payouts', 'payout mutations'),
+  goals: ownership('goals', 'queryKeys.goals', 'goal mutations'),
+  settings: ownership('settings', 'queryKeys.settings', 'useSettingsQuery'),
+  playbook: ownership('playbook', 'queryKeys.playbook', 'playbook mutations'),
+  backtests: ownership('backtests', 'queryKeys.backtests', 'backtest mutations'),
+  synchronizations: ownership('synchronizations', 'queryKeys.synchronizations', 'synchronization mutations'),
 }

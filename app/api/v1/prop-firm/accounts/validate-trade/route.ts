@@ -60,6 +60,24 @@ export async function POST(request: NextRequest) {
     }
 
 
+    const [phaseAccountMatch] = await db
+      .select({ phaseAccount: schema.PhaseAccount })
+      .from(schema.PhaseAccount)
+      .innerJoin(
+        schema.MasterAccount,
+        eq(schema.PhaseAccount.masterAccountId, schema.MasterAccount.id)
+      )
+      .where(and(
+        eq(schema.PhaseAccount.phaseId, accountNumber),
+        eq(schema.MasterAccount.userId, internalUserId)
+      ))
+      .limit(1)
+
+    if (phaseAccountMatch?.phaseAccount) {
+      return createErrorResponse('Account phase is not active', 422, undefined, 'INVALID_PHASE', requestId)
+    }
+
+
     const regularAccount = await db.query.Account.findFirst({
       where: (table, { and, eq }) => and(
         eq(table.number, accountNumber),

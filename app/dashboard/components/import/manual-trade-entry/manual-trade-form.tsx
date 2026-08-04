@@ -2,7 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useReducer } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -45,7 +45,7 @@ import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useAccounts } from '@/hooks/use-accounts'
 import { cn } from '@/lib/utils'
-import { classifyPhaseValidationResponse } from '@/lib/validation/phase-validation'
+import { phaseValidationReducer, runPhaseValidation } from '@/lib/validation/phase-validation'
 import { ManualTradeValidationError } from './manual-trade-validation-error'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -186,7 +186,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
   }
   const [currentStep, setCurrentStep] = useState<Step>(1)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [phaseValidationError, setPhaseValidationError] = useState<string | null>(null)
+  const [phaseValidation, dispatchPhaseValidation] = useReducer(phaseValidationReducer, { status: 'idle' })
   const [calculatedPnL, setCalculatedPnL] = useState<number | null>(null)
   const [calculatedDuration, setCalculatedDuration] = useState<string>('')
   const [instrumentOpen, setInstrumentOpen] = useState(false)
@@ -316,31 +316,17 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
 
     submitInFlightRef.current = true
     setIsSubmitting(true)
-    setPhaseValidationError(null)
 
     try {
 
       if (data.accountNumber) {
-        try {
-          const phaseCheckResponse = await fetch(`/api/v1/prop-firm/accounts/validate-trade`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ accountNumber: data.accountNumber })
-          })
-
-           const phaseResult = await phaseCheckResponse.json().catch(() => null)
-           const validation = classifyPhaseValidationResponse(phaseCheckResponse.status, phaseResult)
-           if (validation.status !== 'valid') {
-             setPhaseValidationError(validation.message)
-             toast.error('Trade Validation Blocked', { description: validation.message })
-             return
-           }
-         } catch (error) {
-           const message = 'Unable to validate the account. Retry before saving.'
-           setPhaseValidationError(message)
-           reportClientError(error, { operation: 'validate-manual-trade-phase', route: '/api/v1/prop-firm/accounts/validate-trade' })
-           return
-         }
+        dispatchPhaseValidation({ type: 'check', accountNumber: data.accountNumber })
+        const validation = await runPhaseValidation(data.accountNumber)
+        dispatchPhaseValidation({ type: 'settle', result: validation })
+        if (validation.status !== 'valid') {
+          toast.error('Trade Validation Blocked', { description: validation.message })
+          return
+        }
       }
 
       const entryDateTime = `${data.entryDate} ${data.entryTime}`
@@ -815,7 +801,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
       case 5:
         return (
           <div className="space-y-6">
-            {phaseValidationError && <ManualTradeValidationError message={phaseValidationError} retry={() => void handleSubmit(onSubmit as any)()} disabled={isSubmitting} />}
+            {phaseValidation.status === 'blocked' && <ManualTradeValidationError message={phaseValidation.message} retry={() => void handleSubmit(onSubmit as any)()} disabled={isSubmitting} />}
 
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 rounded-lg border bg-muted/30">

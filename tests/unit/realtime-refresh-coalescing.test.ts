@@ -1,5 +1,6 @@
 import { act, createElement } from 'react'
 import { createRoot } from 'react-dom/client'
+import { flushSync } from 'react-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { DatabaseChange } from '@/lib/realtime/types'
 
@@ -10,6 +11,7 @@ const realtime = vi.hoisted(() => ({ options: null as null | {
 
 const cache = vi.hoisted(() => ({ clearTrades: vi.fn(), clearAccounts: vi.fn() }))
 const fetchMock = vi.hoisted(() => vi.fn())
+const toastMock = vi.hoisted(() => ({ error: vi.fn(), success: vi.fn() }))
 
 vi.mock('@/lib/realtime/database-realtime', () => ({
   useDatabaseRealtime: (options: typeof realtime.options) => { realtime.options = options },
@@ -25,7 +27,7 @@ vi.mock('@/lib/utils/fetch-with-error', () => ({
 vi.mock('@/store/user-store', () => ({ useUserStore: (selector: (state: { user: { id: string } }) => unknown) => selector({ user: { id: 'user-1' } }) }))
 vi.mock('@/lib/public-surface-routing', () => ({ isDemoSurface: () => false }))
 vi.mock('@/lib/observability/report-error', () => ({ reportClientError: vi.fn() }))
-vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }))
+vi.mock('sonner', () => ({ toast: toastMock }))
 
 import { useDataProviderRealtime } from '@/hooks/use-data-provider-realtime'
 import { usePropFirmRealtime } from '@/hooks/use-prop-firm-realtime'
@@ -56,13 +58,13 @@ function deferred<T>() {
   return { promise, resolve }
 }
 
-function accountResponse(id: string) {
+function accountResponse(id: string, status = 'active') {
   return {
     ok: true,
     data: {
       success: true,
       data: {
-        account: { id, accountName: id, status: 'active', phases: [{ id: `${id}-phase` }], lastUpdated: new Date().toISOString() },
+        account: { id, accountName: id, status, phases: [{ id: `${id}-phase` }], lastUpdated: new Date().toISOString() },
         drawdown: { isBreached: false },
       },
     },
@@ -77,13 +79,16 @@ function PropFirmProbe({
   accountId,
   enabled = true,
   snapshot,
+  onRender,
 }: {
   accountId?: string
   enabled?: boolean
   snapshot?: (value: PropFirmSnapshot) => void
+  onRender?: () => void
 }) {
   const value = usePropFirmRealtime({ accountId, enabled })
   snapshot?.(value)
+  onRender?.()
   return null
 }
 
@@ -245,5 +250,65 @@ describe('realtime refresh coalescing', () => {
     expect(fetchMock).toHaveBeenCalledTimes(3)
 
     await act(async () => root.unmount())
+  })
+
+  it('rejects an active response resolved after disable renders but before passive cleanup', async () => {
+    const activeRefresh = deferred<ReturnType<typeof accountResponse>>()
+    fetchMock
+      .mockResolvedValueOnce(accountResponse('account-1'))
+      .mockImplementationOnce(() => activeRefresh.promise)
+    let current!: PropFirmSnapshot
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(PropFirmProbe, {
+      accountId: 'account-1',
+      snapshot: value => { current = value },
+    })))
+
+    act(() => realtime.options?.onAccountChange?.({
+      ...change,
+      table: 'MasterAccount',
+      newRecord: { id: 'account-1' },
+    }))
+
+    globalThis.IS_REACT_ACT_ENVIRONMENT = false
+    try {
+      flushSync(() => root.render(createElement(PropFirmProbe, {
+        accountId: 'account-1',
+        enabled: false,
+        snapshot: value => { current = value },
+        onRender: () => activeRefresh.resolve(accountResponse('account-1', 'funded')),
+      })))
+      await Promise.resolve()
+    } finally {
+      globalThis.IS_REACT_ACT_ENVIRONMENT = true
+    }
+
+    expect(current.account?.status).toBe('active')
+    expect(toastMock.success).not.toHaveBeenCalled()
+
+    await act(async () => root.unmount())
+  })
+
+  it('clears an active and pending prop firm refresh on unmount', async () => {
+    const activeRefresh = deferred<ReturnType<typeof accountResponse>>()
+    fetchMock
+      .mockResolvedValueOnce(accountResponse('account-1'))
+      .mockImplementationOnce(() => activeRefresh.promise)
+      .mockResolvedValueOnce(accountResponse('account-1'))
+    const root = createRoot(document.createElement('div'))
+    await act(async () => root.render(createElement(PropFirmProbe, { accountId: 'account-1' })))
+
+    act(() => {
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+      realtime.options?.onAccountChange?.({ ...change, table: 'MasterAccount', newRecord: { id: 'account-1' } })
+    })
+    const activeSignal = fetchMock.mock.calls[1]?.[1].signal as AbortSignal
+
+    await act(async () => root.unmount())
+    expect(activeSignal.aborted).toBe(true)
+
+    await act(async () => activeRefresh.resolve(accountResponse('account-1')))
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(toastMock.success).not.toHaveBeenCalled()
   })
 })

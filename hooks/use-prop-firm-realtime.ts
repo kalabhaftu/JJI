@@ -111,7 +111,9 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
   const requestSequenceRef = useRef(0)
   const pendingRealtimeRefreshRef = useRef(false)
   const accountIdRef = useRef(accountId)
+  const enabledRef = useRef(enabled)
   accountIdRef.current = accountId
+  enabledRef.current = enabled
 
   const fetchAccountData = useCallback(async (showLoadingState = true) => {
 
@@ -134,7 +136,7 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
         { timeout: API_TIMEOUT, signal: controller.signal }
       )
 
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId || !enabledRef.current) return
 
       if (!result.ok || !result.data?.success) {
         if (result.error?.code === 'CANCELLED') return
@@ -175,17 +177,17 @@ export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePro
       setLastUpdated(new Date())
 
     } catch (err) {
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
+      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId || !enabledRef.current) return
       reportClientError(err, { operation: 'load-prop-firm-realtime-account', route: '/api/v1/prop-firm/accounts' })
       setError(handleFetchError(err))
     } finally {
-      if (requestSequence === requestSequenceRef.current) {
+      if (requestSequence === requestSequenceRef.current && accountIdRef.current === accountId && enabledRef.current) {
         requestControllerRef.current = null
         setIsFetching(false)
         if (showLoadingState) {
           setIsLoading(false)
         }
-        if (pendingRealtimeRefreshRef.current && accountIdRef.current === accountId) {
+        if (pendingRealtimeRefreshRef.current) {
           pendingRealtimeRefreshRef.current = false
           void fetchAccountData(false)
         }

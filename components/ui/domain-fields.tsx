@@ -273,6 +273,70 @@ export function TagMultiSelect({
   )
 }
 
+type EditableTableFieldProps = {
+  value: string
+  onValueChange: (value: string) => void
+  commitOnBlur?: boolean
+  onCommit?: (value: string) => void
+  onCancel?: () => void
+  invalid?: boolean
+  disabled?: boolean
+  className?: string
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, "value" | "onChange" | "onKeyDown" | "onBlur">
+
+export function EditableTableField({
+  value,
+  onValueChange,
+  commitOnBlur = true,
+  onCommit,
+  onCancel,
+  invalid,
+  disabled,
+  className,
+  ...props
+}: EditableTableFieldProps) {
+  const [draft, setDraft] = React.useState(value)
+
+  React.useEffect(() => setDraft(value), [value])
+
+  function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault()
+      onValueChange(draft)
+      onCommit?.(draft)
+    } else if (event.key === "Escape") {
+      event.preventDefault()
+      setDraft(value)
+      onCancel?.()
+    }
+  }
+
+  function handleBlur() {
+    if (draft === value) return
+    if (commitOnBlur) {
+      onValueChange(draft)
+      onCommit?.(draft)
+    } else {
+      setDraft(value)
+      onCancel?.()
+    }
+  }
+
+  return (
+    <Input
+      {...props}
+      type="text"
+      value={draft}
+      disabled={disabled}
+      aria-invalid={invalid || undefined}
+      className={cn("h-8 w-full px-2", className)}
+      onChange={(event) => setDraft(event.target.value)}
+      onKeyDown={handleKeyDown}
+      onBlur={handleBlur}
+    />
+  )
+}
+
 type FormErrorSummaryProps = React.HTMLAttributes<HTMLDivElement> & {
   errors: Record<string, string | undefined>
   title?: string

@@ -56,7 +56,6 @@ vi.mock('@/hooks/use-accounts', () => ({
     refetch: vi.fn(),
     updateAccountInCache: vi.fn(),
   }),
-  invalidateAccountsCache: vi.fn(),
 }))
 
 vi.mock('@/components/ui/editor/lexical-editor', () => ({

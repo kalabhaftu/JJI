@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, Minus, Calendar, DollarSign } from "lucide-react"
 import { format } from 'date-fns'
-import { reportClientError } from '@/lib/observability/report-error'
+import { useQuery } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 
 interface Transaction {
   id: string
@@ -21,34 +23,22 @@ interface TransactionHistoryProps {
 }
 
 export function TransactionHistory({ accountId }: TransactionHistoryProps) {
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const scope = useQueryScope()
 
-  const fetchTransactions = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      setError(null)
+  const query = useQuery({
+    queryKey: queryKeys.accountTransactions(scope, accountId),
+    queryFn: ({ signal }) =>
+      apiRequestData<Transaction[]>(`/api/v1/live-accounts/${accountId}/transactions`, {
+        signal,
+        operation: 'load-account-transaction-history',
+      }),
+    enabled: isScopeReady(scope) && Boolean(accountId),
+    staleTime: 30_000,
+  })
 
-      const response = await fetch(`/api/v1/live-accounts/${accountId}/transactions`)
-      const result = await response.json()
-
-      if (!result.success) {
-        throw new Error(result.error?.message || 'Failed to fetch transactions')
-      }
-
-      setTransactions(result.data || [])
-    } catch (error) {
-      reportClientError(error, { operation: 'load-account-transaction-history', route: `/api/v1/live-accounts/${accountId}/transactions` })
-      setError(error instanceof Error ? error.message : 'Failed to fetch transactions')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [accountId])
-
-  useEffect(() => {
-    fetchTransactions()
-  }, [accountId, fetchTransactions])
+  const transactions = query.data || []
+  const isLoading = query.isPending
+  const error = query.error instanceof Error ? query.error.message : null
 
   if (isLoading) {
     return (
@@ -93,7 +83,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
             <p className="text-short mb-2">Error loading transactions</p>
             <p className="text-sm text-muted-foreground">{error}</p>
             <button
-              onClick={fetchTransactions}
+              onClick={() => void query.refetch()}
               className="mt-4 text-sm text-accent hover:underline"
             >
               Try again

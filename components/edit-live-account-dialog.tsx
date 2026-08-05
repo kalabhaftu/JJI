@@ -5,6 +5,10 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
 import { toast } from "sonner"
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -57,6 +61,8 @@ export function EditLiveAccountDialog({
   onSuccess
 }: EditLiveAccountDialogProps) {
   const [isSaving, setIsSaving] = useState(false)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const {
     register,
@@ -77,45 +83,43 @@ export function EditLiveAccountDialog({
     }
   }, [account, open, setValue])
 
-  const onSubmit = async (data: EditAccountForm) => {
-    if (!account) return
-
-    try {
-      setIsSaving(true)
-
-      const response = await fetch(`/api/v1/accounts/${account.id}`, {
+  const updateMutation = useMutation({
+    mutationFn: (data: EditAccountForm) =>
+      apiRequestData<unknown>(`/api/v1/accounts/${account?.id}`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: data.name.trim(),
           broker: data.broker.trim(),
           number: data.number.trim(),
           startingBalance: data.startingBalance
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to update account')
-      }
-
+        }),
+        retry: { mode: 'never' },
+        operation: 'update-live-account',
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
       toast('Account Updated', {
         description: 'Your account has been successfully updated.',
       })
-
       onOpenChange(false)
       onSuccess?.()
-
-    } catch (error) {
+    },
+    onError: (error) => {
       reportClientError(error, { operation: 'update-live-account', route: '/api/v1/accounts' })
       toast('Update Failed', {
         description: error instanceof Error ? error.message : 'Failed to update account',
       })
-    } finally {
+    },
+    onSettled: () => {
       setIsSaving(false)
-    }
+    },
+  })
+
+  const onSubmit = (data: EditAccountForm) => {
+    if (!account) return
+    setIsSaving(true)
+    updateMutation.mutate(data)
   }
 
   const handleCancel = () => {

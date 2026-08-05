@@ -37,7 +37,10 @@ import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Loader2, User, AlertCircle, CheckCircle2, Building2, DollarSign } from "lucide-react"
 import { toast } from "sonner"
-import { clearAccountsCache } from "@/hooks/use-accounts"
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { emitTourEvent } from '@/lib/tours/events'
 
 
@@ -86,6 +89,8 @@ interface LiveAccountDialogProps {
 export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveAccountDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const {
     register,
@@ -107,58 +112,57 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
 
   const watchedBroker = watch('broker')
 
-  const onSubmit = async (data: LiveAccountFormData) => {
-    try {
-      setIsSubmitting(true)
-
-      const finalBroker = data.broker === 'Other' ? data.customBroker : data.broker
-
-      const payload = {
-        name: data.name.trim(),
-        number: data.number.trim(),
-        startingBalance: data.startingBalance,
-        broker: finalBroker
-      }
-
-      const response = await fetch('/api/v1/accounts', {
+  const createMutation = useMutation({
+    mutationFn: (payload: { name: string; number: string; startingBalance: number; broker: string }) =>
+      apiRequestData<{ id: string }>('/api/v1/accounts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to create account')
-      }
-
+        body: JSON.stringify(payload),
+        retry: { mode: 'never' },
+        operation: 'create-live-account',
+      }),
+    onSuccess: async (result, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
       toast.success("Account created!", {
-        description: `Your ${finalBroker} account has been added.`,
+        description: `Your ${variables.broker} account has been added.`,
       })
 
-
-      if (typeof window !== 'undefined' && result.data?.id) {
+      if (typeof window !== 'undefined' && result?.id) {
         document.dispatchEvent(
           new CustomEvent('jji-account-created', {
-            detail: { id: result.data.id, type: 'live' }
+            detail: { id: result.id, type: 'live' }
           })
         )
-        emitTourEvent('account.created', { id: result.data.id })
+        emitTourEvent('account.created', { id: result.id })
       }
 
-      clearAccountsCache()
       reset()
       onSuccess?.()
       onOpenChange(false)
-
-    } catch (error) {
+    },
+    onError: (error) => {
       reportClientError(error, { operation: 'create-live-account', route: '/api/v1/accounts' })
       toast.error("Failed to create account", {
         description: error instanceof Error ? error.message : "Please try again",
       })
-    } finally {
+    },
+    onSettled: () => {
       setIsSubmitting(false)
+    },
+  })
+
+  const onSubmit = (data: LiveAccountFormData) => {
+    const finalBroker = data.broker === 'Other' ? data.customBroker : data.broker
+
+    const payload = {
+      name: data.name.trim(),
+      number: data.number.trim(),
+      startingBalance: data.startingBalance,
+      broker: finalBroker ?? ''
     }
+
+    setIsSubmitting(true)
+    createMutation.mutate(payload)
   }
 
   const handleDialogClose = (openState: boolean) => {

@@ -1,7 +1,11 @@
-import { useState, useEffect } from 'react'
+'use client'
+
+import { useQuery } from '@tanstack/react-query'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
-import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 
 interface Transaction {
   id: string
@@ -12,52 +16,43 @@ interface Transaction {
   createdAt: string
 }
 
-export function useLiveAccountTransactions() {
+export function useLiveAccountTransactions(accountId?: string) {
+  const scope = useQueryScope()
   const user = useUserStore(state => state.user)
   const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        
-        if (isDemo) {
-          setTransactions([
-            {
-              id: 'mock-tx-1',
-              accountId: 'mock-acc-1',
-              type: 'DEPOSIT',
-              amount: 100000,
-              description: 'Initial Deposit',
-              createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
-            }
-          ])
-          return
-        }
-
-        const response = await fetch('/api/v1/live-accounts/transactions')
-        const result = await response.json()
-
-        if (!result.success) {
-          throw new Error(result.error?.message || 'Failed to fetch transactions')
-        }
-
-        setTransactions(result.data || [])
-      } catch (error) {
-        reportClientError(error, { operation: 'load-live-account-transactions', route: '/api/v1/live-accounts/transactions' })
-        setError(error instanceof Error ? error.message : 'Failed to fetch transactions')
-      } finally {
-        setIsLoading(false)
+  const query = useQuery({
+    queryKey: queryKeys.accountTransactions(scope, accountId || ''),
+    queryFn: async ({ signal }) => {
+      if (isDemo) {
+        return [
+          {
+            id: 'mock-tx-1',
+            accountId: 'mock-acc-1',
+            type: 'DEPOSIT',
+            amount: 100000,
+            description: 'Initial Deposit',
+            createdAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+          }
+        ] as Transaction[]
       }
-    }
 
-    fetchTransactions()
-  }, [isDemo])
+      const url = accountId
+        ? `/api/v1/live-accounts/${accountId}/transactions`
+        : '/api/v1/live-accounts/transactions'
+      const data = await apiRequestData<Transaction[]>(url, {
+        signal,
+        operation: 'load-live-account-transactions',
+      })
+      return data || []
+    },
+    enabled: isScopeReady(scope) && Boolean(user?.id || isDemo),
+    staleTime: 30_000,
+  })
 
-  return { transactions, isLoading, error }
+  return {
+    transactions: query.data || [],
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+  }
 }

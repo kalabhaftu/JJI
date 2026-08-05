@@ -4,7 +4,6 @@ import { useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useUserStore } from '@/store/user-store'
 import { mutate } from 'swr'
-import { reportError } from '@/lib/observability/report-error'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 import { apiRequestData } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/query-keys'
@@ -45,26 +44,6 @@ interface UseAccountsOptions {
   status?: 'all' | 'active' | 'failed' | 'archived'
   type?: 'all' | 'live' | 'prop-firm'
   search?: string
-}
-
-const realtimeSubscribers = new Set<() => void>()
-
-function broadcastAccountsUpdate() {
-  realtimeSubscribers.forEach(callback => {
-    try {
-      callback()
-    } catch (error) {
-      reportError(error, {
-        surface: 'client',
-        operation: 'notify-account-cache-subscriber',
-      })
-    }
-  })
-}
-
-function subscribeToAccountsUpdates(callback: () => void) {
-  realtimeSubscribers.add(callback)
-  return () => realtimeSubscribers.delete(callback)
 }
 
 const ACCOUNTS_CACHE_PREFIXES = ['/api/v1/accounts', '/api/v1/data-management/accounts']

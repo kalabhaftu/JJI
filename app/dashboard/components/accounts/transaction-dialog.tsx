@@ -12,7 +12,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { Plus, Minus, DollarSign } from "lucide-react"
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 
 const transactionSchema = z.object({
   type: z.enum(['DEPOSIT', 'WITHDRAWAL']),
@@ -51,6 +55,8 @@ export function TransactionDialog({
 }: TransactionDialogProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionSchema),
@@ -63,10 +69,9 @@ export function TransactionDialog({
 
   const watchedType = form.watch('type')
 
-  const onSubmit = async (data: TransactionFormData) => {
-    setIsLoading(true)
-    try {
-      const response = await fetch(`/api/v1/live-accounts/${accountId}/transactions`, {
+  const createTransaction = useMutation({
+    mutationFn: (data: TransactionFormData) =>
+      apiRequestData<unknown>(`/api/v1/live-accounts/${accountId}/transactions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,14 +80,12 @@ export function TransactionDialog({
           type: data.type,
           amount: parseFloat(data.amount),
           description: data.description || null
-        })
-      })
-
-      const result = await response.json()
-
-      if (!result.success) {
-        throw new Error(result.error?.message || 'Transaction failed')
-      }
+        }),
+        retry: { mode: 'never' },
+        operation: 'create-account-transaction',
+      }),
+    onSuccess: async (_, data) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accountTransactions(scope) })
 
       toast.success(
         `${data.type === 'DEPOSIT' ? 'Deposit' : 'Withdrawal'} Successful`,
@@ -94,14 +97,21 @@ export function TransactionDialog({
       form.reset()
       setOpen(false)
       onTransactionComplete()
-    } catch (error) {
+    },
+    onError: (error) => {
       reportClientError(error, { operation: 'create-account-transaction', route: '/api/v1/accounts/transactions' })
       toast.error('Transaction Failed', {
         description: error instanceof Error ? error.message : 'An unexpected error occurred'
       })
-    } finally {
+    },
+    onSettled: () => {
       setIsLoading(false)
-    }
+    },
+  })
+
+  const onSubmit = (data: TransactionFormData) => {
+    setIsLoading(true)
+    createTransaction.mutate(data)
   }
 
   return (

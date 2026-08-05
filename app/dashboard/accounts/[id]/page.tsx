@@ -1,7 +1,10 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -183,80 +186,34 @@ function AccountAnalyticsTab({ accountNumber, trades }: { accountNumber: string;
 export default function LiveAccountDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const [account, setAccount] = useState<LiveAccountData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [accountError, setAccountError] = useState<string | null>(null)
-  const requestControllerRef = useRef<AbortController | null>(null)
-  const requestSequenceRef = useRef(0)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const accountId = params.id as string
-  const accountIdRef = useRef(accountId)
-  accountIdRef.current = accountId
   const user = useUserStore(state => state.user)
   const { formattedTrades } = useData()
-  const storeAccounts = useUserStore(state => state.accounts)
 
-  const fetchAccountData = useCallback(async () => {
-    requestControllerRef.current?.abort()
-    const controller = new AbortController()
-    requestControllerRef.current = controller
-    const requestSequence = ++requestSequenceRef.current
-
-    try {
-      setIsLoading(true)
-      setAccountError(null)
-
-      const accountData = await fetchLiveAccountDetail(accountId, controller.signal)
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
-
-      if (!accountData || accountData.accountType !== 'live') {
-        router.push('/dashboard/accounts')
-        return
-      }
-
-      setAccount(accountData as LiveAccountData)
-    } catch (error) {
-      if (controller.signal.aborted || requestSequence !== requestSequenceRef.current) return
-      setAccountError('Could not refresh this account. Your existing account data is still available.')
-    } finally {
-      if (requestSequence === requestSequenceRef.current) {
-        requestControllerRef.current = null
-        setIsLoading(false)
-      }
-    }
-  }, [accountId, router])
+  const accountQuery = useQuery({
+    queryKey: queryKeys.account(scope, accountId),
+    queryFn: ({ signal }) => fetchLiveAccountDetail(accountId, signal),
+    enabled: isScopeReady(scope) && Boolean(user?.id) && Boolean(accountId),
+    staleTime: 30_000,
+  })
+  const account = (accountQuery.data as LiveAccountData | undefined) || null
+  const isLoading = accountQuery.isPending
+  const accountError = accountQuery.error instanceof Error ? accountQuery.error.message : null
 
   useEffect(() => {
-    if (!storeAccounts || !accountId) return
-
-    const storeAccount = storeAccounts.find(acc => acc.id === accountId)
-    if (storeAccount && storeAccount.accountType === 'live') {
-
-      setAccount(prev => {
-        if (!prev) return null
-        return {
-          ...prev,
-          name: storeAccount.name || prev.name || "",
-          broker: storeAccount.broker || prev.broker || "",
-          displayName: (storeAccount as any).displayName || storeAccount.name || storeAccount.number || "",
-          startingBalance: storeAccount.startingBalance ?? prev.startingBalance ?? 0,
-          status: storeAccount.status || 'active',
-        } as LiveAccountData
-      })
+    if (account && account.accountType !== 'live') {
+      router.push('/dashboard/accounts')
     }
-  }, [storeAccounts, accountId])
+  }, [account, router])
 
-  useEffect(() => {
-    requestSequenceRef.current++
-    requestControllerRef.current?.abort()
-    requestControllerRef.current = null
-    setAccount(null)
-    setIsLoading(true)
-    setAccountError(null)
-  }, [accountId])
+  const refreshAccount = useCallback(() => {
+    void queryClient.invalidateQueries({ queryKey: queryKeys.account(scope, accountId) })
+  }, [queryClient, scope, accountId])
 
   useDatabaseRealtime({
     userId: user?.id,
@@ -264,32 +221,18 @@ export default function LiveAccountDetailPage() {
     onAccountChange: (change) => {
       const changedAccountId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
       if (changedAccountId === accountId) {
-
-        fetchAccountData()
+        refreshAccount()
       }
     },
     onAnyChange: (change) => {
-
       if (change.table === 'Trade') {
         const tradeAccountNumber = (change.newRecord?.accountNumber || change.oldRecord?.accountNumber) as string | undefined
         if (account && tradeAccountNumber === account.number) {
-          fetchAccountData()
+          refreshAccount()
         }
       }
     }
   })
-
-  useEffect(() => {
-    if (accountId) {
-      fetchAccountData()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accountId, refreshKey])
-
-  useEffect(() => () => {
-    requestSequenceRef.current++
-    requestControllerRef.current?.abort()
-  }, [])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
@@ -310,7 +253,7 @@ export default function LiveAccountDetailPage() {
             </Alert>
           )}
           <div className="flex justify-center gap-2">
-            {accountError && <Button onClick={fetchAccountData}>Try Again</Button>}
+            {accountError && <Button onClick={() => void accountQuery.refetch()}>Try Again</Button>}
             <Button variant="outline" onClick={() => router.push('/dashboard/accounts')}>
               Return to Accounts
             </Button>
@@ -360,10 +303,7 @@ export default function LiveAccountDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => {
-                setRefreshKey(prev => prev + 1)
-                fetchAccountData()
-              }}
+              onClick={() => void queryClient.invalidateQueries({ queryKey: queryKeys.account(scope, accountId) })}
               className="w-fit"
             >
               <RefreshCw className="h-4 w-4 sm:mr-2" />
@@ -502,8 +442,8 @@ export default function LiveAccountDetailPage() {
                       accountNumber={account.number}
                       currentBalance={account.currentEquity || 0}
                       onTransactionComplete={() => {
-
-                        setRefreshKey(prev => prev + 1)
+                        void queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accountTransactions(scope) })
+                        refreshAccount()
                       }}
                     >
                       <Button className="w-full bg-long hover:bg-long/90 text-long-foreground">
@@ -517,8 +457,8 @@ export default function LiveAccountDetailPage() {
                       accountNumber={account.number}
                       currentBalance={account.currentEquity || 0}
                       onTransactionComplete={() => {
-
-                        setRefreshKey(prev => prev + 1)
+                        void queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accountTransactions(scope) })
+                        refreshAccount()
                       }}
                     >
                       <Button variant="outline" className="w-full border-short/20 text-short hover:bg-short/10">
@@ -539,7 +479,7 @@ export default function LiveAccountDetailPage() {
             </div>
 
             <div className="mt-6">
-              <TransactionHistory accountId={account.id} key={refreshKey} />
+              <TransactionHistory accountId={account.id} />
             </div>
           </TabsContent>
 
@@ -583,10 +523,7 @@ export default function LiveAccountDetailPage() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         account={account}
-        onSuccess={() => {
-
-          fetchAccountData()
-        }}
+        onSuccess={refreshAccount}
       />
     </div>
   )

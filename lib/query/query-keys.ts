@@ -3,6 +3,7 @@ import type { QueryScope } from './query-scope'
 export const queryKeys = {
   accounts: (scope: QueryScope, filters: unknown) => ['accounts', scope, filters] as const,
   account: (scope: QueryScope, accountId: string) => ['accounts', scope, 'detail', accountId] as const,
+  accountTransactions: (scope: QueryScope, accountId: string) => ['accounts', scope, 'transactions', accountId] as const,
   trades: (scope: QueryScope, filters: unknown) => ['trades', scope, filters] as const,
   journal: (scope: QueryScope, params: unknown) => ['journal', scope, params] as const,
   tags: (scope: QueryScope) => ['tags', scope] as const,
@@ -24,6 +25,7 @@ export const queryKeys = {
 
 export const queryKeyPrefixes = {
   accounts: (scope: QueryScope) => ['accounts', scope] as const,
+  accountTransactions: (scope: QueryScope) => ['accounts', scope, 'transactions'] as const,
   trades: (scope: QueryScope) => ['trades', scope] as const,
   journal: (scope: QueryScope) => ['journal', scope] as const,
   tags: (scope: QueryScope) => ['tags', scope] as const,

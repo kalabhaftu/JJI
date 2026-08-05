@@ -30,28 +30,29 @@ function accountEndpoint({ accountType, accountId }: AccountRef): string {
 }
 
 export function fetchLiveAccountDetail(accountId: string, signal: AbortSignal): Promise<LiveAccountDetail> {
-  return apiRequestData<LiveAccountDetail>(`/api/v1/accounts/${accountId}?t=${Date.now()}`, {
+  return apiRequestData<LiveAccountDetail>(`/api/v1/accounts/${accountId}`, {
     signal,
     retry: { mode: 'safe' },
-    cache: 'no-store',
     operation: 'load-account-detail',
   })
 }
 
-export function deleteAccountRequest({ accountType, accountId }: AccountRef): Promise<unknown> {
+export function deleteAccountRequest({ accountType, accountId }: AccountRef, signal?: AbortSignal): Promise<unknown> {
   return apiRequestData<unknown>(accountEndpoint({ accountType, accountId }), {
     method: 'DELETE',
     retry: { mode: 'never' },
     operation: 'delete-live-account',
+    ...(signal ? { signal } : {}),
   })
 }
 
-export function setAccountArchived({ accountType, accountId }: AccountRef, isArchived: boolean): Promise<unknown> {
+export function setAccountArchived({ accountType, accountId }: AccountRef, isArchived: boolean, signal?: AbortSignal): Promise<unknown> {
   return apiRequestData<unknown>(accountEndpoint({ accountType, accountId }), {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ isArchived }),
     retry: { mode: 'never' },
     operation: isArchived ? 'restore-account' : 'archive-account',
+    ...(signal ? { signal } : {}),
   })
 }

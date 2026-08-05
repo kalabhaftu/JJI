@@ -5,8 +5,11 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
-import { useAccounts, clearAccountsCache } from "@/hooks/use-accounts"
+import { useAccounts } from "@/hooks/use-accounts"
 import { deleteAccountRequest, setAccountArchived } from '@/lib/accounts/api'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { useData } from '@/context/data-provider'
 import { useTradesStore } from '@/store/trades-store'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
@@ -76,7 +79,6 @@ import {
 import { cn } from "@/lib/utils"
 import { calculateAccountBalances } from "@/lib/utils/balance-calculator"
 import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
-import { useLiveAccountTransactions } from '@/hooks/use-live-account-transactions'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { AccountsPageSkeleton } from "./components/accounts-page-skeleton"
 import { PageHeader } from "@/components/ui/page-header"
@@ -166,6 +168,8 @@ export default function AccountsPage() {
   const { user } = useAuth()
   const searchInputRef = useRef<HTMLInputElement>(null)
   const userStore = useUserStore(state => state.user)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const [searchQuery, setSearchQuery] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
@@ -263,9 +267,7 @@ export default function AccountsPage() {
     setIsRefreshing(true)
     try {
 
-      clearAccountsCache()
-
-      await refetchAccounts()
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
       toast.success("Accounts refreshed")
     } catch (error) {
       reportClientError(error, { operation: 'refresh-accounts', route: '/dashboard/accounts' })
@@ -273,28 +275,24 @@ export default function AccountsPage() {
     } finally {
       setIsRefreshing(false)
     }
-  }, [refetchAccounts])
+  }, [queryClient, scope])
 
-  const handleAccountCreated = useCallback(() => {
-    clearAccountsCache()
-
-    refetchAccounts()
+  const handleAccountCreated = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
     refreshAllData()
     setCreateLiveDialogOpen(false)
     setCreatePropFirmDialogOpen(false)
     toast.success("Account created successfully")
-  }, [refetchAccounts, refreshAllData])
+  }, [queryClient, scope, refreshAllData])
 
-  const handleAccountUpdated = useCallback(() => {
-    clearAccountsCache()
-
-    refetchAccounts()
+  const handleAccountUpdated = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
     refreshAllData()
     setEditLiveDialogOpen(false)
     setEditPropFirmDialogOpen(false)
     setEditingAccount(null)
     toast.success("Account updated successfully")
-  }, [refetchAccounts, refreshAllData])
+  }, [queryClient, scope, refreshAllData])
 
   const handleViewAccount = useCallback((account: Account) => {
     if (account.accountType === 'prop-firm') {
@@ -336,8 +334,7 @@ export default function AccountsPage() {
       await deleteAccountRequest({ accountType: deletingAccount.accountType, accountId })
 
       toast.success(`${accountName} deleted permanently`)
-      clearAccountsCache()
-      await refetchAccounts()
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
       await refreshAllData()
       setDeletingAccount(null)
       setDeleteConfirmText('')
@@ -345,7 +342,7 @@ export default function AccountsPage() {
       reportClientError(error, { operation: 'delete-live-account', route: '/dashboard/accounts' })
       toast.error("Failed to delete account")
     }
-  }, [deletingAccount, refetchAccounts, refreshAllData, deleteConfirmText])
+  }, [deletingAccount, queryClient, scope, refreshAllData, deleteConfirmText])
 
   const handleArchiveAccount = useCallback(async (account: Account) => {
     const accountName = account.displayName || account.name || account.number
@@ -359,13 +356,12 @@ export default function AccountsPage() {
       await setAccountArchived({ accountType: account.accountType, accountId }, !isArchived)
 
       toast.success(isArchived ? `${accountName} restored` : `${accountName} archived`)
-      clearAccountsCache()
-      await refetchAccounts()
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
     } catch (error) {
       reportClientError(error, { operation: isArchived ? 'restore-account' : 'archive-account', route: '/dashboard/accounts' })
       toast.error("Failed to update account")
     }
-  }, [refetchAccounts])
+  }, [queryClient, scope])
 
   return (
     <TooltipProvider>

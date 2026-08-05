@@ -29,11 +29,10 @@ describe('account request lifecycle module', () => {
 
     expect(apiRequestData).toHaveBeenCalledTimes(1)
     const [url, init] = apiRequestData.mock.calls[0]
-    expect(url).toMatch(/^\/api\/v1\/accounts\/acc-1\?t=\d+$/)
+    expect(url).toBe('/api/v1/accounts/acc-1')
     expect(init).toMatchObject({
       signal,
       retry: { mode: 'safe' },
-      cache: 'no-store',
       operation: 'load-account-detail',
     })
   })

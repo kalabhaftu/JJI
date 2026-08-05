@@ -5,7 +5,9 @@ import { usePathname, useRouter } from 'next/navigation'
 import type { Route } from 'next'
 import { toast } from 'sonner'
 import { useUserStore } from '@/store/user-store'
-import { clearAccountsCache } from '@/hooks/use-accounts'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { reportError } from '@/lib/observability/report-error'
 import { TOURS } from '@/lib/tours/definitions'
 import {
@@ -62,6 +64,8 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const storeUser = useUserStore((state) => state.user)
   const setDbUser = useUserStore((state) => state.setUser)
   const isMobile = useUserStore((state) => state.isMobile)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const [activeTour, setActiveTour] = useState<TourId | null>(null)
   const [stepIndex, setStepIndex] = useState(0)
@@ -159,7 +163,8 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
         body: JSON.stringify({ accountId: sampleAccountId }),
       })
       if (!response.ok) throw new Error('Sample workspace cleanup failed')
-      clearAccountsCache()
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
       setCleanupError(null)
       await saveOnboardingStatus({ sample_account_id: null })
       return true

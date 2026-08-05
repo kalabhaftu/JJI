@@ -30,6 +30,9 @@ import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useRouter } from 'next/navigation'
 import { useAccounts } from '@/hooks/use-accounts'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 
 
 const COMMON_INSTRUMENTS = [
@@ -126,6 +129,8 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
   const user = useUserStore(state => state.user)
   const supabaseUser = useUserStore(state => state.supabaseUser)
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const {
     register,
@@ -269,8 +274,8 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
       })
 
 
-      const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
-      invalidateAccountsCache('trade saved')
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
 
 
       router.push(`/dashboard/prop-firm/accounts/${accountId}/trades`)

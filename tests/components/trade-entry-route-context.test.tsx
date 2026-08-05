@@ -20,7 +20,10 @@ vi.mock('next/navigation', () => ({
   useSearchParams: () => paramsRef.current,
 }))
 
-vi.mock('@tanstack/react-query', () => ({ useQuery: useQueryMock }))
+vi.mock('@tanstack/react-query', () => ({
+  useQuery: useQueryMock,
+  useQueryClient: () => ({ invalidateQueries: vi.fn() }),
+}))
 
 vi.mock('@/lib/query/use-query-scope', () => ({
   useQueryScope: () => ({ surface: 'authenticated', userId: 'user-1' }),

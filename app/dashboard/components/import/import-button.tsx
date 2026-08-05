@@ -27,6 +27,9 @@ import FileUpload from './file-upload'
 import HeaderSelection from './header-selection'
 import AccountSelection from './account-selection'
 import { useData } from '@/context/data-provider'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import ColumnMapping from './column-mapping'
 import { FormatPreview } from './components/format-preview'
 import { platforms } from './config/platforms'
@@ -135,6 +138,8 @@ export default function ImportButton() {
   const user = useUserStore(state => state.user)
   const supabaseUser = useUserStore(state => state.supabaseUser)
   const { refreshTrades } = useData()
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const platform = useMemo(() =>
     platforms.find(p => p.type === importType) || platforms.find(p => p.platformName === 'csv-ai'),
@@ -224,8 +229,8 @@ export default function ImportButton() {
         evaluation: jobMeta.evaluation,
       }
 
-      const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
-      invalidateAccountsCache('trades imported')
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
 
       setSaveProgress(100)
 

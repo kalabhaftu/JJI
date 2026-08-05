@@ -3,7 +3,6 @@
 import { useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useUserStore } from '@/store/user-store'
-import { mutate } from 'swr'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 import { apiRequestData } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/query-keys'
@@ -44,16 +43,6 @@ interface UseAccountsOptions {
   status?: 'all' | 'active' | 'failed' | 'archived'
   type?: 'all' | 'live' | 'prop-firm'
   search?: string
-}
-
-const ACCOUNTS_CACHE_PREFIXES = ['/api/v1/accounts', '/api/v1/data-management/accounts']
-
-export function invalidateAccountsCache(_reason?: string) {
-  clearAccountsCache()
-}
-
-export function clearAccountsCache() {
-  mutate(key => typeof key === 'string' && ACCOUNTS_CACHE_PREFIXES.some(prefix => key.startsWith(prefix)))
 }
 
 export function useAccounts(options: UseAccountsOptions = {}) {

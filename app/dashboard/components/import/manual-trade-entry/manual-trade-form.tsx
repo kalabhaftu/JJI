@@ -45,6 +45,9 @@ import { importTradesThroughApi } from '@/lib/api/trade-import-client'
 import { calculatePnL, calculateDuration } from '@/lib/utils/trade-calculations'
 import { useUserStore } from '@/store/user-store'
 import { useAccounts } from '@/hooks/use-accounts'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { cn } from '@/lib/utils'
 import { phaseValidationReducer, runPhaseValidation } from '@/lib/validation/phase-validation'
 import { ManualTradeValidationError } from './manual-trade-validation-error'
@@ -181,6 +184,8 @@ const stepInfo = [
 ]
 
 export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialValues, onValuesChange, onSuccess }: ManualTradeFormProps) {
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const handleClose = () => {
     if (onClose) onClose();
     else if (setIsOpen) setIsOpen(false);
@@ -389,10 +394,10 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
         description: `Trade saved to ${accountName}`,
       })
 
-      const { invalidateAccountsCache } = await import("@/hooks/use-accounts")
-       invalidateAccountsCache('trade saved')
-       onSuccess?.()
-       if (!onSuccess) handleClose()
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
+      onSuccess?.()
+      if (!onSuccess) handleClose()
 
     } catch (error) {
       reportClientError(error, { operation: 'save-manual-trade', route: '/api/v1/trades' })

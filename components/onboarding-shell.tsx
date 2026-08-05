@@ -10,13 +10,17 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { useData } from '@/context/data-provider'
 import { useTour } from '@/context/tour-context'
-import { clearAccountsCache } from '@/hooks/use-accounts'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { downloadSampleTradesCsv } from '@/lib/tours/sample-csv'
 
 type SetupView = 'welcome' | 'choice' | 'create'
 
 export function OnboardingShell() {
   const { accounts } = useData()
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const {
     onboardingOpen,
     onboardingStatus,
@@ -88,7 +92,8 @@ export function OnboardingShell() {
         if (!response.ok || !payload.success || !payload.data?.id) throw new Error(payload.error?.message || 'Could not create sample workspace')
         setLocalSampleAccountId(payload.data.id)
         await setSampleAccountId(payload.data.id)
-        clearAccountsCache()
+        await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+        await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
         openImporter()
       } catch (error) {
         reportClientError(error, { operation: 'create-sample-workspace', route: '/dashboard' })
@@ -117,7 +122,8 @@ export function OnboardingShell() {
       const payload = await response.json()
       if (!response.ok || !payload.success) throw new Error(payload.error?.message || 'Could not create account')
       document.dispatchEvent(new CustomEvent('jji-account-created', { detail: { id: payload.data.id, type: 'live' } }))
-      clearAccountsCache()
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
       toast.success('Trading account created')
       openImporter()
     } catch (error) {

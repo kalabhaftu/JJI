@@ -1,8 +1,10 @@
 
 
 import { useEffect, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { autoCleanStaleCache, clearAccountCaches, getCacheStats } from '@/lib/cache/persistent-cache'
-import { invalidateAccountsCache } from './use-accounts'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 
 interface UseAutoCacheCleanupOptions {
   userId?: string
@@ -13,6 +15,13 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
   const { userId, enabled = true } = options
   const hasRunRef = useRef(false)
   const lastUserIdRef = useRef<string | undefined>(undefined)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
+
+  const invalidateAccountQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
+  }
   
   useEffect(() => {
     if (!enabled) return
@@ -26,7 +35,7 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
           const wasCleared = await autoCleanStaleCache()
           
           if (wasCleared) {
-            invalidateAccountsCache('auto-cleanup on version mismatch')
+            await invalidateAccountQueries()
           }
         } catch (error) {
 
@@ -36,7 +45,7 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
     
     if (userId && lastUserIdRef.current && userId !== lastUserIdRef.current) {
       clearAccountCaches()
-      invalidateAccountsCache('user changed')
+      void invalidateAccountQueries()
     }
     
     lastUserIdRef.current = userId
@@ -46,21 +55,7 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
     manualCleanup: async () => {
       await autoCleanStaleCache()
       clearAccountCaches()
-      invalidateAccountsCache('manual cleanup')
+      await invalidateAccountQueries()
     }
   }
 }
-
-
-function useAccountChangeDetection() {
-  const accountsVersionRef = useRef<number>(0)
-  
-  return {
-    notifyAccountsChanged: () => {
-      accountsVersionRef.current++
-      clearAccountCaches()
-      invalidateAccountsCache('accounts changed')
-    }
-  }
-}
-

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import React, { act } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 class ResizeObserverStub {
   observe() {}
@@ -34,7 +35,6 @@ vi.mock('@/hooks/use-accounts', () => ({
     refetch: vi.fn(),
     updateAccountInCache: vi.fn(),
   }),
-  invalidateAccountsCache: vi.fn(),
 }))
 
 vi.mock('@/store/user-store', () => ({
@@ -89,8 +89,13 @@ async function renderForm(): Promise<RenderedForm> {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const root = createRoot(container)
+  const queryClient = new QueryClient()
   await act(async () => {
-    root.render(<ManualTradeForm initialValues={fullValues} />)
+    root.render(
+      <QueryClientProvider client={queryClient}>
+        <ManualTradeForm initialValues={fullValues} />
+      </QueryClientProvider>
+    )
   })
   return {
     container,

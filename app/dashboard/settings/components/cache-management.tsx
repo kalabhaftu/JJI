@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { formatTimeInZone } from '@/lib/time-utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -11,7 +12,8 @@ import {
   clearAccountCaches,
   getCacheStats
 } from '@/lib/cache/persistent-cache'
-import { invalidateAccountsCache } from '@/hooks/use-accounts'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { Trash2 as Trash, Info, CheckCircle2 as CheckCircle } from "lucide-react"
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -19,6 +21,8 @@ import { reportClientError } from '@/lib/observability/report-error'
 export function CacheManagement({ plain = false }: { plain?: boolean }) {
   const [isClearing, setIsClearing] = useState(false)
   const [lastCleared, setLastCleared] = useState<Date | null>(null)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const [stats, setStats] = useState({
     version: '0',
     localStorageSize: 0,
@@ -35,7 +39,8 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
 
     try {
       const cleared = clearAccountCaches()
-      invalidateAccountsCache('manual clear from settings')
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
 
       toast.success('Account cache cleared', {
         description: `Cleared ${cleared} cached items. Data will refresh automatically.`
@@ -64,7 +69,8 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
         clearIndexedDB: false
       })
 
-      invalidateAccountsCache('manual clear all from settings')
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
 
       const total = result.localStorage + result.sessionStorage + result.serviceWorker + result.indexedDB
 

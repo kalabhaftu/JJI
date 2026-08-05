@@ -1,13 +1,17 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
 import { motion, AnimatePresence } from 'framer-motion'
 import { usePropFirmRealtime } from "@/hooks/use-prop-firm-realtime"
 import { useDatabaseRealtime } from "@/lib/realtime/database-realtime"
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -62,20 +66,12 @@ export default function AccountDetailPage() {
   const router = useRouter()
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
-  const [accountData, setAccountData] = useState<any>(null)
   const [isEditingName, setIsEditingName] = useState(false)
   const [editedAccountName, setEditedAccountName] = useState('')
-  const [tradesData, setTradesData] = useState<any[]>([])
-  const [payoutsData, setPayoutsData] = useState<any>(null)
-  const [isLoadingData, setIsLoadingData] = useState(false)
-  const [dataError, setDataError] = useState<string | null>(null)
-  const hasFetchedDataRef = useRef(false)
-  const completeDataControllerRef = useRef<AbortController | null>(null)
-  const completeDataSequenceRef = useRef(0)
 
   const accountId = params.id as string
-  const accountIdRef = useRef(accountId)
-  accountIdRef.current = accountId
+  const scope = useQueryScope()
+  const queryClient = useQueryClient()
 
   const {
     account: realtimeAccount,
@@ -89,60 +85,51 @@ export default function AccountDetailPage() {
     enabled: !!accountId
   })
 
-  const fetchCompleteData = useCallback(async () => {
-    completeDataControllerRef.current?.abort()
-    const controller = new AbortController()
-    completeDataControllerRef.current = controller
-    const requestSequence = ++completeDataSequenceRef.current
-    setIsLoadingData(true)
-    setDataError(null)
+  const tradesQuery = useQuery({
+    queryKey: queryKeys.propFirmTrades(scope, accountId, { phase: 'all' }),
+    queryFn: ({ signal }) => apiRequestData<{ trades: any[] }>(
+      `/api/v1/prop-firm/accounts/${accountId}/trades?phase=all`,
+      { signal, operation: 'load-prop-firm-trades' },
+    ),
+    enabled: isScopeReady(scope) && Boolean(accountId),
+    staleTime: 30_000,
+  })
 
-    try {
-      const [tradesRes, payoutsRes] = await Promise.all([
-        fetch(`/api/v1/prop-firm/accounts/${accountId}/trades?phase=all`, { signal: controller.signal }),
-        fetch(`/api/v1/prop-firm/accounts/${accountId}/payouts`, { signal: controller.signal })
-      ])
+  const payoutsQuery = useQuery({
+    queryKey: queryKeys.payouts(scope, { accountId }),
+    queryFn: ({ signal }) => apiRequestData<{ eligibility: any; history: any[] }>(
+      `/api/v1/prop-firm/accounts/${accountId}/payouts`,
+      { signal, operation: 'load-prop-firm-payouts' },
+    ),
+    enabled: isScopeReady(scope) && Boolean(accountId),
+    staleTime: 30_000,
+  })
 
-      const [tradesJson, payoutsJson] = await Promise.all([
-        tradesRes.json(),
-        payoutsRes.json()
-      ])
+  const tradesData = tradesQuery.data?.trades || []
+  const payoutsData = payoutsQuery.data || null
+  const dataError = tradesQuery.error || payoutsQuery.error
+    ? 'Could not refresh account activity. Previously loaded trades and payouts are still shown.'
+    : null
 
-      if (requestSequence !== completeDataSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId) return
-      if (!tradesRes.ok || !tradesJson.success || !payoutsRes.ok || !payoutsJson.success) {
-        throw new Error('Failed to refresh account activity')
-      }
-
-      setTradesData(tradesJson.data.trades)
-      setPayoutsData(payoutsJson.data)
-    } catch (error) {
-      if (controller.signal.aborted || requestSequence !== completeDataSequenceRef.current) return
-      reportClientError(error, { operation: 'load-prop-firm-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
-      setDataError('Could not refresh account activity. Previously loaded trades and payouts are still shown.')
-    } finally {
-      if (requestSequence === completeDataSequenceRef.current) {
-        completeDataControllerRef.current = null
-        setIsLoadingData(false)
-      }
-    }
-  }, [accountId])
-
-  useEffect(() => () => {
-    completeDataSequenceRef.current++
-    completeDataControllerRef.current?.abort()
-  }, [])
-
-  useEffect(() => {
-    completeDataSequenceRef.current++
-    completeDataControllerRef.current?.abort()
-    completeDataControllerRef.current = null
-    hasFetchedDataRef.current = false
-    setAccountData(null)
-    setTradesData([])
-    setPayoutsData(null)
-    setDataError(null)
-    setIsLoadingData(false)
-  }, [accountId])
+  const renameMutation = useMutation({
+    mutationFn: () => apiRequestData(`/api/v1/prop-firm/accounts/${accountId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accountName: editedAccountName }),
+      retry: { mode: 'never' },
+      operation: 'update-prop-firm-account-name',
+    }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      toast.success('Name updated')
+      setIsEditingName(false)
+    },
+    onError: (error) => {
+      reportClientError(error, { operation: 'update-prop-firm-account-name', route: `/api/v1/prop-firm/accounts/${accountId}` })
+      toast.error('Failed to update name')
+    },
+  })
 
   useEffect(() => {
     if (realtimeError) {
@@ -153,94 +140,65 @@ export default function AccountDetailPage() {
     }
   }, [realtimeError, router])
 
-  useEffect(() => {
-    if (realtimeAccount && accountId && !hasFetchedDataRef.current) {
-      hasFetchedDataRef.current = true
-      fetchCompleteData()
-    }
-  }, [realtimeAccount, accountId, fetchCompleteData])
-
   useDatabaseRealtime({
     userId: user?.id,
     enabled: !!accountId && !!user?.id,
-    onTradeChange: (change) => {
-
-      if (realtimeAccount) {
-        const tradePhaseAccountId = (change.newRecord?.phaseAccountId || change.oldRecord?.phaseAccountId) as string | undefined
-        if (tradePhaseAccountId) {
-          const accountPhaseIds = realtimeAccount.phases.map(p => p.id)
-          if (accountPhaseIds.includes(tradePhaseAccountId)) {
-            fetchCompleteData()
-          }
-        }
-      }
+    onTradeChange: () => {
+      void queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmTrades(scope) })
     },
-    onAccountChange: (change) => {
-
-      if (change.table === 'PhaseAccount' || change.table === 'MasterAccount') {
-        const changedId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
-        if (change.table === 'MasterAccount' && changedId === accountId) {
-          fetchCompleteData()
-        } else if (change.table === 'PhaseAccount') {
-          const phaseMasterAccountId = (change.newRecord?.masterAccountId || change.oldRecord?.masterAccountId) as string | undefined
-          if (phaseMasterAccountId === accountId) {
-            fetchCompleteData()
-          }
-        }
-      }
-    }
   })
 
-  useEffect(() => {
-    if (realtimeAccount) {
-      const isFunded = isFundedPhase(realtimeAccount.evaluationType, realtimeAccount.currentPhase?.phaseNumber)
+  const accountData = useMemo(() => {
+    if (!realtimeAccount) return null
+    const isFunded = isFundedPhase(realtimeAccount.evaluationType, realtimeAccount.currentPhase?.phaseNumber)
 
-      setAccountData({
-        account: {
-          id: realtimeAccount.id,
-          name: realtimeAccount.accountName || 'Unnamed Account',
-          number: realtimeAccount.currentPhase?.phaseId || `master-${realtimeAccount.id}`,
-          currentBalance: realtimeAccount.currentBalance ?? realtimeAccount.accountSize ?? 0,
-          currentEquity: realtimeAccount.currentEquity ?? realtimeAccount.currentBalance ?? realtimeAccount.accountSize ?? 0,
-          startingBalance: realtimeAccount.accountSize ?? 0,
-          status: realtimeAccount.status || 'active',
-          evaluationType: realtimeAccount.evaluationType || 'Two Step',
-          createdAt: realtimeAccount.lastUpdated || new Date().toISOString(),
-          dailyDrawdownPercent: realtimeAccount.currentPhase?.dailyDrawdownPercent ?? 5,
-          maxDrawdownPercent: realtimeAccount.currentPhase?.maxDrawdownPercent ?? 10,
-          profitSplitPercent: realtimeAccount.currentPhase?.profitSplitPercent,
-          payoutCycleDays: realtimeAccount.currentPhase?.payoutCycleDays,
-        },
-        currentPhase: {
-          phaseNumber: realtimeAccount.currentPhase?.phaseNumber ?? 1,
-          status: realtimeAccount.currentPhase?.status || 'active',
-          profitTarget: realtimeAccount.currentPhase && realtimeAccount.accountSize
-            ? (realtimeAccount.currentPhase.profitTargetPercent / 100) * realtimeAccount.accountSize
-            : 0,
-          grossProfitSincePhaseStart: realtimeAccount.currentGrossPnL ?? realtimeAccount.currentPnL ?? 0,
-          netProfitSincePhaseStart: realtimeAccount.currentNetPnL ?? realtimeAccount.currentPnL ?? 0,
-          isFunded,
-        },
-        drawdown: {
-          dailyDrawdownRemaining: realtimeDrawdown?.dailyDrawdownRemaining ?? 0,
-          maxDrawdownRemaining: realtimeDrawdown?.maxDrawdownRemaining ?? 0,
-          isBreached: realtimeDrawdown?.isBreached ?? false,
-          breachType: realtimeDrawdown?.breachType
-        },
-        progress: {
-          profitProgress: realtimeAccount.profitTargetProgress ?? 0,
-        },
-        recentTrades: tradesData || [],
-        payoutEligibility: payoutsData?.eligibility || null,
-        payouts: payoutsData?.history || [],
-        phases: realtimeAccount.phases || []
-      })
-
-      if (!editedAccountName) {
-        setEditedAccountName(realtimeAccount.accountName || '')
-      }
+    return {
+      account: {
+        id: realtimeAccount.id,
+        name: realtimeAccount.accountName || 'Unnamed Account',
+        number: realtimeAccount.currentPhase?.phaseId || `master-${realtimeAccount.id}`,
+        currentBalance: realtimeAccount.currentBalance ?? realtimeAccount.accountSize ?? 0,
+        currentEquity: realtimeAccount.currentEquity ?? realtimeAccount.currentBalance ?? realtimeAccount.accountSize ?? 0,
+        startingBalance: realtimeAccount.accountSize ?? 0,
+        status: realtimeAccount.status || 'active',
+        evaluationType: realtimeAccount.evaluationType || 'Two Step',
+        createdAt: realtimeAccount.lastUpdated || new Date().toISOString(),
+        dailyDrawdownPercent: realtimeAccount.currentPhase?.dailyDrawdownPercent ?? 5,
+        maxDrawdownPercent: realtimeAccount.currentPhase?.maxDrawdownPercent ?? 10,
+        profitSplitPercent: realtimeAccount.currentPhase?.profitSplitPercent,
+        payoutCycleDays: realtimeAccount.currentPhase?.payoutCycleDays,
+      },
+      currentPhase: {
+        phaseNumber: realtimeAccount.currentPhase?.phaseNumber ?? 1,
+        status: realtimeAccount.currentPhase?.status || 'active',
+        profitTarget: realtimeAccount.currentPhase && realtimeAccount.accountSize
+          ? (realtimeAccount.currentPhase.profitTargetPercent / 100) * realtimeAccount.accountSize
+          : 0,
+        grossProfitSincePhaseStart: realtimeAccount.currentGrossPnL ?? realtimeAccount.currentPnL ?? 0,
+        netProfitSincePhaseStart: realtimeAccount.currentNetPnL ?? realtimeAccount.currentPnL ?? 0,
+        isFunded,
+      },
+      drawdown: {
+        dailyDrawdownRemaining: realtimeDrawdown?.dailyDrawdownRemaining ?? 0,
+        maxDrawdownRemaining: realtimeDrawdown?.maxDrawdownRemaining ?? 0,
+        isBreached: realtimeDrawdown?.isBreached ?? false,
+        breachType: realtimeDrawdown?.breachType
+      },
+      progress: {
+        profitProgress: realtimeAccount.profitTargetProgress ?? 0,
+      },
+      recentTrades: tradesData || [],
+      payoutEligibility: payoutsData?.eligibility || null,
+      payouts: payoutsData?.history || [],
+      phases: realtimeAccount.phases || []
     }
-  }, [realtimeAccount, realtimeDrawdown, tradesData, payoutsData, editedAccountName])
+  }, [realtimeAccount, realtimeDrawdown, tradesData, payoutsData])
+
+  useEffect(() => {
+    if (realtimeAccount && !editedAccountName) {
+      setEditedAccountName(realtimeAccount.accountName || '')
+    }
+  }, [realtimeAccount, editedAccountName])
 
   const phaseSummaries = useMemo(() => {
     const map = new Map<string, {
@@ -299,28 +257,12 @@ export default function AccountDetailPage() {
   }, [phaseSummaries])
 
   const handleRefresh = async () => {
-    hasFetchedDataRef.current = false
     await refetch()
-    await fetchCompleteData()
+    await Promise.all([tradesQuery.refetch(), payoutsQuery.refetch()])
   }
 
-  const handleSaveName = async () => {
-    try {
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountName: editedAccountName })
-      })
-
-      if (!response.ok) throw new Error('Failed to update')
-
-      toast.success("Name updated")
-      setIsEditingName(false)
-      await refetch()
-    } catch (error) {
-      reportClientError(error, { operation: 'update-prop-firm-account-name', route: `/api/v1/prop-firm/accounts/${accountId}` })
-      toast.error("Failed to update name")
-    }
+  const handleSaveName = () => {
+    renameMutation.mutate()
   }
 
   const getStatusVariant = (status: AccountStatus): "default" | "secondary" | "destructive" | "outline" => {
@@ -684,7 +626,7 @@ export default function AccountDetailPage() {
                   <Badge variant="secondary">{tradesData.length} Total</Badge>
                 </CardHeader>
                 <CardContent>
-                  {isLoadingData ? (
+                  {tradesQuery.isLoading ? (
                     <div className="overflow-x-auto rounded-2xl border border-border/30 bg-card/40">
                       <table className="w-full">
                         <thead className="bg-muted/50">

@@ -44,7 +44,7 @@ export const domainOwnership: Record<ServerStateDomain, DomainOwnership> = {
   templates: ownership('templates', 'queryKeys.templates', 'template mutations'),
   notifications: ownership('notifications', 'queryKeys.notifications', 'notification mutations'),
   reports: ownership('reports', 'queryKeys.reportStats', 'report mutations'),
-  'prop-firm': ownership('prop-firm', 'queryKeys.propFirmAccounts', 'usePropFirmQueries'),
+  'prop-firm': ownership('prop-firm', 'queryKeys.propFirmAccounts', 'prop-firm mutations'),
   payouts: ownership('payouts', 'queryKeys.payouts', 'payout mutations'),
   goals: ownership('goals', 'queryKeys.goals', 'goal mutations'),
   settings: ownership('settings', 'queryKeys.settings', 'useSettingsQuery'),

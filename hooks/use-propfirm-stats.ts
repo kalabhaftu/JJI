@@ -1,16 +1,18 @@
+'use client'
+
 import { useQuery } from '@tanstack/react-query'
 import type { PropFirmSummaryDTO } from '@/lib/statistics/propfirm-statistics'
-import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 
 export function usePropFirmStats(initialData?: PropFirmSummaryDTO) {
-  const user = useUserStore(state => state.user)
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const scope = useQueryScope()
 
   return useQuery<PropFirmSummaryDTO>({
-    queryKey: ['propfirm-stats', isDemo],
-    queryFn: async () => {
-      if (isDemo) {
+    queryKey: queryKeys.propFirmStats(scope),
+    queryFn: async ({ signal }) => {
+      if (scope.surface === 'demo') {
         return {
           totalAccounts: 1,
           activeAccounts: 1,
@@ -54,12 +56,13 @@ export function usePropFirmStats(initialData?: PropFirmSummaryDTO) {
           }]
         }
       }
-      const res = await fetch('/api/v1/reports/propfirm')
-      if (!res.ok) throw new Error('Failed to fetch prop firm stats')
-      const payload = await res.json()
-      return payload.data
+      return apiRequestData<PropFirmSummaryDTO>('/api/v1/reports/propfirm', {
+        signal,
+        operation: 'load-propfirm-stats',
+      })
     },
     ...(initialData !== undefined && { initialData }),
+    enabled: isScopeReady(scope),
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
   })

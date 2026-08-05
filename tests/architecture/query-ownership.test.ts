@@ -34,4 +34,12 @@ describe('server state ownership', () => {
       expect(ownership.invalidationEvents.length).toBeGreaterThan(0)
     }
   })
+
+  it('pins the canonical prop-firm mutation owner', () => {
+    expect(domainOwnership['prop-firm']).toMatchObject({
+      owner: 'tanstack-query',
+      queryKeyFactory: 'queryKeys.propFirmAccounts',
+      mutationOwner: 'prop-firm mutations',
+    })
+  })
 })

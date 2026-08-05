@@ -14,6 +14,7 @@ export const queryKeys = {
   propFirmAccount: (scope: QueryScope, accountId: string) => ['prop-firm', 'accounts', scope, accountId] as const,
   propFirmTrades: (scope: QueryScope, accountId: string, filters: unknown) =>
     ['prop-firm', 'trades', scope, accountId, filters] as const,
+  propFirmStats: (scope: QueryScope) => ['prop-firm', 'stats', scope] as const,
   payouts: (scope: QueryScope, filters: unknown) => ['prop-firm', 'payouts', scope, filters] as const,
   payout: (scope: QueryScope, payoutId: string) => ['prop-firm', 'payouts', scope, 'detail', payoutId] as const,
   settings: (scope: QueryScope) => ['settings', scope] as const,
@@ -34,6 +35,7 @@ export const queryKeyPrefixes = {
   notifications: (scope: QueryScope) => ['notifications', scope] as const,
   propFirmAccounts: (scope: QueryScope) => ['prop-firm', 'accounts', scope] as const,
   propFirmTrades: (scope: QueryScope) => ['prop-firm', 'trades', scope] as const,
+  propFirmStats: (scope: QueryScope) => ['prop-firm', 'stats', scope] as const,
   payouts: (scope: QueryScope) => ['prop-firm', 'payouts', scope] as const,
   settings: (scope: QueryScope) => ['settings', scope] as const,
   goals: (scope: QueryScope) => ['goals', scope] as const,

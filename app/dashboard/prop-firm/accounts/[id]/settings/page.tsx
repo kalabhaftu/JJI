@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useAuth } from "@/context/auth-provider"
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
 import { apiRequestData } from '@/lib/api/client'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -75,11 +77,6 @@ interface PhaseData {
 export default function AccountSettingsPage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuth()
-  const [account, setAccount] = useState<AccountData | null>(null)
-  const [phases, setPhases] = useState<PhaseData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
-  const [isSaving, setIsSaving] = useState(false)
   const [activeTab, setActiveTab] = useState('general')
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
@@ -90,45 +87,76 @@ export default function AccountSettingsPage() {
   })
 
   const accountId = params.id as string
+  const scope = useQueryScope()
+  const queryClient = useQueryClient()
 
-  const fetchAccount = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
+  const accountQuery = useQuery({
+    queryKey: queryKeys.propFirmAccount(scope, accountId),
+    queryFn: ({ signal }) => apiRequestData<{ account: AccountData; phases: PhaseData[] }>(
+      `/api/v1/prop-firm/accounts/${accountId}`,
+      { signal, operation: 'load-prop-firm-account-settings' },
+    ),
+    enabled: isScopeReady(scope) && Boolean(accountId),
+    staleTime: 30_000,
+  })
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch account details')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        const accountData = data.data.account
-        setAccount(accountData)
-        setPhases(data.data.phases || [])
-
-        setFormData({
-          name: accountData.name || '',
-          notes: accountData.notes || '',
-          isArchived: accountData.isArchived || false
-        })
-      } else {
-        throw new Error(data.error?.message || 'Failed to fetch account details')
-      }
-    } catch (error) {
-      reportClientError(error, { operation: 'load-prop-firm-account-settings', route: `/api/v1/prop-firm/accounts/${accountId}` })
-      toast.error('Failed to fetch account details', {
-        description: 'An error occurred while fetching account details'
-      })
-    } finally {
-      setIsLoading(false)
-    }
-  }, [accountId])
+  const account = accountQuery.data?.account ?? null
+  const phases = accountQuery.data?.phases ?? []
+  const isLoading = accountQuery.isLoading
 
   useEffect(() => {
-    if (user && accountId) {
-      fetchAccount()
+    if (account) {
+      setFormData({
+        name: account.name || '',
+        notes: account.notes || '',
+        isArchived: account.isArchived || false
+      })
     }
-  }, [user, accountId, fetchAccount])
+  }, [account])
+
+  const saveMutation = useMutation({
+    mutationFn: () => apiRequestData(`/api/v1/prop-firm/accounts/${accountId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData),
+      retry: { mode: 'never' },
+      operation: 'update-prop-firm-account-settings',
+    }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) })
+      toast.success('Account updated successfully', {
+        description: 'Your account settings have been saved'
+      })
+    },
+    onError: (error) => {
+      reportClientError(error, { operation: 'update-prop-firm-account-settings', route: `/api/v1/prop-firm/accounts/${accountId}` })
+      toast.error('Failed to update account', {
+        description: 'An error occurred while updating account settings'
+      })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => apiRequestData(`/api/v1/prop-firm/accounts/${accountId}`, {
+      method: 'DELETE',
+      retry: { mode: 'never' },
+      operation: 'delete-prop-firm-account',
+    }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      toast.success('Account deleted successfully', {
+        description: 'The account has been permanently deleted'
+      })
+      router.push('/dashboard/prop-firm/accounts')
+    },
+    onError: (error) => {
+      reportClientError(error, { operation: 'delete-prop-firm-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
+      toast.error('Failed to delete account', {
+        description: 'An error occurred while deleting the account'
+      })
+    },
+  })
 
   const getStatusColor = (status: AccountStatus) => {
     switch (status) {
@@ -168,48 +196,17 @@ export default function AccountSettingsPage() {
     }))
   }
 
-  const handleSave = async () => {
-    try {
-      setIsSaving(true)
-
-      await apiRequestData(`/api/v1/prop-firm/accounts/${accountId}`, {
-        method: 'PATCH',
-        body: JSON.stringify(formData),
-      })
-      toast.success('Account updated successfully', {
-        description: 'Your account settings have been saved'
-      })
-      fetchAccount()
-    } catch (error) {
-      reportClientError(error, { operation: 'update-prop-firm-account-settings', route: `/api/v1/prop-firm/accounts/${accountId}` })
-      toast.error('Failed to update account', {
-        description: 'An error occurred while updating account settings'
-      })
-    } finally {
-      setIsSaving(false)
-    }
+  const handleSave = () => {
+    saveMutation.mutate()
   }
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = () => {
     setShowDeleteDialog(true)
   }
 
-  const handleDeleteAccountConfirm = async () => {
+  const handleDeleteAccountConfirm = () => {
     setShowDeleteDialog(false)
-    try {
-      await apiRequestData(`/api/v1/prop-firm/accounts/${accountId}`, {
-        method: 'DELETE',
-      })
-      toast.success('Account deleted successfully', {
-        description: 'The account has been permanently deleted'
-      })
-      router.push('/dashboard/prop-firm/accounts')
-    } catch (error) {
-      reportClientError(error, { operation: 'delete-prop-firm-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
-      toast.error('Failed to delete account', {
-        description: 'An error occurred while deleting the account'
-      })
-    }
+    deleteMutation.mutate()
   }
 
   if (isLoading) {
@@ -258,13 +255,13 @@ export default function AccountSettingsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchAccount}
-            disabled={isLoading}
+            onClick={() => { void accountQuery.refetch() }}
+            disabled={accountQuery.isFetching}
           >
-            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+            {accountQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
             Refresh
           </Button>
-          <Button onClick={handleSave} size="sm" loading={isSaving} loadingText="Saving changes">
+          <Button onClick={handleSave} size="sm" loading={saveMutation.isPending} loadingText="Saving changes">
             <Save className="h-4 w-4 mr-2" />
             Save Changes
           </Button>

@@ -1,11 +1,13 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+'use client'
+
+import { useEffect, useRef, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { fetchWithError, handleFetchError } from '@/lib/utils/fetch-with-error'
-import { API_TIMEOUT } from '@/lib/constants'
+import { apiRequestData } from '@/lib/api/client'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import { useUserStore } from '@/store/user-store'
-import { isDemoSurface } from '@/lib/public-surface-routing'
-import { reportClientError } from '@/lib/observability/report-error'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 
 interface PropFirmAccountLocal {
   id: string
@@ -93,201 +95,80 @@ interface UsePropFirmRealtimeResult {
 
 export function usePropFirmRealtime(options: UsePropFirmRealtimeOptions): UsePropFirmRealtimeResult {
   const { accountId, enabled = true } = options
-  const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const scope = useQueryScope()
   const user = useUserStore(state => state.user)
 
-  const [account, setAccount] = useState<PropFirmAccountLocal | null>(null)
-  const [drawdown, setDrawdown] = useState<DrawdownData | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [isFetching, setIsFetching] = useState(false)
-  const [isConnected, setIsConnected] = useState(false)
+  const query = useQuery({
+    queryKey: queryKeys.propFirmAccount(scope, accountId || ''),
+    queryFn: async ({ signal }) => {
+      const data = await apiRequestData<{ account?: PropFirmAccountLocal; drawdown?: DrawdownData }>(
+        `/api/v1/prop-firm/accounts/${accountId}`,
+        { signal, operation: 'load-prop-firm-account' },
+      )
+      if (!data?.account || !data?.drawdown) {
+        throw new Error('Invalid response format: missing account or drawdown data')
+      }
+      return data as { account: PropFirmAccountLocal; drawdown: DrawdownData }
+    },
+    enabled: enabled && isScopeReady(scope) && Boolean(accountId),
+    staleTime: 30_000,
+  })
+
+  const account = query.data?.account ?? null
+  const drawdown = query.data?.drawdown ?? null
 
   const previousAccountRef = useRef<PropFirmAccountLocal | null>(null)
   const previousDrawdownRef = useRef<DrawdownData | null>(null)
-  const hasFetchedRef = useRef(false)
-  const requestControllerRef = useRef<AbortController | null>(null)
-  const requestSequenceRef = useRef(0)
-  const pendingRealtimeRefreshRef = useRef(false)
-  const accountIdRef = useRef(accountId)
-  const enabledRef = useRef(enabled)
-  accountIdRef.current = accountId
-  enabledRef.current = enabled
 
-  const fetchAccountData = useCallback(async (showLoadingState = true) => {
+  useEffect(() => {
+    previousAccountRef.current = null
+    previousDrawdownRef.current = null
+  }, [accountId])
 
-    if (!accountId || !enabled) return
+  useEffect(() => {
+    if (!account) return
 
-    requestControllerRef.current?.abort()
-    const controller = new AbortController()
-    requestControllerRef.current = controller
-    const requestSequence = ++requestSequenceRef.current
-
-    try {
-      setIsFetching(true)
-      if (showLoadingState) {
-        setIsLoading(true)
-      }
-      setError(null)
-
-      const result = await fetchWithError<{ success: boolean; data: any }>(
-        `/api/v1/prop-firm/accounts/${accountId}`,
-        { timeout: API_TIMEOUT, signal: controller.signal }
-      )
-
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId || !enabledRef.current) return
-
-      if (!result.ok || !result.data?.success) {
-        if (result.error?.code === 'CANCELLED') return
-        const fetchError = new Error(result.error?.message || 'Failed to fetch account data')
-        Object.assign(fetchError, result.error)
-        throw fetchError
-      }
-
-      const { account: accountData, drawdown: drawdownData } = result.data.data
-
-      if (!accountData || !drawdownData) {
-        throw new Error('Invalid response format: missing account or drawdown data')
-      }
-
-      if (previousAccountRef.current && previousAccountRef.current.status !== accountData.status) {
-        if (accountData.status === 'failed') {
-          toast.error("Account Failed", {
-            description: `Account ${accountData.accountName || accountData.number} has been marked as failed.`,
-          })
-        } else if (accountData.status === 'funded') {
-          toast.success("Account Funded!", {
-            description: `Congratulations! Account ${accountData.accountName || accountData.number} has been funded.`,
-          })
-        }
-      }
-
-      if (drawdownData?.isBreached && (!previousDrawdownRef.current?.isBreached)) {
-        toast.error("Drawdown Breach Alert!", {
-          description: `Account ${accountData.accountName || accountData.number} has breached ${drawdownData.breachType?.replace('_', ' ')} limits.`,
+    if (previousAccountRef.current && previousAccountRef.current.status !== account.status) {
+      if (account.status === 'failed') {
+        toast.error('Account Failed', {
+          description: `Account ${account.accountName || account.id} has been marked as failed.`,
+        })
+      } else if (account.status === 'funded') {
+        toast.success('Account Funded!', {
+          description: `Congratulations! Account ${account.accountName || account.id} has been funded.`,
         })
       }
-
-      previousAccountRef.current = accountData
-      previousDrawdownRef.current = drawdownData
-
-      setAccount(accountData)
-      setDrawdown(drawdownData)
-      setLastUpdated(new Date())
-
-    } catch (err) {
-      if (requestSequence !== requestSequenceRef.current || controller.signal.aborted || accountIdRef.current !== accountId || !enabledRef.current) return
-      reportClientError(err, { operation: 'load-prop-firm-realtime-account', route: '/api/v1/prop-firm/accounts' })
-      setError(handleFetchError(err))
-    } finally {
-      if (requestSequence === requestSequenceRef.current && accountIdRef.current === accountId && enabledRef.current) {
-        requestControllerRef.current = null
-        setIsFetching(false)
-        if (showLoadingState) {
-          setIsLoading(false)
-        }
-        if (pendingRealtimeRefreshRef.current) {
-          pendingRealtimeRefreshRef.current = false
-          void fetchAccountData(false)
-        }
-      }
     }
-  }, [accountId, enabled])
 
-  const scheduleRealtimeRefresh = useCallback(() => {
-    if (requestControllerRef.current) {
-      pendingRealtimeRefreshRef.current = true
-      return
+    if (drawdown?.isBreached && !previousDrawdownRef.current?.isBreached) {
+      toast.error('Drawdown Breach Alert!', {
+        description: `Account ${account.accountName || account.id} has breached ${drawdown.breachType?.replace('_', ' ')} limits.`,
+      })
     }
-    void fetchAccountData(false)
-  }, [fetchAccountData])
 
-  const refetch = useCallback(async () => {
-    await fetchAccountData(true)
-  }, [fetchAccountData])
+    previousAccountRef.current = account
+    previousDrawdownRef.current = drawdown
+  }, [account, drawdown])
+
+  const [isConnected, setIsConnected] = useState(false)
 
   useDatabaseRealtime({
     userId: user?.id,
     enabled: enabled && !!accountId && !!user?.id,
-    onAccountChange: (change) => {
-      if (!accountId) return
-
-      if (change.table === 'MasterAccount') {
-        const changedAccountId = (change.newRecord?.id || change.oldRecord?.id) as string | undefined
-        if (changedAccountId === accountId) {
-          scheduleRealtimeRefresh()
-        }
-      }
-
-      else if (change.table === 'PhaseAccount') {
-        const phaseMasterAccountId = (change.newRecord?.masterAccountId || change.oldRecord?.masterAccountId) as string | undefined
-        if (phaseMasterAccountId === accountId) {
-          scheduleRealtimeRefresh()
-        }
-      }
-
-    },
-    onTradeChange: (change) => {
-      if (!accountId || !account) return
-
-      const tradePhaseAccountId = (change.newRecord?.phaseAccountId || change.oldRecord?.phaseAccountId) as string | undefined
-      if (tradePhaseAccountId) {
-        const accountPhaseIds = account.phases.map(p => p.id)
-        if (accountPhaseIds.includes(tradePhaseAccountId)) {
-          scheduleRealtimeRefresh()
-        }
-      }
-    },
     onStatusChange: (status) => {
       setIsConnected(status === 'connected')
-    }
+    },
   })
-
-  const prevAccountIdRef = useRef<string | undefined>(undefined)
-
-  useEffect(() => {
-    const activeAccountId = enabled ? accountId : undefined
-
-    if (prevAccountIdRef.current !== activeAccountId) {
-      requestSequenceRef.current++
-      requestControllerRef.current?.abort()
-      requestControllerRef.current = null
-      pendingRealtimeRefreshRef.current = false
-      hasFetchedRef.current = false
-      previousAccountRef.current = null
-      previousDrawdownRef.current = null
-      setAccount(null)
-      setDrawdown(null)
-      setLastUpdated(null)
-      setError(null)
-      setIsFetching(false)
-      setIsLoading(!!activeAccountId)
-      prevAccountIdRef.current = activeAccountId
-    }
-
-    if (!activeAccountId) return
-    if (hasFetchedRef.current) return
-    hasFetchedRef.current = true
-
-    fetchAccountData(true)
-  }, [enabled, accountId, fetchAccountData])
-
-  useEffect(() => () => {
-    requestSequenceRef.current++
-    requestControllerRef.current?.abort()
-    requestControllerRef.current = null
-    pendingRealtimeRefreshRef.current = false
-    hasFetchedRef.current = false
-  }, [])
 
   return {
     account,
     drawdown,
-    isLoading,
-    error,
-    lastUpdated,
-    refetch,
-    isConnected
+    isLoading: query.isLoading,
+    error: query.error instanceof Error ? query.error.message : null,
+    lastUpdated: query.dataUpdatedAt ? new Date(query.dataUpdatedAt) : null,
+    refetch: async () => {
+      await query.refetch()
+    },
+    isConnected,
   }
 }

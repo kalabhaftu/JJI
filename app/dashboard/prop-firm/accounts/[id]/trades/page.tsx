@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { useAuth } from "@/context/auth-provider"
+import { useQuery } from '@tanstack/react-query'
 import { toast } from "sonner"
-import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -64,98 +66,72 @@ interface PhaseInfo {
   tradeCount: number
 }
 
+interface TradeStatistics {
+  totalTrades: number
+  winningTrades: number
+  losingTrades: number
+  breakEvenTrades: number
+  winRate: number
+  totalPnl: number
+}
+
 export default function AccountTradesPage() {
   const params = useParams()
   const router = useRouter()
-  const { user } = useAuth()
-  const [trades, setTrades] = useState<TradeData[]>([])
-  const [account, setAccount] = useState<AccountData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeTab, setActiveTab] = useState('trades')
   const [phaseFilter, setPhaseFilter] = useState<string>('current')
-  const [availablePhases, setAvailablePhases] = useState<PhaseInfo[]>([])
-  const [tradeStatistics, setTradeStatistics] = useState({
+  const accountId = params.id as string
+  const scope = useQueryScope()
+
+  const accountQuery = useQuery({
+    queryKey: queryKeys.propFirmAccount(scope, accountId),
+    queryFn: ({ signal }) => apiRequestData<{ account: AccountData }>(
+      `/api/v1/prop-firm/accounts/${accountId}`,
+      { signal, operation: 'load-prop-firm-account' },
+    ),
+    enabled: isScopeReady(scope) && Boolean(accountId),
+    staleTime: 30_000,
+  })
+
+  const tradesQuery = useQuery({
+    queryKey: queryKeys.propFirmTrades(scope, accountId, { phase: phaseFilter }),
+    queryFn: ({ signal }) => apiRequestData<{ trades: TradeData[]; statistics: TradeStatistics; filter: { availablePhases: PhaseInfo[] } }>(
+      `/api/v1/prop-firm/accounts/${accountId}/trades?phase=${phaseFilter}`,
+      { signal, operation: 'load-prop-firm-trades' },
+    ),
+    enabled: isScopeReady(scope) && Boolean(accountId),
+    staleTime: 30_000,
+  })
+
+  const account = accountQuery.data?.account ?? null
+  const trades = tradesQuery.data?.trades ?? []
+  const tradeStatistics = tradesQuery.data?.statistics ?? {
     totalTrades: 0,
     winningTrades: 0,
     losingTrades: 0,
     breakEvenTrades: 0,
     winRate: 0,
     totalPnl: 0,
-  })
-  const accountId = params.id as string
+  }
+  const availablePhases = tradesQuery.data?.filter?.availablePhases ?? []
+  const isLoading = accountQuery.isLoading || tradesQuery.isLoading
 
-  const fetchAccount = async () => {
-    try {
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch account details')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        setAccount(data.data.account)
-      } else {
-        throw new Error(data.error?.message || 'Failed to fetch account details')
-      }
-    } catch (error) {
-      reportClientError(error, { operation: 'load-prop-firm-trade-account', route: `/api/v1/prop-firm/accounts/${accountId}` })
+  useEffect(() => {
+    if (accountQuery.error) {
       toast.error('Failed to fetch account details', {
         description: 'An error occurred while fetching account details'
       })
     }
-  }
+  }, [accountQuery.error])
 
-  const fetchTrades = async (filter: string = phaseFilter) => {
-    try {
-      setIsLoading(true)
-
-      const response = await fetch(`/api/v1/prop-firm/accounts/${accountId}/trades?phase=${filter}`)
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch trades')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        setTrades(data.data.trades)
-        setTradeStatistics(data.data.statistics || {
-          totalTrades: 0,
-          winningTrades: 0,
-          losingTrades: 0,
-          breakEvenTrades: 0,
-          winRate: 0,
-          totalPnl: 0,
-        })
-        setAvailablePhases(data.data.filter?.availablePhases || [])
-      } else {
-        throw new Error(data.error?.message || 'Failed to fetch trades')
-      }
-    } catch (error) {
-      reportClientError(error, { operation: 'load-prop-firm-trades', route: `/api/v1/prop-firm/accounts/${accountId}/trades` })
+  useEffect(() => {
+    if (tradesQuery.error) {
       toast.error('Failed to fetch trades', {
         description: 'An error occurred while fetching trades'
       })
-    } finally {
-      setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    if (user && accountId) {
-      fetchTrades(phaseFilter)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phaseFilter])
-
-  useEffect(() => {
-    if (user && accountId) {
-      fetchAccount()
-      fetchTrades()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, accountId])
+  }, [tradesQuery.error])
 
   const formatCurrencyAmount = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
@@ -225,7 +201,7 @@ export default function AccountTradesPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => fetchTrades()}
+            onClick={() => { void tradesQuery.refetch() }}
             disabled={isLoading}
           >
             {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}

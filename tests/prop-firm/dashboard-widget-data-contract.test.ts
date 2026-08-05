@@ -38,7 +38,7 @@ describe('prop firm dashboard widget data contract', () => {
     expect(detailPage).toContain('const phaseSummary = getPhaseSummary(phase)')
 
     expect(tradesRoute).toContain('const statistics = trades.reduce')
-    expect(tradesPage).toContain('setTradeStatistics(data.data.statistics')
+    expect(tradesPage).toContain('tradesQuery.data?.statistics')
     expect(tradesPage).not.toContain('const groupedTrades = groupTradesByExecution')
   })
 })

@@ -9,7 +9,6 @@ import { createClient } from '@/lib/supabase'
 import { useUserStore } from '@/store/user-store'
 import { useAutoCacheCleanup } from '@/hooks/use-auto-cache-cleanup'
 import { useQueryClient } from '@tanstack/react-query'
-import { mutate } from 'swr'
 import { useTradesStore } from '@/store/trades-store'
 import { createAuthTransitionCacheCoordinator, isAuthIdentityChange, runAuthTransition } from '@/lib/query/auth-transition-cache'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -217,7 +216,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useTradesStore.getState().setTrades([])
     queryClient.clear()
-    void mutate(() => true, undefined, { revalidate: false }).catch(() => undefined)
 
     localStorage.removeItem('jji_user_data')
 

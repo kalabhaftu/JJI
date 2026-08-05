@@ -6,10 +6,6 @@ import {
   runAuthTransition,
 } from '@/lib/query/auth-transition-cache'
 
-const swrMutate = vi.hoisted(() => vi.fn().mockResolvedValue(undefined))
-
-vi.mock('swr', () => ({ mutate: swrMutate }))
-
 function makeQueryClient() {
   return { clear: vi.fn(), cancelQueries: vi.fn() }
 }
@@ -29,7 +25,6 @@ function installLocalStorage() {
 
 describe('auth transition cache coordinator', () => {
   beforeEach(() => {
-    swrMutate.mockClear()
     installLocalStorage()
     window.localStorage.setItem('jji_user_data', JSON.stringify({ id: 'user-1' }))
   })
@@ -61,7 +56,6 @@ describe('auth transition cache coordinator', () => {
 
     expect(queryClient.cancelQueries).toHaveBeenCalled()
     expect(queryClient.clear).toHaveBeenCalled()
-    expect(swrMutate).toHaveBeenCalled()
     expect(clearModuleCaches).toHaveBeenCalled()
     expect(clearProviderState).toHaveBeenCalled()
     expect(window.localStorage.getItem('jji_user_data')).toBeNull()

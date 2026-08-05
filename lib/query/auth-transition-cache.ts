@@ -1,12 +1,10 @@
 'use client'
 
 import type { QueryClient } from '@tanstack/react-query'
-import { mutate } from 'swr'
 
 export interface AuthTransitionCacheCoordinator {
   beginTransition(nextUserId: string | null): void
   clearPrivateQueryData(): Promise<void>
-  clearPrivateSWRData(): Promise<void>
   clearPrivateModuleCaches(): void
   clearProviderIntegrationState(): void
   completeTransition(userId: string | null): void
@@ -32,10 +30,6 @@ export function createAuthTransitionCacheCoordinator({
 
     async clearPrivateQueryData() {
       queryClient.clear()
-    },
-
-    async clearPrivateSWRData() {
-      await mutate(() => true, undefined, { revalidate: false }).catch(() => undefined)
     },
 
     clearPrivateModuleCaches() {
@@ -69,7 +63,6 @@ export async function runAuthTransition(
 ): Promise<void> {
   coordinator.beginTransition(nextUserId)
   await coordinator.clearPrivateQueryData()
-  await coordinator.clearPrivateSWRData()
   coordinator.clearPrivateModuleCaches()
   coordinator.clearProviderIntegrationState()
   coordinator.completeTransition(nextUserId)

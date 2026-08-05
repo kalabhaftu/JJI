@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -24,6 +28,33 @@ export type DashboardPropFirmAccountOption = {
   currentPhase?: number | null
   PhaseAccount?: PhaseSummary[]
 }
+
+const DEMO_ACCOUNTS: DashboardPropFirmAccountOption[] = [
+  {
+    id: 'mock-propfirm-1',
+    accountName: 'Demo Challenge',
+    propFirmName: 'FTMO',
+    accountSize: 100000,
+    evaluationType: 'Two Step',
+    status: 'active',
+    currentPhase: 1,
+    PhaseAccount: [
+      { id: 'mock-acc-1', phaseNumber: 1, phaseId: 'FTMO-PHASE-1', status: 'active' }
+    ]
+  },
+  {
+    id: 'mock-propfirm-failed',
+    accountName: 'Failed Challenge (Old)',
+    propFirmName: 'MyForexFunds',
+    accountSize: 50000,
+    evaluationType: 'Two Step',
+    status: 'failed',
+    currentPhase: 1,
+    PhaseAccount: [
+      { id: 'mock-acc-failed', phaseNumber: 1, phaseId: 'OLD-CHALLENGE', status: 'failed' }
+    ]
+  }
+]
 
 function getStoredSelection() {
   if (typeof window === 'undefined') return null
@@ -62,18 +93,14 @@ function isSelectableOrBlownAccount(account: DashboardPropFirmAccountOption) {
   const accountStatus = String(account.status || '').toLowerCase()
   const evaluationType = String(account.evaluationType || '').toLowerCase()
 
-
   if (evaluationType.includes('instant')) return false
-
 
   if (accountStatus === 'failed') return true
 
   const currentPhase = getCurrentPhase(account)
   const currentPhaseStatus = String(currentPhase?.status || '').toLowerCase()
 
-
   if (currentPhaseStatus === 'failed') return true
-
 
   return (
     accountStatus === 'active' &&
@@ -83,120 +110,63 @@ function isSelectableOrBlownAccount(account: DashboardPropFirmAccountOption) {
 }
 
 function getPreferredAccount(accounts: DashboardPropFirmAccountOption[]) {
-
   return accounts.find(isTrulyActive) ?? accounts[0] ?? null
 }
 
 export function useDashboardPropFirmAccount() {
   const user = useUserStore(state => state.user)
+  const scope = useQueryScope()
   const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
-  const [accounts, setAccounts] = useState<DashboardPropFirmAccountOption[]>([])
+  const query = useQuery({
+    queryKey: queryKeys.propFirmAccounts(scope),
+    queryFn: ({ signal }) =>
+      isDemo
+        ? Promise.resolve(DEMO_ACCOUNTS)
+        : apiRequestData<DashboardPropFirmAccountOption[]>('/api/v1/prop-firm/accounts', {
+            signal,
+            operation: 'load-dashboard-prop-firm-accounts',
+          }),
+    select: (data) => (isDemo ? data : data.filter(isSelectableOrBlownAccount)),
+    enabled: isScopeReady(scope) && Boolean(user?.id || isDemo),
+    staleTime: 30_000,
+  })
+
+  const accounts = query.data ?? []
   const [selectedMasterAccountId, setSelectedMasterAccountIdState] = useState<string | null>(null)
   const [resetTimezone, setResetTimezoneState] = useState(DEFAULT_RESET_TIMEZONE)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    let cancelled = false
+    if (!query.data) return
 
-    async function loadAccounts() {
-      setIsLoading(true)
-      setError(null)
-      try {
-        if (isDemo) {
-          const nextAccounts = [
-            {
-              id: 'mock-propfirm-1',
-              accountName: 'Demo Challenge',
-              propFirmName: 'FTMO',
-              accountSize: 100000,
-              evaluationType: 'Two Step',
-              status: 'active',
-              currentPhase: 1,
-              PhaseAccount: [
-                { id: 'mock-acc-1', phaseNumber: 1, phaseId: 'FTMO-PHASE-1', status: 'active' }
-              ]
-            },
-            {
-              id: 'mock-propfirm-failed',
-              accountName: 'Failed Challenge (Old)',
-              propFirmName: 'MyForexFunds',
-              accountSize: 50000,
-              evaluationType: 'Two Step',
-              status: 'failed',
-              currentPhase: 1,
-              PhaseAccount: [
-                { id: 'mock-acc-failed', phaseNumber: 1, phaseId: 'OLD-CHALLENGE', status: 'failed' }
-              ]
-            }
-          ]
-          
-          if (cancelled) return
-          setAccounts(nextAccounts)
-          setResetTimezoneState(getStoredResetTimezone())
-          
-          const stored = getStoredSelection()
-          const storedAccount = stored ? nextAccounts.find(a => a.id === stored) : null
-          const isStoredActive = storedAccount && isTrulyActive(storedAccount)
-          
-          let preferred: string | null = null
-          if (isStoredActive) {
-            preferred = stored!
-          } else {
-            const firstActive = nextAccounts.find(isTrulyActive)
-            if (firstActive) {
-              preferred = firstActive.id
-            } else {
-              preferred = storedAccount ? storedAccount.id : (nextAccounts[0]?.id ?? null)
-            }
-          }
-          
-          setSelectedMasterAccountIdState(preferred)
-          if (preferred && preferred !== stored) setStoredSelection(preferred)
-          return
-        }
+    setResetTimezoneState(getStoredResetTimezone())
 
-        const response = await fetch('/api/v1/prop-firm/accounts')
-        const payload = await response.json()
-        if (!response.ok || !payload.success) {
-          throw new Error(payload.error?.message || 'Failed to load prop firm accounts')
-        }
+    const stored = getStoredSelection()
+    const storedAccount = stored ? accounts.find(a => a.id === stored) : null
+    const isStoredActive = storedAccount && isTrulyActive(storedAccount)
 
-        const nextAccounts: DashboardPropFirmAccountOption[] = (Array.isArray(payload.data) ? payload.data : []).filter(isSelectableOrBlownAccount)
-        if (cancelled) return
-
-        setAccounts(nextAccounts)
-        setResetTimezoneState(getStoredResetTimezone())
-        
-        const stored = getStoredSelection()
-        const storedAccount = stored ? nextAccounts.find(a => a.id === stored) : null
-        const isStoredActive = storedAccount && isTrulyActive(storedAccount)
-        
-        let preferred: string | null = null
-        if (isStoredActive) {
-          preferred = stored!
-        } else {
-          const firstActive = nextAccounts.find(isTrulyActive)
-          if (firstActive) {
-            preferred = firstActive.id
-          } else {
-            preferred = storedAccount ? storedAccount.id : (nextAccounts[0]?.id ?? null)
-          }
-        }
-        
-        setSelectedMasterAccountIdState(preferred)
-        if (preferred && preferred !== stored) setStoredSelection(preferred)
-      } catch (err) {
-        reportClientError(err, { operation: 'load-dashboard-prop-firm-accounts', route: '/api/v1/prop-firm/accounts' })
-        if (!cancelled) setError(err instanceof Error ? err.message : 'Failed to load prop firm accounts')
-      } finally {
-        if (!cancelled) setIsLoading(false)
+    let preferred: string | null = null
+    if (isStoredActive) {
+      preferred = stored!
+    } else {
+      const firstActive = accounts.find(isTrulyActive)
+      if (firstActive) {
+        preferred = firstActive.id
+      } else {
+        preferred = storedAccount ? storedAccount.id : (accounts[0]?.id ?? null)
       }
     }
 
-    loadAccounts()
+    setSelectedMasterAccountIdState(preferred)
+    if (preferred && preferred !== stored) setStoredSelection(preferred)
+  }, [query.data, accounts])
 
+  useEffect(() => {
+    if (!query.error) return
+    reportClientError(query.error, { operation: 'load-dashboard-prop-firm-accounts', route: '/api/v1/prop-firm/accounts' })
+  }, [query.error])
+
+  useEffect(() => {
     const handleStorage = (event: StorageEvent) => {
       if (event.key === ACCOUNT_STORAGE_KEY) setSelectedMasterAccountIdState(event.newValue)
       if (event.key === RESET_TIMEZONE_STORAGE_KEY) setResetTimezoneState(event.newValue || DEFAULT_RESET_TIMEZONE)
@@ -213,12 +183,11 @@ export function useDashboardPropFirmAccount() {
     window.addEventListener('prop-firm-widget-timezone-change', handleTimezoneCustom)
 
     return () => {
-      cancelled = true
       window.removeEventListener('storage', handleStorage)
       window.removeEventListener('prop-firm-widget-account-change', handleCustom)
       window.removeEventListener('prop-firm-widget-timezone-change', handleTimezoneCustom)
     }
-  }, [isDemo])
+  }, [])
 
   const setSelectedMasterAccountId = useCallback((value: string) => {
     setSelectedMasterAccountIdState(value)
@@ -242,7 +211,7 @@ export function useDashboardPropFirmAccount() {
     setSelectedMasterAccountId,
     resetTimezone,
     setResetTimezone,
-    isLoading,
-    error,
+    isLoading: query.isPending,
+    error: query.error instanceof Error ? query.error.message : null,
   }
 }

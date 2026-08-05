@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 interface LazyMobileWidgetProps {
@@ -45,9 +46,9 @@ export function LazyMobileWidget({ children, minHeight, isEditMode }: LazyMobile
       {isIntersecting ? (
         children
       ) : (
-        <div
+        <Skeleton
           aria-hidden="true"
-          className="flex w-full flex-1 animate-pulse rounded-xl border border-border/40 bg-muted/10"
+          className="flex w-full flex-1 rounded-xl border border-border/40 bg-muted/10"
           style={{ minHeight }}
         />
       )}

@@ -1,6 +1,7 @@
 "use client"
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 import type { DashboardPropFirmAccountOption } from '@/hooks/use-dashboard-prop-firm-account'
 
@@ -51,7 +52,7 @@ export function PropFirmWidgetTimezoneSelector({ value, onChange }: TimezoneProp
 
 export function PropFirmWidgetAccountSelector({ accounts, selectedMasterAccountId, onChange, isLoading, className }: Props) {
   if (isLoading) {
-    return <div className="h-8 w-44 animate-pulse rounded-lg bg-muted/30" />
+    return <Skeleton className="h-8 w-44 rounded-lg bg-muted/30" />
   }
 
   if (accounts.length === 0) {

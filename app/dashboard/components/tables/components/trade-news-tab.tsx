@@ -87,7 +87,7 @@ export function TradeNewsTab({
                                 return (
                                     <div className="space-y-3">
                                         <h4 className="flex items-center gap-1.5 text-[10px] font-bold text-destructive uppercase tracking-widest pl-1">
-                                            <span className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+                                            <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
                                             High-Impact USD Events
                                         </h4>
                                         <div className="grid grid-cols-1 gap-2">

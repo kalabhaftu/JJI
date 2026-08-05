@@ -15,6 +15,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { BacktestTrade } from '@/types/backtesting-types'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface BacktestCardProps {
   backtest: BacktestTrade
@@ -104,7 +105,7 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
                 onError={() => setImageError(true)}
               />
               {!imageLoaded && !imageError && (
-                <div className="absolute inset-0 animate-pulse bg-muted" />
+                <Skeleton className="absolute inset-0" />
               )}
               {imageError && (
                 <div className="absolute inset-0 bg-muted flex items-center justify-center">

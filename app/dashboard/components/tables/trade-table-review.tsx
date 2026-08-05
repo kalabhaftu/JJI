@@ -735,7 +735,7 @@ export function TradeTableReview() {
         <TabsList className="grid w-full grid-cols-2 max-w-[320px] bg-muted/40 p-1 rounded-xl">
           <TabsTrigger value="all" className="rounded-lg text-xs font-semibold">All Trades</TabsTrigger>
           <TabsTrigger value="live" className="rounded-lg text-xs font-semibold flex items-center gap-1.5 justify-center">
-            <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasConnectedAutomation ? "bg-green-500 animate-pulse" : "bg-muted-foreground/30")} />
+            <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", hasConnectedAutomation ? "bg-green-500" : "bg-muted-foreground/30")} />
             Live Sync Trades
           </TabsTrigger>
         </TabsList>
@@ -923,7 +923,7 @@ export function TradeTableReview() {
             {activeTab === 'live' && !hasConnectedAutomation ? (
               <>
                 <div className="rounded-full bg-muted/30 p-4 shadow-sm">
-                  <Cable className="h-8 w-8 opacity-60 text-primary animate-pulse" />
+                  <Cable className="h-8 w-8 opacity-60 text-primary" />
                 </div>
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-foreground">No Automated Sync Connected</p>

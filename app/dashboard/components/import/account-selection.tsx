@@ -180,7 +180,7 @@ export default function AccountSelection({
       {accounts.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-4">
           <Card className="p-8 text-center max-w-md bg-card border border-border rounded-2xl shadow-sm">
-            <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground mb-3 animate-pulse" />
+            <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
             <h3 className="text-base font-semibold mb-1">
               {hasError ? "Failed to Fetch Accounts" : "No Accounts Found"}
             </h3>

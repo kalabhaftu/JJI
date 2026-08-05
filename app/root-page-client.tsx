@@ -60,7 +60,7 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
           aria-live="polite"
         >
           <Spinner className="h-8 w-8 text-primary" />
-          <p className="text-muted-foreground animate-pulse">Restoring your session...</p>
+          <p className="text-muted-foreground">Restoring your session...</p>
         </div>
       </main>
     )

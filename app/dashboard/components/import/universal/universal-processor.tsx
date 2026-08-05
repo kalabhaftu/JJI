@@ -242,7 +242,7 @@ export default function UniversalProcessor({
         {aiProcessingState === 'processing' ? (
           <>
             <div className="p-3 rounded-full bg-primary/10">
-              <Wand2 className="h-8 w-8 text-primary animate-pulse" />
+              <Wand2 className="h-8 w-8 text-primary" />
             </div>
             <div className="text-center">
               <p className="font-semibold">AI Processing Your Trades</p>

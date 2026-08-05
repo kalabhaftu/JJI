@@ -713,7 +713,7 @@ export default function ImportButton() {
                 <div className="text-xs text-muted-foreground/80 font-medium pl-1">
                   {processedTrades.length > 0 && (
                     <span className="flex items-center gap-1.5">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                       {processedTrades.length} trades processed
                     </span>
                   )}

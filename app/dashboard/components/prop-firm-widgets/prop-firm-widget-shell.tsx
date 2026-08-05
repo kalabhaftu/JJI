@@ -1,6 +1,7 @@
 "use client"
 
 import { ReactNode } from 'react'
+import { Skeleton } from '@/components/ui/skeleton'
 import { WidgetCard } from '../widget-card'
 import { PropFirmWidgetAccountSelector, PropFirmWidgetTimezoneSelector } from './prop-firm-widget-account-selector'
 import { usePropFirmDashboardWidgetData } from '@/hooks/use-prop-firm-dashboard-widget-data'
@@ -24,7 +25,7 @@ export function PropFirmWidgetShell({ title, children }: Props) {
               title={data.dailyDrawdown.notes || undefined}
               className="flex items-center gap-1.5 rounded-lg border border-destructive/30 bg-destructive/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-destructive cursor-help shadow-sm transition-all hover:bg-destructive/15"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-destructive animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-destructive" />
               <span>
                 {data.dailyDrawdown.breachType === 'daily_drawdown'
                   ? 'Daily DD Breached'
@@ -58,9 +59,9 @@ export function PropFirmWidgetShell({ title, children }: Props) {
         </div>
       ) : isLoading ? (
         <div className="grid min-h-24 gap-3 md:grid-cols-3">
-          <div className="animate-pulse rounded-xl bg-muted/25" />
-          <div className="animate-pulse rounded-xl bg-muted/25" />
-          <div className="animate-pulse rounded-xl bg-muted/25" />
+          <Skeleton className="rounded-xl bg-muted/25" />
+          <Skeleton className="rounded-xl bg-muted/25" />
+          <Skeleton className="rounded-xl bg-muted/25" />
         </div>
       ) : data.account?.currentPhase ? (
         children(state)

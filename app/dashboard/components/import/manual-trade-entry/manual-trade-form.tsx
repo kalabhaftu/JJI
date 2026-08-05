@@ -1,6 +1,7 @@
 'use client'
 
 import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import React, { useState, useEffect, useMemo, useRef, useReducer } from 'react'
 import { useForm, Controller } from 'react-hook-form'
@@ -414,7 +415,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
             <div className="space-y-2">
               <Label>Account *</Label>
               {isLoadingAccounts ? (
-                <div className="h-10 bg-muted rounded-md animate-pulse" />
+                <Skeleton className="h-10 bg-muted rounded-md" />
               ) : (
                 <Controller
                   name="accountNumber"

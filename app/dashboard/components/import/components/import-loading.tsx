@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TrendingUp, BarChart3, Activity, Zap, Target } from 'lucide-react'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const tradingQuotes = [
   {
@@ -101,7 +102,7 @@ export function ImportLoading({ progress }: { progress?: number }) {
         className="relative"
       >
         <div className="absolute inset-0 blur-lg opacity-40">
-          <div className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-foreground/30 animate-pulse" />
+          <Skeleton className="w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-foreground/30" />
         </div>
         <motion.div
           animate={{

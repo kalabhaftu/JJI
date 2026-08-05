@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic'
 import { WidgetType, WidgetSize } from '../types/dashboard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { WidgetErrorBoundary } from '@/components/error-boundary'
+import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
 
 import CalendarPnl from '../components/calendar/calendar-widget'
@@ -22,10 +23,10 @@ import { PropFirmObjectivesTodayWidget } from '../components/prop-firm-widgets/p
 
 function ChartLoadingFallback() {
   return (
-    <div
+    <Skeleton
       aria-busy="true"
       aria-label="Loading chart"
-      className="h-full min-h-40 w-full animate-pulse rounded-lg bg-muted/30 motion-reduce:animate-none"
+      className="h-full min-h-40 w-full rounded-lg bg-muted/30"
     />
   )
 }

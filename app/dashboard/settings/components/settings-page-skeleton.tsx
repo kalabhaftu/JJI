@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 
 export function SettingsPageSkeleton() {
   return (
-    <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 pb-20 md:pb-8 animate-pulse">
+    <div className="w-full max-w-7xl mx-auto py-8 px-4 sm:px-6 pb-20 md:pb-8">
       {                     }
       <div className="mb-8 space-y-2">
         <Skeleton className="h-9 w-40 bg-muted/40 rounded-lg" />

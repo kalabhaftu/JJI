@@ -180,7 +180,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
         <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10 backdrop-blur-sm">
           <div className="flex flex-col items-center">
             <Spinner className="h-8 w-8 mb-4 text-primary" />
-            <p className="text-sm font-medium animate-pulse">Loading market data...</p>
+            <p className="text-sm font-medium">Loading market data...</p>
           </div>
         </div>
       )}

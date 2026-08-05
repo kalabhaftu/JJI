@@ -139,7 +139,7 @@ export default function ImportTypeSelection({ selectedType, setSelectedType, set
           ) : (
             <div className="h-full flex flex-col items-center justify-center text-center p-6 bg-card/45 border border-border/40 rounded-2xl shadow-sm">
               <div className="relative mb-4">
-                <FileSpreadsheet className="h-12 w-12 text-muted-foreground/60 animate-pulse" />
+                <FileSpreadsheet className="h-12 w-12 text-muted-foreground/60" />
                 <div className="absolute -inset-2 bg-primary/5 rounded-full blur-md" />
               </div>
               <h3 className="font-semibold text-foreground/80 text-sm mb-1">No Platform Selected</h3>

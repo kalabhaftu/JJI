@@ -1,6 +1,7 @@
 'use client'
 
 import { Spinner } from '@/components/ui/spinner'
+import { Skeleton } from '@/components/ui/skeleton'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -167,13 +168,13 @@ export function PhaseTransitionDialog({
           {}
           <div className="mx-auto relative">
             <div className="relative p-4 bg-muted/30 rounded-2xl">
-              <div className="absolute inset-0 bg-muted/40 rounded-2xl animate-pulse" />
+              <Skeleton className="absolute inset-0 rounded-2xl bg-muted/40" />
               <div className="relative text-foreground">
                 {getTransitionIcon()}
               </div>
             </div>
             {}
-            <div className="absolute -inset-2 bg-muted/10 rounded-2xl blur-xl opacity-50 animate-pulse" />
+            <Skeleton className="absolute -inset-2 rounded-2xl bg-muted/10 blur-xl opacity-50" />
           </div>
 
           <div className="space-y-2">
@@ -232,11 +233,11 @@ export function PhaseTransitionDialog({
               <div className="text-xs text-muted-foreground">Completed</div>
             </div>
 
-            <ArrowRight className="h-6 w-6 text-muted-foreground animate-pulse" />
+            <ArrowRight className="h-6 w-6 text-muted-foreground" />
 
             <div className="text-center">
               <div className="relative w-14 h-14 bg-muted/30 rounded-xl flex items-center justify-center mb-2 transition-all hover:scale-105">
-                <div className="absolute inset-0 bg-muted/40 rounded-xl animate-pulse" />
+                <Skeleton className="absolute inset-0 rounded-xl bg-muted/40" />
                 <Rocket className="h-6 w-6 text-foreground relative z-10" />
               </div>
               <span className="text-sm font-medium">{getPhaseDisplayName(nextPhaseNumber)}</span>

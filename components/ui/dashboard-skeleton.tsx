@@ -2,6 +2,22 @@ import React from 'react'
 import { cn } from "@/lib/utils"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Card, CardContent } from "@/components/ui/card"
+import { cloneDefaultTemplateLayout } from "@/lib/dashboard/default-template-layout"
+import { buildResponsiveDashboardLayouts } from "@/lib/dashboard/responsive-layouts"
+
+const loadingLayout = cloneDefaultTemplateLayout()
+const loadingLayouts = buildResponsiveDashboardLayouts(loadingLayout, false)
+
+export function DashboardLoadingSkeleton() {
+  return (
+    <div role="status" aria-label="Loading dashboard" className="w-full">
+      <TemplateAwareDashboardSkeleton
+        layout={loadingLayout}
+        layouts={loadingLayouts}
+      />
+    </div>
+  )
+}
 
 function KpiSkeleton() {
   return (

@@ -27,10 +27,11 @@ import {
 } from "lucide-react"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
-import { apiRequest } from '@/lib/api/client'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import type { NotificationRow } from '@/lib/db/schema/users';
-
-import { clearAccountsCache } from '@/hooks/use-accounts'
 
 interface FundedApprovalDialogProps {
   open: boolean
@@ -56,6 +57,8 @@ export function FundedApprovalDialog({
   onComplete
 }: FundedApprovalDialogProps) {
   const router = useRouter()
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const [action, setAction] = useState<Action>(null)
   const [fundedAccountId, setFundedAccountId] = useState('')
   const [declineReason, setDeclineReason] = useState('')
@@ -81,37 +84,35 @@ export function FundedApprovalDialog({
     }
   }
 
-  const handleApproval = async () => {
-    if (!fundedAccountId.trim()) {
-      toast.error('Please enter the funded account ID')
-      return
-    }
+  const invalidateAfterDecision = async () => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) }),
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) }),
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.notifications(scope) }),
+    ])
+  }
 
-    if (!notification || !notificationData?.masterAccountId) {
-      toast.error('Invalid notification data')
-      return
-    }
-
-    try {
-      setIsSubmitting(true)
-
-      await apiRequest('/api/v1/notifications/funded-decision', {
+  const approvalMutation = useMutation({
+    mutationFn: (payload: { notificationId: string; masterAccountId: string; fundedAccountId: string }) =>
+      apiRequestData('/api/v1/notifications/funded-decision', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           decision: 'approved',
-          notificationId: notification.id,
-          masterAccountId: notificationData.masterAccountId,
-          fundedAccountId: fundedAccountId.trim(),
+          notificationId: payload.notificationId,
+          masterAccountId: payload.masterAccountId,
+          fundedAccountId: payload.fundedAccountId,
         }),
-      })
+        retry: { mode: 'never' },
+        operation: 'approve-funded-account',
+      }),
+    onSuccess: async () => {
+      await invalidateAfterDecision()
 
       toast.success('Congratulations!', {
         description: 'Your funded account has been activated.',
         duration: 5000
       })
-
-      clearAccountsCache()
-
 
       try {
         localStorage.removeItem('settings-cache')
@@ -123,18 +124,74 @@ export function FundedApprovalDialog({
       onComplete()
 
       router.refresh()
-
-    } catch (error) {
+    },
+    onError: (error) => {
       reportClientError(error, { operation: 'approve-funded-account', route: '/api/v1/notifications/funded-decision' })
       toast.error('Failed to process approval', {
         description: error instanceof Error ? error.message : 'Please try again'
       })
-    } finally {
+    },
+    onSettled: () => {
       setIsSubmitting(false)
+    },
+  })
+
+  const declineMutation = useMutation({
+    mutationFn: (payload: { notificationId: string; masterAccountId: string; reason: string }) =>
+      apiRequestData('/api/v1/notifications/funded-decision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          decision: 'declined',
+          notificationId: payload.notificationId,
+          masterAccountId: payload.masterAccountId,
+          reason: payload.reason,
+        }),
+        retry: { mode: 'never' },
+        operation: 'decline-funded-account',
+      }),
+    onSuccess: async () => {
+      await invalidateAfterDecision()
+
+      toast.info('Account marked as declined', {
+        description: 'The reason has been recorded in account history.'
+      })
+
+      resetState()
+      onComplete()
+      router.refresh()
+    },
+    onError: (error) => {
+      reportClientError(error, { operation: 'decline-funded-account', route: '/api/v1/notifications/funded-decision' })
+      toast.error('Failed to process decline', {
+        description: error instanceof Error ? error.message : 'Please try again'
+      })
+    },
+    onSettled: () => {
+      setIsSubmitting(false)
+    },
+  })
+
+  const handleApproval = () => {
+    if (!fundedAccountId.trim()) {
+      toast.error('Please enter the funded account ID')
+      return
     }
+
+    if (!notification || !notificationData?.masterAccountId) {
+      toast.error('Invalid notification data')
+      return
+    }
+
+    setIsSubmitting(true)
+    approvalMutation.mutate({
+      notificationId: notification.id,
+      masterAccountId: notificationData.masterAccountId,
+      fundedAccountId: fundedAccountId.trim(),
+    })
   }
 
-  const handleDecline = async () => {
+  const handleDecline = () => {
     if (!declineReason) {
       toast.error('Please select a reason')
       return
@@ -149,36 +206,12 @@ export function FundedApprovalDialog({
       return
     }
 
-    try {
-      setIsSubmitting(true)
-
-      await apiRequest('/api/v1/notifications/funded-decision', {
-        method: 'POST',
-        body: JSON.stringify({
-          decision: 'declined',
-          notificationId: notification.id,
-          masterAccountId: notificationData.masterAccountId,
-          reason,
-        }),
-      })
-
-      toast.info('Account marked as declined', {
-        description: 'The reason has been recorded in account history.'
-      })
-
-      clearAccountsCache()
-      resetState()
-      onComplete()
-      router.refresh()
-
-    } catch (error) {
-      reportClientError(error, { operation: 'decline-funded-account', route: '/api/v1/notifications/funded-decision' })
-      toast.error('Failed to process decline', {
-        description: error instanceof Error ? error.message : 'Please try again'
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
+    setIsSubmitting(true)
+    declineMutation.mutate({
+      notificationId: notification.id,
+      masterAccountId: notificationData.masterAccountId,
+      reason,
+    })
   }
 
   return (

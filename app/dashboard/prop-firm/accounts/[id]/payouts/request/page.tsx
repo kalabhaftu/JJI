@@ -2,7 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
@@ -15,6 +15,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, DollarSign, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { RequestPayoutPageSkeleton } from '../../components/account-loading-skeletons'
 
 interface EligibilityData {
@@ -42,59 +46,87 @@ export default function RequestPayoutPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuth()
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
-  const [account, setAccount] = useState<AccountData | null>(null)
-  const [eligibility, setEligibility] = useState<EligibilityData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [amount, setAmount] = useState('')
   const [notes, setNotes] = useState('')
+  const prefilledRef = useRef(false)
 
   const accountId = params.id as string
 
+  const accountQuery = useQuery({
+    queryKey: queryKeys.propFirmAccount(scope, accountId),
+    queryFn: ({ signal }) =>
+      apiRequestData<{ account: AccountData }>(`/api/v1/prop-firm/accounts/${accountId}`, {
+        signal,
+        operation: 'load-prop-firm-account',
+      }),
+    enabled: isScopeReady(scope) && !!user && Boolean(accountId),
+    staleTime: 30_000,
+  })
+
+  const eligibilityQuery = useQuery({
+    queryKey: queryKeys.payouts(scope, { accountId }),
+    queryFn: ({ signal }) =>
+      apiRequestData<{ eligibility: EligibilityData }>(`/api/v1/prop-firm/accounts/${accountId}/payouts`, {
+        signal,
+        operation: 'load-payout-eligibility',
+      }),
+    enabled: isScopeReady(scope) && !!user && Boolean(accountId),
+    staleTime: 30_000,
+  })
+
+  const account = accountQuery.data?.account ?? null
+  const eligibility = eligibilityQuery.data?.eligibility ?? null
+
   useEffect(() => {
-    if (!user) return
-
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-
-        const [accountRes, payoutsRes] = await Promise.all([
-          fetch(`/api/v1/prop-firm/accounts/${accountId}`),
-          fetch(`/api/v1/prop-firm/accounts/${accountId}/payouts`)
-        ])
-
-        if (!accountRes.ok || !payoutsRes.ok) {
-          throw new Error('Failed to fetch data')
-        }
-
-        const accountData = await accountRes.json()
-        const payoutsData = await payoutsRes.json()
-
-        if (accountData.success) {
-          setAccount(accountData.data.account)
-        }
-
-        if (payoutsData.success && payoutsData.data.eligibility) {
-          setEligibility(payoutsData.data.eligibility)
-
-          if (payoutsData.data.eligibility.profitSplitAmount > 0) {
-            setAmount(payoutsData.data.eligibility.profitSplitAmount.toFixed(2))
-          }
-        }
-      } catch (error) {
-        reportClientError(error, { operation: 'load-payout-eligibility', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
-        toast.error('Failed to load payout eligibility')
-      } finally {
-        setIsLoading(false)
-      }
+    if (eligibilityQuery.error) {
+      reportClientError(eligibilityQuery.error, { operation: 'load-payout-eligibility', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
+      toast.error('Failed to load payout eligibility')
     }
+  }, [eligibilityQuery.error, accountId])
 
-    fetchData()
-  }, [accountId, user])
+  useEffect(() => {
+    if (!prefilledRef.current && eligibility?.profitSplitAmount && eligibility.profitSplitAmount > 0) {
+      prefilledRef.current = true
+      setAmount(eligibility.profitSplitAmount.toFixed(2))
+    }
+  }, [eligibility])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const payoutMutation = useMutation({
+    mutationFn: (payload: { masterAccountId: string; phaseAccountId: string; amount: number; notes?: string }) =>
+      apiRequestData('/api/v1/prop-firm/payouts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          masterAccountId: payload.masterAccountId,
+          phaseAccountId: payload.phaseAccountId,
+          amount: payload.amount,
+          notes: payload.notes?.trim() || undefined,
+        }),
+        retry: { mode: 'never' },
+        operation: 'submit-payout-request',
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.payouts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) })
+
+      toast.success('Payout request submitted successfully')
+      router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts`)
+    },
+    onError: (error) => {
+      reportClientError(error, { operation: 'submit-payout-request', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
+      toast.error(error instanceof Error ? error.message : 'Failed to submit payout request')
+    },
+    onSettled: () => {
+      setIsSubmitting(false)
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!account?.currentPhase?.id) {
@@ -113,37 +145,16 @@ export default function RequestPayoutPage() {
       return
     }
 
-    try {
-      setIsSubmitting(true)
-
-      const response = await fetch('/api/v1/prop-firm/payouts', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          masterAccountId: accountId,
-          phaseAccountId: account.currentPhase.id,
-          amount: payoutAmount,
-          notes: notes.trim() || undefined
-        })
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        toast.success('Payout request submitted successfully')
-        router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts`)
-      } else {
-        throw new Error(data.error?.message || 'Failed to submit payout request')
-      }
-    } catch (error) {
-      reportClientError(error, { operation: 'submit-payout-request', route: `/api/v1/prop-firm/accounts/${accountId}/payouts` })
-      toast.error(error instanceof Error ? error.message : 'Failed to submit payout request')
-    } finally {
-      setIsSubmitting(false)
-    }
+    setIsSubmitting(true)
+    payoutMutation.mutate({
+      masterAccountId: accountId,
+      phaseAccountId: account.currentPhase.id,
+      amount: payoutAmount,
+      notes: notes,
+    })
   }
+
+  const isLoading = accountQuery.isLoading || eligibilityQuery.isLoading
 
   if (isLoading) {
     return <RequestPayoutPageSkeleton />

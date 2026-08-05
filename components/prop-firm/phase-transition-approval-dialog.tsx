@@ -25,7 +25,10 @@ import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
 import type { NotificationRow } from '@/lib/db/schema/users';
 
-import { clearAccountsCache } from '@/hooks/use-accounts'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { useData } from '@/context/data-provider'
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
 
@@ -58,6 +61,8 @@ export function PhaseTransitionApprovalDialog({
 }: PhaseTransitionApprovalDialogProps) {
   const router = useRouter()
   const { refreshTrades } = useData()
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const [nextPhaseId, setNextPhaseId] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -79,39 +84,42 @@ export function PhaseTransitionApprovalDialog({
     }
   }
 
-  const handleTransition = async () => {
-    if (!nextPhaseId.trim()) {
-      toast.error(`Please enter the ${nextPhaseName} account ID`)
-      return
-    }
-
-    if (!notification || !notificationData?.masterAccountId) {
-      toast.error('Invalid notification data')
-      return
-    }
-
-    try {
-      setIsSubmitting(true)
-
-      const response = await fetch(`/api/v1/prop-firm/accounts/${notificationData.masterAccountId}/transition`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nextPhaseId: nextPhaseId.trim()
-        })
+  const deleteNotificationMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiRequestData(`/api/v1/notifications/${id}`, {
+        method: 'DELETE',
+        retry: { mode: 'never' },
+        operation: 'delete-transition-notification',
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.notifications(scope) })
+    },
+    onError: (error) => {
+      reportClientError(error, { operation: 'delete-transition-notification', route: '/api/v1/notifications' })
+      toast.error('Notification Removed', {
+        description: error instanceof Error ? error.message : 'Failed to remove notification',
       })
+    },
+  })
 
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to transition phase')
+  const transitionMutation = useMutation({
+    mutationFn: (payload: { masterAccountId: string; nextPhaseId: string }) =>
+      apiRequestData(`/api/v1/prop-firm/accounts/${payload.masterAccountId}/transition`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nextPhaseId: payload.nextPhaseId }),
+        retry: { mode: 'never' },
+        operation: 'transition-phase-from-notification',
+      }),
+    onSuccess: async (_, variables) => {
+      if (notification) {
+        deleteNotificationMutation.mutate(notification.id)
       }
 
-      await fetch(`/api/v1/notifications/${notification.id}`, {
-        method: 'DELETE'
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) }),
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) }),
+      ])
 
       onOpenChange(false)
 
@@ -121,8 +129,6 @@ export function PhaseTransitionApprovalDialog({
         description: `Successfully transitioned to ${nextPhaseName}`,
         duration: 5000
       })
-
-      clearAccountsCache()
 
       try {
         localStorage.removeItem('settings-cache')
@@ -137,15 +143,34 @@ export function PhaseTransitionApprovalDialog({
       setTimeout(() => {
         router.refresh()
       }, 100)
-
-    } catch (error) {
+    },
+    onError: (error) => {
       reportClientError(error, { operation: 'transition-phase-from-notification', route: '/api/v1/notifications/phase-transition' })
       toast.error('Failed to transition phase', {
         description: error instanceof Error ? error.message : 'Please try again'
       })
-    } finally {
+    },
+    onSettled: () => {
       setIsSubmitting(false)
+    },
+  })
+
+  const handleTransition = () => {
+    if (!nextPhaseId.trim()) {
+      toast.error(`Please enter the ${nextPhaseName} account ID`)
+      return
     }
+
+    if (!notification || !notificationData?.masterAccountId) {
+      toast.error('Invalid notification data')
+      return
+    }
+
+    setIsSubmitting(true)
+    transitionMutation.mutate({
+      masterAccountId: notificationData.masterAccountId,
+      nextPhaseId: nextPhaseId.trim(),
+    })
   }
 
   return (

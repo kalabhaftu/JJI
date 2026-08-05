@@ -23,7 +23,6 @@ import {
 } from '@/hooks/use-data-provider-filter-state';
 import { defaultLayouts } from '@/lib/dashboard/default-layouts';
 import { useDataProviderTradeMutations } from '@/hooks/use-data-provider-trade-mutations';
-import { usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data';
 import { EMPTY_CALENDAR_DATA, EMPTY_STATISTICS } from './data-provider/types';
 import type { DataContextType } from './data-provider/types';
 
@@ -506,11 +505,17 @@ export const DataProvider: React.FC<{
       hasLoadedDataRef.current = false
       activeLoadPromiseRef.current = null
       
-      usePropFirmStore.getState().clearCache()
-      
-      await queryClient.invalidateQueries({
-        queryKey: queryKeyPrefixes.trades({ surface: 'authenticated', userId: user.id }),
-      })
+      await Promise.all([
+        queryClient.invalidateQueries({
+          queryKey: queryKeyPrefixes.propFirmAccounts(queryScope),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeyPrefixes.propFirmTrades(queryScope),
+        }),
+        queryClient.invalidateQueries({
+          queryKey: queryKeyPrefixes.trades({ surface: 'authenticated', userId: user.id }),
+        }),
+      ])
       
       await loadData()
     } catch (error) {
@@ -534,7 +539,7 @@ export const DataProvider: React.FC<{
     } finally {
       setIsLoading(false)
     }
-  }, [user?.id, loadData, setIsLoading, locale, queryClient])
+  }, [user?.id, loadData, setIsLoading, locale, queryClient, queryScope])
 
 
   const refreshAllData = refreshTrades

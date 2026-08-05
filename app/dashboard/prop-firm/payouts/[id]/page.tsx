@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
@@ -22,6 +22,10 @@ import {
   Trash2
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useQuery } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { GlobalPayoutDetailSkeleton } from "../components/payout-loading-skeletons"
 
 interface PayoutData {
@@ -36,63 +40,106 @@ interface PayoutData {
   notes?: string
 }
 
+interface AccountSummary {
+  id: string
+  number: string
+}
+
+interface AccountPayoutRowProps {
+  account: AccountSummary
+  payoutId: string
+  refreshSignal: number
+  onResult: (accountId: string, payout: PayoutData | null) => void
+}
+
+function AccountPayoutRow({ account, payoutId, refreshSignal, onResult }: AccountPayoutRowProps) {
+  const scope = useQueryScope()
+  const query = useQuery({
+    queryKey: queryKeys.payouts(scope, { accountId: account.id }),
+    queryFn: ({ signal }) =>
+      apiRequestData<{ history?: Array<Omit<PayoutData, 'accountId' | 'accountNumber'>> }>(`/api/v1/prop-firm/accounts/${account.id}/payouts`, {
+        signal,
+        operation: 'load-prop-firm-payouts',
+      }),
+    enabled: isScopeReady(scope),
+    staleTime: 30_000,
+  })
+
+  useEffect(() => {
+    if (query.isSuccess && query.data?.history) {
+      const match = query.data.history.find((p) => p.id === payoutId) ?? null
+      onResult(account.id, match ? { ...match, accountId: account.id, accountNumber: account.number } : null)
+    }
+  }, [query.isSuccess, query.data, payoutId, account.id, account.number, onResult])
+
+  useEffect(() => {
+    if (query.error) {
+      reportClientError(query.error, { operation: 'load-prop-firm-payout-details', route: `/dashboard/prop-firm/payouts/${payoutId}` })
+      toast.error('Failed to fetch payout details', {
+        description: 'An error occurred while fetching payout details'
+      })
+      onResult(account.id, null)
+    }
+  }, [query.error, payoutId, account.id, onResult])
+
+  useEffect(() => {
+    if (refreshSignal > 0) {
+      query.refetch()
+    }
+  }, [refreshSignal, query])
+
+  return null
+}
+
 export default function PayoutDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuth()
-  const [payout, setPayout] = useState<PayoutData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const scope = useQueryScope()
+  const [results, setResults] = useState<Record<string, PayoutData | null>>({})
+  const [refreshSignal, setRefreshSignal] = useState(0)
 
   const payoutId = params.id as string
 
-  const fetchPayout = useCallback(async () => {
-    try {
-      setIsLoading(true)
-      const accountsResponse = await fetch('/api/v1/prop-firm/accounts')
-      if (!accountsResponse.ok) {
-        throw new Error('Failed to fetch accounts')
-      }
-      const accountsData = await accountsResponse.json()
-      if (!accountsData.success) {
-        throw new Error('Failed to fetch accounts')
-      }
+  const accountsQuery = useQuery({
+    queryKey: queryKeys.propFirmAccounts(scope),
+    queryFn: ({ signal }) =>
+      apiRequestData<AccountSummary[]>('/api/v1/prop-firm/accounts', {
+        signal,
+        operation: 'load-prop-firm-payouts',
+      }),
+    enabled: isScopeReady(scope) && !!user,
+    staleTime: 30_000,
+  })
 
-      let foundPayout = null
-
-      for (const account of accountsData.data) {
-        const payoutsResponse = await fetch(`/api/v1/prop-firm/accounts/${account.id}/payouts`)
-        if (payoutsResponse.ok) {
-          const payoutsData = await payoutsResponse.json()
-          if (payoutsData.success && payoutsData.data.history) {
-            const payout = payoutsData.data.history.find((p: any) => p.id === payoutId)
-            if (payout) {
-              foundPayout = { ...payout, accountId: account.id, accountNumber: account.number }
-              break
-            }
-          }
-        }
-      }
-
-      if (!foundPayout) {
-        throw new Error('Payout not found')
-      }
-
-      setPayout(foundPayout)
-    } catch (error) {
-      reportClientError(error, { operation: 'load-prop-firm-payout-details', route: `/dashboard/prop-firm/payouts/${payoutId}` })
+  useEffect(() => {
+    if (accountsQuery.error) {
+      reportClientError(accountsQuery.error, { operation: 'load-prop-firm-payout-details', route: `/dashboard/prop-firm/payouts/${payoutId}` })
       toast.error('Failed to fetch payout details', {
         description: 'An error occurred while fetching payout details'
       })
-    } finally {
-      setIsLoading(false)
     }
-  }, [payoutId])
+  }, [accountsQuery.error, payoutId])
 
-  useEffect(() => {
-    if (user && payoutId) {
-      fetchPayout()
-    }
-  }, [user, payoutId, fetchPayout])
+  const onResult = useCallback((accountId: string, payout: PayoutData | null) => {
+    setResults((prev) => (prev[accountId] === payout ? prev : { ...prev, [accountId]: payout }))
+  }, [])
+
+  const payout = useMemo(() => {
+    return Object.values(results).find((p) => p !== null) ?? null
+  }, [results])
+
+  const allAccountsSettled = useMemo(() => {
+    const accounts = accountsQuery.data
+    if (!accounts) return false
+    return accounts.length === 0 || accounts.every((account) => account.id in results)
+  }, [accountsQuery.data, results])
+
+  const hasAccountsError = Boolean(accountsQuery.error)
+  const settled = hasAccountsError || allAccountsSettled
+  const isLoading = accountsQuery.isPending || (accountsQuery.isSuccess && !settled)
+
+  const notFound = !isLoading && settled && !payout
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -122,11 +169,15 @@ export default function PayoutDetailPage() {
     return new Date(dateString).toLocaleDateString()
   }
 
+  const handleRefresh = () => {
+    setRefreshSignal((n) => n + 1)
+  }
+
   if (isLoading) {
     return <GlobalPayoutDetailSkeleton />
   }
 
-  if (!payout) {
+  if (notFound) {
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
@@ -144,8 +195,21 @@ export default function PayoutDetailPage() {
     )
   }
 
+  if (!payout) {
+    return null
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {(accountsQuery.data ?? []).map((account) => (
+        <AccountPayoutRow
+          key={account.id}
+          account={account}
+          payoutId={payoutId}
+          refreshSignal={refreshSignal}
+          onResult={onResult}
+        />
+      ))}
       {            }
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -166,7 +230,7 @@ export default function PayoutDetailPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchPayout}
+            onClick={handleRefresh}
             disabled={isLoading}
           >
             {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}

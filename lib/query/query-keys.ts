@@ -11,7 +11,8 @@ export const queryKeys = {
   reportStats: (scope: QueryScope, filters: unknown) => ['reports', 'stats', scope, filters] as const,
   notifications: (scope: QueryScope) => ['notifications', scope] as const,
   propFirmAccounts: (scope: QueryScope) => ['prop-firm', 'accounts', scope] as const,
-  propFirmAccount: (scope: QueryScope, accountId: string) => ['prop-firm', 'accounts', scope, accountId] as const,
+  propFirmAccount: (scope: QueryScope, accountId: string, filters?: { resetTimezone?: string }) =>
+    ['prop-firm', 'accounts', scope, accountId, ...(filters ? [filters] : [])] as const,
   propFirmTrades: (scope: QueryScope, accountId: string, filters: unknown) =>
     ['prop-firm', 'trades', scope, accountId, filters] as const,
   propFirmStats: (scope: QueryScope) => ['prop-firm', 'stats', scope] as const,

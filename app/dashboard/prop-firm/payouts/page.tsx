@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from "@/context/auth-provider"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
@@ -21,6 +21,10 @@ import {
 } from "lucide-react"
 import { useRouter } from 'next/navigation'
 import { cn } from "@/lib/utils"
+import { useQuery } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { GlobalPayoutListSkeleton, GlobalPayoutsPageSkeleton } from "./components/payout-loading-skeletons"
 
 interface PayoutData {
@@ -35,50 +39,51 @@ interface PayoutData {
   notes?: string
 }
 
+interface PropFirmAccountWithPayouts {
+  id: string
+  number: string
+  name?: string
+  payouts?: Array<Omit<PayoutData, 'accountNumber' | 'accountName'>>
+}
+
 export default function PayoutsPage() {
   const router = useRouter()
   const { user } = useAuth()
-  const [payouts, setPayouts] = useState<PayoutData[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const scope = useQueryScope()
   const [searchTerm, setSearchTerm] = useState('')
 
-  const fetchPayouts = async () => {
-    try {
-      setIsLoading(true)
-      const response = await fetch('/api/v1/prop-firm/accounts')
+  const payoutsQuery = useQuery({
+    queryKey: queryKeys.payouts(scope, {}),
+    queryFn: ({ signal }) =>
+      apiRequestData<PropFirmAccountWithPayouts[]>('/api/v1/prop-firm/accounts', {
+        signal,
+        operation: 'load-prop-firm-payouts',
+      }),
+    enabled: isScopeReady(scope) && !!user,
+    staleTime: 30_000,
+  })
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch payouts')
-      }
-
-      const data = await response.json()
-      if (data.success) {
-        const allPayouts = data.data.flatMap((account: any) =>
-          account.payouts ? account.payouts.map((payout: any) => ({
-            ...payout,
-            accountNumber: account.number,
-            accountName: account.name
-          })) : []
-        )
-        setPayouts(allPayouts)
-      } else {
-        throw new Error(data.error?.message || 'Failed to fetch payouts')
-      }
-    } catch (error) {
-      reportClientError(error, { operation: 'load-prop-firm-payouts', route: '/dashboard/prop-firm/payouts' })
+  useEffect(() => {
+    if (payoutsQuery.error) {
+      reportClientError(payoutsQuery.error, { operation: 'load-prop-firm-payouts', route: '/dashboard/prop-firm/payouts' })
       toast.error('Failed to fetch payouts', {
         description: 'An error occurred while fetching payouts'
       })
-    } finally {
-      setIsLoading(false)
     }
-  }
+  }, [payoutsQuery.error])
 
-  useEffect(() => {
-    if (user) {
-      fetchPayouts()
-    }
-  }, [user])
+  const payouts = useMemo(
+    () => (payoutsQuery.data ?? []).flatMap((account) =>
+      account.payouts ? account.payouts.map((payout) => ({
+        ...payout,
+        accountNumber: account.number,
+        accountName: account.name
+      })) : []
+    ),
+    [payoutsQuery.data]
+  )
+
+  const isLoading = payoutsQuery.isLoading
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -139,7 +144,7 @@ export default function PayoutsPage() {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchPayouts}
+            onClick={() => payoutsQuery.refetch()}
             disabled={isLoading}
           >
             {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCw className="mr-2 h-4 w-4" />}

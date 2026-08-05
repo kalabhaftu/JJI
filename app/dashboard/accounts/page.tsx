@@ -278,7 +278,10 @@ export default function AccountsPage() {
   }, [queryClient, scope])
 
   const handleAccountCreated = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) }),
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) }),
+    ])
     refreshAllData()
     setCreateLiveDialogOpen(false)
     setCreatePropFirmDialogOpen(false)
@@ -286,7 +289,10 @@ export default function AccountsPage() {
   }, [queryClient, scope, refreshAllData])
 
   const handleAccountUpdated = useCallback(async () => {
-    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) }),
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) }),
+    ])
     refreshAllData()
     setEditLiveDialogOpen(false)
     setEditPropFirmDialogOpen(false)
@@ -334,7 +340,10 @@ export default function AccountsPage() {
       await deleteAccountRequest({ accountType: deletingAccount.accountType, accountId })
 
       toast.success(`${accountName} deleted permanently`)
-      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) }),
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) }),
+      ])
       await refreshAllData()
       setDeletingAccount(null)
       setDeleteConfirmText('')
@@ -356,7 +365,10 @@ export default function AccountsPage() {
       await setAccountArchived({ accountType: account.accountType, accountId }, !isArchived)
 
       toast.success(isArchived ? `${accountName} restored` : `${accountName} archived`)
-      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) }),
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) }),
+      ])
     } catch (error) {
       reportClientError(error, { operation: isArchived ? 'restore-account' : 'archive-account', route: '/dashboard/accounts' })
       toast.error("Failed to update account")

@@ -37,8 +37,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Loader2, Building2, AlertCircle, CheckCircle2, PenLine, Check, X } from "lucide-react"
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
-import { clearAccountsCache } from "@/hooks/use-accounts"
 import { emitTourEvent } from '@/lib/tours/events'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 
 
 const propFirmSchema = z.object({
@@ -83,9 +86,85 @@ interface PropFirmDialogProps {
 
 export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirmDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [templates, setTemplates] = useState<any>({})
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
   const [isEditingRules, setIsEditingRules] = useState(false)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
+
+  const templatesQuery = useQuery({
+    queryKey: queryKeys.templates(scope),
+    queryFn: ({ signal }) => apiRequestData<Record<string, any>>('/api/v1/prop-firm-templates', {
+      signal,
+      operation: 'load-prop-firm-templates',
+    }),
+    enabled: open && isScopeReady(scope),
+    staleTime: 30_000,
+  })
+
+  const templates = templatesQuery.data ?? {}
+
+  useEffect(() => {
+    if (templatesQuery.error) {
+      reportClientError(templatesQuery.error, { operation: 'load-prop-firm-templates', route: '/api/v1/prop-firm-templates' })
+      toast.error('Failed to load templates')
+    }
+  }, [templatesQuery.error])
+
+  const createMutation = useMutation({
+    mutationFn: (payload: PropFirmFormData) =>
+      apiRequestData<{ id: string; phases?: any[]; masterAccount?: any }>('/api/v1/prop-firm/accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        retry: { mode: 'never' },
+        operation: 'create-prop-firm-account',
+      }),
+    onSuccess: async (result, variables) => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+
+      toast.success("Account created!", {
+        description: `Your ${variables.propFirmName} account has been added.`,
+      })
+
+      if (typeof window !== 'undefined' && result) {
+        const activePhase = result.phases?.find((p: any) => p.status === 'active')
+        const activeId = activePhase?.id || result.masterAccount?.id
+        if (activeId) {
+          document.dispatchEvent(
+            new CustomEvent('jji-account-created', {
+              detail: { id: activeId, type: 'prop-firm' }
+            })
+          )
+          emitTourEvent('account.created', { id: activeId })
+        }
+      }
+
+      reset()
+      onSuccess?.()
+      onOpenChange(false)
+    },
+    onError: (error) => {
+      if (error instanceof Error && error.message.includes('An account with this name already exists')) {
+        setError('accountName', {
+          type: 'manual',
+          message: 'Account name already exists'
+        })
+      }
+      reportClientError(error, { operation: 'create-prop-firm-account', route: '/api/v1/prop-firm/accounts' })
+      toast.error("Failed to create account", {
+        description: error instanceof Error ? error.message : "Please try again",
+      })
+    },
+    onSettled: () => {
+      setIsSubmitting(false)
+    },
+  })
+
+  const onSubmit = (data: PropFirmFormData) => {
+    setIsSubmitting(true)
+    createMutation.mutate(data)
+  }
 
   const {
     register,
@@ -128,20 +207,6 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
   const watchedFirm = watch('propFirmName')
   const watchedEvalType = watch('evaluationType')
 
-
-  useEffect(() => {
-    fetch('/api/v1/prop-firm-templates')
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) setTemplates(data.data)
-      })
-      .catch((error) => {
-        reportClientError(error, { operation: 'load-prop-firm-templates', route: '/api/v1/prop-firm-templates' })
-        toast.error('Failed to load templates')
-      })
-  }, [])
-
-
   useEffect(() => {
     if (!watchedFirm || !watchedEvalType || !templates[watchedFirm]) return
 
@@ -180,61 +245,6 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
       setValue('fundedMinProfitForPayout', funded.minProfitForPayout || 100)
     }
   }, [watchedFirm, watchedEvalType, templates, setValue])
-
-  const onSubmit = async (data: PropFirmFormData) => {
-    try {
-      setIsSubmitting(true)
-
-      const response = await fetch('/api/v1/prop-firm/accounts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        if (result.field === 'accountName') {
-          setError('accountName', {
-            type: 'manual',
-            message: result.error || 'Account name already exists'
-          })
-        }
-        throw new Error(result.error?.message || 'Failed to create account')
-      }
-
-      toast.success("Account created!", {
-        description: `Your ${data.propFirmName} account has been added.`,
-      })
-
-
-      if (typeof window !== 'undefined' && result.data) {
-        const activePhase = result.data.phases?.find((p: any) => p.status === 'active')
-        const activeId = activePhase?.id || result.data.masterAccount?.id
-        if (activeId) {
-          document.dispatchEvent(
-            new CustomEvent('jji-account-created', {
-              detail: { id: activeId, type: 'prop-firm' }
-            })
-          )
-          emitTourEvent('account.created', { id: activeId })
-        }
-      }
-
-      clearAccountsCache()
-      reset()
-      onSuccess?.()
-      onOpenChange(false)
-
-    } catch (error) {
-      reportClientError(error, { operation: 'create-prop-firm-account', route: '/api/v1/prop-firm/accounts' })
-      toast.error("Failed to create account", {
-        description: error instanceof Error ? error.message : "Please try again",
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
   const handleDialogClose = (openState: boolean) => {
     if (!openState && isDirty && !isSubmitting) {

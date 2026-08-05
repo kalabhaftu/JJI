@@ -25,8 +25,7 @@ import { WIDGET_GRID_DEFAULTS } from '../config/widget-dimensions'
 import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
 import { getMobileWidgetHeight, getWidgetSurfaceContract } from '@/lib/dashboard/mobile-widget-layout'
 import { toast } from 'sonner'
-import { useDashboardPropFirmAccount } from '@/hooks/use-dashboard-prop-firm-account'
-import { getPropFirmCacheKey, usePropFirmStore } from '@/hooks/use-prop-firm-dashboard-widget-data'
+import { usePropFirmDashboardWidgetData } from '@/hooks/use-prop-firm-dashboard-widget-data'
 
 import 'react-grid-layout/css/styles.css'
 
@@ -67,21 +66,11 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   }, [layout])
 
 
-  const propFirmAccount = useDashboardPropFirmAccount()
+  const propFirmAccount = usePropFirmDashboardWidgetData()
   const activePropFirmId = propFirmAccount.selectedMasterAccountId
-  const activePropFirmCacheKey = getPropFirmCacheKey(activePropFirmId, propFirmAccount.resetTimezone)
-  const propFirmCache = usePropFirmStore(state => state.cache[activePropFirmCacheKey])
-  const fetchPropFirmData = usePropFirmStore(state => state.fetchData)
-
-
-  useEffect(() => {
-    if (hasPropFirmWidget && activePropFirmId) {
-      fetchPropFirmData(activePropFirmId, propFirmAccount.resetTimezone)
-    }
-  }, [hasPropFirmWidget, activePropFirmId, propFirmAccount.resetTimezone, fetchPropFirmData])
 
   const isPropFirmLoading = (hasPropFirmWidget && activePropFirmId)
-    ? (propFirmAccount.isLoading || !propFirmCache || propFirmCache.isLoading)
+    ? propFirmAccount.isLoading
     : false
 
   const [hasMountedOnce, setHasMountedOnce] = useState(false)

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { queryKeys } from '@/lib/query/query-keys'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
 import type { QueryScope } from '@/lib/query/query-scope'
 
 const authenticatedScope: QueryScope = { surface: 'authenticated', userId: 'user-1' }
@@ -38,6 +38,8 @@ describe('query key factories', () => {
       () => queryKeys.reportStats(authenticatedScope, {}),
       () => queryKeys.notifications(authenticatedScope),
       () => queryKeys.propFirmAccounts(authenticatedScope),
+      () => queryKeys.propFirmAccount(authenticatedScope, 'account-1'),
+      () => queryKeys.propFirmAccount(authenticatedScope, 'account-1', { resetTimezone: 'America/New_York' }),
       () => queryKeys.propFirmStats(authenticatedScope),
       () => queryKeys.payouts(authenticatedScope, {}),
       () => queryKeys.settings(authenticatedScope),
@@ -46,5 +48,18 @@ describe('query key factories', () => {
     for (const factory of factories) {
       expect(factory()).toContain(authenticatedScope)
     }
+  })
+
+  it('keeps resetTimezone filters in propFirmAccount key identity without breaking prefix invalidation', () => {
+    const base = queryKeys.propFirmAccount(authenticatedScope, 'account-1')
+    const filtered = queryKeys.propFirmAccount(authenticatedScope, 'account-1', { resetTimezone: 'America/New_York' })
+
+    expect(filtered).toEqual([...base, { resetTimezone: 'America/New_York' }])
+    expect(queryKeys.propFirmAccount(authenticatedScope, 'account-1', { resetTimezone: 'UTC' })).not.toEqual(base)
+    expect(filtered).not.toEqual(queryKeys.propFirmAccount(demoScope, 'account-1', { resetTimezone: 'America/New_York' }))
+
+    const prefix = queryKeyPrefixes.propFirmAccounts(authenticatedScope)
+    expect(filtered.slice(0, prefix.length)).toEqual(prefix)
+    expect(base.slice(0, prefix.length)).toEqual(prefix)
   })
 })

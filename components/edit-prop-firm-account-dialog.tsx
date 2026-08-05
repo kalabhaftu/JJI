@@ -28,6 +28,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Building2 as Building } from "lucide-react"
 import { reportClientError } from '@/lib/observability/report-error'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 
 const editAccountSchema = z.object({
   accountName: z.string().min(1, 'Account name is required').max(100, 'Name too long'),
@@ -63,6 +67,8 @@ export function EditPropFirmAccountDialog({
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
   const [showUnsavedWarning, setShowUnsavedWarning] = useState(false)
   const [pendingClose, setPendingClose] = useState(false)
+  const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
 
   const {
@@ -149,30 +155,23 @@ export function EditPropFirmAccountDialog({
     setPendingClose(false)
   }
 
-  const onSubmit = async (data: EditAccountForm) => {
-    if (!account) return
+  const masterAccountId = account?.currentPhaseDetails?.masterAccountId || account?.id || ''
 
-    try {
-      setIsSaving(true)
-
-
-      const masterAccountId = account.currentPhaseDetails?.masterAccountId || account.id
-      const endpoint = `/api/v1/prop-firm/accounts/${masterAccountId}`
-
-      const response = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          accountName: data.accountName.trim()
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error?.message || 'Failed to update account')
-      }
+  const updateMutation = useMutation({
+    mutationFn: (data: EditAccountForm) =>
+      apiRequestData<{ success: boolean }>(
+        `/api/v1/prop-firm/accounts/${masterAccountId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accountName: data.accountName.trim() }),
+          retry: { mode: 'never' },
+          operation: 'update-prop-firm-account',
+        }
+      ),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
 
       toast.success('Account Updated', {
         description: 'Your prop firm account has been successfully updated.',
@@ -190,15 +189,22 @@ export function EditPropFirmAccountDialog({
       setHasUnsavedChanges(false)
       onOpenChange(false)
       onSuccess?.()
-
-    } catch (error) {
+    },
+    onError: (error) => {
       reportClientError(error, { operation: 'update-prop-firm-account', route: '/api/v1/prop-firm/accounts' })
       toast.error('Update Failed', {
         description: error instanceof Error ? error.message : 'Failed to update account',
       })
-    } finally {
+    },
+    onSettled: () => {
       setIsSaving(false)
-    }
+    },
+  })
+
+  const onSubmit = (data: EditAccountForm) => {
+    if (!account) return
+    setIsSaving(true)
+    updateMutation.mutate(data)
   }
 
   if (!account) return null

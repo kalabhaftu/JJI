@@ -35,5 +35,13 @@ export function loadTradeEntryDraft(userId: string, draftId = 'default'): TradeE
   } catch { return null }
 }
 
-export function saveTradeEntryDraft(draft: TradeEntryDraft): void { localStorage.setItem(key(draft.userId, draft.draftId), JSON.stringify(draft)) }
-export function clearTradeEntryDraft(userId: string, draftId: string): void { localStorage.removeItem(key(userId, draftId)) }
+export function saveTradeEntryDraft(draft: TradeEntryDraft): void {
+  try {
+    localStorage.setItem(key(draft.userId, draft.draftId), JSON.stringify(draft))
+  } catch {}
+}
+export function clearTradeEntryDraft(userId: string, draftId: string): void {
+  try {
+    localStorage.removeItem(key(userId, draftId))
+  } catch {}
+}

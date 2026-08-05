@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatTradeData } from '@/lib/trading/trade-formatting'
+import { buildTradeEntryHref } from '@/app/dashboard/trades/new/trade-entry-draft'
 import { AccountStatus } from "@/types/prop-firm"
 import { AccountTradesPageSkeleton } from "../components/account-loading-skeletons"
 
@@ -231,7 +232,7 @@ export default function AccountTradesPage() {
             Refresh
           </Button>
           <Button
-            onClick={() => router.push(`/dashboard/trades/new?origin=prop-firm&propFirmAccountId=${encodeURIComponent(accountId)}&accountId=${encodeURIComponent(account.number)}&returnTo=${encodeURIComponent(`/dashboard/prop-firm/accounts/${accountId}/trades`)}`)}
+            onClick={() => router.push(buildTradeEntryHref({ origin: 'prop-firm', propFirmAccountId: accountId, accountId: account.number, returnTo: `/dashboard/prop-firm/accounts/${accountId}/trades` }))}
             size="sm"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -388,7 +389,7 @@ export default function AccountTradesPage() {
                   {searchTerm ? 'Try a different search term' : 'Add your first trade to get started'}
                 </p>
                 {!searchTerm && (
-                  <Button onClick={() => router.push(`/dashboard/trades/new?origin=prop-firm&propFirmAccountId=${encodeURIComponent(accountId)}&accountId=${encodeURIComponent(account.number)}&returnTo=${encodeURIComponent(`/dashboard/prop-firm/accounts/${accountId}/trades`)}`)}>
+                  <Button onClick={() => router.push(buildTradeEntryHref({ origin: 'prop-firm', propFirmAccountId: accountId, accountId: account.number, returnTo: `/dashboard/prop-firm/accounts/${accountId}/trades` }))}>
                     <Plus className="h-4 w-4 mr-2" />
                     Add Trade
                   </Button>

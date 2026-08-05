@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import {
   buildTradeEntryHref,
@@ -42,5 +42,31 @@ describe('trade entry route state and drafts', () => {
   it('ignores malformed and unsupported draft records', () => {
     localStorage.setItem('jji:trade-entry-draft:u1:d1', JSON.stringify({ version: 2, userId: 'u1', draftId: 'd1' }))
     expect(loadTradeEntryDraft('u1', 'd1')).toBeNull()
+  })
+})
+
+describe('draft storage failures are isolated', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('returns null without throwing when reading a draft fails', () => {
+    vi.stubGlobal('localStorage', { getItem: () => { throw new Error('storage blocked') }, setItem: () => {}, removeItem: () => {}, clear: () => {} })
+
+    expect(loadTradeEntryDraft('u1', 'd1')).toBeNull()
+    expect(() => loadTradeEntryDraft('u1', 'd1')).not.toThrow()
+  })
+
+  it('does not throw when saving a draft fails', () => {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => { throw new Error('QuotaExceededError') }, removeItem: () => {}, clear: () => {} })
+
+    const draft: TradeEntryDraft = { version: 1, userId: 'u1', draftId: 'd1', updatedAt: 10, values: { instrument: 'NQ' } }
+    expect(() => saveTradeEntryDraft(draft)).not.toThrow()
+  })
+
+  it('does not throw when clearing a draft fails', () => {
+    vi.stubGlobal('localStorage', { getItem: () => null, setItem: () => {}, removeItem: () => { throw new Error('storage blocked') }, clear: () => {} })
+
+    expect(() => clearTradeEntryDraft('u1', 'd1')).not.toThrow()
   })
 })

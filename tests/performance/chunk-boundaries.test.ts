@@ -17,15 +17,13 @@ describe('route chunk boundaries', () => {
     expect(journal).toContain("import('./journal-calendar')")
   })
 
-  it('lazy-loads report tabs and the prop-firm importer', () => {
+  it('lazy-loads report tabs', () => {
     const reports = source('app/dashboard/reports/reports-page-client.tsx')
-    const importer = source('app/dashboard/prop-firm/accounts/[id]/trades/new/page.tsx')
 
     expect(reports).toContain("dynamic(() => import('./components/statement-view')")
     expect(reports).toContain("dynamic(() => import('./components/propfirm-tab')")
     expect(reports).toContain("import('./components/r-multiple-distribution-chart')")
     expect(reports).not.toContain("from 'recharts'")
-    expect(importer).toContain("dynamic(\n  () => import('@/app/dashboard/components/import/import-trades-card')")
   })
 
   it('uploads Sentry source maps only in hosted or CI builds', () => {

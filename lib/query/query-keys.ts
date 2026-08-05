@@ -23,6 +23,10 @@ export const queryKeys = {
   playbook: (scope: QueryScope) => ['playbook', scope] as const,
   backtests: (scope: QueryScope) => ['backtests', scope] as const,
   synchronizations: (scope: QueryScope) => ['synchronizations', scope] as const,
+  dataManagementAccounts: (scope: QueryScope) => ['data-management', 'accounts', scope] as const,
+  dataManagementTrades: (scope: QueryScope, filters: { page: number; limit: number }) =>
+    ['data-management', 'trades', scope, filters] as const,
+  dataExportOptions: (scope: QueryScope) => ['data-management', 'export-options', scope] as const,
 }
 
 export const queryKeyPrefixes = {
@@ -43,4 +47,7 @@ export const queryKeyPrefixes = {
   playbook: (scope: QueryScope) => ['playbook', scope] as const,
   backtests: (scope: QueryScope) => ['backtests', scope] as const,
   synchronizations: (scope: QueryScope) => ['synchronizations', scope] as const,
+  dataManagementAccounts: (scope: QueryScope) => ['data-management', 'accounts', scope] as const,
+  dataManagementTrades: (scope: QueryScope) => ['data-management', 'trades', scope] as const,
+  dataExportOptions: (scope: QueryScope) => ['data-management', 'export-options', scope] as const,
 }

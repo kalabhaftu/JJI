@@ -10,7 +10,9 @@ import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
 import { useData } from '@/context/data-provider'
-import { useAccounts } from '@/hooks/use-accounts'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { FileDropzone } from '@/components/ui/file-dropzone'
 import { apiRequest } from '@/lib/api/client'
 import { RESTORE_JOB_PROCESS_SPACER_MS, RESTORE_REFRESH_DELAY_MS } from '@/lib/constants/intervals'
@@ -28,7 +30,8 @@ interface ImportJobResponse {
 
 export function ImportDialog() {
   const { refreshTrades } = useData()
-  const { refetch: refetchAccounts } = useAccounts()
+  const scope = useQueryScope()
+  const queryClient = useQueryClient()
   const [isOpen, setIsOpen] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -73,9 +76,13 @@ export function ImportDialog() {
     toast.success('System Restore Complete!', {
       description: `Restored ${latestJob.importedCount || 0} trades. Skipped ${latestJob.skippedCount || 0} duplicates.`
     })
-    setTimeout(() => {
+    setTimeout(async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) }),
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementTrades(scope) }),
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) }),
+      ])
       refreshTrades()
-      refetchAccounts()
     }, RESTORE_REFRESH_DELAY_MS)
   }
 

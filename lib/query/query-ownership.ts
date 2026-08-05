@@ -15,6 +15,7 @@ export type ServerStateDomain =
   | 'playbook'
   | 'backtests'
   | 'synchronizations'
+  | 'data-management'
 
 export interface DomainOwnership {
   domain: ServerStateDomain
@@ -51,4 +52,5 @@ export const domainOwnership: Record<ServerStateDomain, DomainOwnership> = {
   playbook: ownership('playbook', 'queryKeys.playbook', 'playbook mutations'),
   backtests: ownership('backtests', 'queryKeys.backtests', 'backtest mutations'),
   synchronizations: ownership('synchronizations', 'queryKeys.synchronizations', 'synchronization mutations'),
+  'data-management': ownership('data-management', 'queryKeys.dataManagementAccounts', 'data-management mutations'),
 }

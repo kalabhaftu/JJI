@@ -28,6 +28,19 @@ describe('query key factories', () => {
     expect(queryKeys.settings(authenticatedScope)).not.toEqual(queryKeys.settings({ surface: 'authenticated', userId: 'user-2' }))
   })
 
+  it('keeps data-management keys scoped and prefix-invalidatable', () => {
+    expect(queryKeys.dataManagementAccounts(authenticatedScope)).not.toEqual(
+      queryKeys.dataManagementAccounts(demoScope),
+    )
+    expect(queryKeys.dataExportOptions(authenticatedScope)).not.toEqual(queryKeys.dataExportOptions(demoScope))
+
+    const pageTwo = queryKeys.dataManagementTrades(authenticatedScope, { page: 2, limit: 25 })
+    expect(pageTwo).not.toEqual(queryKeys.dataManagementTrades(authenticatedScope, { page: 1, limit: 25 }))
+
+    const prefix = queryKeyPrefixes.dataManagementTrades(authenticatedScope)
+    expect(pageTwo.slice(0, prefix.length)).toEqual(prefix)
+  })
+
   it('includes scope in every supported query key', () => {
     const factories = [
       () => queryKeys.accounts(authenticatedScope, {}),
@@ -43,6 +56,9 @@ describe('query key factories', () => {
       () => queryKeys.propFirmStats(authenticatedScope),
       () => queryKeys.payouts(authenticatedScope, {}),
       () => queryKeys.settings(authenticatedScope),
+      () => queryKeys.dataManagementAccounts(authenticatedScope),
+      () => queryKeys.dataManagementTrades(authenticatedScope, { page: 1, limit: 25 }),
+      () => queryKeys.dataExportOptions(authenticatedScope),
     ]
 
     for (const factory of factories) {

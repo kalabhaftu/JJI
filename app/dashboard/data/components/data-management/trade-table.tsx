@@ -14,7 +14,10 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { ArrowUpDown, Trash2, ChevronLeft, ChevronRight, Pencil, Loader2, X, Filter, TrendingUp, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
-import { apiRequest } from '@/lib/api/client'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { apiRequestData } from '@/lib/api/client'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { TradeEditPanel } from '@/app/dashboard/components/tables/trade-edit-panel'
 import { TradeDetailPanel } from '@/app/dashboard/components/tables/trade-detail-panel'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -41,17 +44,15 @@ type SortConfig = {
   direction: 'asc' | 'desc'
 }
 
-import useSWR from 'swr'
-
-const fetcher = async (url: string) => {
-  try {
-    const response = await fetch(url)
-    const payload = await response.json()
-    if (!response.ok) throw Object.assign(new Error(payload.error?.message || 'Failed to load trades'), { status: response.status })
-    return payload
-  } catch (error) {
-    reportClientError(error, { operation: 'load-data-management-trades', route: url })
-    throw error
+interface TradeResponse {
+  data: Trade[]
+  meta: {
+    pagination: {
+      total: number
+      page: number
+      limit: number
+      totalPages: number
+    }
   }
 }
 
@@ -64,11 +65,26 @@ export default function TradeTable() {
   const dataPath = resolveNavigationPath('data', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })
   const [currentPage, setCurrentPage] = useState(1)
   const [tradesPerPage, setTradesPerPage] = useState(50)
-  const { data: tradesResponse, isLoading: tradesLoading, mutate: refetchTrades } = useSWR(
-    user?.id ? `/api/v1/data-management/trades?page=${currentPage}&limit=${tradesPerPage}` : null,
-    fetcher,
-    { keepPreviousData: true }
-  )
+  const scope = useQueryScope()
+  const queryClient = useQueryClient()
+  const tradesQuery = useQuery({
+    queryKey: queryKeys.dataManagementTrades(scope, { page: currentPage, limit: tradesPerPage }),
+    queryFn: ({ signal }) =>
+      apiRequestData<TradeResponse>(`/api/v1/data-management/trades?page=${currentPage}&limit=${tradesPerPage}`, {
+        signal,
+        operation: 'load-data-management-trades',
+      }),
+    enabled: isScopeReady(scope) && Boolean(user?.id),
+    staleTime: 30_000,
+    placeholderData: (prev) => prev,
+  })
+  const tradesResponse = tradesQuery.data
+  const tradesLoading = tradesQuery.isPending
+
+  useEffect(() => {
+    if (!tradesQuery.error) return
+    reportClientError(tradesQuery.error, { operation: 'load-data-management-trades', route: '/api/v1/data-management/trades' })
+  }, [tradesQuery.error])
 
   const formattedTrades = useMemo(() => {
     if (!tradesResponse?.data) return []
@@ -87,8 +103,8 @@ export default function TradeTable() {
   const activeTradeId = searchParams.get('tradeId')
   const selectedTradeForView = useMemo(() => {
     if (activeView !== 'details' || !activeTradeId) return null
-    return formattedTrades.find((t: ExtendedTrade) => t.id === activeTradeId) || null
-  }, [activeView, activeTradeId, formattedTrades])
+    return tradesResponse?.data.find((t: Trade) => t.id === activeTradeId) || null
+  }, [activeView, activeTradeId, tradesResponse])
   const selectedTradeForEdit = useMemo(() => {
     if (activeView !== 'edit' || !activeTradeId) return null
     return formattedTrades.find((t: ExtendedTrade) => t.id === activeTradeId) || null
@@ -129,7 +145,7 @@ export default function TradeTable() {
       list = list.filter(trade => selectedAccounts.includes(trade.accountNumber))
     }
     if (sideFilter !== 'all') {
-      list = list.filter(trade => trade.side.toLowerCase() === sideFilter)
+      list = list.filter(trade => (trade.side ?? '').toLowerCase() === sideFilter)
     }
     if (pnlFilter === 'wins') {
       list = list.filter(trade => classifyOutcome(Number(trade.pnl || 0), breakEvenThreshold) === 'win')
@@ -162,6 +178,34 @@ export default function TradeTable() {
     }))
   }
 
+  const deleteTradesMutation = useMutation({
+    mutationFn: (ids: string[]) =>
+      apiRequestData<unknown>('/api/v1/trades/batch/delete', {
+        method: 'POST',
+        body: JSON.stringify({ tradeIds: ids }),
+        retry: { mode: 'never' },
+        operation: 'delete-data-management-trades',
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementTrades(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.trades(scope) })
+    },
+  })
+
+  const updateTradeMutation = useMutation({
+    mutationFn: ({ id, patch }: { id: string; patch: Partial<Trade> }) =>
+      apiRequestData<unknown>(`/api/v1/trades/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(patch),
+        retry: { mode: 'never' },
+        operation: 'update-data-management-trades',
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementTrades(scope) })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.trades(scope) })
+    },
+  })
+
   const handleDelete = async (ids: string[]) => {
     if (ids.length === 0) return
 
@@ -179,12 +223,7 @@ export default function TradeTable() {
         duration: Infinity
       })
 
-      await apiRequest('/api/v1/trades/batch/delete', {
-        method: 'POST',
-        body: JSON.stringify({ tradeIds: ids }),
-      })
-
-      refetchTrades()
+      await deleteTradesMutation.mutateAsync(ids)
 
       router.refresh()
 
@@ -205,8 +244,6 @@ export default function TradeTable() {
       toast.error("Error", {
         description: "Failed to delete trades. Please try again.",
       })
-
-      refetchTrades()
     } finally {
       setIsDeleting(false)
     }
@@ -245,11 +282,7 @@ export default function TradeTable() {
     if (!selectedTradeForEdit) return
 
     try {
-      await apiRequest(`/api/v1/trades/${selectedTradeForEdit.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(updatedTrade),
-      })
-      refetchTrades()
+      await updateTradeMutation.mutateAsync({ id: selectedTradeForEdit.id, patch: updatedTrade })
       router.refresh()
 
       toast.success("Trade Updated", {
@@ -600,7 +633,7 @@ export default function TradeTable() {
               </TableRow>
             ) : (
               paginatedTrades.map((trade) => {
-                const formatted = formatTradeData(trade)
+                const formatted = formatTradeData(trade as unknown as Trade)
                 return (
                   <TableRow key={trade.id}>
                     <TableCell>
@@ -722,7 +755,7 @@ export default function TradeTable() {
       {                                           }
       {activeView === 'edit' && selectedTradeForEdit && (
         <TradeEditPanel
-          trade={ensureExtendedTrade(selectedTradeForEdit)}
+          trade={selectedTradeForEdit}
           onClose={handleClosePanel}
           onSave={handleSaveTrade}
           workspaceMode="dialog"

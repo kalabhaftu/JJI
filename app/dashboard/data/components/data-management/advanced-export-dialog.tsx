@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import useSWR from 'swr'
+import { useQuery } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
+import { apiRequestData } from '@/lib/api/client'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Download, Database } from 'lucide-react'
@@ -20,26 +23,28 @@ type ExportOptionAccount = {
   displayName?: string
 }
 
-const fetcher = async (url: string) => {
-  try {
-    const response = await fetch(url)
-    if (!response.ok) {
-      throw Object.assign(new Error('Failed to load export options'), { status: response.status })
-    }
-    return response.json()
-  } catch (error) {
-    reportClientError(error, { operation: 'load-export-options', route: url })
-    throw error
-  }
-}
-
 export function AdvancedExportDialog() {
-  const {
-    data: exportOptionsResponse,
-    isLoading: optionsLoading,
-  } = useSWR('/api/v1/data/export/options', fetcher)
+  const scope = useQueryScope()
   const [isOpen, setIsOpen] = useState(false)
   const [isExporting, setIsExporting] = useState(false)
+
+  const optionsQuery = useQuery({
+    queryKey: queryKeys.dataExportOptions(scope),
+    queryFn: ({ signal }) =>
+      apiRequestData<{ data: { accounts: ExportOptionAccount[]; instruments: string[] } }>('/api/v1/data/export/options', {
+        signal,
+        operation: 'load-export-options',
+      }),
+    enabled: isOpen && isScopeReady(scope),
+    staleTime: 30_000,
+  })
+  const exportOptionsResponse = optionsQuery.data
+  const optionsLoading = optionsQuery.isPending
+
+  useEffect(() => {
+    if (!optionsQuery.error) return
+    reportClientError(optionsQuery.error, { operation: 'load-export-options', route: '/api/v1/data/export/options' })
+  }, [optionsQuery.error])
 
   const [selectedAccounts, setSelectedAccounts] = useState<string[]>([])
   const [selectedInstruments, setSelectedInstruments] = useState<string[]>([])

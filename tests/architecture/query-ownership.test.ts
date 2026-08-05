@@ -15,6 +15,7 @@ const domains: ServerStateDomain[] = [
   'prop-firm',
   'goals',
   'settings',
+  'data-management',
 ]
 
 describe('server state ownership', () => {

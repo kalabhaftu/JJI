@@ -21,10 +21,12 @@ import {
   User,
   BarChart2
 } from "lucide-react"
-import { apiRequest } from '@/lib/api/client'
+import { apiRequestData } from '@/lib/api/client'
 import { toast } from 'sonner'
-import { useSWRConfig } from 'swr'
-import useSWR from 'swr'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
+import { deleteAccountRequest } from '@/lib/accounts/api'
 import { Badge } from "@/components/ui/badge"
 import { cn } from '@/lib/utils'
 import { Input } from '@/components/ui/input'
@@ -63,7 +65,7 @@ type GroupedAccount = {
   propFirm: string
   accountType: 'live' | 'prop-firm'
   totalTrades: number
-  masterAccountId?: string
+  masterAccountId: string | undefined
   phases: Array<{
     id: string
     number: string
@@ -71,10 +73,29 @@ type GroupedAccount = {
     status: string
     tradeCount: number
     phaseDetails: any
-    phaseId?: string
-    currentPhase?: number
-    evaluationType?: string
+    phaseId: string | undefined
+    currentPhase: number | undefined
+    evaluationType: string | undefined
   }>
+}
+
+type DataManagementAccount = {
+  id: string
+  number: string
+  name: string
+  displayName: string
+  accountType: 'live' | 'prop-firm'
+  status: string
+  tradeCount: number
+  currentPhase?: number
+  propfirm?: string
+  currentPhaseDetails?: {
+    phaseId?: string
+    phaseNumber?: number
+    status?: string
+    masterAccountId?: string
+    evaluationType?: string
+  } | null
 }
 
 function isFundedPhase(evaluationType: string | undefined, phaseNumber: number | undefined): boolean {
@@ -89,30 +110,32 @@ function getPhaseDisplayLabel(evaluationType: string | undefined, phaseNumber: n
   return `Phase ${phaseNumber}`
 }
 
-const fetcher = async (url: string) => {
-  try {
-    const response = await fetch(url)
-    const payload = await response.json()
-    if (!response.ok) throw Object.assign(new Error(payload.error?.message || 'Failed to load accounts'), { status: response.status })
-    return payload
-  } catch (error) {
-    reportClientError(error, { operation: 'load-data-management-accounts', route: url })
-    throw error
-  }
-}
-
 export function DataManagementCard() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const user = useUserStore((state) => state.user)
+  const scope = useQueryScope()
+  const queryClient = useQueryClient()
   const [currentPage, setCurrentPage] = useState(1)
-  const { mutate: globalMutate } = useSWRConfig()
 
-  const { data: accountsResponse, isLoading: accountsLoading, mutate: refetchAccounts } = useSWR(
-    user?.id ? '/api/v1/data-management/accounts' : null,
-    fetcher
-  )
+  const accountsQuery = useQuery({
+    queryKey: queryKeys.dataManagementAccounts(scope),
+    queryFn: ({ signal }) =>
+      apiRequestData<{ data: DataManagementAccount[] }>('/api/v1/data-management/accounts', {
+        signal,
+        operation: 'load-data-management-accounts',
+      }),
+    enabled: isScopeReady(scope) && Boolean(user?.id),
+    staleTime: 30_000,
+  })
+  const accountsResponse = accountsQuery.data
+  const accountsLoading = accountsQuery.isPending
   const allAccounts = useMemo(() => accountsResponse?.data ?? [], [accountsResponse?.data])
+
+  useEffect(() => {
+    if (!accountsQuery.error) return
+    reportClientError(accountsQuery.error, { operation: 'load-data-management-accounts', route: '/api/v1/data-management/accounts' })
+  }, [accountsQuery.error])
 
   const [deleteLoading, setDeleteLoading] = useState(false)
   const [renameLoading, setRenameLoading] = useState(false)
@@ -130,7 +153,7 @@ export function DataManagementCard() {
 
     const grouped: Record<string, GroupedAccount> = {}
 
-    allAccounts.forEach((account: any) => {
+    allAccounts.forEach((account: DataManagementAccount) => {
       const accountName = account.name
 
       const tradeCount = account.tradeCount || 0
@@ -138,7 +161,7 @@ export function DataManagementCard() {
       if (!grouped[accountName]) {
         grouped[accountName] = {
           accountName,
-          propFirm: (account as any).propfirm || '',
+          propFirm: account.propfirm || '',
           accountType: account.accountType,
           totalTrades: 0,
           masterAccountId: account.currentPhaseDetails?.masterAccountId,
@@ -155,7 +178,7 @@ export function DataManagementCard() {
         phaseDetails: account.currentPhaseDetails,
         phaseId: account.currentPhaseDetails?.phaseId || account.number,
         currentPhase: account.currentPhase || account.currentPhaseDetails?.phaseNumber,
-        evaluationType: (account.currentPhaseDetails as any)?.evaluationType
+        evaluationType: account.currentPhaseDetails?.evaluationType
       })
 
       grouped[accountName].totalTrades += tradeCount
@@ -171,7 +194,7 @@ export function DataManagementCard() {
   const accountsWithTrades = useMemo(() => {
     if (!allAccounts || accountsLoading) return []
 
-    return allAccounts.map((account: any) => ({
+    return allAccounts.map((account: DataManagementAccount) => ({
       id: account.id,
       number: account.number,
       name: account.name,
@@ -197,6 +220,39 @@ export function DataManagementCard() {
     }
   }, [groupedAccounts, accountsWithTrades.length])
 
+  const invalidateAccountQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.propFirmAccounts(scope) })
+  }
+
+  const deleteAccountsMutation = useMutation({
+    mutationFn: async (targets: Array<{ accountType: 'live' | 'prop-firm'; accountId: string; displayName: string }>) => {
+      for (const target of targets) {
+        try {
+          await deleteAccountRequest({ accountType: target.accountType, accountId: target.accountId })
+        } catch {
+          throw new Error(`Failed to delete account ${target.displayName}`)
+        }
+      }
+    },
+    onSuccess: invalidateAccountQueries,
+  })
+
+  const renameAccountMutation = useMutation({
+    mutationFn: () =>
+      apiRequestData<unknown>('/api/v1/data-management/accounts', {
+        method: 'PATCH',
+        body: JSON.stringify({
+          oldAccountNumber: accountToRename,
+          newAccountNumber,
+        }),
+        retry: { mode: 'never' },
+        operation: 'rename-data-management-account',
+      }),
+    onSuccess: invalidateAccountQueries,
+  })
+
   const handleDeleteAccounts = useCallback(async () => {
     if (!user || selectedAccounts.length === 0) return
 
@@ -208,39 +264,32 @@ export function DataManagementCard() {
       const accountsToDelete = selectedAccounts
 
       const uniqueAccountIds = new Set<string>()
-      const accountsToDeleteData: Array<{id: string, endpoint: string, displayName: string}> = []
+      const accountsToDeleteData: Array<{ accountType: 'live' | 'prop-firm'; accountId: string; displayName: string }> = []
 
       for (const accountNumber of accountsToDelete) {
-        const account = accountsWithTrades.find((acc: any) => acc.number === accountNumber)
+        const account = accountsWithTrades.find(
+          (acc: { number: string; id: string; displayName: string; accountType: 'live' | 'prop-firm'; currentPhaseDetails: { masterAccountId?: string } | null | undefined }) =>
+            acc.number === accountNumber
+        )
         if (account) {
-          let endpoint: string
-          let accountId: string
-
-          if (account.accountType === 'prop-firm') {
-            accountId = account.currentPhaseDetails?.masterAccountId || account.id
-            endpoint = `/api/v1/prop-firm/accounts/${accountId}`
-          } else {
-            accountId = account.id
-            endpoint = `/api/v1/accounts/${accountId}`
-          }
+          const accountId = account.accountType === 'prop-firm'
+            ? account.currentPhaseDetails?.masterAccountId || account.id
+            : account.id
 
           if (!uniqueAccountIds.has(accountId)) {
             uniqueAccountIds.add(accountId)
-            accountsToDeleteData.push({ id: accountId, endpoint, displayName: account.displayName })
+            accountsToDeleteData.push({ accountType: account.accountType, accountId, displayName: account.displayName })
           }
         }
       }
 
-      for (const accountData of accountsToDeleteData) {
-        const response = await fetch(accountData.endpoint, { method: 'DELETE' })
-        if (!response.ok) {
-          throw new Error(`Failed to delete account ${accountData.displayName}`)
-        }
-      }
+      await deleteAccountsMutation.mutateAsync(accountsToDeleteData)
 
       router.refresh()
 
-      refetchAccounts()
+      if (loadingToastId) {
+        toast.dismiss(loadingToastId)
+      }
 
       setSelectedAccounts([])
       toast.success("Accounts Deleted", {
@@ -261,7 +310,7 @@ export function DataManagementCard() {
       setDeleteLoading(false)
       setDeleteDialogOpen(false)
     }
-  }, [user, accountsWithTrades, selectedAccounts, refetchAccounts, router])
+  }, [user, accountsWithTrades, selectedAccounts, deleteAccountsMutation, router])
 
   const handleSelectAccount = useCallback((accountNumber: string) => {
     setSelectedAccounts((prev: string[]) =>
@@ -272,7 +321,7 @@ export function DataManagementCard() {
   }, [])
 
   const handleSelectAll = useCallback(() => {
-    const allAccountNumbers = accountsWithTrades.map((acc: any) => acc.number)
+    const allAccountNumbers = accountsWithTrades.map((acc: { number: string }) => acc.number)
     if (selectedAccounts.length === allAccountNumbers.length) {
       setSelectedAccounts([])
     } else {
@@ -301,14 +350,7 @@ export function DataManagementCard() {
     if (!user || !accountToRename || !newAccountNumber) return
     try {
       setRenameLoading(true)
-      await apiRequest('/api/v1/data-management/accounts', {
-        method: 'PATCH',
-        body: JSON.stringify({
-          oldAccountNumber: accountToRename,
-          newAccountNumber,
-        }),
-      })
-      await refetchAccounts()
+      await renameAccountMutation.mutateAsync()
       toast.success('Account renamed', {
         description: `${accountToRename} → ${newAccountNumber}`,
       })
@@ -323,7 +365,7 @@ export function DataManagementCard() {
     } finally {
       setRenameLoading(false)
     }
-  }, [user, accountToRename, newAccountNumber, refetchAccounts])
+  }, [user, accountToRename, newAccountNumber, renameAccountMutation])
 
   if (error) {
     return (

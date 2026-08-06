@@ -87,6 +87,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     const [failedAttempts, setFailedAttempts] = React.useState(0)
     const [isRateLimited, setIsRateLimited] = React.useState(false)
     const verificationTimeoutRef = React.useRef<NodeJS.Timeout | null>(null)
+    const otpInputRef = React.useRef<HTMLInputElement>(null)
 
     const onSubmitOtp = React.useCallback(async (values: z.infer<typeof otpFormSchema>) => {
         if (isVerifying || isLoading || isRateLimited) return
@@ -112,6 +113,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             setFailedAttempts(prev => prev + 1)
             setOtpError(true)
             otpForm.setValue('otp', '')
+            otpInputRef.current?.focus()
 
             const errorMessage = error instanceof Error ? error.message : "Verification failed"
 
@@ -321,26 +323,36 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                         control={otpForm.control}
                         name="otp"
                         render={({ field }) => (
-                            <FormItem className="flex justify-center">
-                                <FormControl>
-                                    <InputOTP
-                                        maxLength={6}
-                                        value={field.value}
-                                        onChange={field.onChange}
-                                        disabled={isLoading || isVerifying}
-                                        className={cn(otpError && "animate-shake")}
-                                    >
-                                        <InputOTPGroup className="gap-2">
-                                            <InputOTPSlot index={0} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
-                                            <InputOTPSlot index={1} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
-                                            <InputOTPSlot index={2} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
-                                            <InputOTPSlot index={3} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
-                                            <InputOTPSlot index={4} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
-                                            <InputOTPSlot index={5} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
-                                        </InputOTPGroup>
-                                    </InputOTP>
-                                </FormControl>
-                            </FormItem>
+                            <>
+                                <FormItem className="flex justify-center">
+                                    <FormControl>
+                                        <InputOTP
+                                            maxLength={6}
+                                            value={field.value}
+                                            onChange={field.onChange}
+                                            disabled={isLoading || isVerifying}
+                                            ref={otpInputRef}
+                                            className={cn(otpError && "animate-shake")}
+                                        >
+                                            <InputOTPGroup className="gap-2">
+                                                <InputOTPSlot index={0} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
+                                                <InputOTPSlot index={1} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
+                                                <InputOTPSlot index={2} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
+                                                <InputOTPSlot index={3} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
+                                                <InputOTPSlot index={4} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
+                                                <InputOTPSlot index={5} className="h-12 w-10 text-lg border border-input/60 rounded-md" />
+                                            </InputOTPGroup>
+                                        </InputOTP>
+                                    </FormControl>
+                                </FormItem>
+                                {otpError && (
+                                    <p role="alert" className="text-sm text-destructive text-center">
+                                        {isRateLimited
+                                            ? "Too many attempts. Please wait before trying again."
+                                            : "That code didn't work. Please try again."}
+                                    </p>
+                                )}
+                            </>
                         )}
                     />
 
@@ -371,14 +383,16 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                             <button
                                 type="button"
                                 onClick={handleResend}
-                                disabled={countdown > 0}
+                                disabled={countdown > 0 || isRateLimited}
                                 className={cn(
                                     "flex items-center transition-colors",
-                                    countdown > 0 ? "text-muted-foreground cursor-not-allowed" : "text-primary hover:text-primary/80"
+                                    countdown > 0 || isRateLimited ? "text-muted-foreground cursor-not-allowed" : "text-primary hover:text-primary/80"
                                 )}
                             >
                                 {countdown > 0 ? (
                                     <>Resend in {countdown}s</>
+                                ) : isRateLimited ? (
+                                    <>Resend locked</>
                                 ) : (
                                     <>
                                         <RefreshCw className="h-3 w-3 mr-1" />

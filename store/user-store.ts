@@ -8,6 +8,19 @@ import { UserSettingsShape } from '@/lib/user-settings'
 
 type MergedUser = User & UserSettingsShape
 
+const USE_24H_STORAGE_KEY = 'jji_use_24h_format'
+
+function hasWorkingStorage(): boolean {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return false
+  return typeof window.localStorage.getItem === 'function' && typeof window.localStorage.setItem === 'function'
+}
+
+function loadUse24HourFormat(): boolean {
+  if (!hasWorkingStorage()) return true
+  const stored = window.localStorage.getItem(USE_24H_STORAGE_KEY)
+  return stored !== 'false'
+}
+
 type UserStore = {
   user: MergedUser | null
   supabaseUser: SupabaseUser | null
@@ -48,9 +61,14 @@ export const useUserStore = create<UserStore>()((
       isLoading: false,
       isMobile: false,
       timezone: 'America/New_York',
-      use24HourFormat: true,
+      use24HourFormat: loadUse24HourFormat(),
       setTimezone: (timezone: string) => set({ timezone }),
-      setUse24HourFormat: (use24HourFormat: boolean) => set({ use24HourFormat }),
+      setUse24HourFormat: (use24HourFormat: boolean) => {
+        set({ use24HourFormat })
+        if (hasWorkingStorage()) {
+          window.localStorage.setItem(USE_24H_STORAGE_KEY, String(use24HourFormat))
+        }
+      },
       setUser: (user) => set({ user }),
       setSupabaseUser: (supabaseUser) => set({ supabaseUser }),
       setAccounts: (accounts) => set({ accounts }),

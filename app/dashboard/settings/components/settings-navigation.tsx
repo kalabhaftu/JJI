@@ -1,5 +1,6 @@
 "use client"
 
+import React from 'react'
 import type { LucideIcon } from "lucide-react"
 import { MagicTab } from "@/components/godui/magic-tab"
 import { emitTourEvent } from '@/lib/tours/events'
@@ -7,6 +8,16 @@ import { emitTourEvent } from '@/lib/tours/events'
 export type SettingsSectionId = "profile" | "preferences" | "integrations" | "connections" | "security" | "help"
 
 export function SettingsNavigation({ categories, value, onValueChange }: { categories: Array<{ id: SettingsSectionId; label: string; icon: LucideIcon }>; value: SettingsSectionId; onValueChange: (value: SettingsSectionId) => void }) {
+  const [isDesktop, setIsDesktop] = React.useState<boolean>(false)
+
+  React.useEffect(() => {
+    const mql = window.matchMedia('(min-width: 768px)')
+    const handleChange = () => setIsDesktop(mql.matches)
+    handleChange()
+    mql.addEventListener('change', handleChange)
+    return () => mql.removeEventListener('change', handleChange)
+  }, [])
+
   return <MagicTab
     aria-label="Settings sections"
     className="w-full justify-start overflow-x-auto md:w-64 md:flex-col md:items-stretch"
@@ -15,7 +26,7 @@ export function SettingsNavigation({ categories, value, onValueChange }: { categ
       onValueChange(next as SettingsSectionId)
       emitTourEvent(`settings.tab.${next}`)
     }}
-    orientation="vertical"
+    orientation={isDesktop ? "vertical" : "horizontal"}
     rainbow={false}
     items={categories.map((category) => ({ value: category.id, label: <span data-tour={`settings-tab-${category.id}`} className="flex items-center gap-2"><category.icon className="size-4" aria-hidden />{category.label}</span> }))}
   />

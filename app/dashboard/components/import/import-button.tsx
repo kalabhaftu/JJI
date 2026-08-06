@@ -2,7 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useState, useCallback, useMemo, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
 import {
@@ -43,7 +43,10 @@ import {
   ArrowLeft,
   Loader2,
   Upload,
-  ArrowRight
+  ArrowRight,
+  WifiOff,
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useUserStore } from '@/store/user-store'
@@ -119,6 +122,19 @@ export default function ImportButton() {
   const [processedTrades, setProcessedTrades] = useState<TradeType[]>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [saveProgress, setSaveProgress] = useState<number>(0)
+  const [saveError, setSaveError] = useState<{ title: string; message: string } | null>(null)
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine)
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   const [showPhaseTransitionDialog, setShowPhaseTransitionDialog] = useState(false)
   const [phaseTransitionData, setPhaseTransitionData] = useState<{
@@ -175,6 +191,7 @@ export default function ImportButton() {
     setSaveProgress(0)
     setIsSaving(false)
     setIsLoading(false)
+    setSaveError(null)
   }, [])
 
   const handleSave = useCallback(async () => {
@@ -196,6 +213,15 @@ export default function ImportButton() {
     setIsSaving(true)
     setIsLoading(true)
     setSaveProgress(0)
+    setSaveError(null)
+
+    if (isOffline) {
+      setSaveError({ title: 'Offline', message: 'You appear to be offline. Reconnect before importing trades.' })
+      toast.error('Offline', { description: 'Reconnect to import trades.' })
+      setIsSaving(false)
+      setIsLoading(false)
+      return
+    }
 
     try {
       const latestJob = await importTradesThroughApi({
@@ -319,12 +345,13 @@ export default function ImportButton() {
       }
 
       toast.error(errorTitle, { description: errorMessage, duration: 8000 })
+      setSaveError({ title: errorTitle, message: errorMessage })
     } finally {
       setIsSaving(false)
       setIsLoading(false)
       setSaveProgress(0)
     }
-  }, [user, supabaseUser, selectedAccountId, processedTrades, refreshTrades, resetImportState])
+  }, [user, supabaseUser, selectedAccountId, processedTrades, refreshTrades, resetImportState, isOffline])
 
   const handleNextStep = useCallback(() => {
     if (!platform) return
@@ -633,6 +660,38 @@ export default function ImportButton() {
           <VisuallyHidden>
             <DialogTitle>Import Trades</DialogTitle>
           </VisuallyHidden>
+
+          {isOffline && (
+            <div className="flex-none px-5 py-2 bg-amber-500/10 border-b border-amber-500/30">
+              <p role="alert" className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-300">
+                <WifiOff className="h-3.5 w-3.5 shrink-0" />
+                You're offline — importing trades is unavailable until you reconnect.
+              </p>
+            </div>
+          )}
+
+          {saveError && (
+            <div className="flex-none px-5 py-3 bg-destructive/10 border-b border-destructive/30">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-0.5 min-w-0">
+                  <p className="flex items-center gap-1.5 text-xs font-bold text-destructive">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0" />
+                    {saveError.title}
+                  </p>
+                  <p className="text-xs text-destructive/90 break-words">{saveError.message}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 text-xs h-8 border-destructive/40 text-destructive hover:bg-destructive/10"
+                  onClick={() => handleSave()}
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Retry
+                </Button>
+              </div>
+            </div>
+          )}
 
           {                                                                           }
           {!isManualEntry && (

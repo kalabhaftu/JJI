@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef } from 'react'
+import * as React from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -13,18 +14,82 @@ import { reportClientError } from '@/lib/observability/report-error'
 
 const MAX_FILES = 3
 const MAX_FILE_SIZE = 5 * 1024 * 1024
+const DRAFT_STORAGE_KEY = 'jji_feedback_draft'
+
+type FeedbackDraft = {
+  name: string
+  email: string
+  category: string
+  subject: string
+  message: string
+}
+
+function loadDraft(): FeedbackDraft {
+  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') {
+    return { name: '', email: '', category: '', subject: '', message: '' }
+  }
+  try {
+    const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY)
+    if (!raw) return { name: '', email: '', category: '', subject: '', message: '' }
+    const parsed = JSON.parse(raw) as Partial<FeedbackDraft>
+    return {
+      name: typeof parsed.name === 'string' ? parsed.name : '',
+      email: typeof parsed.email === 'string' ? parsed.email : '',
+      category: typeof parsed.category === 'string' ? parsed.category : '',
+      subject: typeof parsed.subject === 'string' ? parsed.subject : '',
+      message: typeof parsed.message === 'string' ? parsed.message : '',
+    }
+  } catch {
+    return { name: '', email: '', category: '', subject: '', message: '' }
+  }
+}
+
+const SERVER_CODE_MESSAGES: Record<string, string> = {
+  VALIDATION_ERROR: 'Some fields are missing or invalid. Please review your feedback.',
+  TOO_MANY_FILES: 'Maximum 3 files allowed per submission.',
+  FILE_TOO_LARGE: 'One of your attachments exceeds the 5MB limit.',
+  UNSUPPORTED_FILE_TYPE: 'One of your attachments has an unsupported file type.',
+  FILE_SIGNATURE_MISMATCH: 'One of your attachments does not match its file type.',
+  ATTACHMENT_UPLOAD_FAILED: 'We could not upload your attachments. Please try again.',
+  SERVER_ERROR: 'Something went wrong on our side. Please try again in a moment.',
+}
 
 export function FeedbackFormClient() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [category, setCategory] = useState('')
-  const [subject, setSubject] = useState('')
-  const [message, setMessage] = useState('')
-  const [files, setFiles] = useState<File[]>([])
-  const [submitting, setSubmitting] = useState(false)
-  const [submitted, setSubmitted] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const initialDraft = React.useMemo(loadDraft, [])
+  const [name, setName] = React.useState(initialDraft.name)
+  const [email, setEmail] = React.useState(initialDraft.email)
+  const [category, setCategory] = React.useState(initialDraft.category)
+  const [subject, setSubject] = React.useState(initialDraft.subject)
+  const [message, setMessage] = React.useState(initialDraft.message)
+  const [files, setFiles] = React.useState<File[]>([])
+  const [submitting, setSubmitting] = React.useState(false)
+  const [submitted, setSubmitted] = React.useState(false)
+  const [submitError, setSubmitError] = React.useState<string | null>(null)
+  const [isOffline, setIsOffline] = React.useState(() => typeof navigator !== 'undefined' && !navigator.onLine)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  React.useEffect(() => {
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return
+    const draft: FeedbackDraft = { name, email, category, subject, message }
+    window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft))
+  }, [name, email, category, subject, message])
+
+  const clearDraft = () => {
+    if (typeof window !== 'undefined' && typeof window.localStorage !== 'undefined') {
+      window.localStorage.removeItem(DRAFT_STORAGE_KEY)
+    }
+  }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(e.target.files || [])
@@ -65,15 +130,18 @@ export function FeedbackFormClient() {
       const data = await res.json()
 
       if (data.success) {
+        clearDraft()
         setSubmitted(true)
       } else {
-        const message = data.error?.message || 'Failed to submit feedback'
+        const code = typeof data.error?.code === 'string' ? data.error.code : ''
+        const fallback = data.error?.message || 'Failed to submit feedback'
+        const message = (code && SERVER_CODE_MESSAGES[code]) || fallback
         setSubmitError(message)
         toast.error(message)
       }
     } catch (error) {
       reportClientError(error, { operation: 'submit-feedback', route: '/api/feedback' })
-      const message = typeof navigator !== 'undefined' && !navigator.onLine
+      const message = isOffline
         ? 'You are offline. Reconnect and submit again; your message is still here.'
         : 'Something went wrong. Please try again.'
       setSubmitError(message)
@@ -124,6 +192,13 @@ export function FeedbackFormClient() {
 
       <Card className="border-border/70 bg-card/60 shadow-[0_18px_50px_-30px_rgba(0,0,0,0.42)]">
         <CardContent className="pt-6">
+          {isOffline && (
+            <div className="mb-5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+              <p role="alert" className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                You're offline. Your draft is saved — reconnect and submit when ready.
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">

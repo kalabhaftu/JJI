@@ -34,6 +34,19 @@ export default function FileUpload({
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([])
   const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({})
   const [parsedFiles, setParsedFiles] = useState<string[][][]>([])
+  const [rejectedFiles, setRejectedFiles] = useState<File[]>([])
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== 'undefined' && !navigator.onLine)
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false)
+    const handleOffline = () => setIsOffline(true)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
   const processFile = useCallback((file: File, index: number) => {
     return new Promise<void>((resolve, reject) => {
 
@@ -70,6 +83,11 @@ export default function FileUpload({
   }, [setError])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (isOffline) {
+      setRejectedFiles(acceptedFiles)
+      setError('You appear to be offline. Reconnect before importing trades.')
+      return
+    }
     setUploadedFiles(prevFiles => [...prevFiles, ...acceptedFiles])
     acceptedFiles.forEach((file, index) => {
       const totalIndex = uploadedFiles.length + index
@@ -84,10 +102,15 @@ export default function FileUpload({
           setUploadProgress(prev => ({ ...prev, [file.name]: 0 }))
         })
     })
-  }, [processFile, setError, uploadedFiles.length])
+  }, [processFile, setError, uploadedFiles.length, isOffline])
+
+  const onDropRejected = useCallback((fileRejections: { file: File }[]) => {
+    setRejectedFiles(fileRejections.map(rejection => rejection.file))
+  }, [])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,
+    onDropRejected,
     accept: {
       'text/csv': ['.csv'],
       'application/vnd.ms-excel': ['.csv']
@@ -106,6 +129,11 @@ export default function FileUpload({
       }
       return newProgress
     })
+  }
+
+  const clearRejected = () => {
+    setRejectedFiles([])
+    setError(null)
   }
 
   const concatenateFiles = useCallback(() => {
@@ -262,6 +290,24 @@ export default function FileUpload({
             Note: All uploaded files will be concatenated and processed using the selected import type configuration.
           </p>
         </div>
+      )}
+
+      {rejectedFiles.length > 0 && (
+        <Alert variant="destructive" className="w-full" data-testid="file-rejection-alert">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>
+            {rejectedFiles.length === 1 ? 'This file could not be imported' : 'Some files could not be imported'}
+          </AlertTitle>
+          <AlertDescription className="flex items-start justify-between gap-3">
+            <span className="min-w-0">
+              {rejectedFiles.map(file => file.name).join(', ')} — only .csv files are supported.
+              {isOffline && ' You appear to be offline. Reconnect before importing trades.'}
+            </span>
+            <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs h-8" onClick={clearRejected}>
+              Dismiss
+            </Button>
+          </AlertDescription>
+        </Alert>
       )}
     </div>
   )

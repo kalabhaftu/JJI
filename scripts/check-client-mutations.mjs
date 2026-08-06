@@ -3,10 +3,16 @@ import { readdir, readFile } from 'node:fs/promises'
 import { dirname, extname, join, relative, resolve } from 'node:path'
 
 const roots = ['app', 'components', 'context', 'hooks', 'store']
-const allowedProtocolModules = new Set([
+const allowedProtocolModules = [
   '@/server/auth',
   '@/app/actions/get-market-data',
-])
+]
+
+function isAllowedProtocol(specifier) {
+  return allowedProtocolModules.some(
+    (module) => specifier === module || specifier.startsWith(`${module}/`),
+  )
+}
 
 async function walk(directory) {
   const entries = await readdir(directory, { withFileTypes: true })
@@ -89,7 +95,7 @@ for (const root of roots) {
         : false
       if (
         (importsServerModule || importsServerAction)
-        && !allowedProtocolModules.has(specifier)
+        && !isAllowedProtocol(specifier)
       ) {
         violations.push(`${relative(process.cwd(), file)} -> ${specifier}`)
       }

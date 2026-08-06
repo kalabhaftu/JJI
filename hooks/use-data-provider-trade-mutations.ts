@@ -25,29 +25,29 @@ export function useDataProviderTradeMutations({
   const scope = userId ? { surface: 'authenticated' as const, userId } : null
   const tradeQueryPrefix = scope ? queryKeyPrefixes.trades(scope) : null
 
-  const snapshotTradeQueries = (): TradeMutationContext => {
+  const snapshotTradeQueries = useCallback((): TradeMutationContext => {
     const snapshots: TradeMutationContext['snapshots'] = []
     if (!tradeQueryPrefix) return { snapshots }
     queryClient.getQueriesData({ queryKey: tradeQueryPrefix }).forEach(([queryKey, data]) => {
       if (data !== undefined) snapshots.push({ queryKey: queryKey as readonly unknown[], data })
     })
     return { snapshots }
-  }
+  }, [queryClient, tradeQueryPrefix])
 
-  const restoreTradeQueries = (context: TradeMutationContext) => {
+  const restoreTradeQueries = useCallback((context: TradeMutationContext) => {
     context.snapshots.forEach(({ queryKey, data }) => {
       queryClient.setQueriesData({ queryKey: queryKey as any }, data)
     })
-  }
+  }, [queryClient])
 
-  const invalidateTradeQueries = async (context: TradeMutationContext) => {
+  const invalidateTradeQueries = useCallback(async (context: TradeMutationContext) => {
     if (context.snapshots.length === 0) return
     await Promise.all(
       context.snapshots.map(({ queryKey }) =>
         queryClient.invalidateQueries({ queryKey: queryKey as readonly unknown[] }),
       ),
     )
-  }
+  }, [queryClient])
 
   const updateTrades = useCallback(async (tradeIds: string[], update: Partial<PrismaTrade>) => {
     if (!userId || !tradeQueryPrefix) return
@@ -105,7 +105,7 @@ export function useDataProviderTradeMutations({
       await invalidateTradeQueries(mutationContext)
       throw error
     }
-  }, [userId, queryClient, tradeQueryPrefix])
+  }, [userId, queryClient, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
 
   const deleteTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return
@@ -158,7 +158,7 @@ export function useDataProviderTradeMutations({
       await invalidateTradeQueries(mutationContext)
       throw error
     }
-  }, [userId, queryClient, tradeQueryPrefix])
+  }, [userId, queryClient, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
 
   const groupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return
@@ -176,7 +176,7 @@ export function useDataProviderTradeMutations({
       await invalidateTradeQueries(touched)
       throw error
     }
-  }, [userId, queryClient, tradeQueryPrefix])
+  }, [userId, queryClient, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
 
   const ungroupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return
@@ -194,7 +194,7 @@ export function useDataProviderTradeMutations({
       await invalidateTradeQueries(touched)
       throw error
     }
-  }, [userId, queryClient, tradeQueryPrefix])
+  }, [userId, queryClient, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
 
   const appendTagsToTrades = useCallback(async (tradeIds: string[], tagIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return
@@ -252,7 +252,7 @@ export function useDataProviderTradeMutations({
       await invalidateTradeQueries(mutationContext)
       throw error
     }
-  }, [userId, queryClient, tradeQueryPrefix])
+  }, [userId, queryClient, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
 
   return {
     updateTrades,

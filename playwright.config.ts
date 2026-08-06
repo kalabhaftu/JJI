@@ -1,5 +1,33 @@
 import { defineConfig, devices } from '@playwright/test'
 
+const authStorageState = process.env.PLAYWRIGHT_AUTH_STORAGE_STATE
+
+const browserProjects = [
+  {
+    name: 'chromium',
+    use: { ...devices['Desktop Chrome'] },
+  },
+  {
+    name: 'firefox',
+    use: { ...devices['Desktop Firefox'] },
+  },
+  {
+    name: 'webkit',
+    use: { ...devices['Desktop Safari'] },
+  },
+]
+
+const authenticatedProjects = authStorageState
+  ? browserProjects.map((project) => ({
+      name: `${project.name}-auth`,
+      testMatch: [
+        '**/accessibility.e2e.test.ts',
+        '**/keyboard-workflows.e2e.test.ts',
+      ],
+      use: { ...project.use, storageState: authStorageState },
+    }))
+  : []
+
 export default defineConfig({
   testDir: './tests/e2e',
   testMatch: '**/*.e2e.{spec,test}.ts',
@@ -13,20 +41,7 @@ export default defineConfig({
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },
-  projects: [
-    {
-      name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
-    },
-    {
-      name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
-    },
-    {
-      name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
-    },
-  ],
+  projects: [...browserProjects, ...authenticatedProjects],
   webServer: process.env.CI ? undefined : {
     command: 'bun run dev',
     url: 'http://localhost:3000',

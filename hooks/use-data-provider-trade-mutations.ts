@@ -14,12 +14,31 @@ interface UseDataProviderTradeMutationsParams {
   queryClient: QueryClient
 }
 
+export interface TradeMutationContext {
+  snapshots: Array<{ queryKey: readonly unknown[]; data: unknown }>
+}
+
 export function useDataProviderTradeMutations({
   userId,
   queryClient,
 }: UseDataProviderTradeMutationsParams) {
   const scope = userId ? { surface: 'authenticated' as const, userId } : null
   const tradeQueryPrefix = scope ? queryKeyPrefixes.trades(scope) : null
+
+  const snapshotTradeQueries = (): TradeMutationContext => {
+    const snapshots: TradeMutationContext['snapshots'] = []
+    if (!tradeQueryPrefix) return { snapshots }
+    queryClient.getQueriesData({ queryKey: tradeQueryPrefix }).forEach(([queryKey, data]) => {
+      if (data !== undefined) snapshots.push({ queryKey: queryKey as readonly unknown[], data })
+    })
+    return { snapshots }
+  }
+
+  const restoreTradeQueries = (context: TradeMutationContext) => {
+    context.snapshots.forEach(({ queryKey, data }) => {
+      queryClient.setQueriesData({ queryKey: queryKey as any }, data)
+    })
+  }
 
   const updateTrades = useCallback(async (tradeIds: string[], update: Partial<PrismaTrade>) => {
     if (!userId || !tradeQueryPrefix) return
@@ -43,6 +62,8 @@ export function useDataProviderTradeMutations({
 
       return nextCalendarData
     }
+
+    const mutationContext = snapshotTradeQueries()
 
     queryClient.setQueriesData({ queryKey: tradeQueryPrefix }, (oldData: any) => {
       if (!oldData || !Array.isArray(oldData.trades)) return oldData
@@ -71,6 +92,7 @@ export function useDataProviderTradeMutations({
       }
       await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
     } catch (error) {
+      restoreTradeQueries(mutationContext)
       await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
       throw error
     }
@@ -123,6 +145,8 @@ export function useDataProviderTradeMutations({
       return nextCalendarData
     }
 
+    const mutationContext = snapshotTradeQueries()
+
     queryClient.setQueriesData({ queryKey: tradeQueryPrefix }, (oldData: any) => {
       if (!oldData || !Array.isArray(oldData.trades)) return oldData
 
@@ -146,6 +170,7 @@ export function useDataProviderTradeMutations({
       })
       await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
     } catch (error) {
+      restoreTradeQueries(mutationContext)
       await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
       throw error
     }

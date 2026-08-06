@@ -27,6 +27,8 @@ import { Eye, FileText, MoreVertical, Pencil, Plus, Trash2 as Trash, Calendar } 
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { AddEditModelModal } from './components/add-edit-model-modal'
 import { useTradingModels } from '@/hooks/use-trading-models'
 import { useQueryClient } from '@tanstack/react-query'
@@ -198,6 +200,7 @@ export default function PlaybookPage() {
     ...(playbookDateRange?.to && { dateTo: playbookDateRange.to.toISOString() }),
   }), [playbookAccountNumbers, playbookDateRange])
   const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const { tradingModels: fetchedModels, isLoading } = useTradingModels(tradingModelFilters)
   const breakEvenThreshold = getBreakEvenThreshold(statistics?.breakEvenThreshold)
   const models = useMemo(() => (fetchedModels || []) as TradingModel[], [fetchedModels])
@@ -256,7 +259,7 @@ export default function PlaybookPage() {
       throw new Error(error.error?.message || 'Failed to save model')
     }
 
-    await queryClient.invalidateQueries({ queryKey: ['trading-models'] })
+    await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.playbook(scope) })
   }
 
   const handleDeleteModel = async () => {
@@ -270,7 +273,7 @@ export default function PlaybookPage() {
         throw new Error(error.error?.message || 'Failed to delete model')
       }
       toast.success('Model removed from playbook')
-      await queryClient.invalidateQueries({ queryKey: ['trading-models'] })
+      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.playbook(scope) })
     } catch (error) {
       reportClientError(error, { operation: 'delete-trading-model', route: '/dashboard/playbook' })
       toast.error(error instanceof Error ? error.message : 'Failed to delete model')

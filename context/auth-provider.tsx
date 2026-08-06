@@ -214,18 +214,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     lastSyncedSessionRef.current = null
     lastIdentityRef.current = null
 
-    useTradesStore.getState().setTrades([])
-    queryClient.clear()
-
-    localStorage.removeItem('jji_user_data')
+    void runAuthTransition(cacheCoordinator, null)
 
     clearBrowserAuthStorage()
-
 
     if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: 'CLEAR_CACHE' })
     }
-  }, [clearBrowserAuthStorage, resetUser, setSupabaseUser, queryClient])
+  }, [cacheCoordinator, clearBrowserAuthStorage, resetUser, setSupabaseUser])
 
   const refreshOnceForAuthEvent = useCallback((event: string, nextSession: Session | null) => {
     if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') {

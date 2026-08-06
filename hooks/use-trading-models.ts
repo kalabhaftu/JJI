@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
-import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
 import { reportClientError } from '@/lib/observability/report-error'
+import { queryKeys } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 
 export interface TradingModel {
   id: string
@@ -26,11 +27,11 @@ function buildTradingModelQuery(filters?: TradingModelFilters) {
 }
 
 export function useTradingModels(filters?: TradingModelFilters) {
-  const user = useUserStore(state => state.user)
   const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
+  const scope = useQueryScope()
 
   const { data, isLoading, error } = useQuery<TradingModel[] | null>({
-    queryKey: ['trading-models', filters ?? {}, isDemo],
+    queryKey: [...queryKeys.playbook(scope), 'models', filters ?? {}],
     queryFn: async () => {
       if (isDemo) {
         return [

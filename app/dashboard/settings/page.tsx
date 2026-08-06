@@ -67,6 +67,16 @@ function getDeleteAccountErrorDescription(error: unknown): string {
   return 'We could not complete the deletion. Please try again.'
 }
 
+interface SettingsProfilePayload {
+  firstName?: string | null
+  lastName?: string | null
+  email?: string | null
+  autoAdjustAccountDate?: boolean
+  breakEvenThreshold?: number
+  pnlDisplayMode?: string
+  aiSettings?: Partial<typeof defaultAiSettings>
+}
+
 export default function SettingsPage() {
   const searchParams = useSearchParams()
   const { theme, accentPack, widgetStyle, chartStyle } = useTheme()
@@ -142,10 +152,11 @@ export default function SettingsPage() {
     const fetchWebhookToken = async () => {
       try {
         setIsLoadingWebhook(true)
-        const res = await fetch('/api/v1/auth/webhook-token')
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error?.message || 'Failed to fetch webhook token')
-        if (data.data?.token) setWebhookToken(data.data.token)
+        const response = await apiRequest<{ hasToken: boolean; token: string | null }>(
+          '/api/v1/auth/webhook-token',
+          { retry: { mode: 'safe' }, operation: 'load-webhook-token' },
+        )
+        if (response.data?.token) setWebhookToken(response.data.token)
       } catch (error) {
         reportError(error, {
           surface: 'client',
@@ -162,19 +173,20 @@ export default function SettingsPage() {
   const handleCancelSubscription = async () => {
     setIsCancelingSubscription(true)
     try {
-      const response = await fetch('/api/v1/billing/cancel', { method: 'POST' })
-      const payload = await response.json()
-      if (!response.ok || !payload.success) {
-        throw new Error(payload.error?.message || 'Failed to cancel subscription')
-      }
+      const response = await apiRequest<{ cancelAtPeriodEnd: boolean; currentPeriodEnd?: string | null }>(
+        '/api/v1/billing/cancel',
+        { method: 'POST', retry: { mode: 'never' }, operation: 'cancel-whop-subscription' },
+      )
 
-      setSubscriptionData((current) => current
-        ? {
-            ...current,
-            cancelAtPeriodEnd: true,
-            currentPeriodEnd: payload.data?.currentPeriodEnd ?? current.currentPeriodEnd,
-          }
-        : current)
+      setSubscriptionData((current) => {
+        if (!current) return current
+        const nextPeriodEnd = response.data?.currentPeriodEnd ?? current.currentPeriodEnd
+        return {
+          ...current,
+          cancelAtPeriodEnd: true,
+          ...(nextPeriodEnd !== undefined ? { currentPeriodEnd: nextPeriodEnd } : {}),
+        }
+      })
       toast.success('Subscription cancellation scheduled', {
         description: 'Your access remains active until the end of the paid period.',
       })
@@ -192,10 +204,11 @@ export default function SettingsPage() {
     const fetchSubscription = async () => {
       try {
         setIsLoadingSubscription(true)
-        const res = await fetch('/api/v1/billing/status')
-        const data = await res.json()
-        if (!res.ok || !data.success) throw new Error(data.error?.message || 'Failed to load subscription status')
-        setSubscriptionData(data.data)
+        const response = await apiRequest<SettingsSubscriptionData>(
+          '/api/v1/billing/status',
+          { retry: { mode: 'safe' }, operation: 'load-subscription' },
+        )
+        setSubscriptionData(response.data)
       } catch (error) {
         reportError(error, {
           surface: 'client',
@@ -214,13 +227,15 @@ export default function SettingsPage() {
   const regenerateWebhookToken = async () => {
     try {
       setIsRegeneratingWebhook(true)
-      const res = await fetch('/api/v1/auth/webhook-token', { method: 'POST' })
-      const data = await res.json()
-      if (!res.ok || typeof data.data?.token !== 'string' || data.data.token.length === 0) {
-        throw new Error(data.error?.message || 'Failed to regenerate token')
+      const response = await apiRequest<{ token: string }>(
+        '/api/v1/auth/webhook-token',
+        { method: 'POST', retry: { mode: 'never' }, operation: 'regenerate-webhook-token' },
+      )
+      if (typeof response.data?.token !== 'string' || response.data.token.length === 0) {
+        throw new Error('Failed to regenerate token')
       }
 
-      setWebhookToken(data.data.token)
+      setWebhookToken(response.data.token)
       setWebhookCopied(false)
       toast.success('Token regenerated', {
         description: 'Your TradingView webhook token has been regenerated. Update your TradingView alert.',
@@ -251,32 +266,32 @@ export default function SettingsPage() {
     const fetchProfile = async () => {
       try {
         setIsLoadingProfile(true)
-        const response = await fetch('/api/auth/profile')
-        const result = await response.json()
+        const response = await apiRequest<SettingsProfilePayload>(
+          '/api/auth/profile',
+          { retry: { mode: 'safe' }, operation: 'load-profile' },
+        )
+        const result = response.data
+        if (!result) throw new Error('Failed to load profile')
 
-        if (!response.ok || !result.success) {
-          throw new Error(result.error?.message || 'Failed to load profile')
-        }
-
-        const nextFirstName = result.data.firstName || ''
-        const nextLastName = result.data.lastName || ''
+        const nextFirstName = result.firstName || ''
+        const nextLastName = result.lastName || ''
         setProfileData({
           firstName: nextFirstName,
           lastName: nextLastName,
-          email: result.data.email || '',
-          autoAdjustAccountDate: result.data.autoAdjustAccountDate ?? false,
-          breakEvenThreshold: typeof result.data.breakEvenThreshold === 'number' ? result.data.breakEvenThreshold : 10,
-          pnlDisplayMode: normalizePnlDisplayMode(result.data.pnlDisplayMode),
+          email: result.email || '',
+          autoAdjustAccountDate: result.autoAdjustAccountDate ?? false,
+          breakEvenThreshold: typeof result.breakEvenThreshold === 'number' ? result.breakEvenThreshold : 10,
+          pnlDisplayMode: normalizePnlDisplayMode(result.pnlDisplayMode),
           aiSettings: {
             ...defaultAiSettings,
-            ...(result.data.aiSettings || {})
+            ...(result.aiSettings || {})
           }
         })
         setSavedProfileNames({
           firstName: nextFirstName,
           lastName: nextLastName,
         })
-        const safeThreshold = typeof result.data.breakEvenThreshold === 'number' ? result.data.breakEvenThreshold : 10
+        const safeThreshold = typeof result.breakEvenThreshold === 'number' ? result.breakEvenThreshold : 10
         setBreakEvenDraft(String(safeThreshold))
       } catch (error) {
         reportError(error, {
@@ -296,31 +311,27 @@ export default function SettingsPage() {
   const handleProfileUpdate = async () => {
     setIsUpdatingProfile(true)
     try {
-      const response = await fetch('/api/auth/profile', {
+      await apiRequest<SettingsProfilePayload>('/api/auth/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           firstName: profileData.firstName,
           lastName: profileData.lastName,
           autoAdjustAccountDate: profileData.autoAdjustAccountDate
-        })
+        }),
+        retry: { mode: 'never' },
+        operation: 'update-profile',
       })
 
-      const result = await response.json()
-
-        if (result.success) {
-        setSavedProfileNames({
-          firstName: profileData.firstName,
-          lastName: profileData.lastName,
-        })
-        setIsEditingProfile(false)
-        toast.success("Profile updated", {
-          description: "Your profile information has been saved.",
-          duration: 3000
-        })
-      } else {
-        throw new Error(result.error?.message || 'Update failed')
-      }
+      setSavedProfileNames({
+        firstName: profileData.firstName,
+        lastName: profileData.lastName,
+      })
+      setIsEditingProfile(false)
+      toast.success("Profile updated", {
+        description: "Your profile information has been saved.",
+        duration: 3000
+      })
     } catch (error) {
       reportSettingsMutationError(error, 'update-profile')
       toast.error("Update failed", {
@@ -336,12 +347,13 @@ export default function SettingsPage() {
     const previous = timezone
     setTimezone(value)
     try {
-      const response = await fetch('/api/auth/profile', {
+      await apiRequest('/api/auth/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ timezone: value }),
+        retry: { mode: 'never' },
+        operation: 'update-timezone',
       })
-      if (!response.ok) throw new Error('Failed to save timezone')
       toast.success("Timezone updated", {
         description: `Timezone changed to ${value.replace('_', ' ')}.`,
         duration: 2000
@@ -358,20 +370,17 @@ export default function SettingsPage() {
     setProfileData(prev => ({ ...prev, autoAdjustAccountDate: checked }))
 
     try {
-      const response = await fetch('/api/auth/profile', {
+      const response = await apiRequest<SettingsProfilePayload>('/api/auth/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ autoAdjustAccountDate: checked })
+        body: JSON.stringify({ autoAdjustAccountDate: checked }),
+        retry: { mode: 'never' },
+        operation: 'update-auto-adjust-account-date',
       })
-      const result = await response.json()
-
-      if (!response.ok || !result.success) {
-        throw new Error(result.error?.message || 'Failed to save Auto-adjust Account Date preference')
-      }
 
       setProfileData(prev => ({
         ...prev,
-        autoAdjustAccountDate: result.data?.autoAdjustAccountDate ?? checked
+        autoAdjustAccountDate: response.data?.autoAdjustAccountDate ?? checked
       }))
     } catch (error) {
       reportSettingsMutationError(error, 'update-auto-adjust-account-date')
@@ -398,19 +407,16 @@ export default function SettingsPage() {
     setIsUpdatingBreakEven(true)
 
     try {
-      const response = await fetch('/api/auth/profile', {
+      const response = await apiRequest<SettingsProfilePayload>('/api/auth/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ breakEvenThreshold: normalized })
+        body: JSON.stringify({ breakEvenThreshold: normalized }),
+        retry: { mode: 'never' },
+        operation: 'update-break-even-threshold',
       })
 
-      const result = await response.json()
-      if (!response.ok || !result.success) {
-        throw new Error(result.error?.message || 'Failed to update break-even threshold')
-      }
-
-      const next = typeof result.data?.breakEvenThreshold === 'number'
-        ? result.data.breakEvenThreshold
+      const next = typeof response.data?.breakEvenThreshold === 'number'
+        ? response.data.breakEvenThreshold
         : normalized
 
       setProfileData(prev => ({ ...prev, breakEvenThreshold: next }))
@@ -439,25 +445,22 @@ export default function SettingsPage() {
     setProfileData(prev => ({ ...prev, pnlDisplayMode: nextMode }))
 
     try {
-      const response = await fetch('/api/auth/profile', {
+      const response = await apiRequest<SettingsProfilePayload>('/api/auth/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ pnlDisplayMode: nextMode })
+        body: JSON.stringify({ pnlDisplayMode: nextMode }),
+        retry: { mode: 'never' },
+        operation: 'update-pnl-display-mode',
       })
-      const result = await response.json()
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error?.message || 'Failed to update P&L display mode')
-      }
-
-        setProfileData(prev => ({
+      setProfileData(prev => ({
           ...prev,
-          pnlDisplayMode: normalizePnlDisplayMode(result.data?.pnlDisplayMode)
+          pnlDisplayMode: normalizePnlDisplayMode(response.data?.pnlDisplayMode)
         }))
         if (dbUser) {
           setDbUser({
             ...dbUser,
-            pnlDisplayMode: normalizePnlDisplayMode(result.data?.pnlDisplayMode)
+            pnlDisplayMode: normalizePnlDisplayMode(response.data?.pnlDisplayMode)
           } as typeof dbUser)
         }
 
@@ -488,16 +491,13 @@ export default function SettingsPage() {
     setIsUpdatingAiSettings(true)
 
     try {
-      const response = await fetch('/api/auth/profile', {
+      await apiRequest<SettingsProfilePayload>('/api/auth/profile', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ aiSettings: { [key]: checked } })
+        body: JSON.stringify({ aiSettings: { [key]: checked } }),
+        retry: { mode: 'never' },
+        operation: 'update-ai-settings',
       })
-      const result = await response.json()
-
-      if (!result.success) {
-        throw new Error(result.error?.message || 'Failed to update AI preferences')
-      }
 
       toast.success('AI preferences updated', {
         description: 'Your AI settings were saved successfully.',

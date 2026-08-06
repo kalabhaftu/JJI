@@ -37,6 +37,8 @@ import { useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TradeWorkspace } from '@/components/ui/trade-workspace'
 
@@ -82,6 +84,7 @@ const EMOTION_ICONS: Record<JournalEmotion, LucideIcon> = {
 
 export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProps) {
   const queryClient = useQueryClient()
+  const scope = useQueryScope()
   const [isMounted, setIsMounted] = useState(false)
   const [note, setNote] = useState<DailyNote | null>(null)
   const [noteContent, setNoteContent] = useState<string>('')
@@ -142,7 +145,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         if (!res.ok) throw new Error('Failed to update')
         const data = await res.json()
         setNote(data.data?.journal)
-        queryClient.invalidateQueries({ queryKey: ['journal-data'] })
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.journal(scope) })
         toast.success('Daily note updated')
       } else {
 
@@ -157,7 +160,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
         }
         const data = await res.json()
         setNote(data.data?.journal)
-        queryClient.invalidateQueries({ queryKey: ['journal-data'] })
+        queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.journal(scope) })
         toast.success('Daily note saved')
       }
     } catch (error) {
@@ -166,7 +169,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
     } finally {
       setIsSaving(false)
     }
-  }, [date, dateStr, note, noteContent, queryClient, selectedEmotion])
+  }, [date, dateStr, note, noteContent, queryClient, scope, selectedEmotion])
 
   const handleDelete = useCallback(async () => {
     if (!note) return
@@ -178,7 +181,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
       setNote(null)
       setNoteContent('')
       setSelectedEmotion(null)
-      queryClient.invalidateQueries({ queryKey: ['journal-data'] })
+      queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.journal(scope) })
       toast.success('Daily note deleted')
     } catch (error) {
       reportClientError(error, { operation: 'delete-daily-note', route: '/dashboard/journal' })
@@ -186,7 +189,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
     } finally {
       setIsDeleting(false)
     }
-  }, [note, queryClient])
+  }, [note, queryClient, scope])
 
   if (!date || !isMounted) return null
 

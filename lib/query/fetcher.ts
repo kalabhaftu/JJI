@@ -44,7 +44,5 @@ const queryKeys = {
   reportStats: (filters?: Record<string, unknown>) =>
     ['report-stats', filters ?? {}] as const,
 
-  tradingModels: () => ['trading-models'] as const,
-
   notifications: () => ['notifications'] as const,
 } as const

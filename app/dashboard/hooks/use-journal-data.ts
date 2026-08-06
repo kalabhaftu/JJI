@@ -3,6 +3,8 @@
 import { useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
+import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryScope } from '@/lib/query/use-query-scope'
 
 interface JournalEntry {
   id: string
@@ -17,13 +19,15 @@ interface JournalEntry {
 
 export function useJournalData(startDate?: Date, endDate?: Date, accountId?: string | null) {
   const queryClient = useQueryClient()
+  const scope = useQueryScope()
 
   const queryKey = useMemo(() => [
-    'journal-data',
+    ...queryKeyPrefixes.journal(scope),
+    'calendar',
     startDate ? format(startDate, 'yyyy-MM-dd') : null,
     endDate ? format(endDate, 'yyyy-MM-dd') : null,
     accountId || 'all'
-  ], [startDate, endDate, accountId])
+  ], [scope, startDate, endDate, accountId])
 
   const { data: journals = {}, isLoading } = useQuery<Record<string, JournalEntry>>({
     queryKey,

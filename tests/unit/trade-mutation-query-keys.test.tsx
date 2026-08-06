@@ -20,6 +20,7 @@ afterEach(() => vi.clearAllMocks())
 describe('trade mutation query ownership', () => {
   it('patches and invalidates canonical authenticated trade queries', async () => {
     const queryClient = {
+      getQueriesData: vi.fn().mockReturnValue([]),
       setQueriesData: vi.fn(),
       invalidateQueries: vi.fn().mockResolvedValue(undefined),
     }
@@ -33,6 +34,7 @@ describe('trade mutation query ownership', () => {
     await act(async () => mutations.updateTrades(['trade-1'], { instrument: 'NQ' }))
 
     const prefix = queryKeyPrefixes.trades({ surface: 'authenticated', userId: 'user-1' })
+    expect(queryClient.getQueriesData).toHaveBeenCalledWith({ queryKey: prefix })
     expect(queryClient.setQueriesData).toHaveBeenCalledWith({ queryKey: prefix }, expect.any(Function))
     expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: prefix })
     expect(queryClient.setQueriesData).not.toHaveBeenCalledWith({ queryKey: ['v1', 'trades'] }, expect.any(Function))

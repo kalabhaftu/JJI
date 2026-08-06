@@ -183,7 +183,7 @@ export function ImportDialog() {
       if (!open) handleReset()
     }}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="secondary">
           <RotateCcw className="mr-2 h-4 w-4" /> Restore Backup
         </Button>
       </DialogTrigger>
@@ -271,7 +271,7 @@ export function ImportDialog() {
               </div>
 
               <div className="flex items-center justify-center gap-4 pt-4">
-                <Button variant="outline" onClick={handleClose}>
+                <Button variant="secondary" onClick={handleClose}>
                   Close
                 </Button>
                 <Button onClick={handleReset}>
@@ -295,7 +295,7 @@ export function ImportDialog() {
                 Resume Restore
               </Button>
             ) : (
-              <Button variant="ghost" onClick={handleClose}>
+              <Button variant="tertiary" onClick={handleClose}>
                 Cancel
               </Button>
             )}

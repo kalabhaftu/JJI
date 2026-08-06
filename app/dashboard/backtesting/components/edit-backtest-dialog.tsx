@@ -500,7 +500,7 @@ export function EditBacktestDialog({
 
             {                  }
             <div className="flex justify-end space-x-2">
-              <Button type="button" variant="outline" onClick={() => handleCloseAttempt(false)}>
+              <Button type="button" variant="secondary" onClick={() => handleCloseAttempt(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>

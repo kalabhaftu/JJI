@@ -142,7 +142,7 @@ export function MobileBottomNav() {
           <div className="grid grid-cols-2 gap-2">
              {moreItems.map((item) => {
                const MoreIcon = moreIcons[item.id]!
-               return <Button key={item.id} asChild variant="outline" className="h-12 justify-start gap-3">
+               return <Button key={item.id} asChild variant="secondary" className="h-12 justify-start gap-3">
                  <Link
                    href={resolveNavigationPath(item, navigationContext) as any}
                   onClick={() => setMoreOpen(false)}

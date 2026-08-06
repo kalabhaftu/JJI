@@ -75,7 +75,7 @@ export function SettingsProfileSection({
               Personal Info
             </h3>
             <Button
-              variant={isEditingProfile ? "secondary" : "outline"}
+              variant={isEditingProfile ? "secondary" : "secondary"}
               size="sm"
               className="gap-2 h-8"
               onClick={() => setIsEditingProfile(true)}
@@ -143,7 +143,7 @@ export function SettingsProfileSection({
           {isEditingProfile && (
             <div className="flex flex-col gap-2 sm:flex-row pt-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 className="w-full sm:w-auto h-9 text-xs"
                 onClick={handleCancelProfileEdit}
                 disabled={isUpdatingProfile}
@@ -228,7 +228,7 @@ export function SettingsProfileSection({
                   </div>
                   <div className="flex flex-col gap-2 sm:flex-row">
                     {subscriptionData.manageUrl && (
-                      <Button asChild variant="outline" size="sm" className="h-9 text-xs">
+                      <Button asChild variant="secondary" size="sm" className="h-9 text-xs">
                         <a href={subscriptionData.manageUrl} target="_blank" rel="noopener noreferrer">
                           Payment methods & invoices
                         </a>
@@ -237,7 +237,7 @@ export function SettingsProfileSection({
                     {!subscriptionData.cancelAtPeriodEnd && subscriptionData.hasAccess && (
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm" className="h-9 text-xs" disabled={isCancelingSubscription}>
+                          <Button variant="secondary" size="sm" className="h-9 text-xs" disabled={isCancelingSubscription}>
                             Cancel renewal
                           </Button>
                         </AlertDialogTrigger>

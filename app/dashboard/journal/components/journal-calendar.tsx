@@ -102,13 +102,13 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
       {                     }
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={handlePreviousMonth} className="h-11 w-11" aria-label="Previous month">
+          <Button variant="secondary" size="icon" onClick={handlePreviousMonth} className="h-11 w-11" aria-label="Previous month">
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" onClick={handleToday} className="h-9 font-medium text-xs tracking-wider uppercase">
+          <Button variant="secondary" onClick={handleToday} className="h-9 font-medium text-xs tracking-wider uppercase">
             Today
           </Button>
-          <Button variant="outline" size="icon" onClick={handleNextMonth} className="h-11 w-11" aria-label="Next month">
+          <Button variant="secondary" size="icon" onClick={handleNextMonth} className="h-11 w-11" aria-label="Next month">
             <ChevronRight className="h-4 w-4" />
           </Button>
           <h2 className="ml-2 text-xl font-black uppercase tracking-widest">{format(currentDate, 'MMMM yyyy')}</h2>

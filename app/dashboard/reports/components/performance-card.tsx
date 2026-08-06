@@ -239,7 +239,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     }
                 </Button>
                 <Button
-                    variant="outline"
+                    variant="secondary"
                     onClick={handleCopyStats}
                     className="sm:w-auto h-11 gap-2.5 font-black uppercase tracking-wider text-xs rounded-xl"
                 >

@@ -240,7 +240,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                           <Button
                             onClick={handleSaveEdit}
                             size="sm"
-                            variant="ghost"
+                            variant="tertiary"
                             className="h-8 px-2"
                             aria-label="Confirm edit"
                           >
@@ -249,7 +249,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                           <Button
                             onClick={handleCancelEdit}
                             size="sm"
-                            variant="ghost"
+                            variant="tertiary"
                             className="h-8 px-2"
                             aria-label="Cancel edit"
                           >
@@ -271,7 +271,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                           <Button
                             onClick={() => handleStartEdit(tag)}
                             size="sm"
-                            variant="ghost"
+                            variant="tertiary"
                             className="h-8 px-2"
                           >
                             <PenLine className="h-4 w-4 text-muted-foreground" />
@@ -279,7 +279,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                           <Button
                             onClick={() => handleDeleteTag(tag.id)}
                             size="sm"
-                            variant="ghost"
+                            variant="tertiary"
                             className="h-8 px-2"
                           >
                             <Trash2 className="h-4 w-4 text-destructive" />
@@ -295,7 +295,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Done
           </Button>
         </DialogFooter>

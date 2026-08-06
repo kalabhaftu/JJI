@@ -125,11 +125,11 @@ function AccountPicker({ accounts, selected, onToggle, onAll, onClear }: { accou
   const label = selected.length === 0 ? 'Choose accounts' : selected.length === accounts.length ? 'All accounts' : `${selected.length} account${selected.length === 1 ? '' : 's'}`
   return (
     <Popover>
-      <PopoverTrigger asChild><Button variant="outline"><SlidersHorizontal /> {label}</Button></PopoverTrigger>
+      <PopoverTrigger asChild><Button variant="secondary"><SlidersHorizontal /> {label}</Button></PopoverTrigger>
       <PopoverContent className="w-80 p-2" align="start">
         <div className="flex items-center justify-between border-b border-border/70 px-2 pb-2">
           <p className="text-xs font-semibold">Accounts</p>
-          <div className="flex gap-1"><Button variant="ghost" size="sm" onClick={onAll}>All</Button><Button variant="ghost" size="sm" onClick={onClear}>Clear</Button></div>
+          <div className="flex gap-1"><Button variant="tertiary" size="sm" onClick={onAll}>All</Button><Button variant="tertiary" size="sm" onClick={onClear}>Clear</Button></div>
         </div>
         <div className="max-h-64 overflow-y-auto py-1">
           {accounts.length === 0 ? <p className="p-4 text-center text-xs text-muted-foreground">No connected accounts.</p> : accounts.map((account) => {
@@ -151,7 +151,7 @@ function AccountPicker({ accounts, selected, onToggle, onAll, onClear }: { accou
 function SourcePicker({ selected, onToggle }: { selected: string[]; onToggle: (id: string) => void }) {
   return (
     <Popover>
-      <PopoverTrigger asChild><Button variant="outline"><Database /> {selected.length} data sources</Button></PopoverTrigger>
+      <PopoverTrigger asChild><Button variant="secondary"><Database /> {selected.length} data sources</Button></PopoverTrigger>
       <PopoverContent className="w-64 p-2" align="start">
         <p className="px-2 pb-2 text-xs font-semibold">Evidence sources</p>
         {dataSourceOptions.map((source) => (

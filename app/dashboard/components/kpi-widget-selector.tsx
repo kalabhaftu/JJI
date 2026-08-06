@@ -89,7 +89,7 @@ export default function KpiWidgetSelector({
           />
           {searchQuery && (
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="sm"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
               onClick={() => setSearchQuery('')}
@@ -148,7 +148,7 @@ export default function KpiWidgetSelector({
 
         {}
         <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
         </div>

@@ -40,6 +40,15 @@ export function useDataProviderTradeMutations({
     })
   }
 
+  const invalidateTradeQueries = async (context: TradeMutationContext) => {
+    if (context.snapshots.length === 0) return
+    await Promise.all(
+      context.snapshots.map(({ queryKey }) =>
+        queryClient.invalidateQueries({ queryKey: queryKey as readonly unknown[] }),
+      ),
+    )
+  }
+
   const updateTrades = useCallback(async (tradeIds: string[], update: Partial<PrismaTrade>) => {
     if (!userId || !tradeQueryPrefix) return
 
@@ -90,10 +99,63 @@ export function useDataProviderTradeMutations({
       if (updatedCount < tradeIds.length) {
         throw new Error('Trade update did not save. Refresh and try again.')
       }
-      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+      await invalidateTradeQueries(mutationContext)
     } catch (error) {
       restoreTradeQueries(mutationContext)
-      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+      await invalidateTradeQueries(mutationContext)
+      throw error
+    }
+  }, [userId, queryClient, tradeQueryPrefix])
+
+  const deleteTrades = useCallback(async (tradeIds: string[]) => {
+    if (!userId || !tradeQueryPrefix) return
+
+    const removedIds = new Set(tradeIds)
+
+    const patchCalendarData = (calendarData: any) => {
+      if (!calendarData || typeof calendarData !== 'object') return calendarData
+
+      const nextCalendarData: Record<string, any> = { ...calendarData }
+
+      Object.keys(nextCalendarData).forEach((key) => {
+        const day = nextCalendarData[key]
+        if (!day || !Array.isArray(day.trades)) return
+        nextCalendarData[key] = {
+          ...day,
+          trades: day.trades.filter((trade: PrismaTrade) => !removedIds.has(trade.id)),
+        }
+      })
+
+      return nextCalendarData
+    }
+
+    const mutationContext = snapshotTradeQueries()
+
+    queryClient.setQueriesData({ queryKey: tradeQueryPrefix }, (oldData: any) => {
+      if (!oldData || !Array.isArray(oldData.trades)) return oldData
+
+      return {
+        ...oldData,
+        trades: oldData.trades.filter((trade: PrismaTrade) => !removedIds.has(trade.id)),
+        calendarData: patchCalendarData(oldData.calendarData),
+        widgets: oldData.widgets
+          ? {
+              ...oldData.widgets,
+              calendarData: patchCalendarData(oldData.widgets.calendarData),
+            }
+          : oldData.widgets,
+      }
+    })
+
+    try {
+      await apiRequest('/api/v1/trades/batch/delete', {
+        method: 'POST',
+        body: JSON.stringify({ tradeIds }),
+      })
+      await invalidateTradeQueries(mutationContext)
+    } catch (error) {
+      restoreTradeQueries(mutationContext)
+      await invalidateTradeQueries(mutationContext)
       throw error
     }
   }, [userId, queryClient, tradeQueryPrefix])
@@ -101,21 +163,37 @@ export function useDataProviderTradeMutations({
   const groupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return
 
-    await apiRequest('/api/v1/trades/batch/group', {
-      method: 'POST',
-      body: JSON.stringify({ tradeIds }),
-    })
-    await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+    const touched = snapshotTradeQueries()
+
+    try {
+      await apiRequest('/api/v1/trades/batch/group', {
+        method: 'POST',
+        body: JSON.stringify({ tradeIds }),
+      })
+      await invalidateTradeQueries(touched)
+    } catch (error) {
+      restoreTradeQueries(touched)
+      await invalidateTradeQueries(touched)
+      throw error
+    }
   }, [userId, queryClient, tradeQueryPrefix])
 
   const ungroupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return
 
-    await apiRequest('/api/v1/trades/batch/ungroup', {
-      method: 'POST',
-      body: JSON.stringify({ tradeIds }),
-    })
-    await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+    const touched = snapshotTradeQueries()
+
+    try {
+      await apiRequest('/api/v1/trades/batch/ungroup', {
+        method: 'POST',
+        body: JSON.stringify({ tradeIds }),
+      })
+      await invalidateTradeQueries(touched)
+    } catch (error) {
+      restoreTradeQueries(touched)
+      await invalidateTradeQueries(touched)
+      throw error
+    }
   }, [userId, queryClient, tradeQueryPrefix])
 
   const appendTagsToTrades = useCallback(async (tradeIds: string[], tagIds: string[]) => {
@@ -168,16 +246,17 @@ export function useDataProviderTradeMutations({
         method: 'POST',
         body: JSON.stringify({ tradeIds, tags: tagIds, mode: 'append' }),
       })
-      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+      await invalidateTradeQueries(mutationContext)
     } catch (error) {
       restoreTradeQueries(mutationContext)
-      await queryClient.invalidateQueries({ queryKey: tradeQueryPrefix })
+      await invalidateTradeQueries(mutationContext)
       throw error
     }
   }, [userId, queryClient, tradeQueryPrefix])
 
   return {
     updateTrades,
+    deleteTrades,
     groupTrades,
     ungroupTrades,
     appendTagsToTrades,

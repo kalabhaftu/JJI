@@ -8,19 +8,18 @@ import { useUserStore } from '@/store/user-store'
 import type { TradeType as Trade } from '@/lib/db/schema';
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowUpDown, Trash2, ChevronLeft, ChevronRight, Pencil, Loader2, X, Filter, TrendingUp, TrendingDown } from "lucide-react"
+import { ArrowUpDown, Trash2, ChevronLeft, ChevronRight, Pencil, X, Filter, TrendingUp, TrendingDown } from "lucide-react"
 import { toast } from "sonner"
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiRequestData } from '@/lib/api/client'
-import { queryKeys, queryKeyPrefixes } from '@/lib/query/query-keys'
+import { useQueryClient } from '@tanstack/react-query'
 import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { TradeEditPanel } from '@/app/dashboard/components/tables/trade-edit-panel'
 import { TradeDetailPanel } from '@/app/dashboard/components/tables/trade-detail-panel'
 import { reportClientError } from '@/lib/observability/report-error'
+import { useFilteredTrades } from '@/hooks/use-filtered-trades'
+import { useDataProviderTradeMutations } from '@/hooks/use-data-provider-trade-mutations'
 import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
@@ -44,18 +43,6 @@ type SortConfig = {
   direction: 'asc' | 'desc'
 }
 
-interface TradeResponse {
-  data: Trade[]
-  meta: {
-    pagination: {
-      total: number
-      page: number
-      limit: number
-      totalPages: number
-    }
-  }
-}
-
 export default function TradeTable() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -67,31 +54,43 @@ export default function TradeTable() {
   const [tradesPerPage, setTradesPerPage] = useState(50)
   const scope = useQueryScope()
   const queryClient = useQueryClient()
-  const tradesQuery = useQuery({
-    queryKey: queryKeys.dataManagementTrades(scope, { page: currentPage, limit: tradesPerPage }),
-    queryFn: ({ signal }) =>
-      apiRequestData<TradeResponse>(`/api/v1/data-management/trades?page=${currentPage}&limit=${tradesPerPage}`, {
-        signal,
-        operation: 'load-data-management-trades',
-      }),
-    enabled: isScopeReady(scope) && Boolean(user?.id),
-    staleTime: 30_000,
-    placeholderData: (prev) => prev,
+  const { updateTrades, deleteTrades } = useDataProviderTradeMutations({
+    userId: user?.id,
+    queryClient,
   })
+  const tradesQuery = useFilteredTrades(
+    scope,
+    {
+      pageLimit: tradesPerPage,
+      pageOffset: (currentPage - 1) * tradesPerPage,
+      includeStats: false,
+      includeCalendar: false,
+    },
+    isScopeReady(scope) && Boolean(user?.id),
+    isDemoMode,
+    true,
+  )
   const tradesResponse = tradesQuery.data
   const tradesLoading = tradesQuery.isPending
 
   useEffect(() => {
     if (!tradesQuery.error) return
-    reportClientError(tradesQuery.error, { operation: 'load-data-management-trades', route: '/api/v1/data-management/trades' })
+    reportClientError(tradesQuery.error, { operation: 'load-data-management-trades', route: '/api/v1/trades' })
   }, [tradesQuery.error])
 
   const formattedTrades = useMemo(() => {
-    if (!tradesResponse?.data) return []
-    return tradesResponse.data.map((t: any) => ensureExtendedTrade(t))
+    if (!tradesResponse?.trades) return []
+    return tradesResponse.trades.map((t: any) => ensureExtendedTrade(t))
   }, [tradesResponse])
 
-  const pagination = tradesResponse?.meta?.pagination || { total: 0, page: 1, limit: tradesPerPage, totalPages: 0 }
+  const totalTradesCount = tradesResponse?.total ?? 0
+  const pagination = {
+    total: totalTradesCount,
+    page: currentPage,
+    limit: tradesPerPage,
+    totalPages: Math.max(1, Math.ceil(totalTradesCount / (tradesPerPage || 1))),
+  }
+  const totalPages = pagination.totalPages
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'entryDate', direction: 'desc' })
   const [selectedTrades, setSelectedTrades] = useState<Set<string>>(new Set())
@@ -103,7 +102,7 @@ export default function TradeTable() {
   const activeTradeId = searchParams.get('tradeId')
   const selectedTradeForView = useMemo(() => {
     if (activeView !== 'details' || !activeTradeId) return null
-    return tradesResponse?.data.find((t: Trade) => t.id === activeTradeId) || null
+    return tradesResponse?.trades.find((t: Trade) => t.id === activeTradeId) || null
   }, [activeView, activeTradeId, tradesResponse])
   const selectedTradeForEdit = useMemo(() => {
     if (activeView !== 'edit' || !activeTradeId) return null
@@ -130,9 +129,6 @@ export default function TradeTable() {
   const availableAccounts = useMemo<string[]>(() => {
     return Array.from(new Set(formattedTrades.map((t: ExtendedTrade) => t.accountNumber).filter(Boolean)))
   }, [formattedTrades])
-
-  const totalTradesCount = pagination.total || 0
-  const totalPages = pagination.totalPages || 1
 
   const filteredAndSortedTrades = useMemo(() => {
 
@@ -178,34 +174,6 @@ export default function TradeTable() {
     }))
   }
 
-  const deleteTradesMutation = useMutation({
-    mutationFn: (ids: string[]) =>
-      apiRequestData<unknown>('/api/v1/trades/batch/delete', {
-        method: 'POST',
-        body: JSON.stringify({ tradeIds: ids }),
-        retry: { mode: 'never' },
-        operation: 'delete-data-management-trades',
-      }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementTrades(scope) })
-      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.trades(scope) })
-    },
-  })
-
-  const updateTradeMutation = useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Partial<Trade> }) =>
-      apiRequestData<unknown>(`/api/v1/trades/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(patch),
-        retry: { mode: 'never' },
-        operation: 'update-data-management-trades',
-      }),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementTrades(scope) })
-      await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.trades(scope) })
-    },
-  })
-
   const handleDelete = async (ids: string[]) => {
     if (ids.length === 0) return
 
@@ -223,7 +191,7 @@ export default function TradeTable() {
         duration: Infinity
       })
 
-      await deleteTradesMutation.mutateAsync(ids)
+      await deleteTrades(ids)
 
       router.refresh()
 
@@ -282,7 +250,7 @@ export default function TradeTable() {
     if (!selectedTradeForEdit) return
 
     try {
-      await updateTradeMutation.mutateAsync({ id: selectedTradeForEdit.id, patch: updatedTrade })
+      await updateTrades([selectedTradeForEdit.id], updatedTrade)
       router.refresh()
 
       toast.success("Trade Updated", {
@@ -355,7 +323,7 @@ export default function TradeTable() {
           {                 }
           <div className="flex items-center gap-1 border rounded-md p-1">
             <Button
-              variant={sideFilter === 'all' ? 'default' : 'ghost'}
+              variant={sideFilter === 'all' ? "primary" : "tertiary"}
               size="sm"
               onClick={() => setSideFilter('all')}
               className="h-7 px-3"
@@ -363,7 +331,7 @@ export default function TradeTable() {
               All Sides
             </Button>
             <Button
-              variant={sideFilter === 'buy' ? 'default' : 'ghost'}
+              variant={sideFilter === 'buy' ? "primary" : "tertiary"}
               size="sm"
               onClick={() => setSideFilter('buy')}
               className="h-7 px-3"
@@ -371,7 +339,7 @@ export default function TradeTable() {
               Buy
             </Button>
             <Button
-              variant={sideFilter === 'sell' ? 'default' : 'ghost'}
+              variant={sideFilter === 'sell' ? "primary" : "tertiary"}
               size="sm"
               onClick={() => setSideFilter('sell')}
               className="h-7 px-3"
@@ -383,7 +351,7 @@ export default function TradeTable() {
           {                }
           <div className="flex items-center gap-1 border rounded-md p-1">
             <Button
-              variant={pnlFilter === 'all' ? 'default' : 'ghost'}
+              variant={pnlFilter === 'all' ? "primary" : "tertiary"}
               size="sm"
               onClick={() => setPnlFilter('all')}
               className="h-7 px-3"
@@ -391,7 +359,7 @@ export default function TradeTable() {
               All
             </Button>
             <Button
-              variant={pnlFilter === 'wins' ? 'default' : 'ghost'}
+              variant={pnlFilter === 'wins' ? "primary" : "tertiary"}
               size="sm"
               onClick={() => setPnlFilter('wins')}
               className="h-7 px-3 text-long"
@@ -400,7 +368,7 @@ export default function TradeTable() {
               Wins
             </Button>
             <Button
-              variant={pnlFilter === 'losses' ? 'default' : 'ghost'}
+              variant={pnlFilter === 'losses' ? "primary" : "tertiary"}
               size="sm"
               onClick={() => setPnlFilter('losses')}
               className="h-7 px-3 text-short"
@@ -413,7 +381,7 @@ export default function TradeTable() {
           {                       }
           <Popover open={instrumentSearchOpen} onOpenChange={setInstrumentSearchOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 border-dashed">
+              <Button variant="secondary" size="sm" className="h-9 border-dashed">
                 Instruments
                 {selectedInstruments.length > 0 && (
                   <Badge variant="secondary" className="ml-2 h-5 px-1.5">
@@ -453,7 +421,7 @@ export default function TradeTable() {
           {                    }
           <Popover open={accountSearchOpen} onOpenChange={setAccountSearchOpen}>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 border-dashed">
+              <Button variant="secondary" size="sm" className="h-9 border-dashed">
                 Accounts
                 {selectedAccounts.length > 0 && (
                   <Badge variant="secondary" className="ml-2 h-5 px-1.5">
@@ -492,7 +460,7 @@ export default function TradeTable() {
 
           {activeFiltersCount > 0 && (
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="sm"
               onClick={clearAllFilters}
               className="h-9"
@@ -545,55 +513,55 @@ export default function TradeTable() {
                 />
               </TableHead>
               <TableHead className="w-[100px]">
-                <Button variant="ghost" onClick={() => handleSort('instrument')}>
+                <Button variant="tertiary" onClick={() => handleSort('instrument')}>
                   Instrument
                   {sortConfig.key === 'instrument' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('accountNumber')}>
+                <Button variant="tertiary" onClick={() => handleSort('accountNumber')}>
                   Account
                   {sortConfig.key === 'accountNumber' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('side')}>
+                <Button variant="tertiary" onClick={() => handleSort('side')}>
                   Side
                   {sortConfig.key === 'side' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead className="hidden lg:table-cell">
-                <Button variant="ghost" onClick={() => handleSort('quantity')}>
+                <Button variant="tertiary" onClick={() => handleSort('quantity')}>
                   Quantity
                   {sortConfig.key === 'quantity' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('entryPrice')}>
+                <Button variant="tertiary" onClick={() => handleSort('entryPrice')}>
                   Entry Price
                   {sortConfig.key === 'entryPrice' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('closePrice')}>
+                <Button variant="tertiary" onClick={() => handleSort('closePrice')}>
                   Close Price
                   {sortConfig.key === 'closePrice' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('entryDate')}>
+                <Button variant="tertiary" onClick={() => handleSort('entryDate')}>
                   Entry Date
                   {sortConfig.key === 'entryDate' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead className="hidden lg:table-cell">
-                <Button variant="ghost" onClick={() => handleSort('closeDate')}>
+                <Button variant="tertiary" onClick={() => handleSort('closeDate')}>
                   Close Date
                   {sortConfig.key === 'closeDate' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
               </TableHead>
               <TableHead>
-                <Button variant="ghost" onClick={() => handleSort('pnl')}>
+                <Button variant="tertiary" onClick={() => handleSort('pnl')}>
                   PNL
                   {sortConfig.key === 'pnl' && <ArrowUpDown className="ml-2 h-4 w-4" />}
                 </Button>
@@ -624,7 +592,7 @@ export default function TradeTable() {
                       </p>
                     </div>
                     {activeFiltersCount > 0 && (
-                      <Button variant="outline" onClick={clearAllFilters} className="mt-2">
+                      <Button variant="secondary" onClick={clearAllFilters} className="mt-2">
                         Clear Filters
                       </Button>
                     )}
@@ -666,14 +634,14 @@ export default function TradeTable() {
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                            onClick={() => router.push(`${dataPath}?tab=trades&view=details&tradeId=${trade.id}`)}
                         >
                           View
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                            onClick={() => router.push(`${dataPath}?tab=trades&view=edit&tradeId=${trade.id}`)}
                         >
@@ -719,7 +687,7 @@ export default function TradeTable() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
@@ -731,7 +699,7 @@ export default function TradeTable() {
             Page {currentPage} of {totalPages}
           </span>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
             disabled={currentPage === totalPages}

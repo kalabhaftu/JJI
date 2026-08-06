@@ -294,7 +294,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
               <div>
                 {note && (
                   <Button
-                    variant="ghost"
+                    variant="tertiary"
                     size="sm"
                     onClick={handleDelete}
                     disabled={isDeleting || isSaving}

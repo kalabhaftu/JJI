@@ -88,7 +88,7 @@ export default function PrivacyPage() {
             We use essential cookies and local storage to keep you logged in and remember app preferences. Optional operational telemetry can be enabled from the storage notice; it is limited to crash reports and sampled performance diagnostics. JJI does not use advertising analytics, session replay, or behavioral tracking.
           </p>
           <div className="mt-4">
-            <Button variant="outline" size="sm" onClick={openCookiePreferences} className="gap-2">
+            <Button variant="secondary" size="sm" onClick={openCookiePreferences} className="gap-2">
               <Settings2 className="w-4 h-4" />
               View Storage Notice
             </Button>
@@ -158,7 +158,7 @@ export default function PrivacyPage() {
             <Logo className="w-8 h-8" />
             <span className="text-xl font-bold tracking-tight text-foreground">JJI</span>
           </div>
-          <Button variant="ghost" size="sm" asChild className="text-muted-foreground hover:text-foreground transition-colors gap-2">
+          <Button variant="tertiary" size="sm" asChild className="text-muted-foreground hover:text-foreground transition-colors gap-2">
             <Link href="/">
               <ArrowLeft className="h-4 w-4" />
               Back

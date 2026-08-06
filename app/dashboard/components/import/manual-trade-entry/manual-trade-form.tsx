@@ -465,7 +465,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                   <Popover open={instrumentOpen} onOpenChange={setInstrumentOpen}>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         role="combobox"
                         aria-expanded={instrumentOpen}
                         className="w-full justify-between h-11 font-normal"
@@ -552,7 +552,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                   <div className="grid grid-cols-2 gap-2">
                       <Button
                       type="button"
-                      variant={field.value === 'LONG' ? 'default' : 'outline'}
+                      variant={field.value === 'LONG' ? "primary" : "secondary"}
                       className={cn(
                         "h-12",
                         field.value === 'LONG' && "bg-long hover:bg-long/90"
@@ -564,7 +564,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                     </Button>
                     <Button
                       type="button"
-                      variant={field.value === 'SHORT' ? 'default' : 'outline'}
+                      variant={field.value === 'SHORT' ? "primary" : "secondary"}
                       className={cn(
                         "h-12",
                         field.value === 'SHORT' && "bg-short hover:bg-short/90"
@@ -942,7 +942,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
           {currentStep === 1 && onBack ? (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={onBack}
               className="gap-1.5"
             >
@@ -952,7 +952,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
           ) : (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={handleClose}
             >
               Cancel
@@ -963,7 +963,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
             {currentStep > 1 && (
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={handleBack}
                 className="gap-2"
               >

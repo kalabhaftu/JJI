@@ -136,7 +136,7 @@ export default function WidgetLibraryDialog({
           />
           {searchQuery && (
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="sm"
               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
               onClick={() => setSearchQuery('')}
@@ -206,7 +206,7 @@ export default function WidgetLibraryDialog({
 
         {}
         <div className="flex justify-end pt-4 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>
             Close
           </Button>
         </div>

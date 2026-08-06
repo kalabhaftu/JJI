@@ -31,7 +31,7 @@ export function SettingsHelpSection({ startTour }: { startTour: (tourId: TourId)
               <h3 className="text-sm font-semibold">{title}</h3>
               <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>
             </div>
-            <Button variant="outline" size="sm" onClick={() => startTour(id)}>Start</Button>
+            <Button variant="secondary" size="sm" onClick={() => startTour(id)}>Start</Button>
           </div>
         ))}
       </div>

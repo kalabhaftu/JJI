@@ -168,7 +168,7 @@ export function OnboardingShell() {
                 ))}
               </div>
               <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
-                <Button variant="ghost" onClick={() => void skipSetup()}>Skip for now</Button>
+                <Button variant="tertiary" onClick={() => void skipSetup()}>Skip for now</Button>
                 <Button onClick={() => { startSetup(); setView('choice'); void setSetupMode('real_import') }}>Set up my workspace</Button>
               </div>
             </div>
@@ -184,7 +184,7 @@ export function OnboardingShell() {
                 <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                 <span><span className="block text-sm font-semibold">Use a sample workspace</span><span className="mt-1 block text-sm leading-5 text-muted-foreground">JJI downloads a small CSV, creates a temporary workspace, and removes it after the core tour.</span></span>
               </button>
-              <div className="flex justify-between border-t border-border pt-4"><Button variant="ghost" onClick={() => setView('welcome')}>Back</Button><Button variant="ghost" onClick={() => void skipSetup()}>Skip for now</Button></div>
+              <div className="flex justify-between border-t border-border pt-4"><Button variant="tertiary" onClick={() => setView('welcome')}>Back</Button><Button variant="tertiary" onClick={() => void skipSetup()}>Skip for now</Button></div>
             </div>
           )}
 
@@ -196,7 +196,7 @@ export function OnboardingShell() {
                 <div className="space-y-2"><Label htmlFor="onboarding-account-broker">Broker</Label><Input id="onboarding-account-broker" required value={accountForm.broker} onChange={(event) => setAccountForm({ ...accountForm, broker: event.target.value })} placeholder="Broker or platform" /></div>
                 <div className="space-y-2"><Label htmlFor="onboarding-account-balance">Starting balance</Label><Input id="onboarding-account-balance" required type="number" min="0" value={accountForm.startingBalance} onChange={(event) => setAccountForm({ ...accountForm, startingBalance: event.target.value })} /></div>
               </div>
-              <div className="flex justify-between border-t border-border pt-4"><Button type="button" variant="ghost" onClick={() => setView('choice')}>Back</Button><Button type="submit" disabled={isCreatingAccount}><Plus className="mr-2 h-4 w-4" />{isCreatingAccount ? 'Creating…' : 'Create account and import'}</Button></div>
+              <div className="flex justify-between border-t border-border pt-4"><Button type="button" variant="tertiary" onClick={() => setView('choice')}>Back</Button><Button type="submit" disabled={isCreatingAccount}><Plus className="mr-2 h-4 w-4" />{isCreatingAccount ? 'Creating…' : 'Create account and import'}</Button></div>
             </form>
           )}
         </DialogContent>
@@ -206,7 +206,7 @@ export function OnboardingShell() {
         <div className="fixed bottom-4 right-4 z-[10000] flex max-w-sm items-center gap-3 rounded-lg border border-warning/30 bg-background p-4 shadow-xl" role="status">
           <Trash2 className="h-4 w-4 shrink-0 text-warning-foreground" />
           <p className="flex-1 text-sm text-muted-foreground">{cleanupError}</p>
-          <Button size="sm" variant="outline" onClick={() => void retrySampleCleanup()}>Retry</Button>
+          <Button size="sm" variant="secondary" onClick={() => void retrySampleCleanup()}>Retry</Button>
         </div>
       )}
     </>

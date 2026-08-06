@@ -10,8 +10,9 @@ export function ThemeSwitcher() {
 
   return (
     <Button
-      variant="nav"
+      variant="tertiary"
       size="navIcon"
+      className="text-muted-foreground"
       onClick={() => {
         toggleTheme()
         emitTourEvent('theme.changed')

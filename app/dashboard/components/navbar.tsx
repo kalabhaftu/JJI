@@ -101,9 +101,9 @@ export default function Navbar() {
         {}
         <div className="flex items-center gap-1 sm:gap-1.5">
           <Button
-            variant="nav"
+            variant="tertiary"
             size="navIcon"
-            className="sm:hidden"
+            className="sm:hidden text-muted-foreground"
             onClick={() => { setMobileAccountsOpen(true); emitTourEvent('account-filter.changed') }}
             aria-label="Select accounts"
             data-tour="navbar-accounts-btn"
@@ -111,9 +111,9 @@ export default function Navbar() {
             <Wallet aria-hidden />
           </Button>
           <Button
-            variant="nav"
+            variant="tertiary"
             size="navIcon"
-            className="sm:hidden"
+            className="sm:hidden text-muted-foreground"
             onClick={() => setMobileFiltersOpen(true)}
             aria-label="Open filters"
           >
@@ -126,7 +126,7 @@ export default function Navbar() {
             if (open) emitTourEvent('account-filter.changed')
           }}>
             <PopoverTrigger asChild>
-              <Button variant="nav" size="navIcon" data-tour="navbar-accounts-btn" className="hidden sm:flex" aria-label="Trading accounts">
+              <Button variant="tertiary" size="navIcon" data-tour="navbar-accounts-btn" className="hidden sm:flex text-muted-foreground" aria-label="Trading accounts">
                 <Wallet aria-hidden />
               </Button>
             </PopoverTrigger>
@@ -161,11 +161,11 @@ export default function Navbar() {
 
           {}
           <Button
-            variant="nav"
+            variant="tertiary"
             size="navIcon"
             onClick={() => { if (isDemoMode) useQuickAddStore.getState().openQuickAdd(); else router.push(buildTradeEntryHref({ origin: 'navbar', returnTo: '/dashboard' })); emitTourEvent('trade.quick-add.opened') }}
             data-tour="quick-add-btn"
-            className="hidden sm:flex"
+            className="hidden sm:flex text-muted-foreground"
             title="Quick Add Trade"
             aria-label="Quick add trade"
           >
@@ -186,7 +186,7 @@ export default function Navbar() {
           {}
           <DropdownMenu open={profileMenuOpen} onOpenChange={setProfileMenuOpen}>
             <DropdownMenuTrigger asChild>
-              <Button variant="nav" size="navIcon" className="relative rounded-full p-0" aria-label="Open profile menu">
+              <Button variant="tertiary" size="navIcon" className="relative rounded-full p-0 text-muted-foreground" aria-label="Open profile menu">
                 <Avatar className="h-8 w-8">
                   <AvatarImage key={avatarUrl ?? 'navbar-avatar-fallback'} src={avatarUrl} referrerPolicy="no-referrer" />
                   <AvatarFallback className="uppercase text-xs bg-muted text-foreground font-medium">

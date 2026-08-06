@@ -56,7 +56,7 @@ export class WidgetErrorBoundary extends Component<WidgetErrorBoundaryProps, Wid
               </p>
             </div>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="mt-2 border-destructive/20 text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() => this.setState({ hasError: false, error: null })}

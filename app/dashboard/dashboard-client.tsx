@@ -10,6 +10,14 @@ import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-lay
 import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layouts'
 import { GettingStartedChecklist } from './components/getting-started-checklist'
 import { useData } from '@/context/data-provider'
+import type { DashboardDataQuality } from '@/lib/statistics/report-statistics'
+import { Info } from 'lucide-react'
+
+const DATA_QUALITY_MESSAGES: Record<Exclude<DashboardDataQuality, 'current'>, string> = {
+  partial: 'Some data could not be loaded. The calculations below are partial and may not cover the full account scope.',
+  stale: 'Showing cached calculations because the latest refresh failed.',
+  unavailable: 'Aggregate calculations are unavailable right now.',
+}
 
 const loadingLayout = cloneDefaultTemplateLayout()
 const loadingLayouts = buildResponsiveDashboardLayouts(loadingLayout, false)
@@ -32,7 +40,7 @@ export function DashboardClient() {
   const searchParams = useSearchParams()
   const router = useRouter()
 
-  const { error, refreshAllData } = useData()
+  const { error, refreshAllData, dataQuality } = useData()
 
   useEffect(() => {
     const tab = searchParams?.get('tab')
@@ -95,6 +103,15 @@ export function DashboardClient() {
         <ErrorBoundaryWrapper context="Widgets">
           <div className="px-4 pb-24 lg:pb-0 dashboard-page-content">
             <DataError error={error} onRetry={() => void refreshAllData()} className="mb-4" />
+            {dataQuality !== 'current' && (
+              <div
+                role="status"
+                className="mb-4 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-600 dark:text-amber-400"
+              >
+                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{DATA_QUALITY_MESSAGES[dataQuality]}</span>
+              </div>
+            )}
             <GettingStartedChecklist />
             <WidgetCanvas />
           </div>

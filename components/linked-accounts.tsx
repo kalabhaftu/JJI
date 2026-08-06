@@ -212,7 +212,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
                   {identity.provider !== 'email' && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="outline" size="sm" className="w-full sm:w-auto">
+                        <Button variant="secondary" size="sm" className="w-full sm:w-auto">
                           <Unlink className="h-4 w-4 sm:mr-2" />
                           <span className="hidden sm:inline">Unlink</span>
                           <span className="sm:hidden">Unlink Account</span>
@@ -254,7 +254,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
         <div className="space-y-2">
           {!isDiscordLinked && (
             <Button
-              variant="outline"
+              variant="secondary"
               className="w-full justify-start"
               onClick={handleLinkDiscord}
               disabled={linking}
@@ -265,7 +265,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
           )}
           {!isGoogleLinked && (
             <Button
-              variant="outline"
+              variant="secondary"
               className="w-full justify-start"
               onClick={handleLinkGoogle}
               disabled={linking}

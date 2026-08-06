@@ -326,7 +326,7 @@ export default function AccountDetailPage() {
           className="space-y-4"
         >
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             onClick={() => router.push('/dashboard/accounts')}
             className="gap-2"
@@ -345,10 +345,10 @@ export default function AccountDetailPage() {
                       onChange={(e) => setEditedAccountName(e.target.value)}
                       className="h-8 w-48"
                     />
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleSaveName} aria-label="Confirm rename">
+                    <Button size="icon" variant="tertiary" className="h-8 w-8" onClick={handleSaveName} aria-label="Confirm rename">
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setIsEditingName(false)} aria-label="Cancel rename">
+                    <Button size="icon" variant="tertiary" className="h-8 w-8" onClick={() => setIsEditingName(false)} aria-label="Cancel rename">
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -357,7 +357,7 @@ export default function AccountDetailPage() {
                     {account.name}
                     <Button
                       size="icon"
-                      variant="ghost"
+                      variant="tertiary"
                       aria-label="Rename account"
                       title="Rename account"
                       className="h-6 w-6"
@@ -383,7 +383,7 @@ export default function AccountDetailPage() {
             </div>
 
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={handleRefresh}
               disabled={isLoading}
@@ -589,7 +589,7 @@ export default function AccountDetailPage() {
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-base">Recent Trades</CardTitle>
-                    <Button variant="ghost" size="sm" onClick={() => setActiveTab('trades')}>
+                    <Button variant="tertiary" size="sm" onClick={() => setActiveTab('trades')}>
                       View All <ChevronRight className="h-4 w-4 ml-1" />
                     </Button>
                   </CardHeader>

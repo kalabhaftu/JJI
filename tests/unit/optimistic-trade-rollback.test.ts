@@ -166,6 +166,78 @@ describe('optimistic trade mutation rollback', () => {
     await act(async () => root.unmount())
   })
 
+  it('rolls back deleteTrades optimistic removal and rethrows on failure', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const { tableData, metricsData } = seedData()
+    queryClient.setQueryData(TABLE_KEY, tableData)
+    queryClient.setQueryData(METRICS_KEY, metricsData)
+
+    apiRequest.mockRejectedValueOnce(new Error('delete boom'))
+
+    const { mutations, root } = await renderMutations(queryClient)
+    await act(async () => {
+      await expect(mutations.deleteTrades(['trade-1'])).rejects.toThrow('delete boom')
+    })
+
+    expect(queryClient.getQueryData(TABLE_KEY)).toEqual(tableData)
+    expect(queryClient.getQueryData(METRICS_KEY)).toEqual(metricsData)
+    expect(apiRequest).toHaveBeenCalledWith(
+      '/api/v1/trades/batch/delete',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ tradeIds: ['trade-1'] }),
+      })
+    )
+    await act(async () => root.unmount())
+  })
+
+  it('keeps snapshots intact and rethrows when groupTrades fails', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const { tableData } = seedData()
+    queryClient.setQueryData(TABLE_KEY, tableData)
+
+    apiRequest.mockRejectedValueOnce(new Error('group boom'))
+
+    const { mutations, root } = await renderMutations(queryClient)
+    await act(async () => {
+      await expect(mutations.groupTrades(['trade-1'])).rejects.toThrow('group boom')
+    })
+
+    expect(queryClient.getQueryData(TABLE_KEY)).toEqual(tableData)
+    expect(apiRequest).toHaveBeenCalledWith(
+      '/api/v1/trades/batch/group',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ tradeIds: ['trade-1'] }),
+      })
+    )
+    await act(async () => root.unmount())
+  })
+
+  it('invalidates touched queries after ungroupTrades succeeds', async () => {
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+    const { tableData } = seedData()
+    queryClient.setQueryData(TABLE_KEY, tableData)
+
+    apiRequest.mockResolvedValueOnce({ data: {} })
+
+    const { mutations, root } = await renderMutations(queryClient)
+    await act(async () => {
+      await mutations.ungroupTrades(['trade-1'])
+    })
+
+    expect(queryClient.getQueryState(TABLE_KEY)?.isInvalidated).toBe(true)
+    expect(queryClient.getQueryData(TABLE_KEY)).toEqual(tableData)
+    expect(apiRequest).toHaveBeenCalledWith(
+      '/api/v1/trades/batch/ungroup',
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({ tradeIds: ['trade-1'] }),
+      })
+    )
+    await act(async () => root.unmount())
+  })
+
   it('does not roll back queries that had no data before the mutation', async () => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     const { tableData } = seedData()

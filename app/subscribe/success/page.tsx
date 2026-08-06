@@ -141,7 +141,7 @@ export default function SubscribeSuccessPage() {
               Confirmation is taking longer than expected. Access opens automatically after server-side verification.
             </p>
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => router.push(provider === 'crypto' ? '/subscribe/status' : '/dashboard')}
               className="mt-4 w-full"
             >

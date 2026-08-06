@@ -252,7 +252,7 @@ export function DxFeedCredentialsManager() {
             <Button
               onClick={handleReloadAccounts}
               size="sm"
-              variant="ghost"
+              variant="tertiary"
               disabled={isReloading}
               className="h-8 w-8 p-0"
             >
@@ -269,7 +269,7 @@ export function DxFeedCredentialsManager() {
                 await performSyncForAllAccounts()
               }}
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={syncingId !== null}
               className="h-8"
             >
@@ -311,7 +311,7 @@ export function DxFeedCredentialsManager() {
                   {account.accountNumbers.length > 0 ? (
                     <Popover>
                       <PopoverTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-auto px-2 py-1 text-left font-medium">
+                        <Button variant="tertiary" size="sm" className="h-auto px-2 py-1 text-left font-medium">
                           <span className="truncate max-w-[160px]">
                             {account.accountNumbers.length === 1
                               ? account.accountNumbers[0]
@@ -349,7 +349,7 @@ export function DxFeedCredentialsManager() {
                 <TableCell>{formatDate(account.lastSyncedAt.toISOString())}</TableCell>
                 <TableCell>
                   <Button
-                    variant="ghost"
+                    variant="tertiary"
                     size="sm"
                     onClick={() =>
                       handleSetDailySyncTime(account.accountId, account.dailySyncTime)
@@ -374,7 +374,7 @@ export function DxFeedCredentialsManager() {
                   <div className="flex justify-center items-center gap-2">
                     {!account.hasToken && (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => setIsAddDialogOpen(true)}
                         className="h-8"
@@ -383,7 +383,7 @@ export function DxFeedCredentialsManager() {
                       </Button>
                     )}
                     <Button
-                      variant="ghost"
+                      variant="tertiary"
                       size="sm"
                       onClick={async () => {
                         setSyncingId(account.accountId)
@@ -404,14 +404,14 @@ export function DxFeedCredentialsManager() {
                     </Button>
                     <Popover modal>
                       <PopoverTrigger asChild>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0" aria-label="More options">
+                        <Button variant="tertiary" size="sm" className="h-8 w-8 p-0" aria-label="More options">
                           <MoreVertical className="h-4 w-4" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-48 p-2" align="end">
                         <div className="flex flex-col space-y-1">
                           <Button
-                            variant="ghost"
+                            variant="tertiary"
                             size="sm"
                             className="justify-start text-left text-destructive hover:text-destructive"
                             onClick={() => {
@@ -469,7 +469,7 @@ export function DxFeedCredentialsManager() {
               />
             </div>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
+              <Button variant="secondary" onClick={() => setIsAddDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleAddAccount} disabled={isLoading}>
@@ -497,7 +497,7 @@ export function DxFeedCredentialsManager() {
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end space-x-2 mt-4">
-            <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+            <Button variant="secondary" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -539,7 +539,7 @@ export function DxFeedCredentialsManager() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('morning')}
                 >
@@ -547,7 +547,7 @@ export function DxFeedCredentialsManager() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('midday')}
                 >
@@ -555,7 +555,7 @@ export function DxFeedCredentialsManager() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('after-close')}
                 >
@@ -563,7 +563,7 @@ export function DxFeedCredentialsManager() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('midnight')}
                 >
@@ -573,7 +573,7 @@ export function DxFeedCredentialsManager() {
             </div>
 
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsTimeDialogOpen(false)}>
+              <Button variant="secondary" onClick={() => setIsTimeDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleSaveDailySyncTime} disabled={isSavingTime}>

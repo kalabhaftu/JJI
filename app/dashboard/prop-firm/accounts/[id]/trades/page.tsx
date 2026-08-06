@@ -183,7 +183,7 @@ export default function AccountTradesPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
@@ -199,7 +199,7 @@ export default function AccountTradesPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => { void tradesQuery.refetch() }}
             disabled={isLoading}
@@ -226,7 +226,7 @@ export default function AccountTradesPage() {
           <CardContent>
             <div className="flex flex-wrap gap-2">
               <Button
-                variant={phaseFilter === 'current' ? 'default' : 'outline'}
+                variant={phaseFilter === 'current' ? "primary" : "secondary"}
                 size="sm"
                 onClick={() => setPhaseFilter('current')}
               >
@@ -235,7 +235,7 @@ export default function AccountTradesPage() {
               {availablePhases.map((phase: PhaseInfo) => (
                 <Button
                   key={phase.phaseNumber}
-                  variant={phaseFilter === phase.phaseNumber.toString() ? 'default' : 'outline'}
+                  variant={phaseFilter === phase.phaseNumber.toString() ? "primary" : "secondary"}
                   size="sm"
                   onClick={() => setPhaseFilter(phase.phaseNumber.toString())}
                 >
@@ -247,14 +247,14 @@ export default function AccountTradesPage() {
                 </Button>
               ))}
               <Button
-                variant={phaseFilter === 'all' ? 'default' : 'outline'}
+                variant={phaseFilter === 'all' ? "primary" : "secondary"}
                 size="sm"
                 onClick={() => setPhaseFilter('all')}
               >
                 All Phases
               </Button>
               <Button
-                variant={phaseFilter === 'archived' ? 'default' : 'outline'}
+                variant={phaseFilter === 'archived' ? "primary" : "secondary"}
                 size="sm"
                 onClick={() => setPhaseFilter('archived')}
               >
@@ -334,11 +334,11 @@ export default function AccountTradesPage() {
             className="pl-10"
           />
         </div>
-        <Button variant="outline" size="sm">
+        <Button variant="secondary" size="sm">
           <Filter className="h-4 w-4 mr-2" />
           Filter
         </Button>
-        <Button variant="outline" size="sm">
+        <Button variant="secondary" size="sm">
           <Download className="h-4 w-4 mr-2" />
           Export
         </Button>
@@ -439,7 +439,7 @@ export default function AccountTradesPage() {
 
                       <div>
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/trades/${trade.id}`)}
                         >
@@ -508,14 +508,14 @@ export default function AccountTradesPage() {
 
                         <div className="flex gap-2">
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/trades/${trade.id}/edit`)}
                           >
                             Close Position
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/trades/${trade.id}`)}
                           >
@@ -599,7 +599,7 @@ export default function AccountTradesPage() {
 
                         <div>
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/trades/${trade.id}`)}
                           >

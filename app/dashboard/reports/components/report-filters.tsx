@@ -100,7 +100,7 @@ export function ReportFilters({
           <div className="ml-auto" />
 
           <Button
-            variant={showAdvanced ? 'default' : 'outline'}
+            variant={showAdvanced ? "primary" : "secondary"}
             size="sm"
             onClick={() => setShowAdvanced(!showAdvanced)}
             className={cn(

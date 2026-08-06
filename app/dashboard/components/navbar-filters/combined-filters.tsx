@@ -254,7 +254,7 @@ export function CombinedFilters({
 
       <div className="space-y-1">
         <Button
-          variant="ghost"
+          variant="tertiary"
           className="w-full justify-start h-auto py-3 px-3 hover:bg-muted/50 transition-colors"
           onClick={() => setCurrentView('instrument')}
         >
@@ -272,7 +272,7 @@ export function CombinedFilters({
         </Button>
 
         <Button
-          variant="ghost"
+          variant="tertiary"
           className="w-full justify-start h-auto py-3 px-3 hover:bg-muted/50 transition-colors"
           onClick={() => setCurrentView('date')}
         >
@@ -298,7 +298,7 @@ export function CombinedFilters({
     <div className="w-full min-w-72 sm:min-w-96 max-w-sm sm:max-w-md p-3 sm:p-4 space-y-2 sm:space-y-3">
       <div className="flex items-center gap-2 mb-2">
         <Button
-          variant="ghost"
+          variant="tertiary"
           size="sm"
           className="h-8 w-8 p-0"
           onClick={() => setCurrentView('menu')}
@@ -327,7 +327,7 @@ export function CombinedFilters({
       {}
       <div className="flex gap-2">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={handleSelectAll}
           disabled={selectedInstruments.length === totalInstruments && totalInstruments > 0}
@@ -336,7 +336,7 @@ export function CombinedFilters({
           All
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={handleClearAll}
           disabled={selectedInstruments.length === 0}
@@ -400,7 +400,7 @@ export function CombinedFilters({
           </span>
           {selectedInstruments.length > 0 && (
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="sm"
               onClick={handleClearAll}
               className="h-6 text-xs px-2"
@@ -412,7 +412,7 @@ export function CombinedFilters({
 
         <div className="flex gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={handleClearInstruments}
             disabled={totalInstruments === 0}
             className="flex-1 h-7 sm:h-8 text-xs sm:text-sm"
@@ -435,7 +435,7 @@ export function CombinedFilters({
     <div className="w-full min-w-72 sm:min-w-80 max-w-sm sm:max-w-md p-3 sm:p-4 space-y-3 sm:space-y-4">
       <div className="flex items-center gap-2 mb-2">
         <Button
-          variant="ghost"
+          variant="tertiary"
           size="sm"
           className="h-8 w-8 p-0"
           onClick={() => setCurrentView('menu')}
@@ -455,7 +455,7 @@ export function CombinedFilters({
         {DATE_PRESETS.map((preset) => (
           <Button
             key={preset.label}
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             onClick={() => handlePresetClick(preset)}
             className={cn(
@@ -489,7 +489,7 @@ export function CombinedFilters({
       {}
       <div className="flex gap-2">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={handleClearDate}
           className="flex-1 h-8 sm:h-9 text-sm"
@@ -516,9 +516,9 @@ export function CombinedFilters({
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="nav"
+          variant="tertiary"
           size="navIcon"
-          className="relative"
+          className="relative text-muted-foreground"
           title="Filters"
           aria-label="Filters"
         >

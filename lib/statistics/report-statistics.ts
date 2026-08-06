@@ -2,13 +2,18 @@
 
 import { db } from '@/lib/db/client'
 import * as Sentry from '@sentry/nextjs'
-import { Trade, TradingModel } from '@/lib/db/schema'
+import { Trade, TradingModel, type TradeType } from '@/lib/db/schema'
 import { eq, and, or, inArray, gte, lte, isNull, asc } from 'drizzle-orm'
-import { classifyTrade } from '@/lib/trading/trade-formatting'
+import { classifyTrade, formatCurrency } from '@/lib/trading/trade-formatting'
 import { getTradingSession } from '@/lib/time-utils'
 import { groupTradesByExecution } from '@/lib/trading/trade-grouping'
-import { DEFAULT_BREAK_EVEN_THRESHOLD, getBreakEvenThreshold } from '@/lib/metrics/outcome'
-import { getTradeNetPnl } from '@/lib/metrics/pnl'
+import {
+  DEFAULT_BREAK_EVEN_THRESHOLD,
+  getBreakEvenThreshold,
+  calculateWinRate,
+  classifyOutcome,
+} from '@/lib/metrics/outcome'
+import { getTradeGrossPnl, getTradeNetPnl } from '@/lib/metrics/pnl'
 import { getRuntimeBreakEvenThreshold } from '@/server/user-settings'
 import { 
   calculateTradeRMultiple, 
@@ -611,5 +616,181 @@ function computeAllMetrics(
       })
     }
   }
+}
+
+export interface FinancialMetric {
+  value: number
+  formatted: string
+}
+
+export type DashboardDataQuality = 'current' | 'partial' | 'stale' | 'unavailable'
+
+export interface DashboardAggregateFilters {
+  accountIds: readonly string[]
+  from: string
+  to: string
+  timezone: string
+  currency?: string
+  includeFees: boolean
+}
+
+export interface DashboardAggregates {
+  pnl: FinancialMetric
+  winRate: FinancialMetric
+  drawdown: FinancialMetric
+  tradeCount: number
+  dataQuality: DashboardDataQuality
+}
+
+export interface DashboardAggregatesInput extends DashboardAggregateFilters {
+  userId: string
+}
+
+export interface ComputeDashboardAggregatesOptions {
+  includeFees: boolean
+  breakEvenThreshold?: number
+  currency?: string
+}
+
+function formatFinancialValue(value: number, currency?: string): FinancialMetric {
+  const isAlphaCurrency = typeof currency === 'string' && /^[A-Za-z]{3}$/.test(currency)
+  if (isAlphaCurrency) {
+    const formatted = new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency.toUpperCase(),
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 2,
+    }).format(value)
+    return { value, formatted }
+  }
+  return { value, formatted: formatCurrency(value) }
+}
+
+export function computeDashboardAggregates(
+  trades: ReadonlyArray<Partial<TradeType>>,
+  options: ComputeDashboardAggregatesOptions,
+): Omit<DashboardAggregates, 'dataQuality'> {
+  const grouped = groupTradesByExecution([...trades] as TradeType[])
+    .sort((a, b) => new Date(a.entryDate).getTime() - new Date(b.entryDate).getTime())
+
+  let cumulative = 0
+  let peak = 0
+  let maxDrawdown = 0
+  let wins = 0
+  let losses = 0
+  let totalNetPnl = 0
+  let totalGrossPnl = 0
+  const tradeCount = grouped.length
+
+  for (const group of grouped) {
+    const groupNet = getTradeNetPnl(group)
+    const groupGross = getTradeGrossPnl(group)
+    totalNetPnl += groupNet
+    totalGrossPnl += groupGross
+    cumulative += options.includeFees ? groupNet : groupGross
+    if (cumulative > peak) peak = cumulative
+    const drawdownFromPeak = peak - cumulative
+    if (drawdownFromPeak > maxDrawdown) maxDrawdown = drawdownFromPeak
+    const outcome = classifyOutcome(
+      options.includeFees ? groupNet : groupGross,
+      options.breakEvenThreshold ?? DEFAULT_BREAK_EVEN_THRESHOLD,
+    )
+    if (outcome === 'win') wins += 1
+    else if (outcome === 'loss') losses += 1
+  }
+
+  const pnlValue = options.includeFees ? totalNetPnl : totalGrossPnl
+  const winRate = calculateWinRate(wins, losses)
+
+  return {
+    pnl: formatFinancialValue(pnlValue, options.currency),
+    winRate: { value: winRate, formatted: `${winRate.toFixed(1)}%` },
+    drawdown: formatFinancialValue(maxDrawdown, options.currency),
+    tradeCount,
+  }
+}
+
+export const DASHBOARD_TRADE_COLUMNS = {
+  id: Trade.id,
+  entryId: Trade.entryId,
+  entryDate: Trade.entryDate,
+  pnl: Trade.pnl,
+  commission: Trade.commission,
+  accountId: Trade.accountId,
+  accountNumber: Trade.accountNumber,
+  phaseAccountId: Trade.phaseAccountId,
+} as const
+
+export async function fetchDashboardSeriesTrades(
+  userId: string,
+  accountId: string | null,
+  from: string,
+  to: string,
+): Promise<Array<Partial<TradeType>>> {
+  const fromDate = from.includes('T') ? from : `${from}T00:00:00.000Z`
+  const toDate = to.includes('T') ? to : `${to}T23:59:59.999Z`
+  return db
+    .select(DASHBOARD_TRADE_COLUMNS)
+    .from(Trade)
+    .where(
+      and(
+        eq(Trade.userId, userId),
+        accountId
+          ? or(
+              eq(Trade.accountId, accountId),
+              eq(Trade.phaseAccountId, accountId),
+              eq(Trade.accountNumber, accountId),
+            )
+          : undefined,
+        gte(Trade.entryDate, fromDate),
+        lte(Trade.entryDate, toDate),
+      ),
+    )
+}
+
+export function unavailableDashboardAggregates(currency?: string): DashboardAggregates {
+  return {
+    pnl: formatFinancialValue(0, currency),
+    winRate: { value: 0, formatted: '0.0%' },
+    drawdown: formatFinancialValue(0, currency),
+    tradeCount: 0,
+    dataQuality: 'unavailable',
+  }
+}
+
+export async function calculateDashboardAggregates(
+  input: DashboardAggregatesInput,
+): Promise<DashboardAggregates> {
+  return Sentry.startSpan(
+    { name: 'reports.dashboard-aggregates' },
+    async () => {
+      const breakEvenThreshold = await getRuntimeBreakEvenThreshold(input.userId)
+      const accountIds = input.accountIds.length > 0 ? input.accountIds : [null]
+      const results = await Promise.allSettled(
+        accountIds.map(accountId =>
+          fetchDashboardSeriesTrades(
+            input.userId,
+            accountId === null ? null : accountId,
+            input.from,
+            input.to,
+          ),
+        ),
+      )
+      const fulfilled = results.filter((r): r is PromiseFulfilledResult<Array<Partial<TradeType>>> => r.status === 'fulfilled')
+      const merged = fulfilled.flatMap(r => r.value)
+      if (fulfilled.length === 0) {
+        return unavailableDashboardAggregates(input.currency)
+      }
+      const computed = computeDashboardAggregates(merged, {
+        includeFees: input.includeFees,
+        breakEvenThreshold,
+        ...(input.currency ? { currency: input.currency } : {}),
+      })
+      return {
+        ...computed,
+        dataQuality: results.length > fulfilled.length ? 'partial' : 'current',
+      }
+    },
+  )
 }
 

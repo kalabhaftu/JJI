@@ -620,8 +620,9 @@ export default function ImportButton() {
           setIsOpen(true)
           emitTourEvent('import.opened')
         }}
-        variant="nav"
+        variant="tertiary"
         size="navIcon"
+        className="text-muted-foreground"
         id="import-data"
         data-tour="import-nav-btn"
         title="Import trades"
@@ -681,7 +682,7 @@ export default function ImportButton() {
                   <p className="text-xs text-destructive/90 break-words">{saveError.message}</p>
                 </div>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="shrink-0 text-xs h-8 border-destructive/40 text-destructive hover:bg-destructive/10"
                   onClick={() => handleSave()}
@@ -785,7 +786,7 @@ export default function ImportButton() {
                 <div className="flex items-center gap-2">
                   {step !== 'select-import-type' && (
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       onClick={handleBackStep}
                       disabled={isSaving}
                       className="gap-1.5 text-xs h-9 border-border/50 hover:bg-muted"

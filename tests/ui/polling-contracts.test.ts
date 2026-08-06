@@ -13,7 +13,7 @@ describe('client polling contracts', () => {
       settings.indexOf('const regenerateWebhookToken'),
     )
 
-    expect(subscriptionEffect).toContain("fetch('/api/v1/billing/status')")
+    expect(subscriptionEffect).toContain("'/api/v1/billing/status'")
     expect(subscriptionEffect).not.toContain("window.addEventListener('focus'")
     expect(subscriptionEffect).not.toContain('setInterval(')
   })

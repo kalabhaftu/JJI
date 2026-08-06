@@ -10,7 +10,7 @@ export function ManualTradeValidationError({ message, retry, disabled }: { messa
           <AlertCircle className="h-4 w-4 text-destructive" />
           <p className="text-sm text-destructive">{message}</p>
         </div>
-        <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={retry}>Retry validation</Button>
+        <Button type="button" variant="secondary" size="sm" disabled={disabled} onClick={retry}>Retry validation</Button>
       </div>
     </div>
   )

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { isDemoSurface } from '@/lib/public-surface-routing'
-import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
 import { queryKeys } from '@/lib/query/query-keys'
 import { useQueryScope } from '@/lib/query/use-query-scope'
 
@@ -31,7 +31,7 @@ export function useTradingModels(filters?: TradingModelFilters) {
   const scope = useQueryScope()
 
   const { data, isLoading, error } = useQuery<TradingModel[] | null>({
-    queryKey: [...queryKeys.playbook(scope), 'models', filters ?? {}],
+    queryKey: queryKeys.playbookModels(scope, filters ?? {}),
     queryFn: async () => {
       if (isDemo) {
         return [
@@ -143,19 +143,11 @@ export function useTradingModels(filters?: TradingModelFilters) {
           }
         ]
       }
-      try {
-        const response = await fetch(`/api/v1/user/trading-models${buildTradingModelQuery(filters)}`)
-        if (!response.ok) throw Object.assign(new Error('Failed to fetch trading models'), { status: response.status })
-        const data = await response.json()
-        if (Array.isArray(data?.data?.models)) return data.data.models
-        return []
-      } catch (error) {
-        const status = (error as { status?: number })?.status
-        if (!(error instanceof TypeError) && status !== 429) {
-          reportClientError(error, { operation: 'load-trading-models', route: '/api/v1/user/trading-models' })
-        }
-        throw error
-      }
+      const response = await apiRequestData<{ models?: TradingModel[] } | null>(
+        `/api/v1/user/trading-models${buildTradingModelQuery(filters)}`,
+        { retry: { mode: 'safe' }, operation: 'load-trading-models' },
+      )
+      return Array.isArray(response?.models) ? response.models : []
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

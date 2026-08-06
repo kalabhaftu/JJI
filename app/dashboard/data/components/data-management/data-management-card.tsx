@@ -572,7 +572,7 @@ export function DataManagementCard() {
                         </div>
 
                         <Button
-                          variant="ghost"
+                          variant="tertiary"
                           size="icon"
                           aria-label={`Rename account ${phase.number}`}
                           title="Rename account"
@@ -603,7 +603,7 @@ export function DataManagementCard() {
           <p className="text-sm text-muted-foreground mb-4">
             Create your first account from the Accounts page
           </p>
-          <Button variant="outline" onClick={() => router.push('/dashboard/accounts')}>
+          <Button variant="secondary" onClick={() => router.push('/dashboard/accounts')}>
             Go to Accounts
           </Button>
         </div>
@@ -618,7 +618,7 @@ export function DataManagementCard() {
             </p>
           </div>
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={() => setDeleteAllDataDialogOpen(true)}
@@ -663,7 +663,7 @@ export function DataManagementCard() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" type="button" onClick={() => setRenameAccountDialogOpen(false)}>
+              <Button variant="secondary" type="button" onClick={() => setRenameAccountDialogOpen(false)}>
                 Cancel
               </Button>
               <Button type="submit" disabled={renameLoading || !newAccountNumber || newAccountNumber === accountToRename}>

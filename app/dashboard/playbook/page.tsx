@@ -26,6 +26,7 @@ import { motion } from 'framer-motion'
 import { Eye, FileText, MoreVertical, Pencil, Plus, Trash2 as Trash, Calendar } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
+import { apiRequest } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 import { queryKeyPrefixes } from '@/lib/query/query-keys'
 import { useQueryScope } from '@/lib/query/use-query-scope'
@@ -248,16 +249,12 @@ export default function PlaybookPage() {
       ? '/api/v1/user/trading-models'
       : `/api/v1/user/trading-models/${modelId}`
 
-    const response = await fetch(url, {
+    await apiRequest(url, {
       method: modalMode === 'add' ? 'POST' : 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+      retry: { mode: 'never' },
+      operation: modalMode === 'add' ? 'create-trading-model' : 'update-trading-model',
     })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(error.error?.message || 'Failed to save model')
-    }
 
     await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.playbook(scope) })
   }
@@ -265,13 +262,11 @@ export default function PlaybookPage() {
   const handleDeleteModel = async () => {
     if (!deleteModelId) return
     try {
-      const response = await fetch(`/api/v1/user/trading-models/${deleteModelId}`, {
+      await apiRequest(`/api/v1/user/trading-models/${deleteModelId}`, {
         method: 'DELETE',
+        retry: { mode: 'never' },
+        operation: 'delete-trading-model',
       })
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error?.message || 'Failed to delete model')
-      }
       toast.success('Model removed from playbook')
       await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.playbook(scope) })
     } catch (error) {
@@ -345,7 +340,7 @@ export default function PlaybookPage() {
             </Select>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className="h-9 justify-start gap-2 text-xs font-bold">
+                <Button variant="secondary" className="h-9 justify-start gap-2 text-xs font-bold">
                   <Calendar className="h-3.5 w-3.5" />
                   {dateRangeLabel}
                 </Button>
@@ -363,7 +358,7 @@ export default function PlaybookPage() {
             </Popover>
             {(playbookAccountFilter !== '__all__' || playbookDateRange?.from || playbookDateRange?.to) && (
               <Button
-                variant="ghost"
+                variant="tertiary"
                 className="h-9 text-xs font-black uppercase tracking-tighter"
                 onClick={() => {
                   setPlaybookAccountFilter('__all__')
@@ -382,7 +377,7 @@ export default function PlaybookPage() {
           <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/40 bg-card/30 py-24">
             <FileText className="h-12 w-12 text-muted-foreground/20 mb-6" />
             <h3 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-6">No strategies defined</h3>
-            <Button onClick={handleAddModel} variant="outline" className="gap-2 font-black uppercase tracking-tighter text-xs h-9">
+            <Button onClick={handleAddModel} variant="secondary" className="gap-2 font-black uppercase tracking-tighter text-xs h-9">
               <Plus className="h-3.5 w-3.5" />
               Initialize First Model
             </Button>

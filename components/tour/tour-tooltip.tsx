@@ -132,10 +132,10 @@ export const TourTooltip: React.FC = () => {
             <div className="flex items-center justify-between border-t border-border pt-4">
               <span className="text-xs font-medium text-muted-foreground">Step {stepIndex + 1} of {totalSteps}</span>
               <div className="flex items-center gap-2">
-                {stepIndex > 0 && <Button variant="ghost" size="sm" onClick={prevStep}><ArrowLeft className="mr-1 h-3.5 w-3.5" />Back</Button>}
+                {stepIndex > 0 && <Button variant="tertiary" size="sm" onClick={prevStep}><ArrowLeft className="mr-1 h-3.5 w-3.5" />Back</Button>}
                 {targetMissing ? (
                   <>
-                    <Button variant="outline" size="sm" onClick={retryTarget}><RefreshCw className="mr-1 h-3.5 w-3.5" />Retry</Button>
+                    <Button variant="secondary" size="sm" onClick={retryTarget}><RefreshCw className="mr-1 h-3.5 w-3.5" />Retry</Button>
                     <Button size="sm" onClick={nextStep}>Skip <ArrowRight className="ml-1 h-3.5 w-3.5" /></Button>
                   </>
                 ) : (currentStep.desktopOnly && isNarrowViewport) || !currentStep.completion || currentStep.completion.type === 'route' ? (
@@ -143,7 +143,7 @@ export const TourTooltip: React.FC = () => {
                 ) : (
                   <>
                     <span className="text-xs font-medium text-primary">Complete the highlighted action</span>
-                    <Button variant="ghost" size="sm" onClick={nextStep}>Skip step</Button>
+                    <Button variant="tertiary" size="sm" onClick={nextStep}>Skip step</Button>
                   </>
                 )}
               </div>

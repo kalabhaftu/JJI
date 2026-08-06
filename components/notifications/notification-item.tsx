@@ -127,7 +127,7 @@ export function NotificationItem({
       )}
     >
       <Button
-        variant="ghost"
+        variant="tertiary"
         size="icon"
         className="absolute right-2 top-2 h-7 w-7 text-muted-foreground opacity-100 transition-opacity hover:bg-destructive/10 hover:text-destructive sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
         onClick={(e) => {
@@ -172,7 +172,7 @@ export function NotificationItem({
             <div className="flex items-center gap-1">
               {isActionable && (
                 <Button
-                  variant="default"
+                  variant="primary"
                   size="sm"
                   className="h-7 text-xs px-3"
                   onClick={(e) => {
@@ -186,7 +186,7 @@ export function NotificationItem({
               )}
               {!notification.isRead && (
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   className="h-7 text-xs"
                   onClick={(e) => {

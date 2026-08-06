@@ -1,9 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useForm } from "react-hook-form"
+import { useForm, Controller } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from 'zod'
+import { CurrencyField } from "@/components/ui/domain-fields"
+import { parseNumericInput } from '@/lib/form-fields'
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
@@ -66,6 +68,7 @@ export function EditLiveAccountDialog({
 
   const {
     register,
+    control,
     handleSubmit,
     formState: { errors },
     reset,
@@ -190,14 +193,21 @@ export function EditLiveAccountDialog({
 
           <div className="space-y-2">
             <Label htmlFor="startingBalance">Starting Balance ($) *</Label>
-            <Input
-              id="startingBalance"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              {...register('startingBalance')}
-              disabled={isSaving || account.isConfigured}
-              className={account.isConfigured ? "bg-muted" : ""}
+            <Controller
+              name="startingBalance"
+              control={control}
+              render={({ field }) => (
+                <CurrencyField
+                  id="startingBalance"
+                  aria-label="Starting balance"
+                  aria-invalid={errors.startingBalance ? true : undefined}
+                  value={parseNumericInput(field.value ?? '') ?? undefined}
+                  onValueChange={(next) => field.onChange(next === undefined ? '' : String(next))}
+                  disabled={isSaving || account.isConfigured}
+                  placeholder="0.00"
+                  className={account.isConfigured ? "bg-muted" : ""}
+                />
+              )}
             />
             {errors.startingBalance && (
               <p className="text-sm text-destructive">{errors.startingBalance.message}</p>
@@ -212,7 +222,7 @@ export function EditLiveAccountDialog({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={handleCancel}
               disabled={isSaving}
             >

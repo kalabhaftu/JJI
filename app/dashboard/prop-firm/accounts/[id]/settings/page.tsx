@@ -237,7 +237,7 @@ export default function AccountSettingsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
@@ -253,7 +253,7 @@ export default function AccountSettingsPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => { void accountQuery.refetch() }}
             disabled={accountQuery.isFetching}
@@ -523,12 +523,12 @@ export default function AccountSettingsPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <Download className="h-4 w-4 mr-2" />
                     Export as CSV
                   </Button>
 
-                  <Button variant="outline" size="sm">
+                  <Button variant="secondary" size="sm">
                     <Download className="h-4 w-4 mr-2" />
                     Export as JSON
                   </Button>

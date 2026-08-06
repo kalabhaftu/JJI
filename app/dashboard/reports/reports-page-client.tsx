@@ -304,7 +304,7 @@ export default function ReportsPageClient({
                     actions={
                       <div className="no-export flex items-center gap-2">
                         {                       }
-                        <Button variant="outline" size="sm" onClick={handleExportCSV} disabled={isExporting} className="h-8 gap-1.5 rounded-lg border-border/30 text-xs font-semibold hover:bg-muted-foreground/10">
+                        <Button variant="secondary" size="sm" onClick={handleExportCSV} disabled={isExporting} className="h-8 gap-1.5 rounded-lg border-border/30 text-xs font-semibold hover:bg-muted-foreground/10">
                             <Download className="h-3.5 w-3.5 opacity-60" />
                             Export CSV
                         </Button>
@@ -312,7 +312,7 @@ export default function ReportsPageClient({
                         {                    }
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-8 text-[11px] font-bold uppercase tracking-wider border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl gap-1.5">
+                                <Button variant="secondary" size="sm" className="h-8 text-[11px] font-bold uppercase tracking-wider border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl gap-1.5">
                                     <Share2 className="h-3.5 w-3.5" />
                                     Share
                                 </Button>
@@ -406,7 +406,7 @@ export default function ReportsPageClient({
                         <Zap className="h-10 w-10 text-muted-foreground/30 mb-4" />
                         <h3 className="mb-4 text-sm font-semibold text-muted-foreground">Journal is empty for this period</h3>
                         <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => handlePresetSelect('ALL')}
                             className="text-xs font-semibold"

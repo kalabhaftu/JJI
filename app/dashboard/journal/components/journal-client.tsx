@@ -195,7 +195,7 @@ function EmptyState({
           }
         </p>
         {(hasFilters || searchTerm) && (
-          <Button variant="outline" size="sm" className="mt-4" onClick={onClearFilters}>
+          <Button variant="secondary" size="sm" className="mt-4" onClick={onClearFilters}>
             Clear filters
           </Button>
         )}
@@ -375,7 +375,7 @@ export function JournalClient() {
           actions={
             <>
               <Button
-                variant="ghost"
+                variant="tertiary"
                 size="sm"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
@@ -396,7 +396,7 @@ export function JournalClient() {
         className="flex items-center gap-1 bg-muted/30 p-1 rounded-xl w-fit"
       >
         <Button
-          variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+          variant={viewMode === 'grid' ? 'secondary' : "tertiary"}
           size="sm"
           className="h-8 gap-2 rounded-lg"
           data-tour="journal-view-cards-btn"
@@ -409,7 +409,7 @@ export function JournalClient() {
           <span className="text-[10px] uppercase font-black tracking-widest">Cards</span>
         </Button>
         <Button
-          variant={viewMode === 'calendar' ? 'secondary' : 'ghost'}
+          variant={viewMode === 'calendar' ? 'secondary' : "tertiary"}
           size="sm"
           className="h-8 gap-2 rounded-lg"
           data-tour="journal-view-calendar-btn"
@@ -453,7 +453,7 @@ export function JournalClient() {
           />
           {searchTerm && (
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="icon"
               aria-label="Clear journal search"
               title="Clear search"
@@ -470,7 +470,7 @@ export function JournalClient() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2 h-9 whitespace-nowrap">
+            <Button variant="secondary" size="sm" className="gap-2 h-9 whitespace-nowrap">
               <Filter className="h-4 w-4" />
               <span>
                 {filterBy === 'all'
@@ -512,7 +512,7 @@ export function JournalClient() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="gap-2 h-9 whitespace-nowrap">
+            <Button variant="secondary" size="sm" className="gap-2 h-9 whitespace-nowrap">
               <Tag className="h-4 w-4" />
               <span>
                 {selectedTagIds.length === 0 ? 'Tags' : `${selectedTagIds.length} Selected`}
@@ -524,7 +524,7 @@ export function JournalClient() {
               <span>Filter by Tags</span>
               {selectedTagIds.length > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   className="h-6 px-2 text-xs"
                   onClick={(e) => {
@@ -664,7 +664,7 @@ export function JournalClient() {
                 </div>
                 <div className="flex flex-wrap justify-center items-center gap-2">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
@@ -688,7 +688,7 @@ export function JournalClient() {
                       return (
                         <Button
                           key={pageNum}
-                          variant={currentPage === pageNum ? "default" : "outline"}
+                          variant={currentPage === pageNum ? "primary" : "secondary"}
                           size="sm"
                           onClick={() => setCurrentPage(pageNum)}
                           className="w-8 h-8 sm:w-9 sm:h-9 p-0 text-xs sm:text-sm"
@@ -699,7 +699,7 @@ export function JournalClient() {
                     })}
                   </div>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}

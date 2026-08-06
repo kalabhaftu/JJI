@@ -150,7 +150,7 @@ export default function SubscribeStatusPage() {
                       Refresh Status
                     </Button>
                     {status?.canOpenInvoice && status?.paymentUrl && (
-                      <Button variant="outline" onClick={() => { 
+                      <Button variant="secondary" onClick={() => { 
                         window.location.href = status.paymentUrl!
                       }} className="w-full">
                         Open Invoice

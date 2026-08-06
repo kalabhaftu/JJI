@@ -56,7 +56,7 @@ export function PlatformTutorial({ selectedPlatform, setIsOpen }: PlatformTutori
         <h3 className="text-lg font-semibold text-foreground">Tutorial Guide</h3>
         {selectedPlatform.tutorialLink && (
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="gap-2 text-xs h-8 border-border/50 hover:bg-muted"
             onClick={() => window.open(selectedPlatform.tutorialLink, '_blank')}

@@ -214,7 +214,7 @@ export default function PayoutDetailPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             onClick={() => router.push('/dashboard/prop-firm/payouts')}
           >
@@ -228,7 +228,7 @@ export default function PayoutDetailPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={handleRefresh}
             disabled={isLoading}
@@ -236,11 +236,11 @@ export default function PayoutDetailPage() {
             {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
             Refresh
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="secondary" size="sm">
             <Pencil className="h-4 w-4 mr-2" />
             Edit
           </Button>
-          <Button variant="outline" size="sm" className="text-short hover:text-short/80">
+          <Button variant="secondary" size="sm" className="text-short hover:text-short/80">
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
           </Button>
@@ -330,7 +330,7 @@ export default function PayoutDetailPage() {
                 {payout.status === 'pending' && (
                   <>
                     <Button size="sm">Approve</Button>
-                    <Button size="sm" variant="outline" className="text-short hover:text-short/80">
+                    <Button size="sm" variant="secondary" className="text-short hover:text-short/80">
                       Reject
                     </Button>
                   </>
@@ -338,7 +338,7 @@ export default function PayoutDetailPage() {
                 {payout.status === 'approved' && (
                   <Button size="sm">Mark as Paid</Button>
                 )}
-                <Button size="sm" variant="outline">Download Receipt</Button>
+                <Button size="sm" variant="secondary">Download Receipt</Button>
               </div>
             </div>
           </CardContent>

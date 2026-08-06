@@ -401,9 +401,9 @@ export function NotificationCenter() {
         <PopoverTrigger asChild>
           <Button
             type="button"
-            variant="nav"
+            variant="tertiary"
             size="navIcon"
-            className="relative"
+            className="relative text-muted-foreground"
             aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
           >
             <Bell aria-hidden />
@@ -431,7 +431,7 @@ export function NotificationCenter() {
             <div className="flex items-center gap-1">
               {unreadCount > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   className="h-7 text-xs px-2"
                   onClick={handleMarkAllAsRead}
@@ -442,7 +442,7 @@ export function NotificationCenter() {
               )}
               {notifications.length > 0 && (
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   className="h-7 text-xs px-2 text-muted-foreground hover:text-destructive"
                   onClick={handleClearAll}
@@ -458,7 +458,7 @@ export function NotificationCenter() {
             {categories.map((cat) => (
               <Button
                 key={cat.key}
-                variant={selectedFilter === cat.key ? "secondary" : "ghost"}
+                variant={selectedFilter === cat.key ? "secondary" : "tertiary"}
                 size="sm"
                 className="h-7 text-xs shrink-0"
                 onClick={() => setSelectedFilter(cat.key)}

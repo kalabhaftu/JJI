@@ -306,7 +306,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
           </div>
 
           <div className="flex justify-end pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="secondary" onClick={onClose}>
               Close
             </Button>
           </div>

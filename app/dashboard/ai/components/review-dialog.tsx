@@ -35,9 +35,9 @@ export function ReviewDialog({ open, review, index, total, isSending, onOpenChan
             </div>
             {total > 1 && index !== null && (
               <div className="flex items-center gap-1 rounded-xl border border-border p-1">
-                <Button variant="ghost" size="icon" className="touch-target-compact h-8 w-8" disabled={index >= total - 1} onClick={() => onNavigate(index + 1)} aria-label="Older review"><ChevronLeft /></Button>
+                <Button variant="tertiary" size="icon" className="touch-target-compact h-8 w-8" disabled={index >= total - 1} onClick={() => onNavigate(index + 1)} aria-label="Older review"><ChevronLeft /></Button>
                 <span className="min-w-12 text-center text-[11px] font-semibold text-muted-foreground">{index + 1} / {total}</span>
-                <Button variant="ghost" size="icon" className="touch-target-compact h-8 w-8" disabled={index <= 0} onClick={() => onNavigate(index - 1)} aria-label="Newer review"><ChevronRight /></Button>
+                <Button variant="tertiary" size="icon" className="touch-target-compact h-8 w-8" disabled={index <= 0} onClick={() => onNavigate(index - 1)} aria-label="Newer review"><ChevronRight /></Button>
               </div>
             )}
           </div>

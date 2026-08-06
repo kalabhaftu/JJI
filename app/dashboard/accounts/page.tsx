@@ -464,7 +464,7 @@ export default function AccountsPage() {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button
-                        variant="ghost"
+                        variant="tertiary"
                         size="icon"
                         aria-label="Refresh accounts"
                         title="Refresh accounts"
@@ -563,7 +563,7 @@ export default function AccountsPage() {
               />
               {searchQuery ? (
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="icon"
                   aria-label="Clear account search"
                   title="Clear search"
@@ -605,7 +605,7 @@ export default function AccountsPage() {
 
             {                        }
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="sm"
               onClick={() => setShowLeaderboard(prev => !prev)}
               className={cn(
@@ -1083,7 +1083,7 @@ function EmptyState({
             }
           </p>
           {searchQuery && (
-            <Button variant="outline" size="sm" className="mt-4" onClick={onClearSearch}>
+            <Button variant="secondary" size="sm" className="mt-4" onClick={onClearSearch}>
               Clear search
             </Button>
           )}
@@ -1112,7 +1112,7 @@ function EmptyState({
             <User className="h-4 w-4" />
             Live Account
           </Button>
-          <Button onClick={onCreatePropFirm} variant="outline" className="gap-2">
+          <Button onClick={onCreatePropFirm} variant="secondary" className="gap-2">
             <Buildings className="h-4 w-4" />
             Prop Firm Account
           </Button>

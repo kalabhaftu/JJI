@@ -38,9 +38,10 @@ export function DashboardDisplayModeSelector({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
-          variant="nav"
+          variant="tertiary"
           size="navIcon"
           className={cn(
+            'text-muted-foreground',
             mobile && 'h-9 w-9'
           )}
           title={allModes[mode].label}

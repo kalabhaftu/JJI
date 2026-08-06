@@ -150,7 +150,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
             </p>
           </div>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={handleClearAccountCache}
             disabled={isClearing}

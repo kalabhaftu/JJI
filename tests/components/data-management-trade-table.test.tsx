@@ -4,10 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query/query-keys'
 
-const { apiRequestData, reportClientErrorMock, toast, routerMock, SCOPE, searchParamsMock, setParam, clearParams } = vi.hoisted(() => {
+const { apiRequest, apiRequestData, reportClientErrorMock, toast, routerMock, SCOPE, searchParamsMock, setParam, clearParams } = vi.hoisted(() => {
   const routerMock = { refresh: vi.fn(), replace: vi.fn(), push: vi.fn() }
   const params = new Map<string, string>()
   return {
+    apiRequest: vi.fn().mockResolvedValue({ data: { updated: 1 } }),
     apiRequestData: vi.fn(),
     reportClientErrorMock: vi.fn(),
     toast: { info: vi.fn(), success: vi.fn(), error: vi.fn(), dismiss: vi.fn(), loading: vi.fn() },
@@ -26,7 +27,7 @@ const { apiRequestData, reportClientErrorMock, toast, routerMock, SCOPE, searchP
   }
 })
 
-vi.mock('@/lib/api/client', () => ({ apiRequestData }))
+vi.mock('@/lib/api/client', () => ({ apiRequest, apiRequestData }))
 
 vi.mock('@/lib/observability/report-error', () => ({
   reportClientError: reportClientErrorMock,
@@ -107,10 +108,8 @@ const TRADE_2 = {
   tags: [],
 }
 
-const PAGE_1_RESPONSE = {
-  data: [TRADE_1, TRADE_2],
-  meta: { pagination: { total: 3, page: 1, limit: 50, totalPages: 2 } },
-}
+const QUERY_STRING = 'pageLimit=50&pageOffset=0&includeStats=false&includeCalendar=false'
+const PAGE_1_RESPONSE = { trades: [TRADE_1, TRADE_2], total: 60 }
 
 const roots: Array<ReturnType<typeof createRoot>> = []
 
@@ -122,6 +121,7 @@ afterEach(async () => {
 
 beforeEach(() => {
   clearParams()
+  apiRequest.mockResolvedValue({ data: { updated: 1 } })
 })
 
 async function render(element: React.ReactElement) {
@@ -161,21 +161,33 @@ function buttonContaining(text: string): HTMLButtonElement {
   return button as HTMLButtonElement
 }
 
+function checkboxForRow(instrument: string): HTMLButtonElement {
+  const row = Array.from(document.querySelectorAll('tbody tr')).find((candidate) =>
+    candidate.textContent?.includes(instrument)
+  )
+  if (!row) throw new Error(`Row for "${instrument}" not found`)
+  const checkbox = row.querySelector('button[role="checkbox"]')
+  if (!checkbox) throw new Error(`Checkbox for "${instrument}" not found`)
+  return checkbox as HTMLButtonElement
+}
+
 describe('data management trade table', () => {
-  it('loads trades through the scoped dataManagementTrades query', async () => {
+  it('loads trades through the canonical scoped trades query', async () => {
     apiRequestData.mockResolvedValue(PAGE_1_RESPONSE)
     const queryClient = await render(<TradeTable />)
 
     expect(apiRequestData).toHaveBeenCalledWith(
-      '/api/v1/data-management/trades?page=1&limit=50',
+      `/api/v1/trades?${QUERY_STRING}`,
       expect.objectContaining({
-        operation: 'load-data-management-trades',
+        operation: 'load-filtered-trades',
         signal: expect.anything(),
       })
     )
 
     const keys = queryClient.getQueryCache().getAll().map((query) => query.queryKey)
-    expect(keys).toContainEqual(queryKeys.dataManagementTrades(SCOPE, { page: 1, limit: 50 }))
+    const tradesKey = queryKeys.trades(SCOPE, QUERY_STRING)
+    expect(keys).toContainEqual(tradesKey)
+    expect(keys.some((key) => key[0] === 'data-management')).toBe(false)
 
     const rows = document.querySelectorAll('tbody tr')
     expect(rows.length).toBe(2)
@@ -191,18 +203,17 @@ describe('data management trade table', () => {
     await settle()
 
     expect(apiRequestData).toHaveBeenLastCalledWith(
-      '/api/v1/data-management/trades?page=2&limit=50',
-      expect.objectContaining({ operation: 'load-data-management-trades' })
+      '/api/v1/trades?pageLimit=50&pageOffset=50&includeStats=false&includeCalendar=false',
+      expect.objectContaining({ operation: 'load-filtered-trades' })
     )
     expect(document.querySelectorAll('tbody tr').length).toBe(2)
   })
 
-  it('deletes selected trades through the batch-delete mutation and invalidates the list', async () => {
+  it('deletes selected trades through the canonical batch-delete mutation', async () => {
     apiRequestData.mockResolvedValue(PAGE_1_RESPONSE)
     await render(<TradeTable />)
 
-    const checkboxes = document.querySelectorAll('button[role="checkbox"]')
-    await act(async () => { (checkboxes[1] as HTMLButtonElement).click() })
+    await act(async () => { checkboxForRow('NQ').click() })
     await settle()
 
     await act(async () => { buttonContaining('Delete (1)').click() })
@@ -211,13 +222,11 @@ describe('data management trade table', () => {
     await act(async () => { buttonExact('Delete trades').click() })
     await settle()
 
-    expect(apiRequestData).toHaveBeenCalledWith(
+    expect(apiRequest).toHaveBeenCalledWith(
       '/api/v1/trades/batch/delete',
       expect.objectContaining({
         method: 'POST',
         body: JSON.stringify({ tradeIds: ['trade-2'] }),
-        operation: 'delete-data-management-trades',
-        retry: { mode: 'never' },
       })
     )
     expect(routerMock.refresh).toHaveBeenCalled()
@@ -225,7 +234,7 @@ describe('data management trade table', () => {
     expect(reportClientErrorMock).not.toHaveBeenCalled()
   })
 
-  it('saves trade edits through the update mutation', async () => {
+  it('saves trade edits through the canonical batch update mutation', async () => {
     setParam('view', 'edit')
     setParam('tradeId', 'trade-1')
     apiRequestData.mockResolvedValue(PAGE_1_RESPONSE)
@@ -234,15 +243,11 @@ describe('data management trade table', () => {
     await act(async () => { buttonExact('Save Changes').click() })
     await settle()
 
-    expect(apiRequestData).toHaveBeenCalledWith(
-      '/api/v1/trades/trade-1',
-      expect.objectContaining({
-        method: 'PATCH',
-        operation: 'update-data-management-trades',
-        retry: { mode: 'never' },
-        body: expect.stringContaining('"modelId"'),
-      })
-    )
+    const updateCall = apiRequest.mock.calls.find(([url]) => url === '/api/v1/trades/batch/update')
+    expect(updateCall).toBeDefined()
+    expect(updateCall![0]).toBe('/api/v1/trades/batch/update')
+    const parsedBody = JSON.parse(updateCall![1].body)
+    expect(parsedBody).toEqual({ tradeIds: ['trade-1'], update: expect.objectContaining({ modelId: null }) })
     expect(toast.success).toHaveBeenCalledWith('Trade Updated', expect.anything())
     expect(routerMock.refresh).toHaveBeenCalled()
   })
@@ -253,7 +258,7 @@ describe('data management trade table', () => {
 
     expect(reportClientErrorMock).toHaveBeenCalledWith(
       expect.any(Error),
-      expect.objectContaining({ operation: 'load-data-management-trades', route: '/api/v1/data-management/trades' })
+      expect.objectContaining({ operation: 'load-data-management-trades', route: '/api/v1/trades' })
     )
     expect(document.body.textContent).toContain('No trades yet')
   })

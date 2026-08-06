@@ -99,7 +99,7 @@ export function AdjustDateDialog({
 
         <DialogFooter className="gap-2 sm:gap-0">
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => onOpenChange(false)}
             disabled={isUpdating}
           >

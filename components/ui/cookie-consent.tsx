@@ -34,7 +34,7 @@ export function CookieConsent() {
   return (
     <aside aria-labelledby="storage-notice-title" className="fixed inset-x-0 bottom-0 z-[9999] p-3 sm:p-5 md:right-auto md:max-w-[430px]">
       <div className="relative rounded-2xl border border-border/80 bg-background/95 p-5 shadow-xl backdrop-blur-xl">
-        <Button variant="ghost" size="icon" className="absolute right-2 top-2" onClick={() => choose(false)} aria-label="Use essential storage only"><X /></Button>
+        <Button variant="tertiary" size="icon" className="absolute right-2 top-2" onClick={() => choose(false)} aria-label="Use essential storage only"><X /></Button>
         <div className="flex items-start gap-3 pr-8">
           <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted"><Cookie className="h-4 w-4" /></span>
           <div>
@@ -43,8 +43,8 @@ export function CookieConsent() {
           </div>
         </div>
         <div className="mt-4 flex flex-wrap items-center justify-start gap-2 sm:justify-end">
-          <Button variant="ghost" asChild className="w-full justify-start sm:mr-auto sm:w-auto"><Link href="/cookies">Read policy</Link></Button>
-          <Button variant="outline" onClick={() => choose(false)}>Only essential</Button>
+          <Button variant="tertiary" asChild className="w-full justify-start sm:mr-auto sm:w-auto"><Link href="/cookies">Read policy</Link></Button>
+          <Button variant="secondary" onClick={() => choose(false)}>Only essential</Button>
           <Button onClick={() => choose(true)}>Allow telemetry</Button>
         </div>
       </div>

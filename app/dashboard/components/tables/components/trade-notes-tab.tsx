@@ -358,7 +358,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                             <DropdownMenuTrigger asChild>
                                 <Button
                                     type="button"
-                                    variant="outline"
+                                    variant="secondary"
                                     size="sm"
                                     className="h-8 px-3 text-xs font-semibold bg-muted/20 shrink-0"
                                 >
@@ -411,7 +411,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                                 </div>
                                                 <Button
                                                     type="button"
-                                                    variant="ghost"
+                                                    variant="tertiary"
                                                     size="icon"
                                                     aria-label={`Delete template ${template.name}`}
                                                     title="Delete template"
@@ -440,7 +440,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                 <span>
                                     <Button
                                         type="button"
-                                        variant="outline"
+                                        variant="secondary"
                                         size="icon"
                                         aria-label="Save note as template"
                                         title="Save as template"
@@ -521,7 +521,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                     <DialogFooter>
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             onClick={() => {
                                 setIsTemplateNameDialogOpen(false)
                                 setTemplateName('')
@@ -673,7 +673,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                             {index >= 4 && (
                                 <Button
                                     type="button"
-                                    variant="ghost"
+                                    variant="tertiary"
                                     size="icon"
                                     aria-label={`Remove chart link ${index + 1}`}
                                     title="Remove chart link"
@@ -691,7 +691,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                     {chartLinks.length < 8 && (
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => setChartLinks([...chartLinks, ''])}
                             className="w-full h-9 border-dashed border-border/60 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all"

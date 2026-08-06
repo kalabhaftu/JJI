@@ -40,7 +40,7 @@ export function EmptyTradeState({ variant = 'no-account' }: { variant?: 'no-acco
         ) : (
           <Button onClick={() => router.push(buildTradeEntryHref({ origin: 'empty-state', returnTo: '/dashboard' }))}>Add trade manually</Button>
         )}
-        <Button variant="outline" onClick={handleImport}>{isNoAccount ? 'Import after setup' : 'Import trades'}</Button>
+        <Button variant="secondary" onClick={handleImport}>{isNoAccount ? 'Import after setup' : 'Import trades'}</Button>
       </div>
     </div>
   );

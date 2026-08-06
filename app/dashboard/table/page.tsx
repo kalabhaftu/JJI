@@ -59,7 +59,7 @@ function TableView() {
           <div className="flex flex-col justify-between gap-2 border-b bg-muted px-3 py-2 shrink-0 sm:flex-row sm:items-center">
             <div className="flex items-center gap-3">
               <Button
-                variant="ghost"
+                variant="tertiary"
                 size="sm"
                 onClick={() => {
                   if (backUrl) {

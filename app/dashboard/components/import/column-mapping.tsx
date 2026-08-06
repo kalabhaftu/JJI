@@ -127,7 +127,7 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
                 </div>
               </div>
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => submit({ fieldColumns: headers, firstRows: csvData.slice(1, 6) })}
                 className="flex items-center gap-2 bg-warning/10 hover:bg-warning/20 text-warning border-warning/20 transition-all duration-200"
@@ -255,7 +255,7 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
                 <TableCell className="py-2">
                   {mappings[header] && (
                     <Button
-                      variant="ghost"
+                      variant="tertiary"
                       size="icon"
                       aria-label={`Remove mapping for ${header}`}
                       title="Remove mapping"

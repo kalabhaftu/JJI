@@ -91,7 +91,7 @@ export default function HomePage() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleTheme} aria-label="Toggle theme">
+            <Button variant="tertiary" size="icon" className="h-9 w-9" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
             </Button>
             <Button asChild size="sm" className="rounded-xl px-4">
@@ -118,7 +118,7 @@ export default function HomePage() {
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="lg" className="h-12 rounded-xl px-6">
+                <Button asChild variant="secondary" size="lg" className="h-12 rounded-xl px-6">
                   <Link href={demoHref()}>Preview the workspace</Link>
                 </Button>
               </div>
@@ -175,7 +175,7 @@ export default function HomePage() {
         </section>
 
         <section id="workflow" className="mx-auto grid w-full max-w-7xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-[0.75fr_1.25fr] lg:items-center lg:px-8 lg:py-28">
-          <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">A repeatable process</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">The goal is not more data. It is better decisions.</h2><p className="mt-5 max-w-lg leading-relaxed text-muted-foreground">Build a review habit that connects your execution to the outcomes. Keep the process simple enough to use after every session.</p><Button asChild variant="outline" className="mt-7 rounded-xl"><Link href={docsHref('/docs/getting-started')}>Read the quick start <ArrowUpRight className="ml-2 h-4 w-4" /></Link></Button></div>
+          <div><p className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">A repeatable process</p><h2 className="mt-3 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">The goal is not more data. It is better decisions.</h2><p className="mt-5 max-w-lg leading-relaxed text-muted-foreground">Build a review habit that connects your execution to the outcomes. Keep the process simple enough to use after every session.</p><Button asChild variant="secondary" className="mt-7 rounded-xl"><Link href={docsHref('/docs/getting-started')}>Read the quick start <ArrowUpRight className="ml-2 h-4 w-4" /></Link></Button></div>
           <div className="grid gap-3">{workflow.map(([number, title, description]) => <div key={number} className="flex gap-5 rounded-2xl border border-border bg-card p-5 sm:p-6"><span className="text-xs font-bold tracking-[0.16em] text-muted-foreground">{number}</span><div><h3 className="font-semibold">{title}</h3><p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p></div><ChevronRight className="ml-auto mt-1 hidden h-4 w-4 text-muted-foreground sm:block" /></div>)}</div>
         </section>
 

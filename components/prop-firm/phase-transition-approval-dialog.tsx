@@ -225,7 +225,7 @@ export function PhaseTransitionApprovalDialog({
 
           <div className="flex gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={handleClose}
               disabled={isSubmitting}
               className="flex-1"

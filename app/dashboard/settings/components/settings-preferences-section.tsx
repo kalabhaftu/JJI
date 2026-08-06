@@ -122,7 +122,7 @@ export function SettingsPreferencesSection({
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[110px] h-8 text-xs" data-tour="theme-switcher-container">
+                  <Button variant="secondary" size="sm" className="gap-2 min-w-[110px] h-8 text-xs" data-tour="theme-switcher-container">
                     <themeInfo.icon className="h-3.5 w-3.5" />
                     {themeInfo.label}
                   </Button>
@@ -158,7 +158,7 @@ export function SettingsPreferencesSection({
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[155px] h-8 text-xs justify-between">
+                  <Button variant="secondary" size="sm" className="gap-2 min-w-[155px] h-8 text-xs justify-between">
                     <span className="flex items-center gap-2">
                       <span className="flex gap-1 shrink-0">
                         <span className={cn("w-2 h-2 rounded-full",
@@ -229,7 +229,7 @@ export function SettingsPreferencesSection({
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
+                  <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     Change
                     <CaretRight className="h-3.5 w-3.5" />
                   </Button>
@@ -259,7 +259,7 @@ export function SettingsPreferencesSection({
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
+                  <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     Change
                     <CaretRight className="h-3.5 w-3.5" />
                   </Button>
@@ -321,7 +321,7 @@ export function SettingsPreferencesSection({
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 h-8 text-xs">
+                  <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     {profileData.pnlDisplayMode === 'gross' ? 'Gross' : 'Net'}
                     <CaretRight className="h-3.5 w-3.5" />
                   </Button>
@@ -349,7 +349,7 @@ export function SettingsPreferencesSection({
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[120px] h-8 text-xs">
+                  <Button variant="secondary" size="sm" className="gap-2 min-w-[120px] h-8 text-xs">
                     {widgetStyle === 'glass' ? 'Glassmorphism' : 'Standard'}
                   </Button>
                 </DropdownMenuTrigger>
@@ -377,7 +377,7 @@ export function SettingsPreferencesSection({
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2 min-w-[120px] h-8 text-xs">
+                  <Button variant="secondary" size="sm" className="gap-2 min-w-[120px] h-8 text-xs">
                     {chartStyle === 'sharp' ? 'Sharp' : 'Smooth'}
                   </Button>
                 </DropdownMenuTrigger>
@@ -419,7 +419,7 @@ export function SettingsPreferencesSection({
             description="Automatically set account start date to your first trade"
             action={
               <Button
-                variant={profileData.autoAdjustAccountDate ? "default" : "outline"}
+                variant={profileData.autoAdjustAccountDate ? "primary" : "secondary"}
                 size="sm"
                 className="h-8 text-xs"
                 onClick={() => handleAutoAdjustChange(!profileData.autoAdjustAccountDate)}

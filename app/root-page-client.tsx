@@ -84,7 +84,7 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
 
         <div className="mt-10 flex flex-col items-center gap-4">
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             className="text-muted-foreground hover:text-foreground transition-colors h-8 text-[11px] uppercase tracking-widest font-medium"
             onClick={() => toggleTheme()}

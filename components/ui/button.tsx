@@ -6,25 +6,20 @@ import { cn } from "@/lib/utils"
 import { LoaderCircle } from 'lucide-react'
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11",
   {
     variants: {
       variant: {
         primary: "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-press disabled:bg-primary-disabled disabled:text-muted-foreground disabled:opacity-100",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         tertiary: "hover:bg-muted/50 hover:text-foreground",
+        destructive:
+          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+        link: "text-primary underline-offset-4 hover:underline",
         "icon-only": "hover:bg-muted/50 hover:text-foreground",
         toolbar: "hover:bg-muted/50 hover:text-foreground",
         "table-row": "hover:bg-muted/50 hover:text-foreground",
-        default: "bg-primary text-primary-foreground hover:bg-primary-hover active:bg-primary-press disabled:bg-primary-disabled disabled:text-muted-foreground disabled:opacity-100",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        outline:
-          "border border-[hsl(var(--border-strong))] bg-[hsl(var(--surface-raised))] hover:bg-muted/60 hover:text-foreground",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-muted/50 hover:text-foreground",
-        nav: "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
-        link: "text-primary underline-offset-4 hover:underline",
       },
       size: {
         default: "h-10 px-4 py-2",
@@ -35,7 +30,7 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   }

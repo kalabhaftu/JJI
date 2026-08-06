@@ -257,7 +257,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             <Button
               onClick={handleSubscribe}
               disabled={isAuthLoading || !isAuthenticated || isLoading || isWhopLoading}
-              variant={whopEnabled ? 'outline' : 'default'}
+              variant={whopEnabled ? "secondary" : "primary"}
               className="w-full h-11 text-sm font-medium"
             >
               {isLoading ? (
@@ -287,7 +287,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
         {              }
         <div className="text-center mt-6">
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             className="text-xs text-muted-foreground gap-2"
             onClick={async () => {

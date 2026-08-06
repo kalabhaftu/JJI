@@ -238,7 +238,7 @@ const useTradeTableColumns = ({
       cell: ({ row }) => {
         if ((row.original.trades?.length || 0) <= 1) return null
         return (
-          <Button variant="ghost" size="sm" onClick={row.getToggleExpandedHandler()} className="hover:bg-transparent">
+          <Button variant="tertiary" size="sm" onClick={row.getToggleExpandedHandler()} className="hover:bg-transparent">
             {row.getIsExpanded() ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
           </Button>
         )
@@ -247,7 +247,7 @@ const useTradeTableColumns = ({
     {
       id: 'accounts',
       header: () => (
-        <Button variant="ghost" size="sm" className="-ml-3 h-8">
+        <Button variant="tertiary" size="sm" className="-ml-3 h-8">
           Total
         </Button>
       ),
@@ -415,10 +415,10 @@ const useTradeTableColumns = ({
             <Button variant='secondary' size='sm' className="h-7 px-2 text-[11px]" data-tour="view-trade-btn" onClick={() => { onViewDetails(trade as ExtendedTrade); emitTourEvent('trade.detail.opened') }}>
               View
             </Button>
-            <Button variant='ghost' size='sm' className="h-7 px-2 text-[11px]" data-tour="edit-trade-btn" onClick={() => onEditTrade(tradeToEdit as ExtendedTrade)}>
+            <Button variant="tertiary" size='sm' className="h-7 px-2 text-[11px]" data-tour="edit-trade-btn" onClick={() => onEditTrade(tradeToEdit as ExtendedTrade)}>
               Edit
             </Button>
-            <Button variant='ghost' size='sm' className="h-7 px-2 text-[11px]" onClick={() => onViewReplay(tradeToEdit as ExtendedTrade)}>
+            <Button variant="tertiary" size='sm' className="h-7 px-2 text-[11px]" onClick={() => onViewReplay(tradeToEdit as ExtendedTrade)}>
               Replay
             </Button>
           </div>
@@ -759,19 +759,19 @@ export function TradeTableReview() {
 
         <div className="flex flex-wrap items-center gap-2">
           {selectedTrades.length >= 2 && (
-            <Button variant="outline" size="sm" onClick={handleGroupTrades} className="text-xs sm:text-sm">
+            <Button variant="secondary" size="sm" onClick={handleGroupTrades} className="text-xs sm:text-sm">
               Group ({selectedTrades.length})
             </Button>
           )}
           {selectedTrades.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={handleUngroupTrades} className="text-xs sm:text-sm">
+            <Button variant="tertiary" size="sm" onClick={handleUngroupTrades} className="text-xs sm:text-sm">
               Ungroup
             </Button>
           )}
           {selectedTrades.length > 0 && availableTags.length > 0 && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs sm:text-sm gap-1.5">
+                <Button variant="secondary" size="sm" className="text-xs sm:text-sm gap-1.5">
                   <Tag className="h-3.5 w-3.5" />
                   Tag ({selectedTrades.length})
                 </Button>
@@ -932,7 +932,7 @@ export function TradeTableReview() {
                   </p>
                 </div>
                 <Button 
-                  variant="default" 
+                  variant="primary" 
                   size="sm" 
                   className="mt-2 rounded-full px-6 shadow-sm font-semibold"
                   onClick={() => {
@@ -960,7 +960,7 @@ export function TradeTableReview() {
                   </p>
                 </div>
                 <Button 
-                  variant="outline" 
+                  variant="secondary" 
                   size="sm" 
                   className="mt-2 rounded-full px-6"
                   onClick={() => router.push('/dashboard/table')}
@@ -983,7 +983,7 @@ export function TradeTableReview() {
               <span className="text-muted-foreground">Rows:</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="h-7 w-14 text-xs">
+                  <Button variant="secondary" size="sm" className="h-7 w-14 text-xs">
                     {pageSize}
                   </Button>
                 </DropdownMenuTrigger>
@@ -1000,7 +1000,7 @@ export function TradeTableReview() {
 
           <div className="flex items-center gap-1.5 w-full sm:w-auto justify-between sm:justify-end">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
@@ -1013,7 +1013,7 @@ export function TradeTableReview() {
               {table.getState().pagination.pageIndex + 1} / {Math.max(table.getPageCount(), 1)}
             </span>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}

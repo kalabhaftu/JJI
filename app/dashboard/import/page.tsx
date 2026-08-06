@@ -245,7 +245,7 @@ export default function ImportCallbackPage() {
               <div className="flex flex-col gap-2">
                 <Button
                   onClick={handleRetry}
-                  variant="outline"
+                  variant="secondary"
                   className="w-full"
                 >
                   Retry

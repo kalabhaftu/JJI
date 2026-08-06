@@ -254,7 +254,7 @@ export default function LiveAccountDetailPage() {
           )}
           <div className="flex justify-center gap-2">
             {accountError && <Button onClick={() => void accountQuery.refetch()}>Try Again</Button>}
-            <Button variant="outline" onClick={() => router.push('/dashboard/accounts')}>
+            <Button variant="secondary" onClick={() => router.push('/dashboard/accounts')}>
               Return to Accounts
             </Button>
           </div>
@@ -275,7 +275,7 @@ export default function LiveAccountDetailPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex flex-col gap-3">
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="sm"
               onClick={() => router.push('/dashboard/accounts')}
               className="w-fit"
@@ -301,7 +301,7 @@ export default function LiveAccountDetailPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => void queryClient.invalidateQueries({ queryKey: queryKeys.account(scope, accountId) })}
               className="w-fit"
@@ -310,7 +310,7 @@ export default function LiveAccountDetailPage() {
               <span className="hidden sm:inline">Refresh</span>
             </Button>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => setEditDialogOpen(true)}
               className="w-fit"
@@ -461,7 +461,7 @@ export default function LiveAccountDetailPage() {
                         refreshAccount()
                       }}
                     >
-                      <Button variant="outline" className="w-full border-short/20 text-short hover:bg-short/10">
+                      <Button variant="secondary" className="w-full border-short/20 text-short hover:bg-short/10">
                         <Minus className="w-4 h-4 mr-2" />
                         Withdraw
                       </Button>
@@ -508,7 +508,7 @@ export default function LiveAccountDetailPage() {
                       <p className="text-sm font-mono font-semibold mt-1">{account.number}</p>
                     </div>
                   </div>
-                  <Button variant="outline" onClick={() => setEditDialogOpen(true)}>
+                  <Button variant="secondary" onClick={() => setEditDialogOpen(true)}>
                     <SettingsIcon className="h-4 w-4 mr-2" /> Edit Account Details
                   </Button>
                 </div>

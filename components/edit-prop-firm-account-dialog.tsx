@@ -267,7 +267,7 @@ export function EditPropFirmAccountDialog({
             )}
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => handleClose()} disabled={isSaving}>
+              <Button type="button" variant="secondary" onClick={() => handleClose()} disabled={isSaving}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isSaving || !isDirty}>

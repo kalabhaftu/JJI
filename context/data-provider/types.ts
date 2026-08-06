@@ -10,6 +10,7 @@ import type {
 } from '@/hooks/use-data-provider-filter-state'
 import type { EntitlementCapability } from '@/lib/services/subscription-guard-service'
 import type { FreshnessState } from '@/lib/realtime/types'
+import type { DashboardAggregates, DashboardDataQuality } from '@/lib/statistics/report-statistics'
 
 export type StatisticsProps = {
   breakEvenThreshold: number
@@ -91,6 +92,8 @@ export interface DataContextType {
   statistics: StatisticsProps
   calendarData: CalendarData
   widgetData: Record<string, any> | null
+  aggregates: DashboardAggregates | null
+  dataQuality: DashboardDataQuality
   accounts: Account[]
   updateTrades: (tradeIds: string[], update: Partial<TradeType>) => Promise<void>
   appendTagsToTrades: (tradeIds: string[], tagIds: string[]) => Promise<void>

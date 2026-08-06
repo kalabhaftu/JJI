@@ -324,7 +324,7 @@ export default function UniversalProcessor({
           {}
           <Collapsible open={showFieldMapping} onOpenChange={setShowFieldMapping}>
             <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-4 py-2 rounded-none border-b">
+              <Button variant="tertiary" size="sm" className="w-full justify-start gap-2 px-4 py-2 rounded-none border-b">
                 <FileSpreadsheet className="h-4 w-4" />
                 <span className="text-xs">Field Mapping</span>
                 <Badge variant="outline" className="ml-auto text-xs">
@@ -361,7 +361,7 @@ export default function UniversalProcessor({
               <p className="text-sm text-muted-foreground max-w-md">
                 We could not validate a trade in this file. Check that it includes Symbol or Instrument and Entry Date, then retry the check.
               </p>
-              <Button className="mt-4" variant="outline" size="sm" onClick={() => void processWithAI()} disabled={isUsingAI}>
+              <Button className="mt-4" variant="secondary" size="sm" onClick={() => void processWithAI()} disabled={isUsingAI}>
                 {isUsingAI ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCw className="mr-2 h-4 w-4" />}
                 Retry trade check
               </Button>

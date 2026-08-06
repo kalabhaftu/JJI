@@ -35,8 +35,8 @@ export function QuickAddFAB({ className }: { className?: string }) {
       <form className="flex flex-col gap-4" onSubmit={(event) => { event.preventDefault(); if (!instrument.trim() || !pnl.trim()) return; toast.success('Trade added (Demo mode: changes are temporary)'); setInstrument(''); setPnl(''); setSide('long'); setQuickAddOpen(false) }}>
         <div className="flex flex-col gap-2"><Label htmlFor="demo-instrument">Instrument</Label><Input id="demo-instrument" value={instrument} onChange={(event) => setInstrument(event.target.value)} /></div>
         <div className="flex gap-2">
-          <Button type="button" variant={side === 'long' ? 'default' : 'outline'} className="flex-1" onClick={() => setSide('long')}><TrendingUp className="mr-2 h-4 w-4" />Long</Button>
-          <Button type="button" variant={side === 'short' ? 'default' : 'outline'} className="flex-1" onClick={() => setSide('short')}><TrendingDown className="mr-2 h-4 w-4" />Short</Button>
+          <Button type="button" variant={side === 'long' ? "primary" : "secondary"} className="flex-1" onClick={() => setSide('long')}><TrendingUp className="mr-2 h-4 w-4" />Long</Button>
+          <Button type="button" variant={side === 'short' ? "primary" : "secondary"} className="flex-1" onClick={() => setSide('short')}><TrendingDown className="mr-2 h-4 w-4" />Short</Button>
         </div>
         <div className="flex flex-col gap-2"><Label htmlFor="demo-pnl">P&amp;L ($)</Label><Input id="demo-pnl" type="number" step="0.01" value={pnl} onChange={(event) => setPnl(event.target.value)} /></div>
         <Button type="submit">Add Trade</Button>

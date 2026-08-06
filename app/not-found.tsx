@@ -31,7 +31,7 @@ export default function NotFound() {
             </Link>
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             size="lg"
             onClick={() => router.back()}
             className="gap-2"

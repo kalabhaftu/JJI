@@ -241,7 +241,7 @@ export function FundedApprovalDialog({
 
             <div className="grid grid-cols-2 gap-3">
               <Button
-                variant="outline"
+                variant="secondary"
                 className="h-24 flex-col gap-2 border-long/50 hover:border-long hover:bg-long/10"
                 onClick={() => setAction('approved')}
               >
@@ -250,7 +250,7 @@ export function FundedApprovalDialog({
               </Button>
 
               <Button
-                variant="outline"
+                variant="secondary"
                 className="h-24 flex-col gap-2 border-destructive/50 hover:border-destructive hover:bg-destructive/10"
                 onClick={() => setAction('declined')}
               >
@@ -284,7 +284,7 @@ export function FundedApprovalDialog({
 
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => setAction(null)}
                 disabled={isSubmitting}
                 className="flex-1"
@@ -346,7 +346,7 @@ export function FundedApprovalDialog({
 
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => setAction(null)}
                 disabled={isSubmitting}
                 className="flex-1"

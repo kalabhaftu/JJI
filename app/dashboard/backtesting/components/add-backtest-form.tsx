@@ -27,7 +27,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { toast } from 'sonner'
 import { z } from 'zod'
-import { apiRequest } from '@/lib/api/client'
+import { apiRequest, apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 
 const manualBacktestSchema = z.object({
@@ -180,11 +180,10 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
   useEffect(() => {
     const fetchMode = async () => {
       try {
-        const response = await fetch('/api/v1/settings/backtest-mode')
-        if (response.ok) {
-          const data = await response.json()
-          setInputMode(data.data?.mode || 'manual')
-        }
+        const data = await apiRequestData<{ mode?: 'manual' | 'simple' } | null>('/api/v1/settings/backtest-mode', {
+          operation: 'load-backtest-mode-preference',
+        })
+        setInputMode(data?.mode && (data.mode === 'manual' || data.mode === 'simple') ? data.mode : 'manual')
       } catch (error) {
         reportClientError(error, { operation: 'load-backtest-mode-preference', route: '/api/v1/settings/backtest-mode' })
       } finally {
@@ -568,7 +567,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
             <CardTitle className="text-lg">Price Levels & Execution</CardTitle>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" type="button">
+                <Button variant="secondary" size="sm" type="button">
                   <SettingsIcon className="w-4 h-4 mr-2" />
                   {inputMode === 'manual' ? 'Full Manual' : 'Simple R:R'}
                 </Button>
@@ -889,7 +888,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
       <div className="flex justify-end gap-2">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={() => {
             reset()
             setImages([])

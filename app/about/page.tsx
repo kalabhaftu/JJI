@@ -66,11 +66,11 @@ export default async function AboutPage() {
             </Button>
           )}
           {siteUiSettings.showFeedbackButton && (
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="secondary" size="lg">
               <Link href="/feedback"><Mail className="h-4 w-4 mr-2" />Send Feedback</Link>
             </Button>
           )}
-          <Button asChild variant="outline" size="lg">
+          <Button asChild variant="secondary" size="lg">
             <Link href={DOCS_ORIGIN}><Zap className="h-4 w-4 mr-2" />Read the Docs</Link>
           </Button>
         </div>

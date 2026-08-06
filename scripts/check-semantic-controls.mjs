@@ -9,6 +9,8 @@ const files = execFileSync('rg', ['--files', 'app', 'components', '-g', '*.tsx']
 const result = {
   unnamedIconControls: [],
   clickableNonControls: [],
+  primitiveTouchTargetsMissing: [],
+  hoverOnlyActions: [],
 }
 
 for (const file of files) {
@@ -43,6 +45,27 @@ for (const file of files) {
   }
 
   walk(source)
+}
+
+// Shared interactive primitives must enforce 44px touch targets on coarse
+// pointers and never hide their only control behind hover alone. RevealAction
+// inherits the touch minimums from the Button primitive at render time, so it
+// is asserted via tests/components/reveal-action.test.tsx instead.
+for (const file of ['components/ui/button.tsx', 'components/ui/removable-filter-chip.tsx']) {
+  const text = readFileSync(file, 'utf8')
+  if (!text.includes('[@media(pointer:coarse)]:min-h-11')) {
+    result.primitiveTouchTargetsMissing.push(file)
+  }
+}
+
+for (const file of ['components/ui/reveal-action.tsx', 'components/ui/removable-filter-chip.tsx']) {
+  const text = readFileSync(file, 'utf8')
+  if (file.endsWith('reveal-action.tsx') && !(text.includes('focus-visible:opacity-100') && text.includes('[@media(pointer:coarse)]:opacity-100'))) {
+    result.hoverOnlyActions.push(`${file}: hover-gated without focus or coarse-pointer fallback`)
+  }
+  if (file.endsWith('removable-filter-chip.tsx') && (text.includes('group-hover:opacity-0') || text.includes('group-hover:invisible') || !text.includes('focus-visible:ring-2'))) {
+    result.hoverOnlyActions.push(`${file}: removal control is hover-only or lacks visible focus`)
+  }
 }
 
 process.stdout.write(JSON.stringify(result))

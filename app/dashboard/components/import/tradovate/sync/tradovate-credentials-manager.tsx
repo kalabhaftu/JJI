@@ -304,7 +304,7 @@ export function TradovateCredentialsManager() {
             <Button
               onClick={handleReloadAccounts}
               size="sm"
-              variant="ghost"
+              variant="tertiary"
               disabled={isReloading}
               className="h-8 w-8 p-0"
             >
@@ -321,7 +321,7 @@ export function TradovateCredentialsManager() {
                 await performSyncForAllAccounts();
               }}
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={syncingId !== null}
               className="h-8"
             >
@@ -378,7 +378,7 @@ export function TradovateCredentialsManager() {
                   <TableCell>{formatDate(account.lastSyncedAt.toISOString())}</TableCell>
                   <TableCell>
                     <Button
-                      variant="ghost"
+                      variant="tertiary"
                       size="sm"
                       onClick={() => handleSetDailySyncTime(account.accountId, account.dailySyncTime)}
                       className="text-xs"
@@ -401,7 +401,7 @@ export function TradovateCredentialsManager() {
                     <div className="flex justify-center items-center gap-2">
                       {isExpired && (
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           onClick={() => handleStartOAuth(account.accountId)}
                           className="h-8"
@@ -410,7 +410,7 @@ export function TradovateCredentialsManager() {
                         </Button>
                       )}
                       <Button
-                        variant="ghost"
+                        variant="tertiary"
                         size="sm"
                         onClick={async () => {
                           setSyncingId(account.accountId);
@@ -432,7 +432,7 @@ export function TradovateCredentialsManager() {
                       <Popover modal>
                         <PopoverTrigger asChild>
                           <Button
-                            variant="ghost"
+                            variant="tertiary"
                             size="sm"
                             className="h-8 w-8 p-0"
                             aria-label="More options"
@@ -443,7 +443,7 @@ export function TradovateCredentialsManager() {
                         <PopoverContent className="w-48 p-2" align="end">
                           <div className="flex flex-col space-y-1">
                             <Button
-                              variant="ghost"
+                              variant="tertiary"
                               size="sm"
                               className="justify-start text-left"
                               onClick={() => handleOpenFeeDialog(account.accountId)}
@@ -451,7 +451,7 @@ export function TradovateCredentialsManager() {
                               Configure Fees
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="tertiary"
                               size="sm"
                               className="justify-start text-left text-destructive hover:text-destructive"
                               onClick={() => {
@@ -494,7 +494,7 @@ export function TradovateCredentialsManager() {
           </DialogHeader>
           <div className="flex justify-end space-x-2 mt-4">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
               Cancel
@@ -545,14 +545,14 @@ export function TradovateCredentialsManager() {
             <div className="flex justify-between items-center">
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={handleFeeSelectAll}
               >
                 {allFeeSelected ? "Deselect All" : "Select All"}
               </Button>
               <div className="flex gap-2">
-                <Button variant="outline" onClick={() => setIsFeeDialogOpen(false)}>
+                <Button variant="secondary" onClick={() => setIsFeeDialogOpen(false)}>
                   Cancel
                 </Button>
                 <Button onClick={handleFeeDialogSave}>
@@ -592,7 +592,7 @@ export function TradovateCredentialsManager() {
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('morning')}
                 >
@@ -600,7 +600,7 @@ export function TradovateCredentialsManager() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('midday')}
                 >
@@ -608,7 +608,7 @@ export function TradovateCredentialsManager() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('after-close')}
                 >
@@ -616,7 +616,7 @@ export function TradovateCredentialsManager() {
                 </Button>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => handlePresetTime('midnight')}
                 >
@@ -627,7 +627,7 @@ export function TradovateCredentialsManager() {
             
             <div className="flex justify-end space-x-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => setIsTimeDialogOpen(false)}
               >
                 Cancel

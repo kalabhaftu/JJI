@@ -31,7 +31,7 @@ export function EmptyAccountState({ onOpenAccountSelector }: EmptyAccountStatePr
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button onClick={handleSelectAccount}>Select Account</Button>
-        <Button variant="outline" asChild>
+        <Button variant="secondary" asChild>
           <Link href={resolveNavigationPath('accounts', { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode) })}>Create Account</Link>
         </Button>
       </div>

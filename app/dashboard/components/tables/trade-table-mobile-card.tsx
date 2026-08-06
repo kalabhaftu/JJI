@@ -76,7 +76,7 @@ export function TradeTableMobileCard({
           />
           {canExpand && (
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="sm"
               onClick={onToggleExpand}
               className="h-6 w-6 p-0"
@@ -167,7 +167,7 @@ export function TradeTableMobileCard({
       {}
       <div className="flex gap-2 pt-3 border-t">
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onViewDetails}
           className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
@@ -176,7 +176,7 @@ export function TradeTableMobileCard({
           View
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onEdit}
           className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
@@ -186,7 +186,7 @@ export function TradeTableMobileCard({
         </Button>
         {(trade as any).imageOne && (
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={onViewChart}
             className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"

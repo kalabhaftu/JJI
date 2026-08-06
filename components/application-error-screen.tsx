@@ -46,7 +46,7 @@ export function ApplicationErrorScreen({
             <RefreshCw aria-hidden="true" className="size-4" />
             Try again
           </Button>
-          <Button asChild variant="outline" className="gap-2">
+          <Button asChild variant="secondary" className="gap-2">
             <Link href="/">
               <Home aria-hidden="true" className="size-4" />
               Return home

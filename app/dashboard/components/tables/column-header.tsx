@@ -92,7 +92,7 @@ export function DataTableColumnHeader<TData, TValue>({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             className={cn(
               "-ml-3 h-8 data-[state=open]:bg-accent",
@@ -170,7 +170,7 @@ export function DataTableColumnHeader<TData, TValue>({
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={handleClearFilter}
                         className="flex-1"

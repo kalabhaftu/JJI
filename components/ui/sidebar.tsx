@@ -287,11 +287,11 @@ const SidebarTrigger = React.forwardRef<
     <Button
       ref={ref}
       data-sidebar="trigger"
-      variant="nav"
+      variant="tertiary"
       size="navIcon"
       aria-label="Toggle sidebar"
       title="Toggle sidebar"
-      className={cn(className)}
+      className={cn(className, "text-muted-foreground")}
       onClick={(event) => {
         onClick?.(event)
         toggleSidebar()

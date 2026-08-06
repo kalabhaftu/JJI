@@ -363,7 +363,7 @@ export function RithmicCredentialsManager({
               allCredentials.forEach((cred) => handleSync(cred));
             }}
             size="sm"
-            variant="outline"
+            variant="secondary"
             disabled={true}
           >
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -454,7 +454,7 @@ export function RithmicCredentialsManager({
                       {credential ? (
                         <div className="flex justify-center items-center gap-2">
                           <Button
-                            variant="ghost"
+                            variant="tertiary"
                             size="sm"
                             onClick={() => handleSync(credential)}
                             disabled={isAutoSyncing}
@@ -469,7 +469,7 @@ export function RithmicCredentialsManager({
                           <Popover modal>
                             <PopoverTrigger asChild>
                               <Button
-                                variant="ghost"
+                                variant="tertiary"
                                 size="sm"
                                 className="h-8 w-8 p-0"
                                 aria-label="More options"
@@ -480,7 +480,7 @@ export function RithmicCredentialsManager({
                             <PopoverContent className="w-52 p-2" align="end">
                               <div className="flex flex-col space-y-1">
                                 <Button
-                                  variant="ghost"
+                                  variant="tertiary"
                                   size="sm"
                                   className="justify-start text-left"
                                   onClick={() => handleLoadMoreData(credential)}
@@ -494,7 +494,7 @@ export function RithmicCredentialsManager({
                                   Load More Data (400 Days)
                                 </Button>
                                 <Button
-                                  variant="ghost"
+                                  variant="tertiary"
                                   size="sm"
                                   className="justify-start text-left"
                                   onClick={() => onSelectCredential(credential)}
@@ -503,7 +503,7 @@ export function RithmicCredentialsManager({
                                   Edit Credentials
                                 </Button>
                                 <Button
-                                  variant="ghost"
+                                  variant="tertiary"
                                   size="sm"
                                   className="justify-start text-left text-destructive hover:text-destructive"
                                   onClick={() => {
@@ -528,7 +528,7 @@ export function RithmicCredentialsManager({
                           </div>
                           <div className="flex items-center gap-2">
                             <Button
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
                               className="h-8"
                               onClick={() =>
@@ -543,7 +543,7 @@ export function RithmicCredentialsManager({
                               Log In
                             </Button>
                             <Button
-                              variant="ghost"
+                              variant="tertiary"
                               size="sm"
                               className="h-8 text-destructive hover:text-destructive hover:bg-destructive/10"
                               onClick={() =>
@@ -580,7 +580,7 @@ export function RithmicCredentialsManager({
           </DialogHeader>
           <div className="flex justify-end space-x-2 mt-4">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => setIsDeleteDialogOpen(false)}
             >
               Cancel

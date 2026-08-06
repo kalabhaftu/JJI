@@ -65,7 +65,7 @@ export function ControlledSelect({
 }
 
 type NumericFieldProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "type" | "value" | "onChange"> & {
-  value?: number
+  value?: number | undefined
   onValueChange: (value: number | undefined) => void
 }
 
@@ -83,7 +83,7 @@ function NumericField({ value, onValueChange, className, ...props }: NumericFiel
       className={className}
       onChange={(event) => {
         setDraft(event.target.value)
-        onValueChange(parseNumericInput(event.target.value))
+        onValueChange(parseNumericInput(event.target.value) ?? undefined)
       }}
     />
   )
@@ -167,7 +167,7 @@ export function SymbolCombobox({
         <Button
           {...buttonProps}
           type="button"
-          variant="outline"
+          variant="secondary"
           role="combobox"
           aria-expanded={open}
           className={cn("w-full justify-between font-normal", className)}
@@ -247,7 +247,7 @@ export function TagMultiSelect({
       )}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
-          <Button type="button" variant="outline" className="w-full justify-between font-normal">
+          <Button type="button" variant="secondary" className="w-full justify-between font-normal">
             {placeholder}
             <ChevronsUpDown aria-hidden />
           </Button>

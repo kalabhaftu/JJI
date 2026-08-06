@@ -20,6 +20,10 @@ describe('RemovableFilterChip', () => {
 
     const button = document.querySelector('button')
     expect(button).toHaveAccessibleName('Remove Instrument: ES filter')
+    expect(button?.className).toContain('focus-visible:ring-2')
+    expect(button?.className).not.toContain('group-hover')
+    expect(button?.className).toContain('[@media(pointer:coarse)]:min-h-11')
+    expect(button?.className).toContain('[@media(pointer:coarse)]:min-w-11')
     await act(async () => button?.click())
     expect(onRemove).toHaveBeenCalledOnce()
   })

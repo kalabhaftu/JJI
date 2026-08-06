@@ -274,7 +274,7 @@ export function FormatPreview({
           <h3 className="font-semibold text-lg">Processing Error</h3>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
         </div>
-        <Button onClick={handleReset} variant="outline" className="gap-2">
+        <Button onClick={handleReset} variant="secondary" className="gap-2">
           <RotateCcw className="h-4 w-4" />
           Try Again
         </Button>
@@ -321,7 +321,7 @@ export function FormatPreview({
             </Button>
           ) : (
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={handleReset}
               disabled={isProcessing}
               className="gap-2"

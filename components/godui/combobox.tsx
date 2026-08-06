@@ -16,7 +16,7 @@ export function Combobox({ options, value, onValueChange, placeholder = "Selectâ
   const selected = options.find((option) => option.value === value)
 
   return <Popover open={open} onOpenChange={(next) => { setOpen(next); if (!next) setQuery("") }}>
-    <PopoverTrigger asChild><Button type="button" variant="ghost" className={cn("h-10 min-w-0 justify-between px-0 text-[11px] font-bold uppercase tracking-wider hover:bg-transparent", className)} aria-expanded={open}><span className="truncate">{selected?.label ?? placeholder}</span><ChevronsUpDown className="ml-2 size-3.5 shrink-0 opacity-50" /></Button></PopoverTrigger>
+    <PopoverTrigger asChild><Button type="button" variant="tertiary" className={cn("h-10 min-w-0 justify-between px-0 text-[11px] font-bold uppercase tracking-wider hover:bg-transparent", className)} aria-expanded={open}><span className="truncate">{selected?.label ?? placeholder}</span><ChevronsUpDown className="ml-2 size-3.5 shrink-0 opacity-50" /></Button></PopoverTrigger>
     <PopoverContent align="start" className="w-[min(20rem,calc(100vw-2rem))] p-2">
       <div className="relative"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" /><Input autoFocus value={query} onChange={(event) => setQuery(event.target.value)} placeholder={searchPlaceholder} className="h-8 pl-8 text-xs" /></div>
       <div role="listbox" aria-label={placeholder} className="mt-2 max-h-64 overflow-y-auto">

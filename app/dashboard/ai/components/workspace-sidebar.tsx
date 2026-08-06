@@ -55,7 +55,7 @@ export function WorkspaceSidebar({
           <p className="text-sm font-semibold text-foreground">Assistant workspace</p>
           <p className="text-xs text-muted-foreground">Conversations and saved work</p>
         </div>
-        <Button variant="ghost" size="icon" onClick={onCollapse} aria-label="Collapse workspace library">
+        <Button variant="tertiary" size="icon" onClick={onCollapse} aria-label="Collapse workspace library">
           <PanelLeftClose />
         </Button>
       </div>
@@ -88,7 +88,7 @@ export function WorkspaceSidebar({
       >
         {activeTab === 'chats' && (
           <div className="space-y-2">
-            <Button variant="outline" className="w-full justify-start border-dashed" onClick={onNewChat}>
+            <Button variant="secondary" className="w-full justify-start border-dashed" onClick={onNewChat}>
               <Plus /> New conversation
             </Button>
             {isLoading ? (

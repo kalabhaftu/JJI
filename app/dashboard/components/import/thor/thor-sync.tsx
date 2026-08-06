@@ -67,7 +67,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
       <div className="flex items-start gap-4">
         {onBack && (
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={onBack}
             className="mt-1 h-8 px-3 text-xs border-border/50 hover:bg-muted"
@@ -98,7 +98,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
-              variant="outline"
+              variant="secondary"
               size="icon"
               disabled={!user?.thorToken || isGenerating}
               aria-label="Reveal Thor API Token"
@@ -120,7 +120,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
           </AlertDialogContent>
         </AlertDialog>
         <Button
-          variant="outline"
+          variant="secondary"
           size="icon"
           onClick={handleCopyToken}
           disabled={!user?.thorToken || isGenerating}
@@ -129,7 +129,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
           <CopyIcon className="h-4 w-4" />
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           size="icon"
           onClick={handleGenerateToken}
           disabled={isGenerating}
@@ -173,7 +173,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
                   {typeof window !== 'undefined' ? `${window.location.origin}/api/v1/thor/store` : '/api/v1/thor/store'}
                 </span>
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="icon"
                   aria-label="Copy Thor endpoint URL"
                   title="Copy endpoint URL"

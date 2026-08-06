@@ -142,7 +142,7 @@ export function TradePreviewCropEditor({
       <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/50 bg-muted/15 p-3">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon"
           aria-label="Zoom out"
           title="Zoom out"
@@ -167,7 +167,7 @@ export function TradePreviewCropEditor({
 
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon"
           aria-label="Zoom in"
           title="Zoom in"
@@ -180,7 +180,7 @@ export function TradePreviewCropEditor({
 
         <Button
           type="button"
-          variant="ghost"
+          variant="tertiary"
           size="sm"
           className="ml-auto h-9 rounded-lg px-3 text-xs font-semibold"
           onClick={() => onChange({ ...DEFAULT_TRADE_PREVIEW_TRANSFORM })}

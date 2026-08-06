@@ -128,7 +128,7 @@ export default function PayoutsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             onClick={() => router.push('/dashboard/prop-firm')}
           >
@@ -142,7 +142,7 @@ export default function PayoutsPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => payoutsQuery.refetch()}
             disabled={isLoading}
@@ -242,7 +242,7 @@ export default function PayoutsPage() {
 
                   <div>
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="sm"
                       onClick={() => router.push(`/dashboard/prop-firm/payouts/${payout.id}`)}
                     >

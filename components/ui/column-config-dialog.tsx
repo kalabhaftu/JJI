@@ -52,7 +52,7 @@ export function ColumnConfigDialog({ tableId, trigger }: ColumnConfigDialogProps
   }
 
   const defaultTrigger = (
-    <Button variant="outline" className="w-[180px] h-10 font-normal">
+    <Button variant="secondary" className="w-[180px] h-10 font-normal">
       <SettingsIcon className="h-4 w-4 mr-2" />
       Configuration
     </Button>
@@ -94,7 +94,7 @@ export function ColumnConfigDialog({ tableId, trigger }: ColumnConfigDialogProps
         <div className="flex justify-between">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="w-[180px] h-10">
+              <Button variant="secondary" className="w-[180px] h-10">
                 <ArrowCounterClockwise className="h-4 w-4 mr-2" />
                                                                    {"Reset to Default" as any}
               </Button>

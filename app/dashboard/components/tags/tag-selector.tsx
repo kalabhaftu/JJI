@@ -67,7 +67,7 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
 
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm" className="h-7 gap-1">
+            <Button variant="secondary" size="sm" className="h-7 gap-1">
               <Plus className="h-3 w-3" />
               <span className="text-xs">Add Tag</span>
             </Button>
@@ -80,7 +80,7 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
                   Select Tags
                 </h4>
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   className="h-7 gap-1 text-xs"
                   onClick={() => {

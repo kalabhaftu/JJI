@@ -70,7 +70,7 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
                   Try Again
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => window.history.back()}
                   className="flex-1"
                 >
@@ -116,7 +116,7 @@ export function AccountNotFoundError({
 
           <div className="flex gap-2">
             {onRetry && (
-              <Button onClick={onRetry} variant="outline" className="flex-1">
+              <Button onClick={onRetry} variant="secondary" className="flex-1">
                 <RefreshCcw className="h-4 w-4 mr-2" />
                 Retry
               </Button>
@@ -148,7 +148,7 @@ export function ConnectionError({
       <AlertDescription className="flex items-center justify-between">
         <span>Connection Error: {error}</span>
         {onRetry && (
-          <Button variant="outline" size="sm" onClick={onRetry}>
+          <Button variant="secondary" size="sm" onClick={onRetry}>
             <RefreshCcw className="h-3 w-3 mr-1" />
             Retry
           </Button>

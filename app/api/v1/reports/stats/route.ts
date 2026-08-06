@@ -2,7 +2,7 @@
 
 import { NextRequest } from 'next/server'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
-import { calculateReportStatistics, type ReportStatsFilters } from '@/lib/statistics/report-statistics'
+import { calculateReportStatistics, calculateDashboardAggregates, type ReportStatsFilters } from '@/lib/statistics/report-statistics'
 import { CacheHeaders } from '@/lib/api-cache-headers'
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { logger } from '@/lib/logger'
@@ -21,6 +21,13 @@ const reportStatsRequestSchema = z.object({
   outcome: z.string().trim().max(32).optional(),
   strategy: z.string().trim().max(128).optional(),
   ruleBroken: z.enum(['all', 'broken', 'not_broken']).optional(),
+  dashboard: z.boolean().optional(),
+  accountIds: z.array(z.string().trim().min(1).max(128)).max(100).optional(),
+  from: z.string().trim().max(64).optional(),
+  to: z.string().trim().max(64).optional(),
+  timezone: z.string().trim().max(64).optional(),
+  currency: z.string().trim().max(16).optional(),
+  includeFees: z.boolean().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -42,6 +49,24 @@ export async function POST(request: NextRequest) {
     }
 
     const validated = parsed.data
+
+    if (validated.dashboard) {
+      const aggregates = await calculateDashboardAggregates({
+        userId: identity.internalUserId,
+        accountIds: validated.accountIds ?? [],
+        from: validated.from ?? '1970-01-01',
+        to: validated.to ?? '2099-12-31',
+        timezone: validated.timezone ?? 'UTC',
+        ...(validated.currency ? { currency: validated.currency } : {}),
+        includeFees: validated.includeFees ?? false,
+      })
+
+      logger.info({ latencyMs: Date.now() - start, context: 'api' }, 'POST /api/v1/reports/stats (dashboard aggregates)')
+      return createSuccessResponse(aggregates, undefined, undefined, requestId, {
+        headers: CacheHeaders.privateShort,
+      })
+    }
+
     const filters: ReportStatsFilters = {
       userId: identity.internalUserId,
       ...(validated.accountId ? { accountId: validated.accountId } : {}),

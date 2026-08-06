@@ -21,7 +21,7 @@ export function CalendarSettings() {
         <Popover>
             <PopoverTrigger asChild>
                 <Button
-                    variant="ghost"
+                    variant="tertiary"
                     size="icon"
                     className="h-6 w-6 p-0 hover:bg-primary/5 hover:text-primary transition-all rounded-md"
                     title="Display Stats Settings"

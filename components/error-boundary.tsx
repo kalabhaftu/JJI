@@ -98,7 +98,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
             <CardFooter>
               <div className="flex gap-2">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={this.handleRetry}
                   className="gap-2"
@@ -177,7 +177,7 @@ export function DataError({ error, onRetry, className = '' }: DataErrorProps): R
       <p className="text-sm text-destructive flex-1">{error}</p>
       {onRetry && (
         <Button
-          variant="ghost"
+          variant="tertiary"
           size="sm"
           onClick={onRetry}
           className="shrink-0"

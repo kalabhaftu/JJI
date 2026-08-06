@@ -2,10 +2,12 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { CurrencyField, FormErrorSummary } from '@/components/ui/domain-fields'
+import { focusFirstInvalidField } from '@/lib/form-fields'
 import {
   Dialog,
   DialogContent,
@@ -35,7 +37,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Loader2, User, AlertCircle, CheckCircle2, Building2, DollarSign } from "lucide-react"
+import { User, CheckCircle2, Building2, DollarSign } from "lucide-react"
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
@@ -89,6 +91,7 @@ interface LiveAccountDialogProps {
 export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveAccountDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
   const queryClient = useQueryClient()
   const scope = useQueryScope()
 
@@ -212,7 +215,8 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
           </DialogHeader>
 
           <form
-            onSubmit={handleSubmit(onSubmit)}
+            ref={formRef}
+            onSubmit={handleSubmit(onSubmit, () => focusFirstInvalidField(formRef.current ?? document))}
             onKeyDown={(e) => {
 
               if (e.key === 'Enter' && e.target instanceof HTMLInputElement) {
@@ -297,12 +301,20 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
                   <Label htmlFor="startingBalance">Starting Balance ($) *</Label>
                   <div className="relative">
                     <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="startingBalance"
-                      type="number"
-                      step="0.01"
-                      {...register('startingBalance', { valueAsNumber: true })}
-                      className="pl-9"
+                    <Controller
+                      name="startingBalance"
+                      control={control}
+                      render={({ field }) => (
+                        <CurrencyField
+                          id="startingBalance"
+                          data-tour="account-balance-input"
+                          aria-label="Starting balance"
+                          aria-invalid={errors.startingBalance ? true : undefined}
+                          value={field.value}
+                          onValueChange={field.onChange}
+                          className="pl-9"
+                        />
+                      )}
                     />
                   </div>
                   {errors.startingBalance && (
@@ -343,29 +355,17 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
             </Card>
 
             {}
-            {Object.keys(errors).length > 0 && (
-              <Card className="border-destructive">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
-                    <div>
-                      <p className="font-medium text-destructive">Please fix the following errors:</p>
-                      <ul className="list-disc list-inside text-sm text-muted-foreground mt-2">
-                        {Object.entries(errors).map(([key, error]) => (
-                          <li key={key}>{error?.message}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <FormErrorSummary
+              errors={Object.fromEntries(
+                Object.entries(errors).map(([key, error]) => [key, error?.message])
+              )}
+            />
 
             {}
             <div className="flex justify-end gap-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={() => handleDialogClose(false)}
                 disabled={isSubmitting}
               >

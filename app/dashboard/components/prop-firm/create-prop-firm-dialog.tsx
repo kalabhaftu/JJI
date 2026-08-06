@@ -2,10 +2,12 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import { useState, useEffect } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { CurrencyField, FormErrorSummary, PercentageField } from '@/components/ui/domain-fields'
+import { focusFirstInvalidField } from '@/lib/form-fields'
 import {
   Dialog,
   DialogContent,
@@ -88,6 +90,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showCloseConfirm, setShowCloseConfirm] = useState(false)
   const [isEditingRules, setIsEditingRules] = useState(false)
+  const formRef = useRef<HTMLFormElement>(null)
   const queryClient = useQueryClient()
   const scope = useQueryScope()
 
@@ -297,7 +300,8 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
           </DialogHeader>
 
           <form
-            onSubmit={handleSubmit(onSubmit)}
+            ref={formRef}
+            onSubmit={handleSubmit(onSubmit, () => focusFirstInvalidField(formRef.current ?? document))}
             onKeyDown={(e) => {
 
 
@@ -424,7 +428,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                 </div>
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   onClick={() => setIsEditingRules(!isEditingRules)}
                   className="h-8 w-8 p-0"
@@ -444,11 +448,18 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                     <div>
                       <Label className="text-xs text-muted-foreground">Profit Target (%)</Label>
                       {isEditingRules ? (
-                        <Input
-                          type="number"
-                          step="0.1"
-                          {...register('phase1ProfitTargetPercent', { valueAsNumber: true })}
-                          className="h-9 mt-1"
+                        <Controller
+                          name="phase1ProfitTargetPercent"
+                          control={control}
+                          render={({ field }) => (
+                            <PercentageField
+                              aria-label="Phase 1 profit target"
+                              aria-invalid={errors.phase1ProfitTargetPercent ? true : undefined}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="h-9 mt-1"
+                            />
+                          )}
                         />
                       ) : (
                         <p className="font-semibold mt-1">{watch('phase1ProfitTargetPercent')}%</p>
@@ -457,11 +468,18 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                     <div>
                       <Label className="text-xs text-muted-foreground">Daily DD (%)</Label>
                       {isEditingRules ? (
-                        <Input
-                          type="number"
-                          step="0.1"
-                          {...register('phase1DailyDrawdownPercent', { valueAsNumber: true })}
-                          className="h-9 mt-1"
+                        <Controller
+                          name="phase1DailyDrawdownPercent"
+                          control={control}
+                          render={({ field }) => (
+                            <PercentageField
+                              aria-label="Phase 1 daily drawdown"
+                              aria-invalid={errors.phase1DailyDrawdownPercent ? true : undefined}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="h-9 mt-1"
+                            />
+                          )}
                         />
                       ) : (
                         <p className="font-semibold mt-1">{watch('phase1DailyDrawdownPercent')}%</p>
@@ -470,11 +488,18 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                     <div>
                       <Label className="text-xs text-muted-foreground">Max DD (%)</Label>
                       {isEditingRules ? (
-                        <Input
-                          type="number"
-                          step="0.1"
-                          {...register('phase1MaxDrawdownPercent', { valueAsNumber: true })}
-                          className="h-9 mt-1"
+                        <Controller
+                          name="phase1MaxDrawdownPercent"
+                          control={control}
+                          render={({ field }) => (
+                            <PercentageField
+                              aria-label="Phase 1 max drawdown"
+                              aria-invalid={errors.phase1MaxDrawdownPercent ? true : undefined}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="h-9 mt-1"
+                            />
+                          )}
                         />
                       ) : (
                         <p className="font-semibold mt-1">{watch('phase1MaxDrawdownPercent')}%</p>
@@ -530,11 +555,18 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                       <div>
                         <Label className="text-xs text-muted-foreground">Profit Target (%)</Label>
                         {isEditingRules ? (
-                          <Input
-                            type="number"
-                            step="0.1"
-                            {...register('phase2ProfitTargetPercent', { valueAsNumber: true })}
-                            className="h-9 mt-1"
+                          <Controller
+                            name="phase2ProfitTargetPercent"
+                            control={control}
+                            render={({ field }) => (
+                              <PercentageField
+                                aria-label="Phase 2 profit target"
+                                aria-invalid={errors.phase2ProfitTargetPercent ? true : undefined}
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                className="h-9 mt-1"
+                              />
+                            )}
                           />
                         ) : (
                           <p className="font-semibold mt-1">{watch('phase2ProfitTargetPercent')}%</p>
@@ -543,11 +575,18 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                       <div>
                         <Label className="text-xs text-muted-foreground">Daily DD (%)</Label>
                         {isEditingRules ? (
-                          <Input
-                            type="number"
-                            step="0.1"
-                            {...register('phase2DailyDrawdownPercent', { valueAsNumber: true })}
-                            className="h-9 mt-1"
+                          <Controller
+                            name="phase2DailyDrawdownPercent"
+                            control={control}
+                            render={({ field }) => (
+                              <PercentageField
+                                aria-label="Phase 2 daily drawdown"
+                                aria-invalid={errors.phase2DailyDrawdownPercent ? true : undefined}
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                className="h-9 mt-1"
+                              />
+                            )}
                           />
                         ) : (
                           <p className="font-semibold mt-1">{watch('phase2DailyDrawdownPercent')}%</p>
@@ -556,11 +595,18 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                       <div>
                         <Label className="text-xs text-muted-foreground">Max DD (%)</Label>
                         {isEditingRules ? (
-                          <Input
-                            type="number"
-                            step="0.1"
-                            {...register('phase2MaxDrawdownPercent', { valueAsNumber: true })}
-                            className="h-9 mt-1"
+                          <Controller
+                            name="phase2MaxDrawdownPercent"
+                            control={control}
+                            render={({ field }) => (
+                              <PercentageField
+                                aria-label="Phase 2 max drawdown"
+                                aria-invalid={errors.phase2MaxDrawdownPercent ? true : undefined}
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                className="h-9 mt-1"
+                              />
+                            )}
                           />
                         ) : (
                           <p className="font-semibold mt-1">{watch('phase2MaxDrawdownPercent')}%</p>
@@ -615,12 +661,20 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                   <div className="grid grid-cols-4 gap-4">
                     <div>
                       <Label className="text-xs text-muted-foreground">Profit Split (%)</Label>
+                      <Label className="text-xs text-muted-foreground">Profit Split (%)</Label>
                       {isEditingRules ? (
-                        <Input
-                          type="number"
-                          step="1"
-                          {...register('fundedProfitSplitPercent', { valueAsNumber: true })}
-                          className="h-9 mt-1"
+                        <Controller
+                          name="fundedProfitSplitPercent"
+                          control={control}
+                          render={({ field }) => (
+                            <PercentageField
+                              aria-label="Funded profit split"
+                              aria-invalid={errors.fundedProfitSplitPercent ? true : undefined}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="h-9 mt-1"
+                            />
+                          )}
                         />
                       ) : (
                         <p className="font-semibold mt-1">{watch('fundedProfitSplitPercent')}%</p>
@@ -640,13 +694,21 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground">Min Payout ($)</Label>
+                      <Label className="text-xs text-muted-foreground">Min Payout ($)</Label>
                       {isEditingRules ? (
-                        <Input
-                          type="number"
-                          step="1"
-                          {...register('fundedMinProfitForPayout', { valueAsNumber: true })}
-                          className="h-9 mt-1"
-                          placeholder="100"
+                        <Controller
+                          name="fundedMinProfitForPayout"
+                          control={control}
+                          render={({ field }) => (
+                            <CurrencyField
+                              aria-label="Minimum payout amount"
+                              aria-invalid={errors.fundedMinProfitForPayout ? true : undefined}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="h-9 mt-1"
+                              placeholder="100"
+                            />
+                          )}
                         />
                       ) : (
                         <p className="font-semibold mt-1">${watch('fundedMinProfitForPayout')}</p>
@@ -654,12 +716,20 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                     </div>
                     <div>
                       <Label className="text-xs text-muted-foreground">Max DD (%)</Label>
+                      <Label className="text-xs text-muted-foreground">Max DD (%)</Label>
                       {isEditingRules ? (
-                        <Input
-                          type="number"
-                          step="0.1"
-                          {...register('fundedMaxDrawdownPercent', { valueAsNumber: true })}
-                          className="h-9 mt-1"
+                        <Controller
+                          name="fundedMaxDrawdownPercent"
+                          control={control}
+                          render={({ field }) => (
+                            <PercentageField
+                              aria-label="Funded max drawdown"
+                              aria-invalid={errors.fundedMaxDrawdownPercent ? true : undefined}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="h-9 mt-1"
+                            />
+                          )}
                         />
                       ) : (
                         <p className="font-semibold mt-1">{watch('fundedMaxDrawdownPercent')}%</p>
@@ -688,11 +758,18 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                       </div>
                       <div>
                         <Label className="text-xs text-muted-foreground">Daily DD (%)</Label>
-                        <Input
-                          type="number"
-                          step="0.1"
-                          {...register('fundedDailyDrawdownPercent', { valueAsNumber: true })}
-                          className="h-9 mt-1"
+                        <Controller
+                          name="fundedDailyDrawdownPercent"
+                          control={control}
+                          render={({ field }) => (
+                            <PercentageField
+                              aria-label="Funded daily drawdown"
+                              aria-invalid={errors.fundedDailyDrawdownPercent ? true : undefined}
+                              value={field.value}
+                              onValueChange={field.onChange}
+                              className="h-9 mt-1"
+                            />
+                          )}
                         />
                       </div>
                     </div>
@@ -711,29 +788,17 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
             </Card>
 
             {}
-            {Object.keys(errors).length > 0 && (
-              <Card className="border-destructive">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="h-5 w-5 text-destructive mt-0.5" />
-                    <div>
-                      <p className="font-medium text-destructive">Please fix the following errors:</p>
-                      <ul className="list-disc list-inside text-sm text-muted-foreground mt-2">
-                        {Object.entries(errors).map(([key, error]) => (
-                          <li key={key}>{error?.message}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+            <FormErrorSummary
+              errors={Object.fromEntries(
+                Object.entries(errors).map(([key, error]) => [key, error?.message])
+              )}
+            />
 
             {}
             <div className="flex justify-end gap-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={() => handleDialogClose(false)}
                 disabled={isSubmitting}
               >

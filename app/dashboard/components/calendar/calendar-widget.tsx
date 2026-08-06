@@ -237,7 +237,7 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="icon"
             className="screenshot-btn h-6 w-6 max-[420px]:h-5 max-[420px]:w-5 sm:h-7 sm:w-7 hover:bg-primary/5 hover:text-primary transition-all bg-muted/30 dark:bg-muted/20 border border-border/50 dark:border-border/30 rounded-lg"
             aria-label="Capture screenshot"
@@ -293,7 +293,7 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
             <div className="flex items-center gap-2">
               <div className="flex items-center bg-muted/30 dark:bg-muted/10 border border-border/50 dark:border-border/30 rounded-lg overflow-hidden p-0.5 shrink-0">
                 <Button 
-                  variant="ghost" 
+                  variant="tertiary" 
                   size="icon" 
                   onClick={handlePrev} 
                   className="h-6 w-6 hover:bg-background border-none shrink-0" 
@@ -302,14 +302,14 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
                   <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                 </Button>
                 <Button 
-                  variant="ghost" 
+                  variant="tertiary" 
                   onClick={() => setCurrentDate(new Date())}
                   className="h-6 px-2.5 text-[10px] font-black tracking-wider uppercase border-none hover:bg-background shrink-0"
                 >
                   TODAY
                 </Button>
                 <Button 
-                  variant="ghost" 
+                  variant="tertiary" 
                   size="icon" 
                   onClick={handleNext} 
                   className="h-6 w-6 hover:bg-background border-none shrink-0" 

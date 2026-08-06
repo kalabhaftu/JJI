@@ -12,6 +12,8 @@ describe('RevealAction', () => {
     const button = container.querySelector('button')
     expect(button?.className).toContain('focus-visible:opacity-100')
     expect(button?.className).toContain('[@media(pointer:coarse)]:opacity-100')
+    expect(button?.className).toContain('[@media(pointer:coarse)]:min-h-11')
+    expect(button?.className).toContain('[@media(pointer:coarse)]:min-w-11')
     await act(async () => root.unmount())
   })
 })

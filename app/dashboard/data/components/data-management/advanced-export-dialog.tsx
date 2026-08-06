@@ -185,7 +185,7 @@ export function AdvancedExportDialog() {
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="secondary">
           <Database className="mr-2 h-4 w-4" /> System Backup
         </Button>
       </DialogTrigger>

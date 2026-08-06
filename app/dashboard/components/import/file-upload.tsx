@@ -303,7 +303,7 @@ export default function FileUpload({
               {rejectedFiles.map(file => file.name).join(', ')} — only .csv files are supported.
               {isOffline && ' You appear to be offline. Reconnect before importing trades.'}
             </span>
-            <Button type="button" variant="outline" size="sm" className="shrink-0 text-xs h-8" onClick={clearRejected}>
+            <Button type="button" variant="secondary" size="sm" className="shrink-0 text-xs h-8" onClick={clearRejected}>
               Dismiss
             </Button>
           </AlertDescription>

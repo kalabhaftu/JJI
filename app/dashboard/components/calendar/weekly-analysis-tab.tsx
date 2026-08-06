@@ -205,7 +205,7 @@ export function WeeklyAnalysisTab({
                         <div className="flex gap-3">
                           <Button
                             type="button"
-                            variant={reviewData?.isCorrect === true ? "default" : "outline"}
+                            variant={reviewData?.isCorrect === true ? "primary" : "secondary"}
                             className={cn(
                               "flex-1 h-12 rounded-xl border border-border/40",
                               reviewData?.isCorrect === true && "bg-long hover:bg-long/90 border-long text-white"
@@ -217,7 +217,7 @@ export function WeeklyAnalysisTab({
                           </Button>
                           <Button
                             type="button"
-                            variant={reviewData?.isCorrect === false ? "destructive" : "outline"}
+                            variant={reviewData?.isCorrect === false ? "destructive" : "secondary"}
                             className={cn(
                               "flex-1 h-12 rounded-xl border border-border/40",
                               reviewData?.isCorrect === false && "bg-short hover:bg-short/90 border-short text-white"

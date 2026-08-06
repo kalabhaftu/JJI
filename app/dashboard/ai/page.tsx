@@ -29,46 +29,25 @@ import { ConversationView } from './components/conversation-view'
 import { ReviewDialog } from './components/review-dialog'
 import { WorkspaceSidebar } from './components/workspace-sidebar'
 import type { ChatMessage, ChatSession, SavedInsight, WeeklyReview, WorkspaceAccount, WorkspaceTab } from './types'
-import { AI_DATA_CONSENT_VERSION } from '@/lib/user-settings'
-import { useAiWorkspaceLoader } from './hooks/use-ai-workspace-loader'
+import { useAiWorkspaceData } from './hooks/use-ai-workspace-data'
 import { reportClientError } from '@/lib/observability/report-error'
-
-function reportAiResponseFailure(
-  response: Response,
-  payload: any,
-  operation: string,
-  route: string,
-) {
-  const requestId = payload?.requestId ?? response.headers.get('x-request-id') ?? undefined
-  const code = typeof payload?.error === 'object' ? payload.error?.code : undefined
-  const error = Object.assign(
-    new Error(typeof payload?.error === 'object' ? payload.error?.message : 'AI request failed'),
-    { status: response.status, code, requestId },
-  )
-  reportClientError(error, {
-    operation,
-    route,
-    status: response.status,
-    ...(requestId ? { requestId } : {}),
-    extra: { ...(code ? { code } : {}) },
-  })
-}
+import { apiRequest, apiRequestData, ApiClientError } from '@/lib/api/client'
+import { apiStreamRequest } from '@/lib/api/stream-client'
 
 export default function AIChatWorkspace() {
   const { accounts, isDemoMode } = useData()
   const {
     chats,
-    setChats,
     savedInsights,
-    setSavedInsights,
     weeklyAIReviews,
     isLoadingChats,
     paywallError,
-    aiSettings,
-    setAiSettings,
     aiConsentGranted,
-    setAiConsentGranted,
-  } = useAiWorkspaceLoader(isDemoMode)
+    updateChats,
+    updateInsights,
+    saveConsent,
+    revokeConsent,
+  } = useAiWorkspaceData(isDemoMode)
 
   const [activeTab, setActiveTab] = useState<WorkspaceTab>('chats')
   const [selectedChatId, setSelectedChatId] = useState<string | null>(null)
@@ -152,6 +131,7 @@ Your average risk per trade is highly inconsistent, swinging from $120 to over $
             id: 'm4',
             role: 'assistant',
             content: `### Key Findings
+
 Emotional states directly correlate with performance. Operating under stress or frustration is highly destructive.
 
 ### Root Causes
@@ -174,11 +154,11 @@ Emotional states directly correlate with performance. Operating under stress or 
     }
 
     try {
-      const response = await fetch(`/api/v1/ai/chats/${chatId}`)
-      if (response.ok) {
-        const payload = await response.json()
-        setMessages(payload.data?.messages || [])
-      }
+      const data = await apiRequestData<{ messages?: ChatMessage[] } | null>(`/api/v1/ai/chats/${chatId}`, {
+        retry: { mode: 'safe' },
+        operation: 'load-ai-chat-messages',
+      })
+      setMessages(Array.isArray(data?.messages) ? data.messages : [])
     } catch (error) {
       reportClientError(error, { operation: 'load-ai-chat-messages', route: '/api/v1/ai/chats' })
       toast.error('Failed to load chat history.')
@@ -219,7 +199,7 @@ Emotional states directly correlate with performance. Operating under stress or 
         updatedAt: new Date().toISOString()
       }
 
-      setChats(prev => [newChat, ...prev])
+      updateChats(prev => [newChat, ...(prev ?? [])])
       setSelectedChatId(newChat.id)
 
       const userMsg: ChatMessage = {
@@ -252,7 +232,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
       const interval = setInterval(() => {
         if (i < words.length) {
-          current += words[i] + ' '
+          current += words[i]! + ' '
           setStreamingText(current)
           i++
         } else {
@@ -271,13 +251,21 @@ With an active workspace, the assistant analyzes your actual trading records. He
       return
     }
 
+    const requireConsent = () => {
+      revokeConsent()
+      setPendingPrompt({
+        prompt: promptToSend,
+        ...(sourceOverride ? { sources: sourceOverride } : {}),
+      })
+      setIsConsentDialogOpen(true)
+    }
+
     try {
 
       let chatId = selectedChatId
       if (!chatId) {
-        const response = await fetch('/api/v1/ai/chats', {
+        const created = await apiRequest<ChatSession>('/api/v1/ai/chats', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             title: promptToSend.slice(0, 40) + '...',
             accounts: selectedAccounts,
@@ -285,20 +273,13 @@ With an active workspace, the assistant analyzes your actual trading records. He
             customFrom: selectedDateRange === 'custom' ? customFromDate : null,
             customTo: selectedDateRange === 'custom' ? customToDate : null,
             dataSources: sourceOverride || selectedSources
-          })
+          }),
+          retry: { mode: 'never' },
+          operation: 'create-ai-chat',
         })
-
-        if (!response.ok) {
-          const payload = await response.json()
-          reportAiResponseFailure(response, payload, 'create-ai-chat', '/api/v1/ai/chats')
-          toast.error(payload.error?.message || 'Failed to start conversation.')
-          setIsSending(false)
-          return
-        }
-
-        const payload = await response.json()
-        const createdChat = payload.data
-        setChats(prev => [createdChat, ...prev])
+        const createdChat = created.data
+        if (!createdChat) throw new Error('Failed to start conversation.')
+        updateChats(prev => [createdChat, ...(prev ?? [])])
         chatId = createdChat.id
         setSelectedChatId(chatId)
       }
@@ -311,81 +292,87 @@ With an active workspace, the assistant analyzes your actual trading records. He
       }
       setMessages(prev => [...prev, userMsg])
 
-      const response = await fetch(`/api/v1/ai/chats/${chatId}/messages`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: promptToSend })
-      })
+      let streamError: unknown = null
+      try {
+        const streamResponse = await apiStreamRequest(`/api/v1/ai/chats/${chatId}/messages`, {
+          method: 'POST',
+          body: JSON.stringify({ prompt: promptToSend }),
+          operation: 'send-ai-chat-message',
+        })
 
-      if (!response.ok) {
-        const payload = await response.json()
-        reportAiResponseFailure(response, payload, 'send-ai-chat-message', `/api/v1/ai/chats/${chatId}/messages`)
-        if (response.status === 412 && payload.error?.code === 'AI_DATA_CONSENT_REQUIRED') {
-          setAiConsentGranted(false)
-          setPendingPrompt({
-            prompt: promptToSend,
-            ...(sourceOverride ? { sources: sourceOverride } : {}),
-          })
-          setIsConsentDialogOpen(true)
-        }
-        toast.error(payload.error?.message || 'Failed to send message.')
-        setIsSending(false)
-        return
-      }
+        const reader = streamResponse.body?.getReader()
+        const decoder = new TextDecoder()
+        let assistantResponse = ''
 
-      const reader = response.body?.getReader()
-      const decoder = new TextDecoder()
-      let assistantResponse = ''
+        if (reader) {
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
 
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+            const chunk = decoder.decode(value)
 
-          const chunk = decoder.decode(value)
-
-          const lines = chunk.split('\n')
-          for (const line of lines) {
-            if (line.startsWith('0:')) {
-              try {
-                const text = JSON.parse(line.slice(2))
-                assistantResponse += text
-                setStreamingText(assistantResponse)
-              } catch {
-                continue
+            const lines = chunk.split('\n')
+            for (const line of lines) {
+              if (line.startsWith('0:')) {
+                try {
+                  assistantResponse += JSON.parse(line.slice(2))
+                  setStreamingText(assistantResponse)
+                } catch {
+                  continue
+                }
               }
             }
           }
         }
+      } catch (error) {
+        if (
+          error instanceof ApiClientError &&
+          error.status === 412 &&
+          error.code === 'AI_DATA_CONSENT_REQUIRED'
+        ) {
+          requireConsent()
+          return
+        }
+        streamError = error
       }
 
-      const reloadRes = await fetch(`/api/v1/ai/chats/${chatId}`)
-      if (reloadRes.ok) {
-        const payload = await reloadRes.json()
-        setMessages(payload.data?.messages || [])
-      } else {
-        const payload = await reloadRes.json().catch(() => null)
-        reportAiResponseFailure(reloadRes, payload, 'reload-ai-chat-messages', `/api/v1/ai/chats/${chatId}`)
+      if (streamError) {
+        reportClientError(streamError, { operation: 'send-ai-chat-message', route: `/api/v1/ai/chats/${chatId}/messages` })
+        toast.error(streamError instanceof Error ? streamError.message : 'Failed to send message.')
+        return
+      }
+
+      try {
+        const data = await apiRequestData<{ messages?: ChatMessage[] } | null>(`/api/v1/ai/chats/${chatId}`, {
+          operation: 'reload-ai-chat-messages',
+        })
+        if (Array.isArray(data?.messages)) setMessages(data.messages)
+      } catch (error) {
+        reportClientError(error, { operation: 'reload-ai-chat-messages', route: `/api/v1/ai/chats/${chatId}` })
       }
 
       setStreamingText('')
 
-      await fetch('/api/v1/ai/chats')
-        .then(async res => {
-          const payload = await res.json()
-          if (!res.ok) {
-            reportAiResponseFailure(res, payload, 'reload-ai-chats', '/api/v1/ai/chats')
-            return
-          }
-          return payload
+      try {
+        const chatList = await apiRequestData<ChatSession[] | null>('/api/v1/ai/chats', {
+          operation: 'reload-ai-chats',
         })
-        .then(payload => {
-          if (payload?.success) setChats(payload.data)
-        })
+        if (Array.isArray(chatList)) updateChats(() => chatList)
+      } catch (error) {
+        reportClientError(error, { operation: 'reload-ai-chats', route: '/api/v1/ai/chats' })
+      }
 
-    } catch (err) {
-      reportClientError(err, { operation: 'send-ai-chat-message', route: '/api/v1/ai/chat' })
-      toast.error('An error occurred during response transmission.')
+    } catch (error) {
+      if (
+        error instanceof ApiClientError &&
+        error.status === 412 &&
+        error.code === 'AI_DATA_CONSENT_REQUIRED'
+      ) {
+        requireConsent()
+      } else {
+        reportClientError(error, { operation: 'send-ai-chat-message', route: '/api/v1/ai/chat' })
+        toast.error(error instanceof Error ? error.message : 'An error occurred during response transmission.')
+      }
     } finally {
       setIsSending(false)
     }
@@ -393,24 +380,20 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
   const handleTogglePin = async (chat: ChatSession) => {
     if (isDemoMode) {
-      setChats(prev => prev.map(c => c.id === chat.id ? { ...c, isPinned: !c.isPinned } : c))
+      updateChats(prev => (prev ?? []).map(c => c.id === chat.id ? { ...c, isPinned: !c.isPinned } : c))
       toast.success(chat.isPinned ? 'Chat unpinned' : 'Chat pinned')
       return
     }
 
     try {
-      const response = await fetch(`/api/v1/ai/chats/${chat.id}`, {
+      await apiRequest(`/api/v1/ai/chats/${chat.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPinned: !chat.isPinned })
+        body: JSON.stringify({ isPinned: !chat.isPinned }),
+        retry: { mode: 'never' },
+        operation: 'toggle-ai-chat-pin',
       })
-      if (response.ok) {
-        setChats(prev => prev.map(c => c.id === chat.id ? { ...c, isPinned: !chat.isPinned } : c))
-        toast.success(chat.isPinned ? 'Chat unpinned' : 'Chat pinned')
-      } else {
-        reportAiResponseFailure(response, null, 'toggle-ai-chat-pin', `/api/v1/ai/chats/${chat.id}`)
-        toast.error('Failed to pin chat.')
-      }
+      updateChats(prev => (prev ?? []).map(c => c.id === chat.id ? { ...c, isPinned: !chat.isPinned } : c))
+      toast.success(chat.isPinned ? 'Chat unpinned' : 'Chat pinned')
     } catch (error) {
       reportClientError(error, { operation: 'toggle-ai-chat-pin', route: '/api/v1/ai/chats' })
       toast.error('Failed to pin chat.')
@@ -419,27 +402,23 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
   const handleToggleArchive = async (chat: ChatSession) => {
     if (isDemoMode) {
-      setChats(prev => prev.map(c => c.id === chat.id ? { ...c, isArchived: !c.isArchived } : c))
+      updateChats(prev => (prev ?? []).map(c => c.id === chat.id ? { ...c, isArchived: !c.isArchived } : c))
       toast.success(chat.isArchived ? 'Chat restored' : 'Chat archived')
       return
     }
 
     try {
-      const response = await fetch(`/api/v1/ai/chats/${chat.id}`, {
+      await apiRequest(`/api/v1/ai/chats/${chat.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isArchived: !chat.isArchived })
+        body: JSON.stringify({ isArchived: !chat.isArchived }),
+        retry: { mode: 'never' },
+        operation: 'toggle-ai-chat-archive',
       })
-      if (response.ok) {
-        setChats(prev => prev.map(c => c.id === chat.id ? { ...c, isArchived: !chat.isArchived } : c))
-        toast.success(chat.isArchived ? 'Chat restored' : 'Chat archived')
-        if (selectedChatId === chat.id) {
-          setSelectedChatId(null)
-          setMessages([])
-        }
-      } else {
-        reportAiResponseFailure(response, null, 'toggle-ai-chat-archive', `/api/v1/ai/chats/${chat.id}`)
-        toast.error('Failed to archive chat.')
+      updateChats(prev => (prev ?? []).map(c => c.id === chat.id ? { ...c, isArchived: !chat.isArchived } : c))
+      toast.success(chat.isArchived ? 'Chat restored' : 'Chat archived')
+      if (selectedChatId === chat.id) {
+        setSelectedChatId(null)
+        setMessages([])
       }
     } catch (error) {
       reportClientError(error, { operation: 'toggle-ai-chat-archive', route: '/api/v1/ai/chats' })
@@ -459,7 +438,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
     setDeleteChatId(null)
 
     if (isDemoMode) {
-      setChats(prev => prev.filter(c => c.id !== chatId))
+      updateChats(prev => (prev ?? []).filter(c => c.id !== chatId))
       if (selectedChatId === chatId) {
         setSelectedChatId(null)
         setMessages([])
@@ -469,20 +448,17 @@ With an active workspace, the assistant analyzes your actual trading records. He
     }
 
     try {
-      const response = await fetch(`/api/v1/ai/chats/${chatId}`, {
-        method: 'DELETE'
+      await apiRequest(`/api/v1/ai/chats/${chatId}`, {
+        method: 'DELETE',
+        retry: { mode: 'never' },
+        operation: 'delete-ai-chat',
       })
-      if (response.ok) {
-        setChats(prev => prev.filter(c => c.id !== chatId))
-        if (selectedChatId === chatId) {
-          setSelectedChatId(null)
-          setMessages([])
-        }
-        toast.success('Conversation deleted')
-      } else {
-        reportAiResponseFailure(response, null, 'delete-ai-chat', `/api/v1/ai/chats/${chatId}`)
-        toast.error('Failed to delete chat.')
+      updateChats(prev => (prev ?? []).filter(c => c.id !== chatId))
+      if (selectedChatId === chatId) {
+        setSelectedChatId(null)
+        setMessages([])
       }
+      toast.success('Conversation deleted')
     } catch (error) {
       reportClientError(error, { operation: 'delete-ai-chat', route: '/api/v1/ai/chats' })
       toast.error('Failed to delete chat.')
@@ -493,26 +469,22 @@ With an active workspace, the assistant analyzes your actual trading records. He
     if (!renameValue.trim()) return
 
     if (isDemoMode) {
-      setChats(prev => prev.map(c => c.id === chatId ? { ...c, title: renameValue } : c))
+      updateChats(prev => (prev ?? []).map(c => c.id === chatId ? { ...c, title: renameValue } : c))
       setIsRenameMode(false)
       toast.success('Chat renamed')
       return
     }
 
     try {
-      const response = await fetch(`/api/v1/ai/chats/${chatId}`, {
+      await apiRequest(`/api/v1/ai/chats/${chatId}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: renameValue })
+        body: JSON.stringify({ title: renameValue }),
+        retry: { mode: 'never' },
+        operation: 'rename-ai-chat',
       })
-      if (response.ok) {
-        setChats(prev => prev.map(c => c.id === chatId ? { ...c, title: renameValue } : c))
-        setIsRenameMode(false)
-        toast.success('Chat renamed')
-      } else {
-        reportAiResponseFailure(response, null, 'rename-ai-chat', `/api/v1/ai/chats/${chatId}`)
-        toast.error('Failed to rename chat.')
-      }
+      updateChats(prev => (prev ?? []).map(c => c.id === chatId ? { ...c, title: renameValue } : c))
+      setIsRenameMode(false)
+      toast.success('Chat renamed')
     } catch (error) {
       reportClientError(error, { operation: 'rename-ai-chat', route: '/api/v1/ai/chats' })
       toast.error('Failed to rename chat.')
@@ -528,29 +500,26 @@ With an active workspace, the assistant analyzes your actual trading records. He
         category: 'insight',
         createdAt: new Date().toISOString()
       }
-      setSavedInsights(prev => [newInsight, ...prev])
+      updateInsights(prev => [newInsight, ...(prev ?? [])])
       toast.success('Insight saved to library!')
       return
     }
 
     try {
-      const response = await fetch('/api/v1/ai/insights', {
+      const response = await apiRequest<SavedInsight>('/api/v1/ai/insights', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: 'AI Analysis: ' + new Date().toLocaleDateString(),
           content: msg.content,
           category: 'insight'
-        })
+        }),
+        retry: { mode: 'never' },
+        operation: 'save-ai-insight',
       })
 
-      if (response.ok) {
-        const payload = await response.json()
-        setSavedInsights(prev => [payload.data, ...prev])
+      if (response.data) {
+        updateInsights(prev => [response.data as SavedInsight, ...(prev ?? [])])
         toast.success('Insight saved to library!')
-      } else {
-        reportAiResponseFailure(response, null, 'save-ai-insight', '/api/v1/ai/insights')
-        toast.error('Failed to save insight.')
       }
     } catch (error) {
       reportClientError(error, { operation: 'save-ai-insight', route: '/api/v1/ai/insights' })
@@ -560,22 +529,19 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
   const handleDeleteInsight = async (insightId: string) => {
     if (isDemoMode) {
-      setSavedInsights(prev => prev.filter(i => i.id !== insightId))
+      updateInsights(prev => (prev ?? []).filter(i => i.id !== insightId))
       toast.success('Insight removed')
       return
     }
 
     try {
-      const response = await fetch(`/api/v1/ai/insights/${insightId}`, {
-        method: 'DELETE'
+      await apiRequest(`/api/v1/ai/insights/${insightId}`, {
+        method: 'DELETE',
+        retry: { mode: 'never' },
+        operation: 'delete-ai-insight',
       })
-      if (response.ok) {
-        setSavedInsights(prev => prev.filter(i => i.id !== insightId))
-        toast.success('Insight removed')
-      } else {
-        reportAiResponseFailure(response, null, 'delete-ai-insight', `/api/v1/ai/insights/${insightId}`)
-        toast.error('Failed to delete insight.')
-      }
+      updateInsights(prev => (prev ?? []).filter(i => i.id !== insightId))
+      toast.success('Insight removed')
     } catch (error) {
       reportClientError(error, { operation: 'delete-ai-insight', route: '/api/v1/ai/insights' })
       toast.error('Failed to delete insight.')
@@ -616,27 +582,8 @@ With an active workspace, the assistant analyzes your actual trading records. He
     setIsSavingConsent(true)
     const consentAt = new Date().toISOString()
     try {
-      const response = await fetch('/api/auth/profile', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          aiSettings: {
-            ...aiSettings,
-            dataProcessingConsentAt: consentAt,
-            dataProcessingConsentVersion: AI_DATA_CONSENT_VERSION,
-          },
-        }),
-      })
-      if (!response.ok) throw new Error('Consent update failed')
-
-      const nextSettings = {
-        ...aiSettings,
-        dataProcessingConsentAt: consentAt,
-        dataProcessingConsentVersion: AI_DATA_CONSENT_VERSION,
-      }
+      await saveConsent(consentAt)
       const request = pendingPrompt
-      setAiSettings(nextSettings)
-      setAiConsentGranted(true)
       setPendingPrompt(null)
       setIsConsentDialogOpen(false)
       await handleStartChat(request.prompt, request.sources, true)
@@ -795,22 +742,22 @@ With an active workspace, the assistant analyzes your actual trading records. He
 
         <header className="flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-border/70 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2">
-            <Button className="lg:hidden" variant="ghost" size="icon" onClick={() => setMobileWorkspaceOpen(true)} aria-label="Open workspace library"><PanelLeft /></Button>
-            {sidebarCollapsed && <Button className="hidden lg:inline-flex" variant="ghost" size="icon" onClick={() => setSidebarCollapsed(false)} aria-label="Open workspace library"><PanelLeft /></Button>}
+            <Button className="lg:hidden" variant="tertiary" size="icon" onClick={() => setMobileWorkspaceOpen(true)} aria-label="Open workspace library"><PanelLeft /></Button>
+            {sidebarCollapsed && <Button className="hidden lg:inline-flex" variant="tertiary" size="icon" onClick={() => setSidebarCollapsed(false)} aria-label="Open workspace library"><PanelLeft /></Button>}
             {selectedChatId ? (
               isRenameMode ? (
                 <div className="flex min-w-0 items-center gap-1">
                   <label className="sr-only" htmlFor="conversation-title">Conversation title</label>
                   <input id="conversation-title" value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && handleRenameChat(selectedChatId)} autoFocus className="h-10 min-w-0 max-w-72 rounded-xl border border-border bg-background px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring" />
-                  <Button variant="ghost" size="icon" onClick={() => handleRenameChat(selectedChatId)} aria-label="Save conversation title"><Check /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => setIsRenameMode(false)} aria-label="Cancel rename"><X /></Button>
+                  <Button variant="tertiary" size="icon" onClick={() => handleRenameChat(selectedChatId)} aria-label="Save conversation title"><Check /></Button>
+                  <Button variant="tertiary" size="icon" onClick={() => setIsRenameMode(false)} aria-label="Cancel rename"><X /></Button>
                 </div>
               ) : (
                 <>
                   <Brain className="h-4 w-4 shrink-0" />
                   <h1 className="truncate text-sm font-semibold">{currentChat?.title || 'Active conversation'}</h1>
                   <Button
-                    variant="ghost"
+                    variant="tertiary"
                     size="icon"
                     className="touch-target-compact h-8 w-8"
                     onClick={() => {
@@ -831,7 +778,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
             )}
           </div>
           {selectedChatId && (
-            <Button variant="outline" size="sm" onClick={() => {
+            <Button variant="secondary" size="sm" onClick={() => {
               setSelectedChatId(null)
               setMessages([])
             }}>Change context</Button>
@@ -872,10 +819,4 @@ With an active workspace, the assistant analyzes your actual trading records. He
       </section>
     </div>
   )
-}
-
-function subDays(date: Date, days: number): Date {
-  const result = new Date(date)
-  result.setDate(result.getDate() - days)
-  return result
 }

@@ -68,7 +68,7 @@ export async function PublicHeader({
                 <Button
                   key={item.href}
                   asChild
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   className={cn(
                     'h-9 rounded-xl px-3 text-xs',

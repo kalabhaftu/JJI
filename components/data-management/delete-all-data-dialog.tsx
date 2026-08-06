@@ -182,7 +182,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
                 <div className="bg-muted/50 p-4 rounded-lg space-y-3">
                   <p className="text-sm font-medium">Recommended: Download a backup first</p>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     className="w-full"
                     onClick={handleDownloadBackup}
                     disabled={isDownloadingBackup}
@@ -257,7 +257,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
             </AlertDialogDescription>
 
             <AlertDialogFooter>
-              <Button variant="outline" onClick={() => setStep('warning')}>
+              <Button variant="secondary" onClick={() => setStep('warning')}>
                 Back
               </Button>
               <Button
@@ -301,7 +301,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
             </AlertDialogDescription>
 
             <AlertDialogFooter>
-              <Button variant="outline" onClick={() => setStep('confirm')} disabled={isDeleting}>
+              <Button variant="secondary" onClick={() => setStep('confirm')} disabled={isDeleting}>
                 Back
               </Button>
               <Button

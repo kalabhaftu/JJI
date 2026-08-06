@@ -165,7 +165,7 @@ describe('RequestPayoutPage form contract', () => {
     expect(document.body.textContent).toContain('Eligible for Payout')
     expect(document.body.textContent).toContain('21')
     expect(document.body.textContent).toContain('$3100.00')
-    expect((document.querySelector('#amount') as HTMLInputElement).value).toBe('2500.00')
+    expect((document.querySelector('#amount') as HTMLInputElement).value).toBe('2500')
   })
 
   it('submits the payout request payload through the canonical request contract', async () => {

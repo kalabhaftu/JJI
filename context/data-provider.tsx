@@ -23,6 +23,8 @@ import {
 } from '@/hooks/use-data-provider-filter-state';
 import { defaultLayouts } from '@/lib/dashboard/default-layouts';
 import { useDataProviderTradeMutations } from '@/hooks/use-data-provider-trade-mutations';
+import { useDashboardAggregates } from '@/hooks/use-dashboard-aggregates';
+import type { DashboardAggregateFilters, DashboardAggregates, DashboardDataQuality } from '@/lib/statistics/report-statistics';
 import { EMPTY_CALENDAR_DATA, EMPTY_STATISTICS } from './data-provider/types';
 import type { DataContextType } from './data-provider/types';
 
@@ -447,13 +449,23 @@ export const DataProvider: React.FC<{
     return {
       ...metricBase,
       metricsOnly: true,
-      limit: 100_000,
     }
   }, [tradeFilters])
   const queryEnabled = isDemoMode ? true : !!supabaseUser?.id
   const queryScope = isDemoMode ? { surface: 'demo' as const } : { surface: 'authenticated' as const, ...(user?.id ? { userId: user.id } : {}) }
   const { data: serverTradeData } = useFilteredTrades(queryScope, tableTradeFilters, queryEnabled, isDemoMode)
   const { data: serverMetricsData } = useFilteredTrades(queryScope, metricsTradeFilters, queryEnabled, isDemoMode)
+
+  const dashboardAggregateFilters: DashboardAggregateFilters = useMemo(() => ({
+    accountIds: accountNumbers,
+    from: dateRange?.from ? dateRange.from.toISOString() : '',
+    to: dateRange?.to ? dateRange.to.toISOString() : '',
+    timezone: timezone || 'UTC',
+    includeFees: false,
+  }), [accountNumbers, dateRange, timezone])
+  const dashboardAggregateQuery = useDashboardAggregates(dashboardAggregateFilters, queryEnabled, isDemoMode)
+  const aggregates: DashboardAggregates | null = dashboardAggregateQuery.aggregates
+  const dataQuality: DashboardDataQuality = dashboardAggregateQuery.dataQuality
 
   const freshness = useDataProviderRealtime({
     userId: user?.id,
@@ -640,6 +652,8 @@ export const DataProvider: React.FC<{
     calendarData,
     widgetData: serverMetricsData?.widgets ?? null,
 
+    aggregates,
+    dataQuality,
 
     accounts,
 

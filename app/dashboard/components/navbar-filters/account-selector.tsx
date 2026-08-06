@@ -362,7 +362,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         {}
         <div className="flex gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={handleSelectAll}
             disabled={isLoading}
@@ -371,7 +371,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
             Select All
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={handleActiveOnly}
             disabled={activeAccounts.length === 0}
@@ -380,7 +380,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
             Active Only
           </Button>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={handleClearAll}
             disabled={selectedAccounts.size === 0}
@@ -425,7 +425,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
                     <div className="flex items-center gap-2">
                       <CollapsibleTrigger asChild>
                         <Button
-                          variant="ghost"
+                          variant="tertiary"
                           className="flex-1 justify-between p-2 h-auto text-left hover:bg-muted/50"
                         >
                           <div className="flex items-center gap-2">

@@ -214,7 +214,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                 <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Execution Protocol (Rules)</Label>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={handleAddRule}
                   className="h-8 px-3 font-black uppercase tracking-tighter text-[10px]"
@@ -249,7 +249,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                       />
                       <Button
                         type="button"
-                        variant="ghost"
+                        variant="tertiary"
                         size="icon"
                         aria-label={`Remove rule ${index + 1}`}
                         title="Remove rule"
@@ -297,7 +297,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                 />
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => {
                     if (newSetup.trim() && !setups.includes(newSetup.trim())) {
@@ -348,7 +348,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={handleClose} disabled={isSaving}>
+            <Button variant="secondary" onClick={handleClose} disabled={isSaving}>
               Cancel
             </Button>
             <Button onClick={handleSave} disabled={!name.trim() || isSaving}>

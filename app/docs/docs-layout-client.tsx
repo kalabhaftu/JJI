@@ -445,7 +445,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
           <div className="mb-4 flex items-center justify-between gap-3 md:hidden">
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
-                <Button variant="outline" className="rounded-2xl">
+                <Button variant="secondary" className="rounded-2xl">
                   <List className="mr-2 h-4 w-4" />
                   Browse Docs
                 </Button>

@@ -196,13 +196,13 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
 
       <div className="flex items-center justify-between p-2 border-b bg-muted/20">
          <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" aria-label={isPlaying ? 'Pause replay' : 'Play replay'} onClick={togglePlay} disabled={isLoading || !!error}>
+            <Button variant="secondary" size="icon" aria-label={isPlaying ? 'Pause replay' : 'Play replay'} onClick={togglePlay} disabled={isLoading || !!error}>
                {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
             </Button>
-            <Button variant="ghost" size="icon" aria-label="Restart replay" onClick={() => { setIsPlaying(false); setReplayIndex(0); seriesRef.current?.setData([]); }} disabled={isLoading || !!error}>
+            <Button variant="tertiary" size="icon" aria-label="Restart replay" onClick={() => { setIsPlaying(false); setReplayIndex(0); seriesRef.current?.setData([]); }} disabled={isLoading || !!error}>
                <RotateCcw className="h-4 w-4" />
             </Button>
-            <Button variant="ghost" size="icon" aria-label="Change replay speed" onClick={() => setSpeed(prev => prev === 1000 ? 500 : prev === 500 ? 100 : 1000)} disabled={isLoading || !!error}>
+            <Button variant="tertiary" size="icon" aria-label="Change replay speed" onClick={() => setSpeed(prev => prev === 1000 ? 500 : prev === 500 ? 100 : 1000)} disabled={isLoading || !!error}>
                <FastForward className="h-4 w-4" />
                <span className="text-[10px] ml-1">{speed === 1000 ? '1x' : speed === 500 ? '2x' : '10x'}</span>
             </Button>

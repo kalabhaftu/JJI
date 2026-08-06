@@ -65,7 +65,13 @@ function buildQueryString(filters: TradeFilters): string {
   return params.toString()
 }
 
-export function useFilteredTrades(scope: QueryScope, filters: TradeFilters, enabled = true, isDemoMode = false) {
+export function useFilteredTrades(
+  scope: QueryScope,
+  filters: TradeFilters,
+  enabled = true,
+  isDemoMode = false,
+  keepPreviousData = false,
+) {
   const queryString = buildQueryString(filters)
 
   return useQuery<FilteredTradesResponse>({
@@ -83,5 +89,8 @@ export function useFilteredTrades(scope: QueryScope, filters: TradeFilters, enab
     enabled,
     staleTime: 2 * 60 * 1000,
     gcTime: 5 * 60 * 1000,
+    ...(keepPreviousData
+      ? { placeholderData: (previous: FilteredTradesResponse | undefined) => previous }
+      : {}),
   })
 }

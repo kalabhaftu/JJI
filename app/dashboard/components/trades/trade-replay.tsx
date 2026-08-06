@@ -231,7 +231,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
                     <h3 className="text-sm font-semibold mb-2">Market Data Error</h3>
                     <p className="text-xs text-muted-foreground mb-4">{error}</p>
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         size="sm"
                         onClick={() => initChart(true)}
                     >

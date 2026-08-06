@@ -666,7 +666,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
         <div className="flex justify-end space-x-3">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/trades`)}
           >
             Cancel

@@ -9,10 +9,11 @@ import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
+import { CurrencyField } from '@/components/ui/domain-fields'
+import { focusFirstInvalidField, parseNumericInput } from '@/lib/form-fields'
 import { ArrowLeft, DollarSign, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
@@ -92,7 +93,7 @@ export default function RequestPayoutPage() {
   useEffect(() => {
     if (!prefilledRef.current && eligibility?.profitSplitAmount && eligibility.profitSplitAmount > 0) {
       prefilledRef.current = true
-      setAmount(eligibility.profitSplitAmount.toFixed(2))
+      setAmount(String(eligibility.profitSplitAmount))
     }
   }, [eligibility])
 
@@ -136,11 +137,13 @@ export default function RequestPayoutPage() {
 
     const payoutAmount = parseFloat(amount)
     if (isNaN(payoutAmount) || payoutAmount <= 0) {
+      focusFirstInvalidField(document)
       toast.error('Please enter a valid amount')
       return
     }
 
     if (eligibility && payoutAmount > eligibility.profitSplitAmount) {
+      focusFirstInvalidField(document)
       toast.error(`Amount exceeds available balance ($${eligibility.profitSplitAmount.toFixed(2)})`)
       return
     }
@@ -155,6 +158,12 @@ export default function RequestPayoutPage() {
   }
 
   const isLoading = accountQuery.isLoading || eligibilityQuery.isLoading
+  const parsedAmount = parseFloat(amount)
+  const amountInvalid =
+    amount === '' ||
+    isNaN(parsedAmount) ||
+    parsedAmount <= 0 ||
+    (eligibility != null && parsedAmount > eligibility.profitSplitAmount)
 
   if (isLoading) {
     return <RequestPayoutPageSkeleton />
@@ -165,7 +174,7 @@ export default function RequestPayoutPage() {
       {            }
       <div className="flex items-center gap-4">
         <Button
-          variant="ghost"
+          variant="tertiary"
           size="sm"
           onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts`)}
         >
@@ -253,17 +262,14 @@ export default function RequestPayoutPage() {
               <Label htmlFor="amount">Amount ($)</Label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
+                <CurrencyField
                   id="amount"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  max={eligibility?.profitSplitAmount || undefined}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
+                  aria-label="Payout amount"
+                  aria-invalid={amountInvalid ? true : undefined}
+                  value={amount === '' ? undefined : (parseNumericInput(amount) ?? undefined)}
+                  onValueChange={(next) => setAmount(next === undefined ? '' : String(next))}
                   placeholder="0.00"
                   className="pl-10"
-                  required
                   disabled={!eligibility?.isEligible || isSubmitting}
                 />
               </div>
@@ -303,7 +309,7 @@ export default function RequestPayoutPage() {
               </Button>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts`)}
                 disabled={isSubmitting}
               >

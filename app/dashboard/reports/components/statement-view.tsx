@@ -220,7 +220,7 @@ export function StatementView({ trades, dateRange }: StatementViewProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground">Statement View</h3>
-        <Button variant="outline" size="sm" onClick={handleExportPdf} className="gap-1.5 text-xs font-bold">
+        <Button variant="secondary" size="sm" onClick={handleExportPdf} className="gap-1.5 text-xs font-bold">
           <Download className="h-3.5 w-3.5" />
           Export PDF
         </Button>

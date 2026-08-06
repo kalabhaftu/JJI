@@ -41,7 +41,7 @@ export function WeeklyCalendarTab({
                       {(reviewData?.calendarImage || imagePreview) && (
                         <>
                           <Button
-                            variant="ghost"
+                            variant="tertiary"
                             size="sm"
                             className="h-8 w-8 p-0 rounded-lg text-destructive hover:text-destructive hover:bg-destructive/10"
                             onClick={handleRemoveImage}
@@ -50,7 +50,7 @@ export function WeeklyCalendarTab({
                             <Trash2 className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="ghost"
+                            variant="tertiary"
                             size="sm"
                             className="h-8 px-3 rounded-lg border border-border/30 hover:bg-muted/35"
                             onClick={handleReplaceImage}
@@ -89,7 +89,7 @@ export function WeeklyCalendarTab({
                         <XCircle className="h-12 w-12 text-destructive mb-4" />
                         <p className="text-sm font-medium mb-2">Failed to load saved image</p>
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="sm"
                           className="rounded-xl border border-border/40"
                           onClick={() => {

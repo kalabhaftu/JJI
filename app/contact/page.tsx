@@ -59,7 +59,7 @@ export default async function ContactPage() {
                   <p className="text-sm text-muted-foreground mb-3">
                     Check our docs for guides, tutorials, and troubleshooting help.
                   </p>
-                  <Button asChild variant="outline" size="sm">
+                  <Button asChild variant="secondary" size="sm">
                     <Link href={DOCS_ORIGIN}>Browse Docs</Link>
                   </Button>
                 </div>
@@ -79,7 +79,7 @@ export default async function ContactPage() {
                     <p className="text-sm text-muted-foreground mb-3">
                       Want to support the ongoing development of JJI? Consider a crypto donation.
                     </p>
-                    <Button asChild variant="outline" size="sm">
+                    <Button asChild variant="secondary" size="sm">
                       <Link href="/donate">Donate</Link>
                     </Button>
                   </div>

@@ -46,7 +46,7 @@ export function DateRangeFilter({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" aria-label={`Date range: ${label}`} className={cn('min-h-11 justify-start gap-2', className)}>
+        <Button variant="secondary" aria-label={`Date range: ${label}`} className={cn('min-h-11 justify-start gap-2', className)}>
           <CalendarDays className="size-4" aria-hidden />
           <span className="truncate">{label}</span>
           <ChevronDown className="ml-auto size-4 opacity-60" aria-hidden />
@@ -54,10 +54,10 @@ export function DateRangeFilter({
       </PopoverTrigger>
       <PopoverContent className="w-auto max-w-[calc(100vw-1rem)] p-3" align="start">
         <div className="mb-3 grid grid-cols-2 gap-2" aria-label="Date range presets">
-          <Button type="button" variant="ghost" onClick={() => commit(getDatePresetRange('7d', now))}>Last 7 days</Button>
-          <Button type="button" variant="ghost" onClick={() => commit(getDatePresetRange('30d', now))}>Last 30 days</Button>
-          <Button type="button" variant="ghost" onClick={() => commit(getDatePresetRange('90d', now))}>Last 90 days</Button>
-          <Button type="button" variant="ghost" onClick={() => commit(getDatePresetRange('all', now))}>All time</Button>
+          <Button type="button" variant="tertiary" onClick={() => commit(getDatePresetRange('7d', now))}>Last 7 days</Button>
+          <Button type="button" variant="tertiary" onClick={() => commit(getDatePresetRange('30d', now))}>Last 30 days</Button>
+          <Button type="button" variant="tertiary" onClick={() => commit(getDatePresetRange('90d', now))}>Last 90 days</Button>
+          <Button type="button" variant="tertiary" onClick={() => commit(getDatePresetRange('all', now))}>All time</Button>
         </div>
         <CustomDateRangePicker
           {...(draft ? { selected: draft } : {})}

@@ -1,15 +1,16 @@
 'use client'
 
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { CurrencyField } from '@/components/ui/domain-fields'
+import { parseNumericInput } from '@/lib/form-fields'
 import { toast } from 'sonner'
 import { Plus, Minus, DollarSign } from "lucide-react"
 import { useMutation, useQueryClient } from '@tanstack/react-query'
@@ -162,14 +163,20 @@ export function TransactionDialog({
             <Label htmlFor="amount">Amount</Label>
             <div className="relative">
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                min={watchedType === 'DEPOSIT' ? 5 : 10}
-                placeholder={watchedType === 'DEPOSIT' ? '5.00' : '10.00'}
-                className="pl-10"
-                {...form.register('amount')}
+              <Controller
+                name="amount"
+                control={form.control}
+                render={({ field }) => (
+                  <CurrencyField
+                    id="amount"
+                    aria-label="Transaction amount"
+                    aria-invalid={form.formState.errors.amount ? true : undefined}
+                    value={parseNumericInput(field.value ?? '') ?? undefined}
+                    onValueChange={(next) => field.onChange(next === undefined ? '' : String(next))}
+                    placeholder={watchedType === 'DEPOSIT' ? '5.00' : '10.00'}
+                    className="pl-10"
+                  />
+                )}
               />
             </div>
             <p className="text-sm text-muted-foreground">
@@ -195,7 +202,7 @@ export function TransactionDialog({
           <div className="flex justify-end gap-2 pt-4">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => setOpen(false)}
               disabled={isLoading}
             >

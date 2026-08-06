@@ -273,7 +273,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
                 <div className="grid grid-cols-2 gap-3">
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         type="button"
                         disabled={isLoading}
                         onClick={onSubmitGoogle}
@@ -287,7 +287,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                         Google
                     </Button>
                     <Button
-                        variant="outline"
+                        variant="secondary"
                         type="button"
                         disabled={isLoading}
                         onClick={onSubmitDiscord}

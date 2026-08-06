@@ -87,7 +87,7 @@ export default function EditModeControls() {
         <div className="h-6 w-px bg-border" />
         
         <Button
-          variant="ghost"
+          variant="tertiary"
           size="sm"
           onClick={handleCancel}
           disabled={isSaving}

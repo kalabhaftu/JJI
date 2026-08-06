@@ -254,7 +254,7 @@ export function FeedbackFormClient() {
                   </div>
                 ))}
                 {files.length < MAX_FILES && (
-                  <Button type="button" variant="outline" size="sm" className="text-xs" onClick={() => fileInputRef.current?.click()}>
+                  <Button type="button" variant="secondary" size="sm" className="text-xs" onClick={() => fileInputRef.current?.click()}>
                     <Upload className="h-3 w-3 mr-1" />Attach File
                   </Button>
                 )}

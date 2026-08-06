@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import { PageHeader } from '@/components/ui/page-header'
 import { useData } from '@/context/data-provider'
+import { useBacktests } from '../hooks/use-backtests'
 
 interface BacktestingClientProps {
   initialBacktests: BacktestTrade[]
@@ -32,7 +33,7 @@ interface BacktestingClientProps {
 
 export function BacktestingClient({ initialBacktests }: BacktestingClientProps) {
   const { isDemoMode } = useData()
-  const [backtests, setBacktests] = useState<BacktestTrade[]>(initialBacktests)
+  const { backtests, createBacktest, updateBacktest, deleteBacktest, prependBacktest, patchBacktest, removeBacktest } = useBacktests(initialBacktests, isDemoMode)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterBy, setFilterBy] = useState<'all' | 'wins' | 'losses' | 'longs' | 'shorts'>('all')
   const [editingBacktest, setEditingBacktest] = useState<BacktestTrade | null>(null)
@@ -40,69 +41,6 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
   const [viewingBacktest, setViewingBacktest] = useState<BacktestTrade | null>(null)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
-
-  const refreshBacktests = async () => {
-    if (isDemoMode) return
-    try {
-
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 10000)
-
-      const response = await fetch('/api/v1/backtesting', {
-        signal: controller.signal,
-        cache: 'no-cache'
-      })
-
-      clearTimeout(timeoutId)
-
-      if (!response.ok) throw new Error('Failed to fetch backtests')
-      const data = await response.json()
-      const backtests = Array.isArray(data.data?.backtests)
-        ? data.data.backtests
-        : []
-
-      const transformedBacktests: BacktestTrade[] = backtests.map((bt: any) => ({
-        id: bt.id,
-        pair: bt.pair,
-        direction: bt.direction,
-        outcome: bt.outcome,
-        session: bt.session,
-        model: bt.model,
-        customModel: bt.customModel,
-        riskRewardRatio: bt.riskRewardRatio,
-        riskPoints: bt.riskPoints,
-        rewardPoints: bt.rewardPoints,
-        entryPrice: bt.entryPrice,
-        stopLoss: bt.stopLoss,
-        takeProfit: bt.takeProfit,
-        exitPrice: bt.exitPrice,
-        pnl: bt.pnl,
-        images: [
-          bt.imageOne,
-          bt.imageTwo,
-          bt.imageThree,
-          bt.imageFour,
-          bt.imageFive,
-          bt.imageSix,
-        ].filter(Boolean),
-        cardPreviewImage: bt.cardPreviewImage,
-        notes: bt.notes,
-        tags: bt.tags,
-        dateExecuted: new Date(bt.dateExecuted),
-        backtestDate: bt.backtestDate ? new Date(bt.backtestDate) : undefined,
-        createdAt: new Date(bt.createdAt),
-        updatedAt: new Date(bt.updatedAt),
-      }))
-
-      setBacktests(transformedBacktests)
-    } catch (err) {
-      reportClientError(err, { operation: 'load-backtests', route: '/dashboard/backtesting' })
-
-      if (err instanceof Error && err.name !== 'AbortError') {
-        toast.error('Failed to load backtests')
-      }
-    }
-  }
 
   const stats: BacktestStats = useMemo(() => {
     const totalBacktests = backtests.length
@@ -164,19 +102,14 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
   const handleDelete = async (id: string) => {
     try {
       if (isDemoMode) {
-        setBacktests(prev => prev.filter(b => b.id !== id))
+        removeBacktest(id)
         toast.success('Backtest deleted successfully')
         return
       }
 
-      const response = await fetch(`/api/v1/backtesting?id=${id}`, {
-        method: 'DELETE',
-      })
-
-      if (!response.ok) throw new Error('Failed to delete backtest')
+      await deleteBacktest(id)
 
       toast.success('Backtest deleted successfully')
-      await refreshBacktests()
     } catch (error) {
       reportClientError(error, { operation: 'delete-backtest', route: '/dashboard/backtesting' })
       toast.error('Failed to delete backtest')
@@ -218,7 +151,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
             <div className="flex gap-2">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" className="gap-2">
+                  <Button variant="secondary" className="gap-2">
                     <Filter className="h-4 w-4" />
                     {filterBy === 'all' ? 'All' : filterBy === 'wins' ? 'Wins' : filterBy === 'losses' ? 'Losses' : filterBy === 'longs' ? 'Longs' : 'Shorts'}
                   </Button>
@@ -387,26 +320,16 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
                 createdAt: new Date(),
                 updatedAt: new Date(),
               }
-              setBacktests(prev => [newBt, ...prev])
+              prependBacktest(newBt)
               setIsAddDialogOpen(false)
               toast.success('Backtest added successfully')
               return
             }
 
-            const response = await fetch('/api/v1/backtesting', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(backtestData),
-            })
-
-            if (!response.ok) throw new Error('Failed to create backtest')
+            await createBacktest(backtestData)
 
             setIsAddDialogOpen(false)
             toast.success('Backtest added successfully')
-
-            setTimeout(async () => {
-              await refreshBacktests()
-            }, 100)
           } catch (error) {
             reportClientError(error, { operation: 'create-backtest', route: '/dashboard/backtesting' })
             toast.error('Failed to create backtest')
@@ -425,23 +348,22 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
           }}
           onSave={async (updateData) => {
             if (isDemoMode) {
-              setBacktests(prev => prev.map(b => b.id === editingBacktest.id ? { ...b, ...updateData } : b))
+              patchBacktest(editingBacktest.id, updateData)
               setIsEditDialogOpen(false)
               setEditingBacktest(null)
               toast.success('Backtest updated successfully')
               return
             }
 
-            const response = await fetch('/api/v1/backtesting', {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: editingBacktest.id, ...updateData }),
-            })
-
-            if (!response.ok) throw new Error('Failed to update backtest')
-            await refreshBacktests()
-            setIsEditDialogOpen(false)
-            setEditingBacktest(null)
+            try {
+              await updateBacktest(editingBacktest.id, updateData)
+              setIsEditDialogOpen(false)
+              setEditingBacktest(null)
+            } catch (error) {
+              reportClientError(error, { operation: 'update-backtest', route: '/dashboard/backtesting' })
+              toast.error('Failed to update backtest')
+              throw error
+            }
           }}
         />
       )}

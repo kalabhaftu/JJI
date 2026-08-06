@@ -328,7 +328,7 @@ export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route'
         <div className="px-4 sm:px-6 py-3 border-b border-border/40 shrink-0">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
-              <TradeWorkspaceCloseButton variant="ghost" size="sm" disabled={isSubmitting} className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
+              <TradeWorkspaceCloseButton variant="tertiary" size="sm" disabled={isSubmitting} className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
                 <ArrowLeft className="mr-1 h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Back</span>
               </TradeWorkspaceCloseButton>
@@ -454,7 +454,7 @@ export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route'
 
         {}
         <div className="px-4 sm:px-6 py-3 border-t border-border/40 shrink-0 flex flex-col-reverse sm:flex-row gap-2 items-center justify-between bg-muted/5">
-          <TradeWorkspaceCloseButton variant="outline" disabled={isSubmitting} className="w-full sm:w-auto h-9 px-5 rounded-xl text-xs">
+          <TradeWorkspaceCloseButton variant="secondary" disabled={isSubmitting} className="w-full sm:w-auto h-9 px-5 rounded-xl text-xs">
             Cancel
           </TradeWorkspaceCloseButton>
           <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting} className="w-full sm:w-auto h-9 px-5 rounded-xl shadow-lg shadow-primary/10 font-semibold text-xs">

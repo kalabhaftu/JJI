@@ -50,7 +50,7 @@ export function SegmentError({
           {error.message}
         </pre>
       ) : null}
-      <Button onClick={reset} variant="outline" className="gap-2">
+      <Button onClick={reset} variant="secondary" className="gap-2">
         <RefreshCw aria-hidden="true" className="size-4" />
         Try again
       </Button>

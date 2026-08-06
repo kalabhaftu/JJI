@@ -179,8 +179,9 @@ export function TemplateSelector() {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
-            variant="nav"
+            variant="tertiary"
             size="navIcon"
+            className="text-muted-foreground"
             title={activeTemplate?.name || 'Templates'}
             aria-label={activeTemplate?.name ? `Template: ${activeTemplate.name}` : 'Templates'}
           >
@@ -297,7 +298,7 @@ export function TemplateSelector() {
                   <Button
                     key={suggestion}
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     className="h-7 text-xs"
                     onClick={() => setTemplateName(suggestion)}
@@ -309,7 +310,7 @@ export function TemplateSelector() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setNameDialogOpen(false)}>
+            <Button variant="secondary" onClick={() => setNameDialogOpen(false)}>
               Cancel
             </Button>
             <Button onClick={handleNameDialogConfirm} disabled={!templateName.trim() || nameTaken}>

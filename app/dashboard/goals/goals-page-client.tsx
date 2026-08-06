@@ -123,7 +123,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
           </Badge>
           {onEdit && (
             <Button
-              variant="ghost"
+              variant="tertiary"
               size="icon"
               aria-label={`Edit goal ${goal.title}`}
               title="Edit goal"
@@ -134,7 +134,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
             </Button>
           )}
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="icon"
             aria-label={`Delete goal ${goal.title}`}
             title="Delete goal"
@@ -542,7 +542,7 @@ export function GoalsPageClient() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
+            <Button variant="tertiary" onClick={() => setIsCreateOpen(false)}>Cancel</Button>
             <Button onClick={handleCreate} disabled={createMutation.isPending}>
               {createMutation.isPending ? 'Creating...' : 'Create Goal'}
             </Button>
@@ -640,7 +640,7 @@ export function GoalsPageClient() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setEditingGoal(null)}>Cancel</Button>
+            <Button variant="tertiary" onClick={() => setEditingGoal(null)}>Cancel</Button>
             <Button onClick={handleEditSave} disabled={updateMutation.isPending}>
               {updateMutation.isPending ? 'Saving...' : 'Save Changes'}
             </Button>

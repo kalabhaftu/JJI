@@ -104,7 +104,7 @@ export function SettingsDialogs({
 
           <DialogFooter className="gap-2">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => {
                 setIsDeleteModalOpen(false)
                 setDeleteConfirmText('')

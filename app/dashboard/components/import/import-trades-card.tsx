@@ -399,7 +399,7 @@ export default function ImportTradesCard({ accountId }: ImportTradesCardProps) {
           <div className="flex justify-end items-center gap-2">
             {step !== 'select-import-type' && (
               <Button 
-                variant="outline" 
+                variant="secondary" 
                 onClick={handleBackStep}
                 className="w-fit min-w-[90px] h-9 text-xs border-border/50 hover:bg-muted"
               >

@@ -282,7 +282,7 @@ export function PhaseTransitionDialog({
           {}
           <div className="flex gap-3 pt-2">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={onClose}
               disabled={isTransitioning}
               className="flex-1"
@@ -292,7 +292,7 @@ export function PhaseTransitionDialog({
             <Button
               onClick={handleTransition}
               disabled={!nextPhaseId.trim() || isTransitioning}
-              variant="default"
+              variant="primary"
               className="flex-1"
             >
               {isTransitioning ? (

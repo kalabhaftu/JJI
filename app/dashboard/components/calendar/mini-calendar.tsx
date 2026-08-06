@@ -201,7 +201,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
             </div>
             <Button
               onClick={() => setCurrentDate(new Date())}
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="h-6 px-2 text-[9px] font-black hidden sm:inline-flex"
             >
@@ -227,7 +227,7 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
               <DropdownMenuTrigger asChild>
                 <Button
                   className="h-6 w-6 p-0 screenshot-btn"
-                  variant="ghost"
+                  variant="tertiary"
                   size="icon"
                   aria-label="Take screenshot"
                 >

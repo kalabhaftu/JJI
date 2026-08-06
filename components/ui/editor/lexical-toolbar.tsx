@@ -110,10 +110,10 @@ export function LexicalToolbar() {
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/20">
-      <Button aria-label="Undo" title="Undo" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} type="button">
+      <Button aria-label="Undo" title="Undo" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} type="button">
         <Undo className="h-4 w-4" />
       </Button>
-      <Button aria-label="Redo" title="Redo" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)} type="button">
+      <Button aria-label="Redo" title="Redo" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)} type="button">
         <Redo className="h-4 w-4" />
       </Button>
       
@@ -161,16 +161,16 @@ export function LexicalToolbar() {
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
-      <Button aria-label="Align left" title="Align left" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')} type="button">
+      <Button aria-label="Align left" title="Align left" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')} type="button">
         <AlignLeft className="h-4 w-4" />
       </Button>
-      <Button aria-label="Align center" title="Align center" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')} type="button">
+      <Button aria-label="Align center" title="Align center" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')} type="button">
         <AlignCenter className="h-4 w-4" />
       </Button>
-      <Button aria-label="Align right" title="Align right" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')} type="button">
+      <Button aria-label="Align right" title="Align right" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')} type="button">
         <AlignRight className="h-4 w-4" />
       </Button>
-      <Button aria-label="Justify" title="Justify" variant="ghost" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')} type="button">
+      <Button aria-label="Justify" title="Justify" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')} type="button">
         <AlignJustify className="h-4 w-4" />
       </Button>
     </div>

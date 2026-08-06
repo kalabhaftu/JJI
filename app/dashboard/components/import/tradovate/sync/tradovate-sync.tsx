@@ -9,7 +9,7 @@ export function TradovateSync({ onBack }: { onBack?: () => void }) {
       <div className="flex items-start gap-4">
         {onBack && (
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={onBack}
             className="mt-1 h-8 px-3 text-xs border-border/50 hover:bg-muted"

@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
-import { notFound } from 'next/navigation'
 import { db } from '@/lib/db/client'
 import { SharedReportView } from './shared-report-view'
+import { classifySharedReportState, type SharedReportRowLike } from '@/lib/reports/shared-report'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -24,13 +24,6 @@ export default async function SharedReportPage({ params }: Props) {
     where: (table, { eq }) => eq(table.slug, slug),
   })
 
-  if (!report || !report.isPublic) {
-    notFound()
-  }
-
-  if (report.expiresAt && report.expiresAt < new Date()) {
-    notFound()
-  }
-
-  return <SharedReportView report={report as any} />
+  const state = classifySharedReportState(report as unknown as SharedReportRowLike | null, new Date())
+  return <SharedReportView state={state} />
 }

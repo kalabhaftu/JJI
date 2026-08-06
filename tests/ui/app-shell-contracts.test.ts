@@ -74,7 +74,7 @@ describe('app shell navigation contracts', () => {
 
   it('keeps dashboard navbar actions on the shared compact nav button contract', () => {
     expect(source('components/ui/button.tsx')).toContain('navIcon: "h-8 w-8 rounded-lg"')
-    expect(source('components/ui/button.tsx')).toContain('nav: "text-muted-foreground hover:bg-muted/40 hover:text-foreground"')
+    expect(source('components/ui/button.tsx')).not.toContain('nav: "text-muted-foreground hover:bg-muted/40 hover:text-foreground"')
 
     for (const path of [
       'app/dashboard/components/import/import-button.tsx',
@@ -85,8 +85,9 @@ describe('app shell navigation contracts', () => {
       'components/theme-switcher.tsx',
     ]) {
       const contents = source(path)
-      expect(contents, path).toContain('variant="nav"')
+      expect(contents, path).toContain('variant="tertiary"')
       expect(contents, path).toContain('size="navIcon"')
+      expect(contents, path).toContain('text-muted-foreground')
     }
 
     const importTrigger = source('app/dashboard/components/import/import-button.tsx')

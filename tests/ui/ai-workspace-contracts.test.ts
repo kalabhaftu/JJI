@@ -8,8 +8,8 @@ function source(path: string): string {
 }
 
 const workspace = source('app/dashboard/ai/page.tsx')
-const workspaceLoader = source('app/dashboard/ai/hooks/use-ai-workspace-loader.ts')
-const workspaceImplementation = `${workspace}\n${workspaceLoader}`
+const workspaceData = source('app/dashboard/ai/hooks/use-ai-workspace-data.ts')
+const workspaceImplementation = `${workspace}\n${workspaceData}`
 
 describe('AI workspace feature contracts', () => {
   it('retains every user-visible conversation and insight action', () => {

@@ -1,11 +1,28 @@
-export function parseNumericInput(value: string): number | undefined {
-  const normalized = value.trim().replaceAll(',', '').replace(/[$%]/g, '')
-  if (!normalized || !/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(normalized)) {
+export type NumericParseOptions = {
+  decimals?: number
+  allowEmpty?: boolean
+}
+
+export function parseNumericInput(value: string, options?: NumericParseOptions): number | null | undefined {
+  const normalized = value.trim().replaceAll(',', '').replace(/[$%\s]/g, '')
+  if (!normalized) {
+    return options?.allowEmpty ? null : undefined
+  }
+  if (!/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(normalized)) {
     return undefined
   }
 
   const parsed = Number(normalized)
-  return Number.isFinite(parsed) ? parsed : undefined
+  if (!Number.isFinite(parsed)) {
+    return undefined
+  }
+
+  if (options?.decimals !== undefined) {
+    const factor = 10 ** options.decimals
+    return Math.round(parsed * factor) / factor
+  }
+
+  return parsed
 }
 
 export function focusFirstInvalidField(container: ParentNode = document) {

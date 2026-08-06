@@ -151,7 +151,7 @@ export function SharedLinksManager() {
 
                   <div className="flex items-center gap-1.5 shrink-0">
                     <Button
-                      variant="ghost"
+                      variant="tertiary"
                       size="icon"
                       className="h-8 w-8 rounded-lg text-muted-foreground hover:bg-muted/40 hover:text-foreground"
                       onClick={() => handleCopy(report.slug)}
@@ -169,7 +169,7 @@ export function SharedLinksManager() {
                       <ExternalLink className="h-3.5 w-3.5" />
                     </a>
                     <Button
-                      variant="ghost"
+                      variant="tertiary"
                       size="icon"
                       className="h-8 w-8 rounded-lg text-short hover:bg-short/10 hover:text-short/90"
                       onClick={() => handleDelete(report.id)}

@@ -30,7 +30,7 @@ export default function SubscribeCancelledPage() {
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
             </Button>
-            <Button variant="ghost" onClick={() => router.push('/')} className="w-full">
+            <Button variant="tertiary" onClick={() => router.push('/')} className="w-full">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
             </Button>

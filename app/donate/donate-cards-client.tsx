@@ -116,7 +116,7 @@ export function DonateCardsClient() {
                       {addr.address}
                     </code>
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="icon"
                       aria-label={isCopied ? `${meta.name} address copied` : `Copy ${meta.name} address`}
                       title={isCopied ? "Copied" : "Copy address"}

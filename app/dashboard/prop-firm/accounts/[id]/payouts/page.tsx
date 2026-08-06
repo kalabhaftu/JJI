@@ -176,7 +176,7 @@ export default function AccountPayoutsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
+            variant="tertiary"
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
@@ -192,7 +192,7 @@ export default function AccountPayoutsPage() {
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => void refresh()}
             disabled={accountQuery.isFetching || payoutsQuery.isFetching}
@@ -302,7 +302,7 @@ export default function AccountPayoutsPage() {
                       </Badge>
                       {payout.status === 'pending' && (
                         <Button
-                          variant="ghost"
+                          variant="tertiary"
                           size="sm"
                           onClick={() => handleDeletePayout(payout.id)}
                           disabled={deletingPayoutId === payout.id}

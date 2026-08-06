@@ -295,7 +295,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
             {reviews.length > 1 && (
               <div className="flex items-center justify-between border-t px-6 py-3">
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   onClick={() => setCurrentIndex((index) => index + 1)}
                   disabled={!canGoNext}
@@ -307,7 +307,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                   {currentIndex + 1} of {reviews.length} reports
                 </span>
                 <Button
-                  variant="ghost"
+                  variant="tertiary"
                   size="sm"
                   onClick={() => setCurrentIndex((index) => index - 1)}
                   disabled={!canGoPrev}

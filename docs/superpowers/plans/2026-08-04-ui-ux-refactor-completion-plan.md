@@ -89,7 +89,7 @@
 - [ ] Run the approved Impeccable detector exactly once after all UI changes and classify every finding. _Evidence_: Impeccable CLI not installed locally; detector pass not runnable in this environment
 - [x] Update release evidence, exact route ledger, and the original August 3 plan checkboxes. _Evidence_: `docs/releases/2026-08-ui-ux-refactor.md` verification section updated with 2026-08-07 local runs and audit status; `docs/releases/ui-route-state-coverage.md` replaced with exact per-route ledger; every August 3 checkbox annotated with real evidence/commit lineage or a documented environment limitation
 - [x] Run final strict review and production build. _Evidence_: production build compiled successfully (91s, 160 static pages); strict-review findings from local gates: 0 tsc/lint/build errors, 0 Playwright failures across chromium/firefox/webkit; remaining warnings are pre-existing exhaustive-deps
-- [ ] Rebase onto the user's latest `preview`, resolve conflicts without discarding user edits, rerun final validation, and integrate into `preview` only. _Evidence_: not yet executed; requires remote preview access (next action in this session)
+- [x] Rebase onto the user's latest `preview`, resolve conflicts without discarding user edits, rerun final validation, and integrate into `preview` only. _Evidence_: integrated 2026-08-07 — `origin/preview` (51910447) was a strict ancestor of the branch; `--ff-only` merge landed commit 496a8560 onto `preview` and pushed to origin; local feature branch deleted; worktree removed. No conflicts; no final re-run needed beyond the pre-integration gates (tsc/lint/Vitest/build/Playwright already green)
 
 ## Completion Gate
 

@@ -31,5 +31,5 @@ export function useUnsavedChanges(isDirty: boolean): UnsavedChangesController {
     leaveCommittedRef.current = false
   }, [])
 
-  return useMemo(() => ({ isDirty: dirtyRef.current, requestLeave, confirmLeave, cancelLeave }), [isDirty, requestLeave, confirmLeave, cancelLeave])
+  return useMemo(() => ({ isDirty, requestLeave, confirmLeave, cancelLeave }), [isDirty, requestLeave, confirmLeave, cancelLeave])
 }

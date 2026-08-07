@@ -2,11 +2,12 @@
 
 import { Spinner } from '@/components/ui/spinner'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useMemo } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CurrencyField, FormErrorSummary, PercentageField } from '@/components/ui/domain-fields'
+import { CurrencyField, PercentageField } from '@/components/ui/domain-fields'
+import { FormErrorSummary } from '@/components/ui/form-error-summary'
 import { focusFirstInvalidField } from '@/lib/form-fields'
 import {
   Dialog,
@@ -104,7 +105,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
     staleTime: 30_000,
   })
 
-  const templates = templatesQuery.data ?? {}
+  const templates = useMemo(() => templatesQuery.data ?? {}, [templatesQuery.data])
 
   useEffect(() => {
     if (templatesQuery.error) {

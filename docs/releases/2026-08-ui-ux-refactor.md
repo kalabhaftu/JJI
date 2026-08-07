@@ -10,7 +10,7 @@ This refactor establishes scoped server-state ownership, session-safe realtime h
 | Trade entry | Modal-only overlay, account/prop-firm-specific routes | Canonical `/dashboard/trades/new` with `accountId`, `propFirmAccountId`, `phaseId`, `origin`, `returnTo` query context; deep-linkable and back-aware |
 | Account-specific trade routes | `/dashboard/prop-firm/accounts/[id]/trades/new`, `/dashboard/accounts/[id]/trades/new` | Removed (internal-only; see route-removal inventory) |
 | Prop-firm landing | `/dashboard/prop-firm`, `/dashboard/prop-firm/accounts` | Retained as redirect aliases to `/dashboard/accounts?filter=prop-firm`, pending approval and external-consumer analytics evidence |
-| 404 catch-all | `[...not-found]` with `notFound()` | Retained; unreachable markup after `notFound()` is removable once approved |
+| 404 catch-all | `[...not-found]` with `notFound()` | Retained; unreachable markup after `notFound()` removed (2026-08-07) |
 
 Credential reconnection: users with previously persisted Tradovate (and other immutable provider) credentials must reconnect the integration — client-persisted provider credentials were removed during the refactor.
 
@@ -43,5 +43,15 @@ Rollback is performed by reverting the refactor commits on `preview`/staging. No
 - Direct donation references to `/donate`, not `/docs/donate`.
 
 ## Verification
+
+2026-08-07 local validation against the dev server (single-worker Playwright on chromium/firefox/webkit):
+
+- `bunx tsc --noEmit` exit 0
+- Vitest 735/735 pass
+- ESLint 0 errors (13 pre-existing exhaustive-deps warnings)
+- Production build `✓ Compiled successfully`, 160 static pages
+- Playwright: chromium 61 passed / 87 skipped, firefox 64 passed / 87 skipped, webkit 60 passed / 87 skipped, 0 failed in any browser; the 87 skipped scenarios need an authenticated preview storage state
+- Eight `architecture:check-*` gates, `security:scan-console`, and `tests/ui/docs-link-scan.test.ts` all exit 0
+- `bun audit` reports 3 high + 1 moderate upstream advisories (fast-uri, brace-expansion, hono, js-yaml) — identical on `main`, pre-existing and not introduced by this refactor
 
 Route and dead-code integrity checks pass in this environment (`architecture:check-routes`, `architecture:check-dead-code`), the docs link scan passes (`tests/ui/docs-link-scan.test.ts`), and the test/TypeScript checks are green. Route-removal evidence is tabulated in `docs/releases/route-removal-inventory.md`.

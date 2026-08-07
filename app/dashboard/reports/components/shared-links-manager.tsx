@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
+import { apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 
 interface SharedReport {
@@ -36,10 +37,12 @@ export function SharedLinksManager() {
 
   const fetchReports = useCallback(async () => {
     try {
-      const res = await fetch('/api/v1/reports/share')
-      if (!res.ok) throw new Error('Failed to fetch links')
-      const data = await res.json()
-      setReports(data.data?.reports || [])
+      const data = await apiRequestData<{ reports?: SharedReport[] }>('/api/v1/reports/share', {
+        method: 'GET',
+        retry: { mode: 'safe' },
+        operation: 'load-shared-report-links',
+      })
+      setReports(data.reports || [])
     } catch (error) {
       reportClientError(error, { operation: 'load-shared-report-links', route: '/api/v1/reports/share' })
       toast.error('Failed to load shared links.')
@@ -68,10 +71,11 @@ export function SharedLinksManager() {
   const handleDelete = useCallback(async (id: string) => {
     setDeletingId(id)
     try {
-      const res = await fetch(`/api/v1/reports/share?id=${id}`, {
+      await apiRequestData<{ deleted: boolean }>(`/api/v1/reports/share?id=${id}`, {
         method: 'DELETE',
+        retry: { mode: 'never' },
+        operation: 'delete-shared-report-link',
       })
-      if (!res.ok) throw new Error('Delete failed')
       toast.success('Shared report deleted successfully')
       setReports((prev) => prev.filter((r) => r.id !== id))
     } catch (error) {

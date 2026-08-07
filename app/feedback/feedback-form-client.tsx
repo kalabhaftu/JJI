@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Upload, X, CheckCircle2, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
+import { ApiClientError, apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 
 const MAX_FILES = 3
@@ -126,20 +127,23 @@ export function FeedbackFormClient() {
       if (email.trim()) formData.append('email', email.trim())
       files.forEach(f => formData.append('files', f))
 
-      const res = await fetch('/api/v1/feedback', { method: 'POST', body: formData })
-      const data = await res.json()
-
-      if (data.success) {
-        clearDraft()
-        setSubmitted(true)
-      } else {
-        const code = typeof data.error?.code === 'string' ? data.error.code : ''
-        const fallback = data.error?.message || 'Failed to submit feedback'
+      await apiRequestData<{ id: string }>('/api/v1/feedback', {
+        method: 'POST',
+        body: formData,
+        retry: { mode: 'never' },
+        operation: 'submit-feedback',
+      })
+      clearDraft()
+      setSubmitted(true)
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status > 0) {
+        const code = error.code || ''
+        const fallback = error.message || 'Failed to submit feedback'
         const message = (code && SERVER_CODE_MESSAGES[code]) || fallback
         setSubmitError(message)
         toast.error(message)
+        return
       }
-    } catch (error) {
       reportClientError(error, { operation: 'submit-feedback', route: '/api/feedback' })
       const message = isOffline
         ? 'You are offline. Reconnect and submit again; your message is still here.'

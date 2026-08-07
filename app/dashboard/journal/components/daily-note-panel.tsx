@@ -39,6 +39,7 @@ import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
 import { queryKeyPrefixes } from '@/lib/query/query-keys'
 import { useQueryScope } from '@/lib/query/use-query-scope'
+import { apiRequestData } from '@/lib/api/client'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TradeWorkspace } from '@/components/ui/trade-workspace'
 
@@ -107,9 +108,11 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
     const fetchNote = async () => {
       setIsLoading(true)
       try {
-        const res = await fetch(`/api/v1/journal/daily?date=${dateStr}`)
-        const data = await res.json()
-        const journal = data.data?.journal
+        const daily = await apiRequestData<{ journal: DailyNote | null } | null>(`/api/v1/journal/daily?date=${dateStr}`, {
+          operation: 'load-daily-note',
+          retry: { mode: 'safe' },
+        })
+        const journal = daily?.journal
         if (journal) {
           setNote(journal)
           setNoteContent(journal.note || '')
@@ -137,29 +140,26 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
     try {
       if (note) {
 
-        const res = await fetch(`/api/v1/journal/daily/${note.id}`, {
+        const data = await apiRequestData<{ journal: DailyNote | null }>(`/api/v1/journal/daily/${note.id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ note: noteContent, emotion: selectedEmotion }),
+          retry: { mode: 'never' },
+          operation: 'save-daily-note',
         })
-        if (!res.ok) throw new Error('Failed to update')
-        const data = await res.json()
-        setNote(data.data?.journal)
+        setNote(data?.journal ?? null)
         queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.journal(scope) })
         toast.success('Daily note updated')
       } else {
 
-        const res = await fetch('/api/v1/journal/daily', {
+        const data = await apiRequestData<{ journal: DailyNote | null }>('/api/v1/journal/daily', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ date: dateStr, note: noteContent, emotion: selectedEmotion }),
+          retry: { mode: 'never' },
+          operation: 'create-daily-note',
         })
-        if (!res.ok) {
-          const err = await res.json()
-          throw new Error(err.error?.message || 'Failed to create')
-        }
-        const data = await res.json()
-        setNote(data.data?.journal)
+        setNote(data?.journal ?? null)
         queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.journal(scope) })
         toast.success('Daily note saved')
       }
@@ -176,8 +176,11 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
     setIsDeleting(true)
 
     try {
-      const res = await fetch(`/api/v1/journal/daily/${note.id}`, { method: 'DELETE' })
-      if (!res.ok) throw new Error('Failed to delete')
+      await apiRequestData<{ journal: DailyNote | null }>(`/api/v1/journal/daily/${note.id}`, {
+        method: 'DELETE',
+        retry: { mode: 'never' },
+        operation: 'delete-daily-note',
+      })
       setNote(null)
       setNoteContent('')
       setSelectedEmotion(null)

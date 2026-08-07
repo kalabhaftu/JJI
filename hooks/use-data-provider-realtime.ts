@@ -319,10 +319,11 @@ export function useDataProviderRealtime(options: UseDataProviderRealtimeOptions)
   useEffect(() => {
     mountedRef.current = true
     const timeouts = realtimeRefreshTimeoutRef.current
+    const lifecycle = lifecycleRef.current
 
     return () => {
       mountedRef.current = false
-      lifecycleRef.current.generation++
+      lifecycle.generation++
       pendingReconciliationRef.current = null
       stopDegradedRefresh()
       if (timeouts.trades) {

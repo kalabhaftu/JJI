@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { Heart, Copy, Check } from 'lucide-react'
 import { toast } from 'sonner'
 import { getTokenMeta } from '@/lib/constants/crypto-tokens'
+import { apiRequestData } from '@/lib/api/client'
 import { reportError } from '@/lib/observability/report-error'
 
 interface DonationAddr {
@@ -22,9 +23,12 @@ export function DonateCardsClient() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/v1/donations')
-      .then(r => r.json())
-      .then(data => { if (data.success) setAddresses(data.data) })
+    apiRequestData<DonationAddr[]>('/api/v1/donations', {
+      method: 'GET',
+      retry: { mode: 'safe' },
+      operation: 'load-donation-addresses',
+    })
+      .then(data => { setAddresses(data ?? []) })
       .catch((e) => {
         reportError(e, {
           surface: 'client',

@@ -8,6 +8,7 @@ import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { apiRequest } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 
 type PaymentStatus = {
@@ -36,9 +37,7 @@ export default function SubscribeStatusPage() {
     setError(null)
 
     try {
-      const response = await fetch(`/api/v1/payments/status?paymentRecordId=${id}&refresh=true`)
-      const payload = await response.json()
-      if (!payload.success) throw new Error(payload.error?.message || 'Unable to load payment status')
+      const payload = await apiRequest<PaymentStatus>(`/api/v1/payments/status?paymentRecordId=${id}&refresh=true`)
       setStatus(payload.data)
       if (payload.data?.providerStatus === 'finished') {
         sessionStorage.removeItem('pendingPaymentId')
@@ -68,7 +67,7 @@ export default function SubscribeStatusPage() {
   const isFailed = ['failed', 'expired', 'refunded'].includes(providerStatus)
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <main id="main-content" className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardContent className="pt-6 text-center space-y-6">
           <div className="flex items-center justify-center gap-2">
@@ -163,6 +162,6 @@ export default function SubscribeStatusPage() {
           )}
         </CardContent>
       </Card>
-    </div>
+    </main>
   )
 }

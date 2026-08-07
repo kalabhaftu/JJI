@@ -452,7 +452,10 @@ export const DataProvider: React.FC<{
     }
   }, [tradeFilters])
   const queryEnabled = isDemoMode ? true : !!supabaseUser?.id
-  const queryScope = isDemoMode ? { surface: 'demo' as const } : { surface: 'authenticated' as const, ...(user?.id ? { userId: user.id } : {}) }
+  const queryScope = useMemo(
+    () => (isDemoMode ? { surface: 'demo' as const } : { surface: 'authenticated' as const, ...(user?.id ? { userId: user.id } : {}) }),
+    [isDemoMode, user?.id],
+  )
   const { data: serverTradeData } = useFilteredTrades(queryScope, tableTradeFilters, queryEnabled, isDemoMode)
   const { data: serverMetricsData } = useFilteredTrades(queryScope, metricsTradeFilters, queryEnabled, isDemoMode)
 
@@ -551,7 +554,7 @@ export const DataProvider: React.FC<{
     } finally {
       setIsLoading(false)
     }
-  }, [user?.id, loadData, setIsLoading, locale, queryClient, queryScope])
+  }, [user?.id, loadData, setIsLoading, queryClient, queryScope])
 
 
   const refreshAllData = refreshTrades

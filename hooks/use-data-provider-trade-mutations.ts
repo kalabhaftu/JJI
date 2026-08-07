@@ -176,7 +176,7 @@ export function useDataProviderTradeMutations({
       await invalidateTradeQueries(touched)
       throw error
     }
-  }, [userId, queryClient, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
+  }, [userId, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
 
   const ungroupTrades = useCallback(async (tradeIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return
@@ -194,7 +194,7 @@ export function useDataProviderTradeMutations({
       await invalidateTradeQueries(touched)
       throw error
     }
-  }, [userId, queryClient, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
+  }, [userId, tradeQueryPrefix, snapshotTradeQueries, restoreTradeQueries, invalidateTradeQueries])
 
   const appendTagsToTrades = useCallback(async (tradeIds: string[], tagIds: string[]) => {
     if (!userId || !tradeQueryPrefix) return

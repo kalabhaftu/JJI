@@ -8,6 +8,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
 import { Play, Pause, RotateCcw, FastForward } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { apiStreamRequest } from '@/lib/api/stream-client'
 import { reportClientError } from '@/lib/observability/report-error'
 
 interface TradeReplayerProps {
@@ -45,13 +46,11 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
         const period1 = new Date(trade.entryDate).getTime() - padding
         const period2 = new Date(trade.closeDate).getTime() + padding
         
-        const response = await fetch(`/api/v1/market-data?symbol=${encodeURIComponent(symbol)}&period1=${new Date(period1).toISOString()}&period2=${new Date(period2).toISOString()}&interval=1m`)
-        
-        if (!response.ok) {
-           const errData = await response.json()
-           throw new Error(errData.error || 'Failed to fetch data')
-        }
-        
+        const response = await apiStreamRequest(`/api/v1/market-data?symbol=${encodeURIComponent(symbol)}&period1=${new Date(period1).toISOString()}&period2=${new Date(period2).toISOString()}&interval=1m`, {
+          method: 'GET',
+          operation: 'load-trade-replay-market-data',
+        })
+
         const data = await response.json()
         setMarketData(data)
         setReplayIndex(0)

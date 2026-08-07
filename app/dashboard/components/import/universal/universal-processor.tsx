@@ -12,6 +12,7 @@ import {
   SUPPORTED_PLATFORMS,
   type ProcessingResult 
 } from '@/lib/csv/universal-csv-processor'
+import { apiStreamRequest } from '@/lib/api/stream-client'
 
 interface UniversalProcessorProps {
   csvData: string[][]
@@ -92,16 +93,15 @@ export default function UniversalProcessor({
     setAiProcessingState('processing')
     
     try {
-      const response = await fetch('/api/v1/ai/format-trades', {
+      const response = await apiStreamRequest('/api/v1/ai/format-trades', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           headers,
           rows: csvData.slice(0, 100)
-        })
+        }),
+        operation: 'format-trades-ai',
       })
-
-      if (!response.ok) throw new Error('AI processing failed')
       
       const reader = response.body?.getReader()
       if (!reader) throw new Error('No response body')

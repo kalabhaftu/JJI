@@ -22,13 +22,6 @@ export const dashboardAggregatesQueryKeys = {
     ['dashboard', 'aggregates', scope, filters] as const,
 }
 
-function normalizeAggregateFilters(filters: DashboardAggregateFilters): DashboardAggregateFilters {
-  return {
-    ...filters,
-    accountIds: Array.from(new Set(filters.accountIds)).sort(),
-  }
-}
-
 export function useDashboardAggregates(
   filters: DashboardAggregateFilters,
   enabled = true,
@@ -40,9 +33,18 @@ export function useDashboardAggregates(
     ...(user?.id ? { userId: user.id } : {}),
   }
 
+  const { accountIds, from, to, timezone, currency, includeFees } = filters
+
   const stableFilters = useMemo(
-    () => normalizeAggregateFilters(filters),
-    [filters.accountIds, filters.from, filters.to, filters.timezone, filters.currency, filters.includeFees],
+    () => ({
+      accountIds: Array.from(new Set(accountIds)).sort(),
+      from,
+      to,
+      timezone,
+      ...(currency ? { currency } : {}),
+      includeFees,
+    }),
+    [accountIds, from, to, timezone, currency, includeFees],
   )
 
   const query = useQuery<DashboardAggregates>({

@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { ApiClientError, apiRequestData } from '@/lib/api/client'
 import { useAuth } from '@/context/auth-provider'
 import { reportClientError, reportError } from '@/lib/observability/report-error'
 
@@ -45,21 +46,22 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
     let cancelled = false
     const timeout = setTimeout(async () => {
       try {
-        const res = await fetch('/api/v1/payments/validate-promo', {
+        const data = await apiRequestData<{ discountDescription?: string }>('/api/v1/payments/validate-promo', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code }),
+          retry: { mode: 'never' },
+          operation: 'validate-promo',
         })
-        const data = await res.json()
         if (cancelled) return
 
-        if (res.ok && data.success) {
-          setPromoValidation({ valid: true, description: data.data?.discountDescription })
+        setPromoValidation({ valid: true, ...(data.discountDescription ? { description: data.discountDescription } : {}) })
+      } catch (error) {
+        if (cancelled) return
+        if (error instanceof ApiClientError) {
+          setPromoValidation({ valid: false, description: error.message || 'Invalid promo code' })
         } else {
-          setPromoValidation({ valid: false, description: data.error?.message || 'Invalid promo code' })
+          setPromoValidation(null)
         }
-      } catch {
-        if (!cancelled) setPromoValidation(null)
       }
     }, 350)
 
@@ -72,19 +74,17 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
   async function handleSubscribe() {
     setIsLoading(true)
     try {
-      const res = await fetch('/api/v1/payments/create-invoice', {
+      const payment = await apiRequestData<{
+        freeAccess?: boolean
+        paymentUrl?: string
+        invoiceUrl?: string
+        paymentRecordId?: string
+      }>('/api/v1/payments/create-invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ promoCode: promoCode || undefined }),
+        retry: { mode: 'never' },
+        operation: 'create-crypto-checkout',
       })
-
-      const data = await res.json()
-
-      if (!data.success) {
-        toast.error('Payment Error', { description: data.error?.message || 'Failed to create invoice' })
-        return
-      }
-      const payment = data.data
 
       if (payment?.freeAccess) {
         toast.success('Access Granted!', { description: 'Redirecting to dashboard...' })
@@ -102,6 +102,10 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
         window.location.href = paymentUrl
       }
     } catch (error) {
+      if (error instanceof ApiClientError) {
+        toast.error('Payment Error', { description: error.message || 'Failed to create invoice' })
+        return
+      }
       reportError(error, {
         surface: 'client',
         operation: 'create-crypto-checkout',
@@ -116,36 +120,35 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
   async function handleWhopSubscribe() {
     setIsWhopLoading(true)
     try {
-      const response = await fetch('/api/v1/payments/whop-checkout', {
+      const checkout = await apiRequestData<{ checkoutUrl?: string; referenceId?: string }>('/api/v1/payments/whop-checkout', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ planId: 'pro' }),
+        retry: { mode: 'never' },
+        operation: 'create-whop-checkout',
       })
-      const payload = await response.json()
-      if (!response.ok || !payload.success) {
-        const requestId = payload.requestId ?? response.headers.get('x-request-id') ?? undefined
+
+      if (!checkout?.checkoutUrl) throw new Error('Card checkout response is missing its URL')
+      sessionStorage.setItem('whopReferenceId', checkout.referenceId ?? '')
+      window.location.href = checkout.checkoutUrl
+    } catch (error) {
+      if (error instanceof ApiClientError) {
+        const requestId = error.requestId
         reportClientError(Object.assign(new Error('Checkout initialization failed'), {
-          status: response.status,
-          code: payload.error?.code,
+          status: error.status,
+          code: error.code,
           requestId,
         }), {
           operation: 'create-whop-checkout-response',
           route: '/api/v1/payments/whop-checkout',
-          status: response.status,
+          status: error.status,
           ...(requestId ? { requestId } : {}),
-          ...(payload.error?.code ? { extra: { code: payload.error.code } } : {}),
+          ...(error.code !== 'REQUEST_FAILED' ? { extra: { code: error.code } } : {}),
         })
         toast.error('Checkout Error', {
-          description: payload.error?.message || 'Failed to initialize card checkout',
+          description: error.message || 'Failed to initialize card checkout',
         })
         return
       }
-
-      const checkout = payload.data
-      if (!checkout?.checkoutUrl) throw new Error('Card checkout response is missing its URL')
-      sessionStorage.setItem('whopReferenceId', checkout.referenceId)
-      window.location.href = checkout.checkoutUrl
-    } catch (error) {
       reportError(error, {
         surface: 'client',
         operation: 'create-whop-checkout',

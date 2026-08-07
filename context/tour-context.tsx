@@ -173,7 +173,7 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
       reportError(error, { surface: 'client', operation: 'cleanup-onboarding-sample-workspace' })
       return false
     }
-  }, [onboardingStatus?.sample_account_id, saveOnboardingStatus])
+  }, [onboardingStatus?.sample_account_id, saveOnboardingStatus, queryClient, scope])
 
   const retrySampleCleanup = useCallback(async () => {
     await cleanupSampleWorkspace()

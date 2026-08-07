@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from "sonner"
+import { apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 import {
   Dialog,
@@ -97,21 +98,14 @@ export function PhaseTransitionDialog({
     try {
       setIsTransitioning(true)
 
-      const response = await fetch(`/api/v1/prop-firm/accounts/${masterAccountId}/transition`, {
+      const result = await apiRequestData<{ nextPhaseName?: string }>(`/api/v1/prop-firm/accounts/${masterAccountId}/transition`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
         body: JSON.stringify({
           nextPhaseId: nextPhaseId.trim()
-        })
+        }),
+        retry: { mode: 'never' },
+        operation: 'transition-prop-firm-phase',
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to transition phase')
-      }
 
       toast.success("Phase Transition Successful", {
         description: `You've successfully advanced to ${getPhaseDisplayName(nextPhaseNumber)}! Importing trades to the new phase...`,

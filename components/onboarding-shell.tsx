@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useState } from 'react'
 import { Database, FileSpreadsheet, Plus, RefreshCw, Sparkles, Trash2, Upload, Wallet, type LucideIcon } from 'lucide-react'
 import { toast } from 'sonner'
+import { apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
@@ -87,11 +88,14 @@ export function OnboardingShell() {
       setIsCreatingSample(true)
       try {
         downloadSampleTradesCsv()
-        const response = await fetch('/api/v1/onboarding/sample-workspace', { method: 'POST' })
-        const payload = await response.json()
-        if (!response.ok || !payload.success || !payload.data?.id) throw new Error(payload.error?.message || 'Could not create sample workspace')
-        setLocalSampleAccountId(payload.data.id)
-        await setSampleAccountId(payload.data.id)
+        const data = await apiRequestData<{ id?: string }>('/api/v1/onboarding/sample-workspace', {
+          method: 'POST',
+          retry: { mode: 'never' },
+          operation: 'create-sample-workspace',
+        })
+        if (!data.id) throw new Error('Could not create sample workspace')
+        setLocalSampleAccountId(data.id)
+        await setSampleAccountId(data.id)
         await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
         await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
         openImporter()
@@ -111,17 +115,16 @@ export function OnboardingShell() {
     event.preventDefault()
     setIsCreatingAccount(true)
     try {
-      const response = await fetch('/api/v1/accounts', {
+      const data = await apiRequestData<{ id: string }>('/api/v1/accounts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...accountForm,
           startingBalance: Number(accountForm.startingBalance),
         }),
+        retry: { mode: 'never' },
+        operation: 'create-onboarding-account',
       })
-      const payload = await response.json()
-      if (!response.ok || !payload.success) throw new Error(payload.error?.message || 'Could not create account')
-      document.dispatchEvent(new CustomEvent('jji-account-created', { detail: { id: payload.data.id, type: 'live' } }))
+      document.dispatchEvent(new CustomEvent('jji-account-created', { detail: { id: data.id, type: 'live' } }))
       await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
       await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
       toast.success('Trading account created')

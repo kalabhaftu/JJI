@@ -7,6 +7,7 @@ import logger from '@/lib/logger'
 import { reportError } from '@/lib/observability/report-error'
 import { getAllRithmicData, getRithmicData, updateLastSyncTime } from '@/lib/rithmic-storage'
 import { parseRithmicRateLimitMessage, type RithmicCredentials } from '@/lib/rithmic/sync-contract'
+import { apiRequestData } from '@/lib/api/client'
 import { useUserStore } from '@/store/user-store'
 
 interface RithmicSynchronizationInput {
@@ -169,21 +170,16 @@ const performSyncForCredential = useCallback(
         message: `Starting automatic background sync for ${savedData.name || savedData.credentials.username}`,
       });
 
-      const syncResponse = await fetch("/api/v1/rithmic/synchronizations", {
+      await apiRequestData<unknown>("/api/v1/rithmic/synchronizations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           accountId: savedData.id,
           lastSyncedAt: new Date(),
         }),
+        retry: { mode: "never" },
+        operation: "update-rithmic-synchronization",
       });
-
-      if (!syncResponse.ok) {
-        const errorData = await syncResponse.json();
-        throw new Error(
-            errorData.error?.message || errorData.message || "Failed to update synchronization"
-        );
-      }
 
       return {
         success: true,
@@ -353,17 +349,11 @@ const checkAndPerformSyncs = useCallback(async () => {
   if (document.visibilityState === 'hidden') return;
   try {
 
-    const response = await fetch("/api/v1/rithmic/synchronizations", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch synchronizations");
-    }
-
-    const result = await response.json();
-    const synchronizations = result.data || [];
+    const synchronizations =
+      (await apiRequestData<{ accountId: string; lastSyncedAt: string }[]>(
+        "/api/v1/rithmic/synchronizations",
+        { retry: { mode: "safe" }, operation: "check-rithmic-auto-synchronizations" }
+      )) ?? [];
 
     for (const sync of synchronizations) {
       if (!sync.lastSyncedAt) continue;

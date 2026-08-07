@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 import { describeBillingStatus } from '@/lib/subscription/billing-status'
 import { cn } from '@/lib/utils'
 import type { BillingStatus } from '@/stores/subscription-store'
@@ -25,8 +26,8 @@ export function StatusCard({ status, trialEndsAt }: StatusCardProps) {
         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
           Subscription status
         </p>
-        <div aria-hidden="true" className="mt-3 h-4 w-2/3 animate-pulse rounded bg-slate-200" />
-        <div aria-hidden="true" className="mt-2 h-4 w-1/3 animate-pulse rounded bg-slate-200" />
+        <Skeleton className="mt-3 h-4 w-2/3" />
+        <Skeleton className="mt-2 h-4 w-1/3" />
       </div>
     )
   }

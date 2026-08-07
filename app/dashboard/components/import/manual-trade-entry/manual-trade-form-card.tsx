@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData, ApiClientError } from '@/lib/api/client'
 import { Calculator, TrendingUp, TrendingDown } from 'lucide-react'
 import type { TradeType } from '@/lib/db/schema/trades';
 
@@ -240,12 +241,24 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
       if (!submissionRef.current) {
         submissionRef.current = createManualTradeSubmission<TradeFormData>({
           validate: async (submitted) => {
-            const response = await fetch('/api/v1/prop-firm/accounts/validate-trade', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ accountNumber: submitted.accountNumber }),
-            })
-            return { status: response.status, payload: await response.json().catch(() => null) }
+            try {
+              const data = await apiRequestData<{ accountType?: 'regular' | 'prop-firm'; phaseNumber?: number }>(
+                '/api/v1/prop-firm/accounts/validate-trade',
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ accountNumber: submitted.accountNumber }),
+                  retry: { mode: 'never' },
+                  operation: 'validate-manual-trade-phase',
+                }
+              )
+              return { status: 200, payload: { success: true, data } }
+            } catch (error) {
+              if (error instanceof ApiClientError) {
+                return { status: error.status, payload: { success: false, ...(error.requestId ? { requestId: error.requestId } : {}) } }
+              }
+              return { status: 0, payload: null }
+            }
           },
           buildImport,
           onStateChange: (state) => {

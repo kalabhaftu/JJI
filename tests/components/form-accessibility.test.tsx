@@ -7,11 +7,11 @@ import {
   CurrencyField,
   DateTimeTimezoneField,
   EditableTableField,
-  FormErrorSummary,
   PercentageField,
   SymbolCombobox,
   TagMultiSelect,
 } from '@/components/ui/domain-fields'
+import { FormErrorSummary } from '@/components/ui/form-error-summary'
 import { focusFirstInvalidField } from '@/lib/form-fields'
 
 const roots: Array<ReturnType<typeof createRoot>> = []

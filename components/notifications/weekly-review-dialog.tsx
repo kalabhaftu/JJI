@@ -26,6 +26,7 @@ import {
   Trophy,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { apiRequestData } from '@/lib/api/client'
 import { dashboardModalShell } from '@/components/ui/dashboard-modal-shell'
 import { reportError } from '@/lib/observability/report-error'
 
@@ -92,21 +93,20 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
           query.set('reviewId', reviewId)
         }
 
-        const res = await fetch(`/api/v1/weekly-review?${query.toString()}`)
-        const result = await res.json()
+        const result = await apiRequestData<WeeklyAIReview | WeeklyAIReview[]>(`/api/v1/weekly-review?${query.toString()}`, {
+          method: 'GET',
+          retry: { mode: 'safe' },
+          operation: 'load-weekly-reviews',
+        })
 
-        if (result.success) {
-          const reviewList = (Array.isArray(result.data) ? result.data : [result.data]).filter(Boolean)
-          setReviews(reviewList)
+        const reviewList = (Array.isArray(result) ? result : [result]).filter(Boolean)
+        setReviews(reviewList)
 
-          if (reviewId) {
-            const idx = reviewList.findIndex((review: WeeklyAIReview) => review.id === reviewId)
-            setCurrentIndex(idx >= 0 ? idx : 0)
-          } else {
-            setCurrentIndex(0)
-          }
+        if (reviewId) {
+          const idx = reviewList.findIndex((review: WeeklyAIReview) => review.id === reviewId)
+          setCurrentIndex(idx >= 0 ? idx : 0)
         } else {
-          setReviews([])
+          setCurrentIndex(0)
         }
       } catch (error) {
         reportError(error, {

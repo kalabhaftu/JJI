@@ -1,6 +1,6 @@
 
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
 import { autoCleanStaleCache, clearAccountCaches, getCacheStats } from '@/lib/cache/persistent-cache'
 import { queryKeyPrefixes } from '@/lib/query/query-keys'
@@ -18,10 +18,10 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
   const queryClient = useQueryClient()
   const scope = useQueryScope()
 
-  const invalidateAccountQueries = async () => {
+  const invalidateAccountQueries = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
     await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
-  }
+  }, [queryClient, scope])
   
   useEffect(() => {
     if (!enabled) return
@@ -49,7 +49,7 @@ export function useAutoCacheCleanup(options: UseAutoCacheCleanupOptions = {}) {
     }
     
     lastUserIdRef.current = userId
-  }, [userId, enabled])
+  }, [userId, enabled, invalidateAccountQueries])
   
   return {
     manualCleanup: async () => {

@@ -945,7 +945,7 @@ body[data-sidebar-drawer-open="true"] .mobile-bottom-nav {
     }
 
     .animate-pulse {
-      animation-duration: 2s !important;
+      animation: none !important;
     }
 
     .animate-spin {

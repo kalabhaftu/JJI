@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { toast } from 'sonner'
+import { apiStreamRequest } from '@/lib/api/stream-client'
 
 interface DeploymentCheckConfig {
   checkInterval?: number
@@ -30,16 +31,13 @@ export function useDeploymentCheck({
 
     try {
 
-      const response = await fetch('/api/build-id?' + Date.now(), {
+      const response = await apiStreamRequest('/api/build-id?' + Date.now(), {
         cache: 'no-store',
         headers: {
           'Cache-Control': 'no-cache',
         },
+        operation: 'check-deployment-build',
       })
-
-      if (!response.ok) {
-        return
-      }
 
       const data = await response.json()
       const newBuildId = data.buildId

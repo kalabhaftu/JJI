@@ -351,7 +351,7 @@ export default function ImportButton() {
       setIsLoading(false)
       setSaveProgress(0)
     }
-  }, [user, supabaseUser, selectedAccountId, processedTrades, refreshTrades, resetImportState, isOffline])
+  }, [user, supabaseUser, selectedAccountId, processedTrades, refreshTrades, resetImportState, isOffline, queryClient, scope])
 
   const handleNextStep = useCallback(() => {
     if (!platform) return
@@ -622,7 +622,7 @@ export default function ImportButton() {
         }}
         variant="tertiary"
         size="navIcon"
-        className="text-muted-foreground"
+        className="text-muted-foreground max-[400px]:hidden"
         id="import-data"
         data-tour="import-nav-btn"
         title="Import trades"

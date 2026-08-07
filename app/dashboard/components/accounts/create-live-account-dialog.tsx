@@ -6,7 +6,8 @@ import { useRef, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { CurrencyField, FormErrorSummary } from '@/components/ui/domain-fields'
+import { CurrencyField } from '@/components/ui/domain-fields'
+import { FormErrorSummary } from '@/components/ui/form-error-summary'
 import { focusFirstInvalidField } from '@/lib/form-fields'
 import {
   Dialog,

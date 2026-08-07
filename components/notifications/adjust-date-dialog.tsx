@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Calendar, Loader2 as CircleNotch, Info } from 'lucide-react'
 import { toast } from 'sonner'
+import { apiRequestData } from '@/lib/api/client'
 import type { NotificationType, NotificationRow as Notification } from '@/lib/db/schema/users';
 import { reportClientError } from '@/lib/observability/report-error'
 
@@ -44,24 +45,18 @@ export function AdjustDateDialog({
   const handleAdjustDate = async () => {
     try {
       setIsUpdating(true)
-      const response = await fetch(`/api/v1/accounts/${accountId}/adjust-date`, {
+      await apiRequestData<{ success: boolean }>(`/api/v1/accounts/${accountId}/adjust-date`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           newDate,
           isPropFirm,
           notificationId: notification.id
-        })
+        }),
+        retry: { mode: 'never' },
+        operation: 'adjust-notification-date',
       })
-
-      const result = await response.json()
-
-      if (result.success) {
-        toast.success('Account date adjusted successfully')
-        onComplete()
-      } else {
-        throw new Error(result.error?.message || 'Failed to adjust date')
-      }
+      toast.success('Account date adjusted successfully')
+      onComplete()
     } catch (error) {
       reportClientError(error, { operation: 'adjust-notification-date', route: '/api/v1/notifications/adjust-date' })
       toast.error('Adjustment failed', {

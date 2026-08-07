@@ -7,6 +7,7 @@ import { CheckCircle2, Loader2, Clock } from 'lucide-react'
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
 import { SUBSCRIPTION_CONFIRMATION_POLL_MS } from '@/lib/constants/intervals'
+import { apiRequest } from '@/lib/api/client'
 import { reportError } from '@/lib/observability/report-error'
 
 export default function SubscribeSuccessPage() {
@@ -36,17 +37,15 @@ export default function SubscribeSuccessPage() {
         const endpoint = selectedProvider === 'whop'
           ? '/api/v1/billing/status'
           : `/api/v1/payments/status?paymentRecordId=${encodeURIComponent(paymentId!)}&refresh=true`
-        const res = await fetch(endpoint)
-        const data = await res.json()
+        const payload = await apiRequest<{ hasAccess?: boolean; providerStatus?: string }>(endpoint, {
+          retry: { mode: 'never' },
+          operation: 'poll-subscription-confirmation',
+        })
 
-        if (!res.ok) {
-          throw new Error(`Subscription confirmation failed with status ${res.status}`)
-        }
-
-        if (data.success && data.data) {
+        if (payload.data) {
           if (
-            (selectedProvider === 'whop' && data.data.hasAccess)
-            || (selectedProvider === 'crypto' && data.data.providerStatus === 'finished')
+            (selectedProvider === 'whop' && payload.data.hasAccess)
+            || (selectedProvider === 'crypto' && payload.data.providerStatus === 'finished')
           ) {
             setStatus('confirmed')
             sessionStorage.removeItem('pendingPaymentId')
@@ -54,11 +53,14 @@ export default function SubscribeSuccessPage() {
             router.refresh()
             return true
           }
+          const providerStatus = payload.data.providerStatus
           if (
             (selectedProvider === 'crypto'
-              && ['failed', 'expired', 'refunded'].includes(data.data.providerStatus))
+              && !!providerStatus
+              && ['failed', 'expired', 'refunded'].includes(providerStatus))
             || (selectedProvider === 'whop'
-              && ['canceled', 'expired'].includes(data.data.providerStatus))
+              && !!providerStatus
+              && ['canceled', 'expired'].includes(providerStatus))
           ) {
             router.replace('/subscribe/cancelled')
             return true

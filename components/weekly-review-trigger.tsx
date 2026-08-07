@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { format, startOfWeek, subWeeks } from 'date-fns'
 import { useUserStore } from '@/store/user-store'
 import { isDemoSurface } from '@/lib/public-surface-routing'
+import { apiRequest, apiRequestData } from '@/lib/api/client'
 import { reportError } from '@/lib/observability/report-error'
 
 
@@ -49,39 +50,22 @@ export function WeeklyReviewTrigger() {
 
     const triggerReview = async () => {
       try {
-        const profileRes = await fetch('/api/auth/profile')
-        if (!profileRes.ok) {
-          scheduleRetry()
-          return
-        }
-
-        const profileData = await profileRes.json()
-        if (!profileData.success) {
-          scheduleRetry()
-          return
-        }
-
-        const aiSettings = profileData.data?.aiSettings
-        if (!aiSettings?.autoGenerateInsights) return
-
-        const response = await fetch('/api/v1/weekly-review', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ clientDate: new Date().toISOString() })
+        const profileData = await apiRequest<{ aiSettings?: { autoGenerateInsights?: boolean } }>('/api/auth/profile', {
+          method: 'GET',
+          retry: { mode: 'safe' },
+          operation: 'load-weekly-review-profile',
         })
-        if (!response.ok) {
-          scheduleRetry()
-          return
-        }
+        if (!profileData.data?.aiSettings?.autoGenerateInsights) return
 
-        const result = await response.json()
-        if (result?.success) {
-          sessionStorage.setItem(sessionKey, '1')
-          retryCountRef.current = 0
-          window.dispatchEvent(new CustomEvent('notifications:refresh'))
-          return
-        }
-        scheduleRetry()
+        await apiRequestData<unknown>('/api/v1/weekly-review', {
+          method: 'POST',
+          body: JSON.stringify({ clientDate: new Date().toISOString() }),
+          retry: { mode: 'never' },
+          operation: 'trigger-weekly-review',
+        })
+        sessionStorage.setItem(sessionKey, '1')
+        retryCountRef.current = 0
+        window.dispatchEvent(new CustomEvent('notifications:refresh'))
       } catch (error) {
         reportError(error, {
           surface: 'client',

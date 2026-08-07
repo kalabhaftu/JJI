@@ -5,6 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query/query-keys'
 import { useQueryScope, isScopeReady } from '@/lib/query/use-query-scope'
 import { apiRequestData } from '@/lib/api/client'
+import { apiStreamRequest } from '@/lib/api/stream-client'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Download, Database } from 'lucide-react'
@@ -143,18 +144,14 @@ export function AdvancedExportDialog() {
         to: !isAllTime && dateRange.to ? dateRange.to.toISOString() : undefined
       }
 
-      const response = await fetch('/api/v1/data/export', {
+      const response = await apiStreamRequest('/api/v1/data/export', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(filters)
+        body: JSON.stringify(filters),
+        operation: 'export-user-data',
       })
-
-      if (!response.ok) {
-        const error = await response.json().catch(() => ({}))
-        throw new Error(error.error || 'Export failed')
-      }
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)

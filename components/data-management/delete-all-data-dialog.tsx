@@ -26,6 +26,8 @@ import {
   XCircle
 } from "lucide-react"
 import { toast } from "sonner"
+import { apiRequestData } from '@/lib/api/client'
+import { apiStreamRequest } from '@/lib/api/stream-client'
 import { reportClientError } from '@/lib/observability/report-error'
 
 interface DeleteAllDataDialogProps {
@@ -62,11 +64,10 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
     try {
       setIsDownloadingBackup(true)
 
-      const response = await fetch('/api/v1/user/data/backup')
-
-      if (!response.ok) {
-        throw new Error('Failed to generate backup')
-      }
+      const response = await apiStreamRequest('/api/v1/user/data/backup', {
+        method: 'GET',
+        operation: 'download-user-backup',
+      })
 
       const blob = await response.blob()
       const url = window.URL.createObjectURL(blob)
@@ -105,21 +106,14 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
     try {
       setIsDeleting(true)
 
-      const response = await fetch('/api/v1/user/data', {
+      await apiRequestData<{ deleted: boolean }>('/api/v1/user/data', {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           confirmation: 'DELETE ALL DATA'
-        })
+        }),
+        retry: { mode: 'never' },
+        operation: 'delete-user-data',
       })
-
-      const result = await response.json()
-
-      if (!response.ok) {
-        throw new Error(result.error?.message || 'Failed to delete data')
-      }
 
       toast.success('All data deleted', {
         description: 'Your account data has been permanently removed.'

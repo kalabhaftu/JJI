@@ -6,11 +6,11 @@ import {
   ControlledSelect,
   CurrencyField,
   DateTimeTimezoneField,
-  FormErrorSummary,
   PercentageField,
   SymbolCombobox,
   TagMultiSelect,
 } from '@/components/ui/domain-fields'
+import { FormErrorSummary } from '@/components/ui/form-error-summary'
 
 const roots: Array<ReturnType<typeof createRoot>> = []
 

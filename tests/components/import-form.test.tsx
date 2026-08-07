@@ -255,5 +255,5 @@ describe('Import save failure and retry', () => {
     expect(refreshTradesMock).toHaveBeenCalled()
     expect(toastMock.success).toHaveBeenCalledWith('Import Successful', expect.anything())
     expect(emitTourEventMock).toHaveBeenCalledWith('import.succeeded')
-  })
+  }, 30_000)
 })

@@ -132,7 +132,7 @@ export function useDashboardPropFirmAccount() {
     staleTime: 30_000,
   })
 
-  const accounts = query.data ?? []
+  const accounts = useMemo(() => query.data ?? [], [query.data])
   const [selectedMasterAccountId, setSelectedMasterAccountIdState] = useState<string | null>(null)
   const [resetTimezone, setResetTimezoneState] = useState(DEFAULT_RESET_TIMEZONE)
 

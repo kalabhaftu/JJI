@@ -6,6 +6,7 @@ import type { Route } from "next"
 
 import { Spinner } from "@/components/ui/spinner"
 import { createClient } from "@/lib/supabase"
+import { apiStreamRequest } from "@/lib/api/stream-client"
 
 interface AppLaunchClientProps {
   nextPath: string
@@ -19,12 +20,11 @@ function checkServerSession() {
     return authCheckInFlight
   }
 
-  authCheckInFlight = fetch("/api/auth/check", {
+  authCheckInFlight = apiStreamRequest("/api/auth/check", {
     cache: "no-store",
     headers: { "Cache-Control": "no-cache" },
   })
     .then(async (response) => {
-      if (!response.ok) return false
       const data = await response.json().catch(() => null)
       return data?.authenticated === true
     })
@@ -46,9 +46,8 @@ async function restoreSession(accessToken: string, refreshToken: string) {
     return existing
   }
 
-  const request = fetch("/api/auth/restore", {
+  const request = apiStreamRequest("/api/auth/restore", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       accessToken,
       refreshToken,
@@ -106,15 +105,10 @@ export function AppLaunchClient({ nextPath }: AppLaunchClientProps) {
           return
         }
 
-        const restoreResponse = await restoreSession(
+        await restoreSession(
           session.access_token,
           session.refresh_token
         )
-
-        if (!restoreResponse.ok) {
-          await redirectToLogin()
-          return
-        }
 
         if (!cancelled) {
           setStatus("Opening dashboard...")

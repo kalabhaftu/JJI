@@ -105,7 +105,7 @@ export default function AccountDetailPage() {
     staleTime: 30_000,
   })
 
-  const tradesData = tradesQuery.data?.trades || []
+  const tradesData = useMemo(() => tradesQuery.data?.trades || [], [tradesQuery.data])
   const payoutsData = payoutsQuery.data || null
   const dataError = tradesQuery.error || payoutsQuery.error
     ? 'Could not refresh account activity. Previously loaded trades and payouts are still shown.'

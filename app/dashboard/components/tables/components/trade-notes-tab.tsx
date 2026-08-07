@@ -28,6 +28,7 @@ import { TradeImagesGallery } from './trade-images-gallery'
 import { parseTradePreviewImageValue } from '@/lib/trade-preview-image'
 import { DEFAULT_TRADE_PREVIEW_TRANSFORM, type TradePreviewTransform } from '@/lib/trade-preview'
 import { TradePreviewCropEditor } from './trade-preview-crop-editor'
+import { apiRequestData } from '@/lib/api/client'
 import { toast } from 'sonner'
 import { BUILT_IN_JOURNAL_TEMPLATES } from '@/lib/journal-note-templates'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -235,14 +236,13 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
     const loadCustomTemplates = React.useCallback(async () => {
         try {
             setIsLoadingTemplates(true)
-            const response = await fetch('/api/v1/journal/templates', { cache: 'no-store' })
-            const payload = await response.json().catch(() => null)
+            const payload = await apiRequestData<{ templates: CustomJournalTemplate[] }>('/api/v1/journal/templates', {
+              cache: 'no-store',
+              operation: 'load-journal-templates',
+              retry: { mode: 'safe' },
+            })
 
-            if (!response.ok) {
-                throw new Error(payload?.error?.message || 'Failed to load custom templates')
-            }
-
-            const templates = Array.isArray(payload?.data?.templates) ? payload.data.templates : []
+            const templates = Array.isArray(payload.templates) ? payload.templates : []
             setCustomTemplates(templates)
         } catch (error) {
             reportClientError(error, { operation: 'load-journal-templates', route: '/api/v1/journal/templates' })
@@ -283,21 +283,18 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
 
         try {
             setIsSavingTemplate(true)
-            const response = await fetch('/api/v1/journal/templates', {
+            const payload = await apiRequestData<{ updated?: boolean; template?: CustomJournalTemplate }>('/api/v1/journal/templates', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     name: trimmedName,
                     content: normalizeToLexicalState(currentCommentValue),
                 }),
+                retry: { mode: 'never' },
+                operation: 'save-journal-template',
             })
 
-            const payload = await response.json().catch(() => null)
-            if (!response.ok) {
-                throw new Error(payload?.error?.message || 'Failed to save template')
-            }
-
-            toast.success(payload?.data?.updated ? 'Template updated' : 'Template saved')
+            toast.success(payload?.updated ? 'Template updated' : 'Template saved')
             setIsTemplateNameDialogOpen(false)
             setTemplateName('')
             await loadCustomTemplates()
@@ -312,13 +309,11 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
     const handleDeleteCustomTemplate = React.useCallback(async (templateId: string) => {
         try {
             setDeletingTemplateId(templateId)
-            const response = await fetch(`/api/v1/journal/templates/${templateId}`, {
+            await apiRequestData<{ deleted?: boolean }>(`/api/v1/journal/templates/${templateId}`, {
                 method: 'DELETE',
+                retry: { mode: 'never' },
+                operation: 'delete-journal-template',
             })
-            const payload = await response.json().catch(() => null)
-            if (!response.ok) {
-                throw new Error(payload?.error?.message || 'Failed to delete template')
-            }
 
             setCustomTemplates((prev) => prev.filter((template) => template.id !== templateId))
             toast.success('Template deleted')

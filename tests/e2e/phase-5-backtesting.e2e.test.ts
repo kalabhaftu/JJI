@@ -11,7 +11,7 @@ test('backtesting route exposes the workflow shell without rendering application
 
 test('backtesting supports adding and opening a recorded backtest', async ({ page }) => {
   await page.goto('/dashboard/backtesting')
-  await page.getByRole('button', { name: /Add Backtest/i }).click()
+  await page.getByRole('button', { name: /Add Backtest/i }).first().click()
   const dialog = page.locator('[role="dialog"]')
   await expect(dialog).toBeVisible()
 })

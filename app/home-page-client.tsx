@@ -73,7 +73,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-background selection:bg-primary/30">
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8">
-          <Link href={mainAppHref('/')} className="flex min-w-0 items-center gap-3" aria-label="JJI home">
+          <Link href={mainAppHref('/')} className="flex min-w-0 items-center gap-3 [@media(pointer:coarse)]:min-h-11" aria-label="JJI home">
             <Logo className="h-8 w-8 shrink-0" />
             <div className="min-w-0 leading-none">
               <span className="block text-sm font-black tracking-tight text-foreground">{BRAND.name}</span>

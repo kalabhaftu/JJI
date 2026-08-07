@@ -53,6 +53,7 @@ import {
 import { useUserStore } from "@/store/user-store";
 import { useRithmicSyncContext } from "@/context/rithmic-sync-context";
 import { logger } from '@/lib/logger';
+import { apiRequestData } from '@/lib/api/client';
 
 interface Synchronization {
   accountId: string;
@@ -98,17 +99,17 @@ export function RithmicCredentialsManager({
   const fetchSynchronizations = useCallback(async () => {
     try {
       setIsLoadingSynchronizations(true);
-      const response = await fetch("/api/v1/rithmic/synchronizations", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-      });
+      const result = await apiRequestData<Synchronization[]>(
+        "/api/v1/rithmic/synchronizations",
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          retry: { mode: "safe" },
+          operation: "list-rithmic-connections",
+        }
+      );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch synchronizations");
-      }
-
-      const result = await response.json();
-      setSynchronizations(result.data || []);
+      setSynchronizations(result || []);
     } catch (error) {
       reportError(error, {
         surface: 'client',
@@ -222,16 +223,16 @@ export function RithmicCredentialsManager({
 
       try {
         setDeletingSyncId(accountId);
-        const response = await fetch("/api/v1/rithmic/synchronizations", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accountId }),
-        });
-
-        const result = await response.json();
-        if (!response.ok || !result.success) {
-          throw new Error(result.message || "Failed to delete synchronization");
-        }
+        await apiRequestData<{ success?: boolean }>(
+          "/api/v1/rithmic/synchronizations",
+          {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ accountId }),
+            retry: { mode: "never" },
+            operation: "delete-rithmic-connection",
+          }
+        );
 
         setSynchronizations((prev) =>
           prev.filter((sync) => sync.accountId !== accountId)

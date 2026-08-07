@@ -14,6 +14,7 @@ import { Search, X } from "lucide-react"
 import { WIDGET_REGISTRY } from '../config/widget-registry-lazy'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import { apiRequestData } from '@/lib/api/client'
 import type { WidgetLayout } from '@/lib/dashboard/template-types'
 import { WIDGET_DIMENSIONS } from '../config/widget-dimensions'
 
@@ -35,11 +36,14 @@ export default function WidgetLibraryDialog({
 
   useEffect(() => {
     if (!open) return
-    fetch('/api/v1/dashboard/widget-catalog')
-      .then((response) => response.json())
-      .then((payload) => {
-        if (payload.success && Array.isArray(payload.data)) {
-          setCatalog(Object.fromEntries(payload.data.map((item: any) => [item.widgetType, item])))
+    apiRequestData<Array<{ widgetType: string; label?: string; description?: string; visible?: boolean; deprecated?: boolean }>>('/api/v1/dashboard/widget-catalog', {
+      method: 'GET',
+      retry: { mode: 'safe' },
+      operation: 'load-widget-catalog',
+    })
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setCatalog(Object.fromEntries(data.map((item: any) => [item.widgetType, item])))
         }
       })
       .catch(() => setCatalog({}))

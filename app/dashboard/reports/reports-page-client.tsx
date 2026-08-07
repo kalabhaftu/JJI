@@ -70,6 +70,7 @@ import { PageHeader } from '@/components/ui/page-header'
 import { useReportPageController } from './use-report-page-controller'
 import { ReportsNavigation } from './components/reports-navigation'
 import { ReportsSessionSummary } from './components/reports-session-summary'
+import { apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
 
 const DiverseCharts = dynamic(() => import('./components/diverse-charts').then((mod) => mod.DiverseCharts))
@@ -273,15 +274,12 @@ export default function ReportsPageClient({
                 expiresInDays: 30
             }
 
-            const res = await fetch('/api/v1/reports/share', {
+            const reportData = await apiRequestData<{ slug?: string; url?: string }>('/api/v1/reports/share', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
+                retry: { mode: 'never' },
+                operation: 'create-shared-report-link',
             })
-
-            if (!res.ok) throw new Error('Failed to generate link')
-            const responseData = await res.json()
-            const reportData = responseData.data || {}
 
             await navigator.clipboard.writeText(reportData.url || `${window.location.origin}/reports/shared/${reportData.slug}`)
             toast.success('Shareable link copied to clipboard!')

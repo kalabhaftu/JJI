@@ -8,7 +8,6 @@ const ALLOWED_PULSE_FILES = [
   'app/dashboard/reports/components/performance-card.tsx',
   'app/dashboard/ai/components/conversation-view.tsx',
   'components/ui/ai-prompt-input.tsx',
-  'components/billing/status-card.tsx',
 ]
 
 const LOADING_BOUNDARIES = [

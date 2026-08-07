@@ -4,6 +4,7 @@ import { useCallback, useMemo } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { queryKeyPrefixes } from '@/lib/query/query-keys'
+import { fetcher } from '@/lib/query/fetcher'
 import { useQueryScope } from '@/lib/query/use-query-scope'
 
 interface JournalEntry {
@@ -31,7 +32,7 @@ export function useJournalData(startDate?: Date, endDate?: Date, accountId?: str
 
   const { data: journals = {}, isLoading } = useQuery<Record<string, JournalEntry>>({
     queryKey,
-    queryFn: async () => {
+    queryFn: async ({ signal }) => {
       if (!startDate || !endDate) return {}
 
       const params = new URLSearchParams({
@@ -40,12 +41,9 @@ export function useJournalData(startDate?: Date, endDate?: Date, accountId?: str
       })
       if (accountId) params.append('accountId', accountId)
 
-      const response = await fetch(`/api/v1/journal/list?${params}`)
-      if (!response.ok) throw new Error('Failed to fetch journals')
-
-      const data = await response.json()
+      const data = await fetcher<{ journals: JournalEntry[] }>(`/api/v1/journal/list?${params}`, signal)
       const journalMap: Record<string, JournalEntry> = {}
-      data.data?.journals?.forEach((journal: JournalEntry) => {
+      data.journals?.forEach((journal: JournalEntry) => {
         const dateKey = format(new Date(journal.date), 'yyyy-MM-dd')
         journalMap[dateKey] = journal
       })

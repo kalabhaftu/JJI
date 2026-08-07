@@ -13,7 +13,7 @@ interface RouteParams {
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const requestId = resolveRequestId(request.headers)
-  const rateLimitResponse = await applyApiRoutePolicy(request, 'import')
+  const rateLimitResponse = await applyApiRoutePolicy(request, 'import-job-process')
   if (rateLimitResponse) return rateLimitResponse
 
   try {

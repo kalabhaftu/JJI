@@ -54,6 +54,8 @@ import { useUserStore } from "@/store/user-store";
 import { useRithmicSyncContext } from "@/context/rithmic-sync-context";
 import { logger } from '@/lib/logger';
 import { apiRequestData } from '@/lib/api/client';
+import { ApiClientError } from '@/lib/api/errors';
+import { DIRECT_SYNC_STATUS } from '@/lib/integrations/direct-sync-status';
 
 interface Synchronization {
   accountId: string;
@@ -97,6 +99,11 @@ export function RithmicCredentialsManager({
     useRithmicSyncStore();
 
   const fetchSynchronizations = useCallback(async () => {
+    if (DIRECT_SYNC_STATUS.isPaused) {
+      setSynchronizations([]);
+      setIsLoadingSynchronizations(false);
+      return;
+    }
     try {
       setIsLoadingSynchronizations(true);
       const result = await apiRequestData<Synchronization[]>(
@@ -111,6 +118,11 @@ export function RithmicCredentialsManager({
 
       setSynchronizations(result || []);
     } catch (error) {
+      if (error instanceof ApiClientError && error.status === 503) {
+        logger.info({ error: error.message }, 'Rithmic direct sync is paused; skipping synchronizations load');
+        setSynchronizations([]);
+        return;
+      }
       reportError(error, {
         surface: 'client',
         operation: 'list-rithmic-connections',

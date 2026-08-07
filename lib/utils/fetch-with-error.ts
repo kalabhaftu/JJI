@@ -179,8 +179,17 @@ export async function fetchWithError<T = unknown>(
       composed.cleanup()
 
 
-      if (err instanceof Error && err.name === 'AbortError') {
-        const callerCancelled = fetchOptions.signal?.aborted && !composed.didTimeout()
+      const isAbortOrCanceled = Boolean(
+        (fetchOptions.signal?.aborted && !composed.didTimeout())
+        || (err instanceof Error && (
+          err.name === 'AbortError'
+          || err.name === 'CanceledError'
+          || err.message.includes('aborted')
+          || err.message.includes('signal is aborted')
+        ))
+      )
+      if (isAbortOrCanceled || (err instanceof Error && err.name === 'AbortError')) {
+        const callerCancelled = (fetchOptions.signal?.aborted && !composed.didTimeout()) || (!composed.didTimeout() && err instanceof Error && (err.name === 'AbortError' || err.name === 'CanceledError'))
         const error = createFetchError(
           callerCancelled ? 'Request cancelled' : 'Request timed out',
           callerCancelled ? 'CANCELLED' : 'TIMEOUT',
@@ -197,7 +206,7 @@ export async function fetchWithError<T = unknown>(
         return {
           data: null,
           error,
-          status: 408,
+          status: callerCancelled ? 0 : 408,
           ok: false
         }
       }

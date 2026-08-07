@@ -8,6 +8,8 @@ import { reportError } from '@/lib/observability/report-error'
 import { getAllRithmicData, getRithmicData, updateLastSyncTime } from '@/lib/rithmic-storage'
 import { parseRithmicRateLimitMessage, type RithmicCredentials } from '@/lib/rithmic/sync-contract'
 import { apiRequestData } from '@/lib/api/client'
+import { ApiClientError } from '@/lib/api/errors'
+import { DIRECT_SYNC_STATUS } from '@/lib/integrations/direct-sync-status'
 import { useUserStore } from '@/store/user-store'
 
 interface RithmicSynchronizationInput {
@@ -325,7 +327,7 @@ const clearNextSyncTimer = useCallback(() => {
 
 const scheduleNextSync = useCallback(() => {
   clearNextSyncTimer();
-  if (disabled) return;
+  if (disabled || DIRECT_SYNC_STATUS.isPaused) return;
 
   const dueAt = Object.values(getAllRithmicData()).map(
     (credentialSet) =>
@@ -344,6 +346,10 @@ const scheduleNextSyncRef = useRef(scheduleNextSync);
 scheduleNextSyncRef.current = scheduleNextSync;
 
 const checkAndPerformSyncs = useCallback(async () => {
+  if (disabled || DIRECT_SYNC_STATUS.isPaused) {
+    clearNextSyncTimer();
+    return;
+  }
   if (isLoading) return;
   if (isAutoSyncing) return;
   if (document.visibilityState === 'hidden') return;
@@ -367,20 +373,29 @@ const checkAndPerformSyncs = useCallback(async () => {
         await performSyncForCredential(sync.accountId);
       }
     }
+    scheduleNextSync();
   } catch (error) {
+    if (error instanceof ApiClientError && error.status === 503) {
+      logger.info({ error: error.message }, 'Rithmic direct sync is paused/unavailable; stopping auto-sync polling');
+      clearNextSyncTimer();
+      return;
+    }
     reportError(error, {
       surface: 'client',
       operation: 'check-rithmic-auto-synchronizations',
       extra: { fallbackUsed: true },
     })
+    scheduleNextSync();
   }
-  scheduleNextSync();
-}, [syncInterval, isAutoSyncing, performSyncForCredential, isLoading, scheduleNextSync]);
+}, [disabled, syncInterval, isAutoSyncing, performSyncForCredential, isLoading, scheduleNextSync, clearNextSyncTimer]);
 
 checkAndPerformSyncsRef.current = checkAndPerformSyncs;
 
 useEffect(() => {
-  if (disabled) return;
+  if (disabled || DIRECT_SYNC_STATUS.isPaused) {
+    clearNextSyncTimer();
+    return;
+  }
   scheduleNextSync();
   return clearNextSyncTimer;
 }, [disabled, scheduleNextSync, clearNextSyncTimer]);

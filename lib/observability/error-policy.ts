@@ -4,6 +4,8 @@ const IGNORED_ERROR_PATTERNS = [
   'ResizeObserver loop',
   'The play() request was interrupted',
   'AbortError',
+  'The user aborted a request',
+  'signal is aborted without reason',
   'ResizeObserver loop completed with undelivered notifications',
   'NEXT_REDIRECT',
   'NEXT_HTTP_ERROR_FALLBACK;',
@@ -34,8 +36,17 @@ export function isExpectedError(
     return true
   }
 
+  if (error instanceof ApiClientError) {
+    if (error.isCancellation || error.kind === 'cancelled' || error.kind === 'offline') return true
+  }
+
   const message = error instanceof Error ? error.message : String(error ?? '')
   const name = error instanceof Error ? error.name : ''
-  if (error instanceof ApiClientError && error.isCancellation) return true
-  return name === 'AbortError' || shouldIgnoreError(message)
+  if (name === 'AbortError' || name === 'CanceledError') return true
+  if (typeof navigator !== 'undefined' && !navigator.onLine && (
+    message.includes('Failed to fetch') || message.includes('NetworkError') || message.includes('Load failed')
+  )) {
+    return true
+  }
+  return shouldIgnoreError(message)
 }

@@ -161,6 +161,7 @@ export const accountDeletionLimiter: LimiterConfig = { points: 3, duration: 300,
 export const aiLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 export const aiReviewLimiter: LimiterConfig = { points: 1, duration: 86400, failClosed: true }
 export const importLimiter: LimiterConfig = { points: 10, duration: 60, failClosed: true }
+export const importJobProcessLimiter: LimiterConfig = { points: 120, duration: 60, failClosed: true }
 export const uploadLimiter: LimiterConfig = { points: 30, duration: 60, failClosed: true }
 export const webhookLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }
 export const thorLimiter: LimiterConfig = { points: 20, duration: 60, failClosed: true }

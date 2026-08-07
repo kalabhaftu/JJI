@@ -10,6 +10,7 @@ import {
   errorReportLimiter,
   feedbackLimiter,
   importLimiter,
+  importJobProcessLimiter,
   paymentLimiter,
   publicLimiter,
   sensitiveMutationLimiter,
@@ -25,6 +26,7 @@ export type ApiRoutePolicy =
   | 'auth'
   | 'ai'
   | 'import'
+  | 'import-job-process'
   | 'payment'
   | 'upload'
   | 'feedback'
@@ -75,6 +77,15 @@ export function classifyApiRoute(
   if (pathname.startsWith('/api/auth/')) return 'auth'
   if (pathname.startsWith('/api/v1/ai/')) return 'ai'
   if (
+    pathname.includes('/jobs/') && (
+      pathname.startsWith('/api/v1/import/')
+      || pathname.startsWith('/api/v1/data/import/')
+      || pathname.startsWith('/api/v1/trades/import/')
+    )
+  ) {
+    return 'import-job-process'
+  }
+  if (
     pathname.startsWith('/api/v1/import/')
     || pathname.startsWith('/api/v1/data/import/')
     || pathname.startsWith('/api/v1/trades/import/')
@@ -110,6 +121,8 @@ function limiterForPolicy(policy: ApiRoutePolicy): LimiterConfig | null {
       return aiLimiter
     case 'import':
       return importLimiter
+    case 'import-job-process':
+      return importJobProcessLimiter
     case 'payment':
       return paymentLimiter
     case 'upload':

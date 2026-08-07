@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import {
     AlertCircle as WarningCircle
 } from "lucide-react"
-import { createChart, ColorType, IChartApi, Time, CandlestickSeries, createSeriesMarkers, type SeriesMarker } from 'lightweight-charts'
+import { createChart, IChartApi, Time, CandlestickSeries, createSeriesMarkers, type SeriesMarker } from 'lightweight-charts'
 import { getMarketData } from '@/app/actions/get-market-data'
 import { getTimezoneOffset } from 'date-fns-tz'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -76,8 +76,8 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
 
             const chart = createChart(chartContainerRef.current, {
                 layout: {
-                    background: { type: ColorType.Solid, color: 'white' },
-                    textColor: 'black',
+                    background: { color: 'transparent' },
+                    textColor: 'hsl(var(--muted-foreground))',
                 },
                 grid: {
                     vertLines: { visible: false },
@@ -102,15 +102,15 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
             })
 
             const candleSeries = chart.addSeries(CandlestickSeries, {
-                upColor: '#83b885',
-                downColor: '#000000',
+                upColor: 'hsl(var(--chart-bullish))',
+                downColor: 'hsl(var(--chart-bearish))',
                 borderVisible: true,
-                borderColor: '#000000',
+                borderColor: 'hsl(var(--chart-bearish))',
                 wickVisible: true,
-                wickUpColor: '#83b885',
-                wickDownColor: '#000000',
-                borderUpColor: '#83b885',
-                borderDownColor: '#000000',
+                wickUpColor: 'hsl(var(--chart-bullish))',
+                wickDownColor: 'hsl(var(--chart-bearish))',
+                borderUpColor: 'hsl(var(--chart-bullish))',
+                borderDownColor: 'hsl(var(--chart-bearish))',
             })
 
             candleSeries.setData(adjustedData as any)

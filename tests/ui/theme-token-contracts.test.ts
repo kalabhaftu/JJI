@@ -28,12 +28,19 @@ describe('semantic theme token contract', () => {
     }
   })
 
-  it('does not let accent packs override financial or semantic roles', () => {
+  it('lets accent packs drive the win/loss financial pair while keeping system semantics stable', () => {
     for (const selector of ['.accent-reports', '.accent-violet', '.accent-slate']) {
       const start = globals.indexOf(selector)
       const end = globals.indexOf('}', start)
       const declarations = globals.slice(start, end)
-      expect(declarations).not.toMatch(/--(success|destructive|warning|chart-profit|chart-loss|financial-|semantic-)/)
+      expect(declarations, `${selector} must define chart win/loss`).toContain('--chart-profit:')
+      expect(declarations, `${selector} must define chart win/loss`).toContain('--chart-loss:')
+      expect(declarations, `${selector} must define financial win/loss`).toContain('--financial-profit:')
+      expect(declarations, `${selector} must define financial win/loss`).toContain('--financial-loss:')
+      const profitMatch = declarations.match(/--financial-profit:\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%/)
+      const lossMatch = declarations.match(/--financial-loss:\s*([\d.]+)\s+([\d.]+)%\s+([\d.]+)%/)
+      expect(profitMatch?.slice(1), `${selector} win/loss pair must stay distinct`).not.toEqual(lossMatch?.slice(1))
+      expect(declarations).not.toMatch(/--(success|destructive|warning|semantic-)/)
     }
   })
 })

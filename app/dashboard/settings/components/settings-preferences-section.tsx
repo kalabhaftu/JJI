@@ -42,7 +42,7 @@ import { SettingRow } from './setting-row'
 import { defaultAiSettings, timezones } from './settings-config'
 import type { SettingsProfileData } from './settings-types'
 
-type Theme = 'light' | 'dark' | 'system'
+type Theme = 'light' | 'dark' | 'system' | 'black'
 type AccentPack = 'classic' | 'reports' | 'violet' | 'slate'
 type WidgetStyle = 'default' | 'glass'
 type ChartStyle = 'smooth' | 'sharp'
@@ -104,7 +104,9 @@ export function SettingsPreferencesSection({
     ? { icon: Moon, label: 'Dark' }
     : theme === 'light'
       ? { icon: Sun, label: 'Light' }
-      : { icon: Laptop, label: 'System' }
+      : theme === 'black'
+        ? { icon: Moon, label: 'Black' }
+        : { icon: Laptop, label: 'System' }
 
   return (
       <div className="space-y-6">
@@ -142,6 +144,11 @@ export function SettingsPreferencesSection({
                     <Laptop className="mr-2 h-3.5 w-3.5" />
                     System
                     {theme === 'system' && <Check className="ml-auto h-3.5 w-3.5" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleThemeChange("black")}>
+                    <Moon className="mr-2 h-3.5 w-3.5" />
+                    Black
+                    {theme === 'black' && <Check className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

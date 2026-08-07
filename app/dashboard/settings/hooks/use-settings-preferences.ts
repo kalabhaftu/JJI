@@ -12,7 +12,7 @@ export function useSettingsPreferences() {
   } = useTheme()
 
   const handleThemeChange = (value: string) => {
-    setTheme(value as 'light' | 'dark' | 'system')
+    setTheme(value as 'light' | 'dark' | 'system' | 'black')
     toast.success('Theme updated', {
       description: `Theme changed to ${value === 'system' ? 'system default' : value} mode.`,
       duration: 2000,

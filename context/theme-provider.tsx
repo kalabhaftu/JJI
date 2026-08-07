@@ -5,12 +5,12 @@ import { toast } from 'sonner'
 import { useUserStore } from '@/store/user-store'
 import { reportError } from '@/lib/observability/report-error'
 
-type Theme = 'light' | 'dark' | 'system'
+type Theme = 'light' | 'dark' | 'system' | 'black'
 type AccentPack = 'classic' | 'reports' | 'violet' | 'slate'
 type WidgetSurfaceStyle = 'default' | 'glass'
 type ChartStyle = 'smooth' | 'sharp'
 
-const THEMES = ['light', 'dark', 'system'] as const
+const THEMES = ['light', 'dark', 'system', 'black'] as const
 const ACCENT_PACKS = ['classic', 'reports', 'violet', 'slate'] as const
 const WIDGET_STYLES = ['default', 'glass'] as const
 const CHART_STYLES = ['smooth', 'sharp'] as const
@@ -33,7 +33,7 @@ function isChartStyle(value: unknown): value is ChartStyle {
 
 type ThemeContextType = {
   theme: Theme
-  effectiveTheme: 'light' | 'dark'
+  effectiveTheme: 'light' | 'dark' | 'black'
   accentPack: AccentPack
   widgetStyle: WidgetSurfaceStyle
   chartStyle: ChartStyle
@@ -86,7 +86,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const user = useUserStore(state => state.user)
   const preferenceRequestVersions = React.useRef<Record<string, number>>({})
 
-  const resolveEffective = useCallback((t: Theme): 'light' | 'dark' => {
+  const resolveEffective = useCallback((t: Theme): 'light' | 'dark' | 'black' => {
     if (t === 'system') return getSystemTheme()
     return t
   }, [])
@@ -96,11 +96,15 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const effective = resolveEffective(t)
     const root = window.document.documentElement
     if (effective === 'light') {
-      root.classList.remove('dark')
+      root.classList.remove('dark', 'black')
       root.classList.add('light')
       root.style.colorScheme = 'light'
-    } else {
+    } else if (effective === 'black') {
       root.classList.remove('light')
+      root.classList.add('dark', 'black')
+      root.style.colorScheme = 'dark'
+    } else {
+      root.classList.remove('light', 'black')
       root.classList.add('dark')
       root.style.colorScheme = 'dark'
     }

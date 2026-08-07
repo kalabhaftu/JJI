@@ -110,6 +110,20 @@ export function derivePropFirmLifecycleStatus(
   return 'passed'
 }
 
+export function resolveSurfacedPhaseStatus(
+  master: { status: string | null; currentPhase: number | null },
+  phase: { status: string | null; phaseNumber: number | null }
+): string {
+  if (
+    master.status === 'funded' &&
+    phase.status === 'passed' &&
+    phase.phaseNumber === master.currentPhase
+  ) {
+    return 'funded'
+  }
+  return phase.status ?? 'pending'
+}
+
 export function summarizePhaseHistory(master: Pick<MasterAccountType, 'evaluationType'> & { PhaseAccount: ReportPhase[] }): PhaseHistorySummary[] {
   return [...master.PhaseAccount]
     .sort((a, b) => a.phaseNumber - b.phaseNumber)

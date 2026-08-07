@@ -3,7 +3,7 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { CheckCircle2, Building2, User, AlertCircle, RefreshCw, Target, Clock, AlertTriangle } from "lucide-react"
+import { CheckCircle2, Building2, User, AlertCircle, RefreshCw, Clock, AlertTriangle } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -119,7 +119,7 @@ export default function AccountSelection({
           if (acc.accountType === 'prop-firm') {
 
             const phaseStatus = acc.currentPhase?.status || acc.status
-            return phaseStatus === 'active'
+            return phaseStatus === 'active' || phaseStatus === 'funded'
           }
           
           return false
@@ -279,12 +279,12 @@ export default function AccountSelection({
                               variant="outline"
                               className={cn(
                                 "text-[10px] px-2 py-0.5 border font-semibold gap-1",
-                                phaseStatus === 'active' ? 'border-primary/30 bg-primary/5 text-primary' :
+                                phaseStatus === 'active' || phaseStatus === 'funded' ? 'border-primary/30 bg-primary/5 text-primary' :
                                 phaseStatus === 'passed' ? 'border-success/30 bg-success/5 text-success-foreground' :
                                 'border-destructive/30 bg-destructive/5 text-destructive-foreground'
                               )}
                             >
-                              {phaseStatus === 'active' && <Target className="h-2.5 w-2.5" />}
+                              {(phaseStatus === 'active' || phaseStatus === 'funded') && <CheckCircle2 className="h-2.5 w-2.5" />}
                               {phaseStatus === 'passed' && <CheckCircle2 className="h-2.5 w-2.5" />}
                               {phaseStatus === 'failed' && <AlertTriangle className="h-2.5 w-2.5" />}
                               <span>{getPhaseLabel(evaluationType, phaseNumber)}</span>

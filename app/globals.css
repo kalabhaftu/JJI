@@ -297,6 +297,11 @@
     color-scheme: light;
   }
 
+  html.black {
+    background-color: hsl(var(--background)) !important;
+    color-scheme: dark;
+  }
+
   body {
     min-height: 100vh !important;
     margin: 0 !important;
@@ -533,14 +538,14 @@
     /* 3. LAYER 3: SEMANTICS & CHARTS */
     --chart-profit: 162 76% 36%;         /* #10B981 */
     --chart-loss: 354 84% 54%;           /* #EF4444 */
-    --chart-bullish: 162 76% 45%;        /* Modern green candle */
-    --chart-bearish: 354 84% 58%;        /* Modern red candle */
-    --financial-profit: 162 76% 30%;
-    --financial-loss: 354 84% 48%;
+    --chart-bullish: 162 76% 36%;        /* #10B981 - matches win/profit */
+    --chart-bearish: 354 84% 54%;        /* #EF4444 - matches loss */
+    --financial-profit: 162 76% 36%;
+    --financial-loss: 354 84% 54%;
     --financial-long: 162 76% 36%;
-    --financial-short: 354 84% 48%;
-    --financial-bullish: 162 76% 45%;
-    --financial-bearish: 354 84% 58%;
+    --financial-short: 354 84% 54%;
+    --financial-bullish: 162 76% 36%;
+    --financial-bearish: 354 84% 54%;
     --financial-neutral: 220 10% 44%;
 
     --chart-1: 221 83% 53%;              /* #2563EB - Blue */
@@ -636,14 +641,14 @@
     /* 3. LAYER 3: SEMANTICS & CHARTS */
     --chart-profit: 160 84% 39%;        /* #10B981 */
     --chart-loss: 0 84% 60%;            /* #EF4444 */
-    --chart-bullish: 123 27% 62%;       /* #83b885 */
-    --chart-bearish: 25 70% 45%;         /* Deep amber/copper */
+    --chart-bullish: 160 84% 39%;       /* #10B981 - matches win/profit */
+    --chart-bearish: 0 84% 60%;         /* #EF4444 - matches loss */
     --financial-profit: 160 84% 39%;
     --financial-loss: 0 84% 60%;
     --financial-long: 160 84% 39%;
     --financial-short: 0 84% 60%;
-    --financial-bullish: 123 27% 62%;
-    --financial-bearish: 25 70% 45%;
+    --financial-bullish: 160 84% 39%;
+    --financial-bearish: 0 84% 60%;
     --financial-neutral: 216 16% 60%;
 
     --chart-1: 213 97% 68%;             /* #60A5FA - Blue */
@@ -668,6 +673,40 @@
     --color-primary-rgb: 248, 250, 252;
   }
 
+  /* -------------------------------------------------------
+     BLACK THEME (.black class, applied alongside .dark)
+     ------------------------------------------------------- */
+  .black {
+    /* 1. LAYER 1: NEUTRALS & CONTRAST (pure black surfaces) */
+    --background: 0 0% 0%;            /* #000000 - pure black */
+    --card: 0 0% 4%;                  /* #0A0A0A */
+    --card-foreground: 213 27% 84%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 213 27% 84%;
+    --surface-raised: 0 0% 5%;
+    --surface-subtle: 0 0% 8%;
+    --border-strong: 215 22% 25%;
+    --border: 215 24% 18%;
+    --input: 215 24% 18%;
+    --muted: 215 24% 18%;
+    --muted-foreground: 216 16% 60%;
+
+    --secondary: 0 0% 4%;
+    --secondary-foreground: 213 27% 84%;
+    --accent: 0 0% 4%;
+    --accent-foreground: 213 27% 84%;
+
+    /* 2. SIDEBAR */
+    --sidebar-background: 0 0% 0%;
+    --sidebar-foreground: 213 27% 84%;
+    --sidebar-accent: 0 0% 4%;
+    --sidebar-accent-foreground: 213 27% 84%;
+    --sidebar-border: 215 24% 18%;
+
+    --glow-highlight: 0, 0, 0;
+    --color-primary-rgb: 0, 0, 0;
+  }
+
   /* Accent Pack: Forest - sage green + deep amber */
   .accent-reports {
     --primary: 123 27% 36%;
@@ -676,6 +715,15 @@
     --brand-navigation-active: 123 27% 36%;
     --brand-chart-accent-1: 123 27% 36%;
     --brand-chart-accent-2: 25 70% 45%;
+
+    --chart-profit: 123 27% 36%;
+    --chart-loss: 25 70% 45%;
+    --financial-profit: 123 27% 36%;
+    --financial-loss: 25 70% 45%;
+    --financial-long: 123 27% 36%;
+    --financial-short: 25 70% 45%;
+    --financial-bullish: 123 27% 36%;
+    --financial-bearish: 25 70% 45%;
   }
 
   .dark.accent-reports,
@@ -686,6 +734,15 @@
     --brand-navigation-active: 123 27% 62%;
     --brand-chart-accent-1: 123 27% 62%;
     --brand-chart-accent-2: 25 70% 50%;
+
+    --chart-profit: 123 27% 62%;
+    --chart-loss: 25 70% 50%;
+    --financial-profit: 123 27% 62%;
+    --financial-loss: 25 70% 50%;
+    --financial-long: 123 27% 62%;
+    --financial-short: 25 70% 50%;
+    --financial-bullish: 123 27% 62%;
+    --financial-bearish: 25 70% 50%;
   }
 
   /* Accent Pack: Orchid - violet + pink */
@@ -696,6 +753,15 @@
     --brand-navigation-active: 255 85% 60%;
     --brand-chart-accent-1: 255 85% 60%;
     --brand-chart-accent-2: 329 80% 55%;
+
+    --chart-profit: 255 85% 60%;
+    --chart-loss: 329 80% 55%;
+    --financial-profit: 255 85% 60%;
+    --financial-loss: 329 80% 55%;
+    --financial-long: 255 85% 60%;
+    --financial-short: 329 80% 55%;
+    --financial-bullish: 255 85% 60%;
+    --financial-bearish: 329 80% 55%;
   }
 
   .dark.accent-violet,
@@ -706,6 +772,15 @@
     --brand-navigation-active: 255 92% 76%;
     --brand-chart-accent-1: 255 92% 76%;
     --brand-chart-accent-2: 329 86% 70%;
+
+    --chart-profit: 255 92% 76%;
+    --chart-loss: 329 86% 70%;
+    --financial-profit: 255 92% 76%;
+    --financial-loss: 329 86% 70%;
+    --financial-long: 255 92% 76%;
+    --financial-short: 329 86% 70%;
+    --financial-bullish: 255 92% 76%;
+    --financial-bearish: 329 86% 70%;
   }
 
   /* Accent Pack: Graphite - slate + smoke */
@@ -716,6 +791,15 @@
     --brand-navigation-active: 215 25% 27%;
     --brand-chart-accent-1: 215 25% 27%;
     --brand-chart-accent-2: 215 16% 47%;
+
+    --chart-profit: 215 25% 27%;
+    --chart-loss: 215 16% 47%;
+    --financial-profit: 215 25% 27%;
+    --financial-loss: 215 16% 47%;
+    --financial-long: 215 25% 27%;
+    --financial-short: 215 16% 47%;
+    --financial-bullish: 215 25% 27%;
+    --financial-bearish: 215 16% 47%;
   }
 
   .dark.accent-slate,
@@ -726,6 +810,15 @@
     --brand-navigation-active: 210 40% 98%;
     --brand-chart-accent-1: 210 40% 98%;
     --brand-chart-accent-2: 215 16% 47%;
+
+    --chart-profit: 210 40% 98%;
+    --chart-loss: 215 16% 47%;
+    --financial-profit: 210 40% 98%;
+    --financial-loss: 215 16% 47%;
+    --financial-long: 210 40% 98%;
+    --financial-short: 215 16% 47%;
+    --financial-bullish: 210 40% 98%;
+    --financial-bearish: 215 16% 47%;
   }
 
   /* Accent Pack Light-Mode Overrides (dynamic contrast adjustments) */

@@ -119,7 +119,7 @@ export default function ExcursionScatter({ size }: ExcursionScatterProps) {
               <Tooltip cursor={{ strokeDasharray: '3 3', stroke: 'hsl(var(--muted-foreground) / 0.5)' }} content={<CustomTooltip />} />
               <ReferenceLine y={0} stroke="hsl(var(--muted-foreground) / 0.2)" />
               <ReferenceLine x={0} stroke="hsl(var(--muted-foreground) / 0.2)" />
-              <Scatter data={scatterData} fill="#8884d8">
+              <Scatter data={scatterData} fill={CHART_COLORS.bullish}>
                 {scatterData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 

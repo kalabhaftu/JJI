@@ -4,7 +4,7 @@ import * as schema from '@/lib/db/schema'
 import { getResolvedUserIdentitySafe } from '@/server/user-identity'
 import { calculateAccountBalance } from '@/lib/utils/balance-calculator'
 import { buildGroupedTradeCountSummary } from '@/lib/trade-counts'
-import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
+import { isFundedPhaseForEvaluation, resolveSurfacedPhaseStatus } from '@/lib/prop-firm/reporting'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { isDomainError } from '@/lib/domain-error'
@@ -84,7 +84,12 @@ export async function GET(request: NextRequest) {
         master.PhaseAccount.forEach((phase: any) => {
           if (phase.status === 'pending' || phase.status === 'pending_approval') return
           if (!phase.phaseId || phase.phaseId.trim() === '') return
-          
+
+          const surfacedStatus = resolveSurfacedPhaseStatus(
+            { status: master.status, currentPhase: master.currentPhase },
+            { status: phase.status, phaseNumber: phase.phaseNumber }
+          )
+
           unified.push({
             id: phase.id,
             number: phase.phaseId,
@@ -95,13 +100,13 @@ export async function GET(request: NextRequest) {
             accountType: 'prop-firm',
             displayName: `${master.accountName} (${isFundedPhase(master.evaluationType, phase.phaseNumber) ? 'Funded' : 'Phase '+phase.phaseNumber})`,
             tradeCount: 0,
-            status: phase.status,
+            status: surfacedStatus,
             currentPhase: phase.phaseNumber,
             createdAt: phase.createdAt || master.createdAt,
             isArchived: master.isArchived || false,
             currentPhaseDetails: {
                phaseNumber: phase.phaseNumber,
-               status: phase.status,
+               status: surfacedStatus,
                phaseId: phase.phaseId,
                masterAccountId: master.id,
                evaluationType: master.evaluationType

@@ -148,7 +148,7 @@ describe('theme contrast', () => {
       const declarations = block(selector)
       expect(declarations, `${selector} must declare selected brand emphasis`).toContain('--brand-selected:')
       expect(declarations, `${selector} must declare navigation emphasis`).toContain('--brand-navigation-active:')
-      expect(declarations, `${selector} must not redefine semantic or financial roles`).not.toMatch(/--(success|destructive|warning|chart-profit|chart-loss|financial-|semantic-)/)
+      expect(declarations, `${selector} must not redefine system status roles`).not.toMatch(/--(success|destructive|warning|semantic-)/)
     }
   })
 })

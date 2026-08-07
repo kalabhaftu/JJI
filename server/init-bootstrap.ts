@@ -5,6 +5,7 @@ import { cloneDefaultTemplateLayout } from '@/lib/dashboard/default-template-lay
 import { TRADE_COUNT_SELECT, buildGroupedTradeCountSummary } from '@/lib/trade-counts'
 import { USER_SETTINGS_SELECT, mergeUserSettings } from '@/lib/user-settings'
 import { ensureActiveTemplateForUser } from '@/server/seed-default-template'
+import { resolveSurfacedPhaseStatus } from '@/lib/prop-firm/reporting'
 import {
   checkSubscriptionAccess,
   type SubscriptionGuardResult,
@@ -132,6 +133,11 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
             groupedCounts.groupedCountByAccountNumber.get(phase.phaseId) ||
             0
 
+          const surfacedStatus = resolveSurfacedPhaseStatus(
+            { status: masterAccount.status, currentPhase: masterAccount.currentPhase },
+            { status: phase.status, phaseNumber: phase.phaseNumber }
+          )
+
           processedPropFirmAccounts.push({
             id: phase.id,
             number: phase.phaseId,
@@ -142,14 +148,14 @@ export async function getInitBootstrapData(): Promise<InitBootstrapPayload> {
             accountType: 'prop-firm' as const,
             displayName: `${masterAccount.accountName} (${phaseName})`,
             tradeCount: phaseTradeCount,
-            status: phase.status,
+            status: surfacedStatus,
             currentPhase: phase.phaseNumber,
             createdAt: phase.createdAt || masterAccount.createdAt,
             userId: masterAccount.userId,
             isArchived: masterAccount.isArchived || false,
             currentPhaseDetails: {
               phaseNumber: phase.phaseNumber,
-              status: phase.status,
+              status: surfacedStatus,
               phaseId: phase.phaseId,
               masterAccountId: masterAccount.id,
               masterAccountName: masterAccount.accountName,

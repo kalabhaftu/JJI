@@ -7,6 +7,7 @@ import { emitTourEvent } from '@/lib/tours/events'
 
 export function ThemeSwitcher() {
   const { effectiveTheme, toggleTheme } = useTheme()
+  const isDark = effectiveTheme === 'dark' || effectiveTheme === 'black'
 
   return (
     <Button
@@ -17,10 +18,10 @@ export function ThemeSwitcher() {
         toggleTheme()
         emitTourEvent('theme.changed')
       }}
-      aria-label={effectiveTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+      aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
       data-tour="theme-switcher-btn"
     >
-      {effectiveTheme === 'dark' ? (
+      {isDark ? (
         <Moon aria-hidden />
       ) : (
         <Sun aria-hidden />

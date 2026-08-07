@@ -234,19 +234,5 @@ export function ChartTooltip({ active, payload, label }: any) {
 export const CHART_COLORS = {
   bullish: 'hsl(var(--chart-bullish))',
   bearish: 'hsl(var(--chart-bearish))',
-  muted: 'hsl(220, 15%, 55%)',
-} as const
-
-
-const RECHARTS_COLORS = {
-  light: {
-    bullish: '#83b885',
-    bearish: '#c4572a',
-    muted: '#7b8494',
-  },
-  dark: {
-    bullish: '#83b885',
-    bearish: '#c4572a',
-    muted: '#7b8494',
-  },
+  muted: 'hsl(var(--financial-neutral))',
 } as const

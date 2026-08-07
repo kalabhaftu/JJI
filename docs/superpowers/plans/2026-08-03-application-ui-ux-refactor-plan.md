@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Preserve JJI’s dark and light themes and user-selectable accent packs.
-- Accent packs control brand emphasis only; profit/loss, long/short, bullish/bearish, warning, destructive, permission, error, disabled, and focus semantics remain stable.
+- Accent packs control brand emphasis and the win/loss financial pair; profit/loss, long/short, and bullish/bearish follow the pack's two accent colors (default stays red/green), while warning, destructive, permission, error, disabled, and focus semantics remain stable.
 - Correctness, security, data integrity, and state reliability precede broad visual refactoring.
 - Use granular component-matching skeletons; do not blank, reset, or skeletonize unaffected content during local loading, background refresh, or realtime updates.
 - Page-structure skeletons are for initial route loading; local skeletons are for genuinely missing component data.
@@ -677,11 +677,11 @@ git commit -m "fix: preserve dashboard loading and progress semantics"
 **Interfaces:**
 - Brand tokens: `--brand-primary`, `--brand-selected`, `--brand-navigation-active`, `--brand-chart-accent-*`.
 - Stable semantic tokens: `--semantic-success`, `--semantic-warning`, `--semantic-destructive`, `--semantic-error`, `--semantic-permission`, `--semantic-disabled`.
-- Stable financial tokens: `--financial-profit`, `--financial-loss`, `--financial-long`, `--financial-short`, `--financial-bullish`, `--financial-bearish`, `--financial-neutral`.
+- Stable financial tokens: `--financial-profit`, `--financial-loss`, `--financial-long`, `--financial-short`, `--financial-bullish`, `--financial-bearish`, `--financial-neutral` default per theme; accent packs redefine the win/loss pair (profit/loss, long/short, bullish/bearish) to the pack's accent colors and keep `--financial-neutral` stable.
 
 - [x] **Step 1: Write token invariance and contrast tests across light/dark and all accent packs** _Evidence_: tests/ui/theme-token-contracts + theme-contrast + accessibility-theme + financial present
 - [x] **Step 2: Run tests to observe current accent overrides** _Evidence_: exit 0 (2026-08-07): type-check, lint, test:ui-contracts=22 files/116 tests, architecture:check-{routes,dead-code,client-mutations,api-policies,api-contract,services,replacements,observability}, security:scan-console
-- [x] **Step 3: Move accent-pack overrides to brand roles only** _Evidence_: globals.css separated --brand-*/--semantic-*/--financial-* roles (7bc98c59)
+- [x] **Step 3: Move accent-pack overrides to brand and win/loss financial roles** _Evidence_: globals.css separated --brand-*/--semantic-*/--financial-* roles; accent packs drive the win/loss pair (7bc98c59)
 - [x] **Step 4: Update semantic consumers and rewrite `DESIGN.md` to match actual tokens** _Evidence_: DESIGN.md rewritten; token consumers updated
 - [x] **Step 5: Verify** _Evidence_: exit 0 (2026-08-07): type-check, lint, test:ui-contracts=22 files/116 tests, architecture:check-{routes,dead-code,client-mutations,api-policies,api-contract,services,replacements,observability}, security:scan-console
 

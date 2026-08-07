@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Preserve JJI's dark and light themes and user-selectable accent packs.
-- Accent packs control brand emphasis only; financial, warning, destructive, permission, error, disabled, and focus semantics remain stable.
+- Accent packs control brand emphasis and the win/loss financial pair; profit/loss, long/short, and bullish/bearish follow the pack's accent colors (default stays red/green), while warning, destructive, permission, error, disabled, and focus semantics remain stable.
 - Do not add backward-compatibility aliases, duplicate query owners, duplicate trade workspaces, or obsolete route wrappers.
 - Do not mark an original-plan checkbox complete without fresh command evidence, exact source evidence, or a route-ledger N/A reason.
 - Keep `main` unchanged. Implement only on `refactor/jji-plan-completion`, then rebase onto the user's latest `preview` before integration.

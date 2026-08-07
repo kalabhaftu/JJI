@@ -370,13 +370,13 @@ export function PropFirmGrowthCurveWidget() {
                   />
                   <ReferenceLine
                     y={refs.dailyLossFloor}
-                    stroke="#f59e0b"
+                    stroke="hsl(var(--warning))"
                     strokeDasharray="5 5"
                     label={{
                       value: 'Daily DD',
                       position: 'right',
                       fontSize: 9,
-                      fill: '#f59e0b',
+                      fill: 'hsl(var(--warning))',
                       offset: 8,
                     }}
                   />

@@ -4,7 +4,7 @@ import { applyApiRoutePolicy } from '@/lib/api/route-policy'
 import { z } from 'zod'
 import { db } from '@/lib/db/client'
 import * as schema from '@/lib/db/schema'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, or } from 'drizzle-orm'
 import { createErrorResponse, createSuccessResponse } from '@/lib/api-response'
 import { reportError } from '@/lib/observability/report-error'
 import { resolveRequestId } from '@/lib/observability/request-id'
@@ -39,7 +39,13 @@ export async function POST(request: NextRequest) {
       )
       .where(and(
         eq(schema.PhaseAccount.phaseId, accountNumber),
-        eq(schema.PhaseAccount.status, 'active'),
+        or(
+          eq(schema.PhaseAccount.status, 'active'),
+          and(
+            eq(schema.MasterAccount.status, 'funded'),
+            eq(schema.PhaseAccount.phaseNumber, schema.MasterAccount.currentPhase),
+          ),
+        ),
         eq(schema.MasterAccount.userId, internalUserId)
       ))
       .limit(1)

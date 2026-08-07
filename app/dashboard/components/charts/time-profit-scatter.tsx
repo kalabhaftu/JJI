@@ -120,7 +120,7 @@ export default function TimeProfitScatter({ size }: TimeProfitScatterProps) {
               />
               <ZAxis type="number" range={[40, 40]} />
               <Tooltip cursor={{ strokeDasharray: '3 3', stroke: 'hsl(var(--muted-foreground) / 0.5)' }} content={<CustomTooltip />} />
-              <Scatter data={scatterData} fill="#8884d8">
+              <Scatter data={scatterData} fill={CHART_COLORS.bullish}>
                 {scatterData.map((entry, index) => (
                   <Cell 
                     key={`cell-${index}`} 

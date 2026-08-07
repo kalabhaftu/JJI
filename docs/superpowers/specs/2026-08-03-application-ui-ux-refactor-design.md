@@ -20,7 +20,7 @@ The work will:
 
 - preserve JJI's dark and light themes;
 - preserve user-selectable accent packs as an intentional product feature;
-- separate brand accent roles from stable financial and system semantic roles;
+- keep system semantic roles stable while accent packs drive brand roles and the win/loss financial pair;
 - fix entitlement, browser credential storage, API handling, realtime lifecycle, request cancellation, stale-response, validation, and cache-isolation defects before broad page redesign;
 - establish shared contracts for navigation, fields, buttons, async states, financial values, filters, dialogs, and trade workspaces;
 - move trade entry to a canonical dedicated route with responsive workspace behavior, draft preservation, clear validation, and predictable browser-back behavior;
@@ -1433,10 +1433,10 @@ The visual suite records cumulative layout shift for initial route load and requ
 
 #### Task 2.2: Separate accent and semantic tokens
 
-- Problem: accent packs currently redefine some semantic financial roles.
+- Problem: accent packs were barred from the win/loss financial roles, leaving loss/win hardcoded red/green regardless of the user's accent preference.
 - Affected: globals, theme preferences, charts, badges, values.
-- Solution: stable semantic layer plus brand accent layer.
-- User benefit: financial meaning remains trustworthy across themes.
+- Solution: system semantics stay stable; brand accent layers also drive the win/loss financial pair (accent-1 win, accent-2 loss; Classic keeps red/green).
+- User benefit: win/loss color coding follows the user's selected accent theme.
 - Technical impact: token and usage migration.
 - Acceptance: contrast and semantic screenshot tests pass for every pack.
 
@@ -2030,7 +2030,7 @@ These questions must be asked one at a time, with evidence and concrete options.
 |---|---|---|---|
 | Preserve dark and light themes | Sections 2, 7.2 | Phase 2 | contrast and visual tests in every theme |
 | Preserve user-selectable accent packs | Sections 2, 7.2 | Phase 2 | preference, token, contrast, and visual tests for every pack |
-| Separate brand accents from stable financial/system semantics | Sections 7.2, 7.9 | Phase 2 | non-color financial assertions and token contract tests |
+| Keep system semantics stable while accent packs drive brand roles and the win/loss financial pair | Sections 7.2, 7.9 | Phase 2 | non-color financial assertions and token contract tests |
 | Correctness and security before broad visual work | Sections 2, 18 Phase 1 | Phase 1 | Phase 1 acceptance gates before Phase 5 migration |
 | Shared navigation, fields, buttons, async states, financial values, filters, dialogs, and trade workspaces | Sections 7 and 10 | Phase 2 | component/runtime tests and page migration evidence |
 | Canonical dedicated trade-entry route | Section 9 | Phase 3.1 | route, draft, validation, mobile, keyboard, and browser-back tests |

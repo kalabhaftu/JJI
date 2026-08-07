@@ -43,7 +43,7 @@ export interface User {
 }
 
 interface UserPreferences {
-  theme: 'light' | 'dark' | 'system'
+  theme: 'light' | 'dark' | 'system' | 'black'
   timezone: string
   currency: string
   dateFormat: string

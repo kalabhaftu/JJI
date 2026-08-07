@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { createChart, createSeriesMarkers, IChartApi, ISeriesApi, CandlestickSeries, type SeriesMarker, Time } from 'lightweight-charts'
-import { useTheme } from 'next-themes'
 import { ExtendedTrade } from '../tables/trade-table-review'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
@@ -22,7 +21,6 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
   const seriesRef = useRef<ISeriesApi<"Candlestick", Time> | null>(null)
   const markersSeriesRef = useRef<ISeriesApi<"Line", Time> | null>(null)
   
-  const { resolvedTheme } = useTheme()
   const [marketData, setMarketData] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -76,11 +74,11 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     const chart = createChart(chartContainerRef.current, {
       layout: {
         background: { color: 'transparent' },
-        textColor: resolvedTheme === 'dark' ? '#d1d5db' : '#374151',
+        textColor: 'hsl(var(--muted-foreground))',
       },
       grid: {
-        vertLines: { color: resolvedTheme === 'dark' ? '#2d3748' : '#e5e7eb' },
-        horzLines: { color: resolvedTheme === 'dark' ? '#2d3748' : '#e5e7eb' },
+        vertLines: { color: 'hsl(var(--border))' },
+        horzLines: { color: 'hsl(var(--border))' },
       },
       crosshair: {
         mode: 0,
@@ -94,11 +92,11 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
     chartRef.current = chart
 
     const candlestickSeries = chart.addSeries(CandlestickSeries, {
-      upColor: '#26a69a',
-      downColor: '#ef5350',
+      upColor: 'hsl(var(--chart-bullish))',
+      downColor: 'hsl(var(--chart-bearish))',
       borderVisible: false,
-      wickUpColor: '#26a69a',
-      wickDownColor: '#ef5350',
+      wickUpColor: 'hsl(var(--chart-bullish))',
+      wickDownColor: 'hsl(var(--chart-bearish))',
     })
     seriesRef.current = candlestickSeries
     
@@ -111,7 +109,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
         markers.push({
             time: entryCandle.time as Time,
             position: trade.side?.toUpperCase() === 'LONG' ? 'belowBar' as const : 'aboveBar' as const,
-            color: trade.side?.toUpperCase() === 'LONG' ? '#26a69a' : '#ef5350',
+            color: trade.side?.toUpperCase() === 'LONG' ? 'hsl(var(--chart-bullish))' : 'hsl(var(--chart-bearish))',
             shape: trade.side?.toUpperCase() === 'LONG' ? 'arrowUp' as const : 'arrowDown' as const,
             text: `Entry @ ${trade.entryPrice}`
         })
@@ -122,7 +120,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
         markers.push({
             time: exitCandle.time as Time,
             position: trade.pnl >= 0 ? 'aboveBar' as const : 'belowBar' as const,
-            color: trade.pnl >= 0 ? '#26a69a' : '#ef5350',
+            color: trade.pnl >= 0 ? 'hsl(var(--chart-bullish))' : 'hsl(var(--chart-bearish))',
             shape: 'circle' as const,
             text: `Exit @ ${trade.closePrice}`
         })
@@ -142,7 +140,7 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
       chart.remove()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marketData, resolvedTheme, trade, entryTime, exitTime])
+  }, [marketData, trade, entryTime, exitTime])
   
 
   useEffect(() => {

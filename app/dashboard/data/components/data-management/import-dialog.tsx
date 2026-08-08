@@ -5,7 +5,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Loader2, CheckCircle2, AlertCircle, RotateCcw } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CircleCheckIcon, Alert02Icon, Rotate01Icon } from '@hugeicons/core-free-icons'
 import { toast } from "sonner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Progress } from "@/components/ui/progress"
@@ -184,7 +185,7 @@ export function ImportDialog() {
     }}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
-          <RotateCcw className="mr-2 h-4 w-4" /> Restore Backup
+          <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" /> Restore Backup
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
@@ -201,7 +202,7 @@ export function ImportDialog() {
           {!importResults && (
             <>
               <Alert>
-                <AlertCircle className="h-4 w-4" />
+                <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
                 <AlertDescription>
                   <strong>Safe Restore:</strong> This process will <strong>not</strong> overwrite existing data. It only adds missing records. Duplicates are automatically skipped.
                 </AlertDescription>
@@ -249,7 +250,7 @@ export function ImportDialog() {
           {importResults && (
             <div className="space-y-4">
               <Alert className="border-long/20 bg-long/5">
-                <CheckCircle2 className="h-4 w-4 text-long" />
+                <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" />
                 <AlertDescription className="text-long">
                   <strong>Restore operation completed successfully.</strong>
                 </AlertDescription>
@@ -291,7 +292,7 @@ export function ImportDialog() {
               </Button>
             ) : importJob && ['failed', 'cancelled'].includes(importJob.status) ? (
               <Button onClick={handleResumeImport}>
-                <RotateCcw className="mr-2 h-4 w-4" />
+                <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" />
                 Resume Restore
               </Button>
             ) : (
@@ -310,7 +311,7 @@ export function ImportDialog() {
                 </>
               ) : (
                 <>
-                  <RotateCcw className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" />
                   Start Restore
                 </>
               )}

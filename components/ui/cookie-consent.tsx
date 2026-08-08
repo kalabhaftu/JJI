@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { Cookie, X } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Cancel01Icon, CookieIcon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { persistTelemetryConsent } from '@/lib/observability/telemetry-consent'
 
@@ -34,9 +35,9 @@ export function CookieConsent() {
   return (
     <aside aria-labelledby="storage-notice-title" className="fixed inset-x-0 bottom-0 z-[9999] p-3 sm:p-5 md:right-auto md:max-w-[430px]">
       <div className="relative rounded-2xl border border-border/80 bg-background/95 p-5 shadow-xl backdrop-blur-xl">
-        <Button variant="tertiary" size="icon" className="absolute right-2 top-2" onClick={() => choose(false)} aria-label="Use essential storage only"><X /></Button>
+        <Button variant="tertiary" size="icon" className="absolute right-2 top-2" onClick={() => choose(false)} aria-label="Use essential storage only"><HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} color="currentColor" /></Button>
         <div className="flex items-start gap-3 pr-8">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted"><Cookie className="h-4 w-4" /></span>
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted"><HugeiconsIcon icon={CookieIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /></span>
           <div>
             <h2 id="storage-notice-title" className="text-base font-semibold">Storage and operational telemetry</h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">Essential session and preference storage is always enabled. Optional telemetry sends only crash reports and sampled performance diagnostics. No ads, session replay, or behavioral tracking.</p>

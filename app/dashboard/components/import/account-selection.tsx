@@ -3,7 +3,8 @@ import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
-import { CheckCircle2, Building2, User, AlertCircle, RefreshCw, Clock, AlertTriangle } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CheckmarkCircle01Icon, Building01Icon, UserIcon, AlertCircleIcon, RefreshIcon, Clock01Icon, Alert02Icon } from '@hugeicons/core-free-icons'
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
@@ -180,7 +181,7 @@ export default function AccountSelection({
       {accounts.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-4">
           <Card className="p-8 text-center max-w-md bg-card border border-border rounded-2xl shadow-sm">
-            <AlertCircle className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-10 w-10 mx-auto text-muted-foreground mb-3" strokeWidth={1.5} color="currentColor" />
             <h3 className="text-base font-semibold mb-1">
               {hasError ? "Failed to Fetch Accounts" : "No Accounts Found"}
             </h3>
@@ -197,7 +198,7 @@ export default function AccountSelection({
                 size="sm"
                 className="gap-2"
               >
-                {isLoading ? <Spinner className="h-3.5 w-3.5" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                {isLoading ? <Spinner className="h-3.5 w-3.5" /> : <HugeiconsIcon icon={RefreshIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />}
                 <span>Retry</span>
               </Button>
             ) : (
@@ -237,9 +238,9 @@ export default function AccountSelection({
                             isSelected ? "bg-background/80 border-primary/20 text-primary" : "bg-muted/40 border-border/40 text-muted-foreground"
                           )}>
                             {account.accountType === 'prop-firm' ? (
-                              <Building2 className="h-3.5 w-3.5" />
+                              <HugeiconsIcon icon={Building01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                             ) : (
-                              <User className="h-3.5 w-3.5 text-long" />
+                              <HugeiconsIcon icon={UserIcon} className="h-3.5 w-3.5 text-long" strokeWidth={1.5} color="currentColor" />
                             )}
                           </div>
                           <p className="font-semibold text-sm text-foreground/90 truncate">{account.displayName}</p>
@@ -257,7 +258,7 @@ export default function AccountSelection({
                       <div className="relative shrink-0">
                         {isSelected ? (
                           <div className="relative">
-                            <CheckCircle2 className="h-5 w-5 text-primary relative z-10" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-primary relative z-10" strokeWidth={1.5} color="currentColor" />
                           </div>
                         ) : (
                           <div className="h-5 w-5 rounded-full border border-border/40 group-hover:border-primary/30 transition-colors" />
@@ -284,9 +285,9 @@ export default function AccountSelection({
                                 'border-destructive/30 bg-destructive/5 text-destructive-foreground'
                               )}
                             >
-                              {(phaseStatus === 'active' || phaseStatus === 'funded') && <CheckCircle2 className="h-2.5 w-2.5" />}
-                              {phaseStatus === 'passed' && <CheckCircle2 className="h-2.5 w-2.5" />}
-                              {phaseStatus === 'failed' && <AlertTriangle className="h-2.5 w-2.5" />}
+                              {(phaseStatus === 'active' || phaseStatus === 'funded') && <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
+                              {phaseStatus === 'passed' && <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
+                              {phaseStatus === 'failed' && <HugeiconsIcon icon={Alert02Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
                               <span>{getPhaseLabel(evaluationType, phaseNumber)}</span>
                               {phaseId && (
                                 <span className="text-[9px] font-mono opacity-80">

@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Loader2, CheckCircle, XCircle } from "lucide-react";
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Loading01Icon, CircleCheckIcon, CircleXIcon } from '@hugeicons/core-free-icons';
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
 import logger from '@/lib/logger';
 import { reportError } from '@/lib/observability/report-error'
@@ -202,12 +203,12 @@ export default function ImportCallbackPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {status === "loading" && (
-              <Loader2 className="h-5 w-5 animate-spin" />
+              <HugeiconsIcon icon={Loading01Icon} className="h-5 w-5 animate-spin" strokeWidth={1.5} color="currentColor" />
             )}
             {status === "success" && (
-              <CheckCircle className="h-5 w-5 text-success" />
+              <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-success" strokeWidth={1.5} color="currentColor" />
             )}
-            {status === "error" && <XCircle className="h-5 w-5 text-destructive" />}
+            {status === "error" && <HugeiconsIcon icon={CircleXIcon} className="h-5 w-5 text-destructive" strokeWidth={1.5} color="currentColor" />}
             Tradovate Sync Integration
           </CardTitle>
           <CardDescription>
@@ -219,7 +220,7 @@ export default function ImportCallbackPage() {
         <CardContent className="space-y-4">
           {status === "loading" && (
             <div className="flex flex-col items-center space-y-2">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <HugeiconsIcon icon={Loading01Icon} className="h-8 w-8 animate-spin text-muted-foreground" strokeWidth={1.5} color="currentColor" />
               <p className="text-sm text-muted-foreground">
                 Exchanging authorization code...
               </p>
@@ -228,7 +229,7 @@ export default function ImportCallbackPage() {
 
           {status === "success" && (
             <div className="text-center space-y-2">
-              <CheckCircle className="h-12 w-12 text-success mx-auto" />
+              <HugeiconsIcon icon={CircleCheckIcon} className="h-12 w-12 text-success mx-auto" strokeWidth={1.5} color="currentColor" />
               <p className="text-sm text-muted-foreground">
                 Redirecting back to dashboard...
               </p>
@@ -238,7 +239,7 @@ export default function ImportCallbackPage() {
           {status === "error" && (
             <div className="space-y-4">
               <Alert variant="destructive">
-                <XCircle className="h-4 w-4" />
+                <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
 

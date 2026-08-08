@@ -1,17 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  AlertCircle,
-  Calendar as CalendarIcon,
-  CheckCircle2,
-  ChevronDown,
-  Clock,
-  Hash,
-  SlidersHorizontal,
-  Target,
-  Wallet,
-} from 'lucide-react'
+  Alert02Icon,
+  Calendar01Icon,
+  CircleCheckIcon,
+  ChevronDownIcon,
+  Clock01Icon,
+  HashIcon,
+  SlidersHorizontalIcon,
+  Target01Icon,
+  Wallet01Icon,
+} from '@hugeicons/core-free-icons'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { FilterBar, FilterBarGroup } from '@/components/godui/filter-bar'
@@ -83,7 +84,7 @@ export function ReportFilters({
       <div className="mb-8">
         <FilterBar>
           <FilterBarGroup className="min-w-[180px] sm:max-w-[210px]">
-            <Wallet className="size-3.5 shrink-0 text-muted-foreground" />
+            <HugeiconsIcon icon={Wallet01Icon} className="size-3.5 shrink-0 text-muted-foreground" />
             <Combobox options={accounts.map((account) => ({ value: account.id, label: account.name }))} value={selectedAccountId || 'all'} onValueChange={(value) => onAccountChange(value === 'all' ? null : value)} placeholder="All Accounts" searchPlaceholder="Search accounts…" className="flex-1" />
           </FilterBarGroup>
 
@@ -110,7 +111,7 @@ export function ReportFilters({
                 : 'border-border/22 bg-background/55 hover:bg-muted/20'
             )}
           >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <HugeiconsIcon icon={SlidersHorizontalIcon} className="h-3.5 w-3.5" />
             Filters
             {activeFilterCount > 0 && (
               <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary-foreground/20 text-[9px] font-black">
@@ -123,7 +124,7 @@ export function ReportFilters({
         <CollapsibleContent className="overflow-hidden border-b border-border/20 data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down">
           <div className="grid gap-px bg-border/12 lg:grid-cols-5">
             <FilterSelect
-              icon={<Hash className="h-3 w-3" />}
+              icon={<HugeiconsIcon icon={HashIcon} className="h-3 w-3" />}
               label="Symbol"
               value={filters.symbol}
               onChange={(value) => onFilterChange('symbol', value)}
@@ -131,7 +132,7 @@ export function ReportFilters({
               options={options.symbols.map((symbol) => ({ value: symbol, label: symbol }))}
             />
             <FilterSelect
-              icon={<Clock className="h-3 w-3" />}
+              icon={<HugeiconsIcon icon={Clock01Icon} className="h-3 w-3" />}
               label="Session"
               value={filters.session}
               onChange={(value) => onFilterChange('session', value)}
@@ -139,7 +140,7 @@ export function ReportFilters({
               options={options.sessions.map((session) => ({ value: session, label: session }))}
             />
             <FilterSelect
-              icon={<CheckCircle2 className="h-3 w-3" />}
+              icon={<HugeiconsIcon icon={CircleCheckIcon} className="h-3 w-3" />}
               label="Outcome"
               value={filters.outcome}
               onChange={(value) => onFilterChange('outcome', value)}
@@ -147,7 +148,7 @@ export function ReportFilters({
               options={options.outcomes}
             />
             <FilterSelect
-              icon={<Target className="h-3 w-3" />}
+              icon={<HugeiconsIcon icon={Target01Icon} className="h-3 w-3" />}
               label="Strategy"
               value={filters.strategy}
               onChange={(value) => onFilterChange('strategy', value)}
@@ -155,7 +156,7 @@ export function ReportFilters({
               options={options.strategies.map((strategy) => ({ value: strategy.id, label: strategy.name }))}
             />
             <FilterSelect
-              icon={<AlertCircle className="h-3 w-3" />}
+              icon={<HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" />}
               label="Rule Status"
               value={filters.ruleBroken}
               onChange={(value) => onFilterChange('ruleBroken', value)}

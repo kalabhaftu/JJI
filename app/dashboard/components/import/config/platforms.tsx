@@ -17,7 +17,8 @@ import { TradovateSync } from '../tradovate/sync/tradovate-sync'
 import { DxFeedSync } from '../dxfeed/sync/dxfeed-sync'
 import { ThorSync } from '../thor/thor-sync'
 import { Step } from '../import-button'
-import { Sparkles, Plus, Wand2 } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Add01Icon, MagicWand01Icon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { DIRECT_SYNC_STATUS } from '@/lib/integrations/direct-sync-status'
 
 type StepText = string
@@ -139,7 +140,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Perfect for manual journal entries with all trade context and analysis',
     logo: {
-      component: () => <Plus className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" />,
     },
     customComponent: ManualTradeForm,
     steps: [
@@ -160,7 +161,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Supports: Tradezella, Tradovate, NinjaTrader, FTMO, Topstep, Exness, Match Trader, MetaTrader 4/5, cTrader, TradingView, Rithmic, Sierra Chart, Quantower, TradeStation, ThinkOrSwim, Interactive Brokers, and more.',
     logo: {
-      component: () => <Wand2 className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={MagicWand01Icon} className="w-4 h-4" />,
     },
     requiresAccountSelection: true,
     processFile: processStandardCsv,
@@ -202,7 +203,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Use this if Universal Import cannot detect your CSV format',
     logo: {
-      component: () => <Sparkles className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={SparklesIcon} className="w-4 h-4" />,
     },
     requiresAccountSelection: true,
     processFile: processStandardCsv,

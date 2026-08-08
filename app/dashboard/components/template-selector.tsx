@@ -31,7 +31,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { LayoutGrid, Check, Plus, Pencil, Trash2, Copy, Lock } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { LayoutGridIcon, Tick01Icon, Add01Icon, PencilEdit01Icon, Delete02Icon, Copy01Icon, LockKeyIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
 
@@ -185,7 +186,7 @@ export function TemplateSelector() {
             title={activeTemplate?.name || 'Templates'}
             aria-label={activeTemplate?.name ? `Template: ${activeTemplate.name}` : 'Templates'}
           >
-            <LayoutGrid aria-hidden />
+            <HugeiconsIcon icon={LayoutGridIcon} aria-hidden strokeWidth={1.5} color="currentColor" />
             <span className="sr-only">{activeTemplate?.name || 'Templates'}</span>
           </Button>
         </DropdownMenuTrigger>
@@ -199,12 +200,12 @@ export function TemplateSelector() {
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {t.isActive ? (
-                  <Check className="h-3.5 w-3.5 text-foreground shrink-0" />
+                  <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-foreground shrink-0" strokeWidth={1.5} color="currentColor" />
                 ) : (
                   <div className="w-3.5" />
                 )}
                 <span className="truncate">{t.name}</span>
-                {t.isDefault && <Lock className="h-3 w-3 text-muted-foreground shrink-0" />}
+                {t.isDefault && <HugeiconsIcon icon={LockKeyIcon} className="h-3 w-3 text-muted-foreground shrink-0" strokeWidth={1.5} color="currentColor" />}
               </div>
               {!t.isDefault && (
                 <RevealAction
@@ -216,7 +217,7 @@ export function TemplateSelector() {
                     handleDeleteClick(t.id, t.name)
                   }}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                 </RevealAction>
               )}
             </DropdownMenuItem>
@@ -227,7 +228,7 @@ export function TemplateSelector() {
           {}
           {!isEditMode && activeTemplate && !activeTemplate.isDefault && (
             <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
-              <Pencil className="h-3.5 w-3.5 mr-2" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
               Edit Layout
             </DropdownMenuItem>
           )}
@@ -235,14 +236,14 @@ export function TemplateSelector() {
           {}
           {activeTemplate?.isDefault && (
             <DropdownMenuItem onClick={openCloneDialog} className="cursor-pointer">
-              <Copy className="h-3.5 w-3.5 mr-2" />
+              <HugeiconsIcon icon={Copy01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
               Clone & Edit
             </DropdownMenuItem>
           )}
 
           {}
           <DropdownMenuItem onClick={openCreateDialog} className="cursor-pointer">
-            <Plus className="h-3.5 w-3.5 mr-2" />
+            <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
             New Template
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -3,7 +3,8 @@
 import { WidgetCard } from '../widget-card'
 import { useWidgetData } from "@/hooks/use-widget-data"
 import { cn } from '@/lib/utils'
-import { Moon, Sun, Sunrise } from 'lucide-react'
+import { HugeiconsIcon, HugeiconsIconProps } from '@hugeicons/react'
+import { Moon01Icon, Sun01Icon, SunriseIcon } from '@hugeicons/core-free-icons'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { MarketSession } from '@/lib/time-utils'
 
@@ -11,10 +12,10 @@ interface SessionAnalysisProps {
   size?: string
 }
 
-const SESSION_META: Record<MarketSession, { name: string; icon: any; color: string }> = {
-  'New York': { name: 'New York', icon: Sun, color: 'text-amber-500' },
-  London: { name: 'London', icon: Sunrise, color: 'text-blue-500' },
-  Asia: { name: 'Asia', icon: Moon, color: 'text-sky-400' },
+const SESSION_META: Record<MarketSession, { name: string; icon: HugeiconsIconProps['icon']; color: string }> = {
+  'New York': { name: 'New York', icon: Sun01Icon, color: 'text-amber-500' },
+  London: { name: 'London', icon: SunriseIcon, color: 'text-blue-500' },
+  Asia: { name: 'Asia', icon: Moon01Icon, color: 'text-sky-400' },
 }
 
 export default function SessionAnalysis({ size: _size }: SessionAnalysisProps) {
@@ -41,7 +42,6 @@ export default function SessionAnalysis({ size: _size }: SessionAnalysisProps) {
     <WidgetCard title="Session Analysis">
       <div className="space-y-3 h-full">
         {sessions.map((session) => {
-          const Icon = session.icon
           const winRate = session.trades > 0 ? (session.wins / session.trades) * 100 : 0
           const isPositive = session.pnl >= 0
 
@@ -54,7 +54,7 @@ export default function SessionAnalysis({ size: _size }: SessionAnalysisProps) {
               )}
             >
               <div className="flex items-center gap-3">
-                <Icon className={cn('h-5 w-5', session.color)} />
+                <HugeiconsIcon icon={session.icon} className={cn('h-5 w-5', session.color)} strokeWidth={1.5} color="currentColor" />
                 <div>
                   <p className="font-bold text-sm">{session.name}</p>
                   <p className="text-[10px] text-muted-foreground/50 font-medium">

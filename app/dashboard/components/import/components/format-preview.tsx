@@ -19,7 +19,8 @@ import {
 } from '@/lib/trading/trade-formatting';
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Play, RotateCcw, CheckCircle2, AlertCircle } from "lucide-react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { PlayIcon, RotateLeft01Icon, CheckmarkCircle01Icon, AlertCircleIcon } from "@hugeicons/core-free-icons";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -269,13 +270,13 @@ export function FormatPreview({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
-        <AlertCircle className="h-12 w-12 text-destructive" />
+        <HugeiconsIcon icon={AlertCircleIcon} className="h-12 w-12 text-destructive" strokeWidth={1.5} color="currentColor" />
         <div className="text-center">
           <h3 className="font-semibold text-lg">Processing Error</h3>
           <p className="text-sm text-muted-foreground mt-1">{error}</p>
         </div>
         <Button onClick={handleReset} variant="secondary" className="gap-2">
-          <RotateCcw className="h-4 w-4" />
+          <HugeiconsIcon icon={RotateLeft01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
           Try Again
         </Button>
       </div>
@@ -291,7 +292,7 @@ export function FormatPreview({
             {isProcessing ? (
               <Spinner className="h-4 w-4 text-primary" />
             ) : processedTrades.length === validTrades.length && validTrades.length > 0 ? (
-              <CheckCircle2 className="h-4 w-4 text-long" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
             ) : null}
             <span className="text-sm font-medium">
               {processedTrades.length} / {validTrades.length} trades
@@ -315,7 +316,7 @@ export function FormatPreview({
               {isProcessing ? (
                 <Spinner className="h-4 w-4" />
               ) : (
-                <Play className="h-4 w-4" />
+                <HugeiconsIcon icon={PlayIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               )}
               {isProcessing ? "Processing..." : "Format Trades"}
             </Button>
@@ -326,7 +327,7 @@ export function FormatPreview({
               disabled={isProcessing}
               className="gap-2"
             >
-              <RotateCcw className="h-4 w-4" />
+              <HugeiconsIcon icon={RotateLeft01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               Reset
             </Button>
           )}
@@ -381,7 +382,7 @@ export function FormatPreview({
                     <TableRow>
                       <TableCell colSpan={columns.length} className="h-32 text-center">
                         <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                          <Play className="h-8 w-8" />
+                          <HugeiconsIcon icon={PlayIcon} className="h-8 w-8" strokeWidth={1.5} color="currentColor" />
                           <p>Click "Format Trades" to begin processing</p>
                           <p className="text-xs">{validTrades.length} trades waiting</p>
                         </div>

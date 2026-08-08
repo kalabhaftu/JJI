@@ -3,7 +3,8 @@ import React from 'react'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { Search } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Search01Icon } from '@hugeicons/core-free-icons'
 
 
 export interface NewsEvent {
@@ -66,7 +67,7 @@ export function TradeNewsTab({
                 {isNewsDay && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="relative">
-                            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                            <HugeiconsIcon icon={Search01Icon} className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                             <Input
                                 type="text"
                                 placeholder="Search news events..."

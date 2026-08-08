@@ -13,7 +13,8 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
-import { Eye, TrendingUp as TrendUp, Clock, Target, Download } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { EyeIcon, ArrowUp01Icon, Clock01Icon, Target01Icon, Download01Icon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { BacktestTrade } from '@/types/backtesting-types'
@@ -58,7 +59,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
         <DialogContent className="w-full max-w-[95vw] sm:max-w-5xl h-[90vh] max-h-[90vh] overflow-y-auto p-4 sm:p-6 bg-background border-border shadow-lg duration-200 flex flex-col gap-0">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+              <HugeiconsIcon icon={EyeIcon} className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={1.5} color="currentColor" />
               Backtest Details - {backtest.pair} {backtest.direction}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
@@ -73,7 +74,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <TrendUp className="w-5 h-5" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
                     Execution Summary
                   </CardTitle>
                 </CardHeader>
@@ -122,7 +123,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Target className="w-5 h-5" />
+                    <HugeiconsIcon icon={Target01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
                     Risk Management
                   </CardTitle>
                 </CardHeader>
@@ -152,7 +153,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
+                    <HugeiconsIcon icon={Clock01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
                     Strategy & Session Details
                   </CardTitle>
                 </CardHeader>
@@ -237,7 +238,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                                 className="object-cover"
                               />
                               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <Eye className="w-8 h-8 text-white" />
+                                <HugeiconsIcon icon={EyeIcon} className="w-8 h-8 text-white" strokeWidth={1.5} color="currentColor" />
                               </div>
                             </button>
                             <p className="text-xs text-muted-foreground mt-1 text-center">
@@ -255,7 +256,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <TrendUp className="w-5 h-5" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
                     Key Metrics
                   </CardTitle>
                 </CardHeader>
@@ -329,7 +330,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                   link.click()
                 }}
               >
-                <Download className="w-4 h-4 mr-2" />
+                <HugeiconsIcon icon={Download01Icon} className="w-4 h-4 mr-2" strokeWidth={1.5} color="currentColor" />
                 Download
               </Button>
             </DialogHeader>

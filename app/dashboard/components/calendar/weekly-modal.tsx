@@ -20,7 +20,8 @@ import { useTheme } from '@/context/theme-provider'
 import { useSupabaseUpload } from "@/hooks/use-supabase-upload"
 import { getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { reportError } from '@/lib/observability/report-error'
-import { Calendar } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Calendar01Icon } from '@hugeicons/core-free-icons'
 
 import imageCompression from 'browser-image-compression'
 import { endOfWeek, format, startOfWeek } from "date-fns"
@@ -359,7 +360,7 @@ export function WeeklyModal({
             <div className="flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/50 bg-muted/25 text-muted-foreground">
-                  <Calendar className="h-5 w-5" />
+                  <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
                 </div>
                 <div className="min-w-0">
                   <h2 className="truncate text-lg font-semibold tracking-tight sm:text-xl">{dateRange}</h2>

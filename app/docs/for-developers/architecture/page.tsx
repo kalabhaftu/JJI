@@ -1,4 +1,3 @@
-import { Boxes, LayoutTemplate, Network, Smartphone } from 'lucide-react'
 import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function ArchitectureDocsPage() {

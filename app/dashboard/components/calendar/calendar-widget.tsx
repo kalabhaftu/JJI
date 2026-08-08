@@ -4,7 +4,8 @@ import dynamic from 'next/dynamic'
 import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react"
 import { format, addMonths, subMonths, getYear } from "date-fns"
 import { enUS } from 'date-fns/locale'
-import { ChevronLeft, ChevronRight, Camera, ImageIcon, Sparkles, Info } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ChevronLeftIcon, ChevronRightIcon, Camera01Icon, Image01Icon, SparklesIcon } from '@hugeicons/core-free-icons'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -242,16 +243,16 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
             className="screenshot-btn h-6 w-6 max-[420px]:h-5 max-[420px]:w-5 sm:h-7 sm:w-7 hover:bg-primary/5 hover:text-primary transition-all bg-muted/30 dark:bg-muted/20 border border-border/50 dark:border-border/30 rounded-lg"
             aria-label="Capture screenshot"
           >
-            <Camera className="h-3.5 w-3.5" />
+            <HugeiconsIcon icon={Camera01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuItem onClick={() => handleScreenshot('basic')} className="gap-2 text-xs font-medium">
-            <ImageIcon className="h-3.5 w-3.5 text-muted-foreground" />
+            <HugeiconsIcon icon={Image01Icon} className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
             Basic (No Gradient)
           </DropdownMenuItem>
           <DropdownMenuItem onClick={() => handleScreenshot('random')} className="gap-2 text-xs font-medium">
-            <Sparkles className="h-3.5 w-3.5 text-yellow-500" />
+            <HugeiconsIcon icon={SparklesIcon} className="h-3.5 w-3.5 text-yellow-500" strokeWidth={1.5} color="currentColor" />
             Random Gradient
           </DropdownMenuItem>
           <div className="h-px bg-border/40 my-1" />
@@ -299,7 +300,7 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
                   className="h-6 w-6 hover:bg-background border-none shrink-0" 
                   aria-label="Previous"
                 >
-                  <ChevronLeft className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <HugeiconsIcon icon={ChevronLeftIcon} className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={1.5} color="currentColor" />
                 </Button>
                 <Button 
                   variant="tertiary" 
@@ -315,7 +316,7 @@ const CalendarPnl = memo(function CalendarPnl({ className }: CalendarPnlProps) {
                   className="h-6 w-6 hover:bg-background border-none shrink-0" 
                   aria-label="Next"
                 >
-                  <ChevronRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={1.5} color="currentColor" />
                 </Button>
               </div>
               

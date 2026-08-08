@@ -4,7 +4,8 @@ import { useEffect, lazy, Suspense, useCallback } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { DataManagementCardSkeleton, DataPageSkeleton, DataTradeTableSkeleton } from "./components/data-page-skeleton"
 import { PageHeader } from "@/components/ui/page-header"
-import { Briefcase, Table } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Briefcase01Icon, TableIcon } from '@hugeicons/core-free-icons'
 import { motion } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { resolveNavigationPath } from '@/lib/navigation/registry'
@@ -16,8 +17,8 @@ const TradeTable = lazy(() => import("@/app/dashboard/data/components/data-manag
 const DataManagementCard = lazy(() => import("@/app/dashboard/data/components/data-management/data-management-card").then(mod => ({ default: mod.DataManagementCard })))
 
 const categories = [
-  { id: 'accounts', label: 'Accounts', icon: Briefcase },
-  { id: 'trades', label: 'Trades', icon: Table },
+  { id: 'accounts', label: 'Accounts', icon: Briefcase01Icon },
+  { id: 'trades', label: 'Trades', icon: TableIcon },
 ]
 
 function DashboardContent() {
@@ -63,7 +64,7 @@ function DashboardContent() {
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
-                <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} />
+                <HugeiconsIcon icon={Icon} className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} strokeWidth={1.5} color="currentColor" />
                 <span className="truncate">{cat.label}</span>
               </button>
             )

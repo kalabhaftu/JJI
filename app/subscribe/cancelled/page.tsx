@@ -1,7 +1,8 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { XCircle, ArrowLeft, RefreshCw } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CancelCircleIcon, ArrowLeft01Icon, RefreshIcon } from '@hugeicons/core-free-icons'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
@@ -19,7 +20,7 @@ export default function SubscribeCancelledPage() {
 
         <div className="space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-            <XCircle className="h-8 w-8 text-destructive" />
+            <HugeiconsIcon icon={CancelCircleIcon} className="h-8 w-8 text-destructive" strokeWidth={1.5} color="currentColor" />
           </div>
           <h1 className="text-xl font-semibold">Payment Cancelled</h1>
           <p className="text-sm text-muted-foreground">
@@ -27,11 +28,11 @@ export default function SubscribeCancelledPage() {
           </p>
           <div className="flex flex-col gap-2 mt-6">
             <Button onClick={() => router.push('/subscribe')} className="w-full">
-              <RefreshCw className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
               Try Again
             </Button>
             <Button variant="tertiary" onClick={() => router.push('/')} className="w-full">
-              <ArrowLeft className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
               Back to Home
             </Button>
           </div>

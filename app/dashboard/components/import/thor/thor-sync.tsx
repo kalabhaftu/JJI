@@ -2,7 +2,8 @@
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { CopyIcon, RefreshCwIcon, EyeIcon, ArrowLeft } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CopyIcon, RefreshIcon, EyeIcon, ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { useState } from "react"
 import { apiRequest } from '@/lib/api/client'
 import { toast } from "sonner"
@@ -72,7 +73,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
             onClick={onBack}
             className="mt-1 h-8 px-3 text-xs border-border/50 hover:bg-muted"
           >
-            <ArrowLeft className="h-3.5 w-3.5 mr-1" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5 mr-1" />
             Back
           </Button>
         )}
@@ -103,7 +104,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
               disabled={!user?.thorToken || isGenerating}
               aria-label="Reveal Thor API Token"
             >
-              <EyeIcon className="h-4 w-4" />
+              <HugeiconsIcon icon={EyeIcon} className="h-4 w-4" />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -126,7 +127,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
           disabled={!user?.thorToken || isGenerating}
           aria-label="Copy Thor API Token"
         >
-          <CopyIcon className="h-4 w-4" />
+          <HugeiconsIcon icon={CopyIcon} className="h-4 w-4" />
         </Button>
         <Button
           variant="secondary"
@@ -135,7 +136,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
           disabled={isGenerating}
           aria-label="Generate new Thor API Token"
         >
-          <RefreshCwIcon className={cn("h-4 w-4", {
+          <HugeiconsIcon icon={RefreshIcon} className={cn("h-4 w-4", {
             "animate-spin": isGenerating
           })} />
         </Button>
@@ -185,7 +186,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
                     }
                   }}
                 >
-                  <CopyIcon className="h-3 w-3" />
+                  <HugeiconsIcon icon={CopyIcon} className="h-3 w-3" />
                 </Button>
               </div>
             </div>

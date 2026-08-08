@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { toast } from 'sonner'
 import { useUserStore } from '@/store/user-store'
 import { reportError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
 
 type Theme = 'light' | 'dark' | 'system' | 'black'
 type AccentPack = 'classic' | 'reports' | 'violet' | 'slate'
@@ -223,16 +224,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     preferenceRequestVersions.current[preference] = version
 
     try {
-      const response = await fetch('/api/auth/profile', {
+      await apiRequestData('/api/auth/profile', {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [preference]: value }),
       })
-
-      if (!response.ok) {
-        throw new Error(`Failed to save ${preference} preference (${response.status})`)
+    } catch (error: any) {
+      // 429 rate limit is transient; local state & localStorage already retain user preference
+      const isRateLimited = error?.status === 429 || error?.message?.includes('429') || error?.code === 'RATE_LIMITED'
+      if (isRateLimited) {
+        return
       }
-    } catch (error) {
+
       reportError(error, {
         surface: 'client',
         operation: 'save-display-preference',

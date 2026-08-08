@@ -20,7 +20,8 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form"
-import { Mail, ArrowLeft, RefreshCw } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowLeft01Icon, Mail01Icon, RefreshIcon } from '@hugeicons/core-free-icons'
 import { useRouter } from "next/navigation"
 import type { Route } from "next"
 import { toast } from "sonner"
@@ -309,7 +310,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         <div className={cn("space-y-6", className)} {...props}>
             <div className="space-y-2 text-center">
                 <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-                    <Mail className="h-6 w-6 text-primary" />
+                    <HugeiconsIcon icon={Mail01Icon} className="h-6 w-6 text-primary" strokeWidth={1.5} color="currentColor" />
                 </div>
                 <h3 className="text-lg font-semibold tracking-tight">Check your email</h3>
                 <p className="text-sm text-muted-foreground max-w-[280px] mx-auto">
@@ -376,7 +377,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                                 onClick={handleBack}
                                 className="flex items-center text-muted-foreground hover:text-foreground transition-colors"
                             >
-                                <ArrowLeft className="h-3 w-3 mr-1" />
+                                <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
                                 Change email
                             </button>
 
@@ -395,7 +396,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
                                     <>Resend locked</>
                                 ) : (
                                     <>
-                                        <RefreshCw className="h-3 w-3 mr-1" />
+                                        <HugeiconsIcon icon={RefreshIcon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
                                         Resend Code
                                     </>
                                 )}

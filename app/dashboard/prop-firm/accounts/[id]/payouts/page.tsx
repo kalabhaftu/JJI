@@ -14,21 +14,22 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  ArrowLeft,
-  RefreshCcw,
-  Plus,
-  Search,
-  Filter,
-  DollarSign,
-  Calendar,
-  CreditCard,
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Download,
-  Trash2
-} from "lucide-react"
+  ArrowLeft01Icon,
+  RefreshIcon,
+  Add01Icon,
+  Search01Icon,
+  FilterIcon,
+  Dollar01Icon,
+  Calendar01Icon,
+  CreditCardIcon,
+  Alert02Icon,
+  CircleCheckIcon,
+  Clock01Icon,
+  Download01Icon,
+  Delete02Icon
+} from '@hugeicons/core-free-icons'
 import { cn } from "@/lib/utils"
 import { AccountStatus, PhaseType } from "@/types/prop-firm"
 import { AccountPayoutHistorySkeleton, AccountPayoutsPageSkeleton } from "../components/account-loading-skeletons"
@@ -109,11 +110,11 @@ export default function AccountPayoutsPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <ArrowLeft className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
               Go Back
             </Button>
           </div>
@@ -161,11 +162,11 @@ export default function AccountPayoutsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <Clock className="h-4 w-4" />
-      case 'approved': return <CheckCircle2 className="h-4 w-4" />
-      case 'paid': return <CreditCard className="h-4 w-4" />
-      case 'rejected': return <AlertTriangle className="h-4 w-4" />
-      default: return <Clock className="h-4 w-4" />
+      case 'pending': return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
+      case 'approved': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
+      case 'paid': return <HugeiconsIcon icon={CreditCardIcon} className="h-4 w-4" />
+      case 'rejected': return <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
+      default: return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
     }
   }
 
@@ -180,7 +181,7 @@ export default function AccountPayoutsPage() {
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
             Back
           </Button>
           <div>
@@ -197,7 +198,7 @@ export default function AccountPayoutsPage() {
             onClick={() => void refresh()}
             disabled={accountQuery.isFetching || payoutsQuery.isFetching}
           >
-            {accountQuery.isFetching || payoutsQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+            {accountQuery.isFetching || payoutsQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" />}
             Refresh
           </Button>
           {account.isEligibleForPayout && (
@@ -205,7 +206,7 @@ export default function AccountPayoutsPage() {
               onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts/request`)}
               size="sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
               Request Payout
             </Button>
           )}
@@ -242,7 +243,7 @@ export default function AccountPayoutsPage() {
             <CardTitle>Payout History</CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                 <Input
                   placeholder="Search payouts..."
                   value={searchTerm}
@@ -258,14 +259,14 @@ export default function AccountPayoutsPage() {
             <AccountPayoutHistorySkeleton />
           ) : payouts.length === 0 ? (
             <div className="text-center py-8">
-              <DollarSign className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <HugeiconsIcon icon={Dollar01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
               <h3 className="text-lg font-semibold mb-2">No Payouts Yet</h3>
               <p className="text-muted-foreground mb-4">
                 This account hasn&apos;t had any payout requests yet.
               </p>
               {account.isEligibleForPayout && (
                 <Button onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts/request`)}>
-                  <Plus className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
                   Request First Payout
                 </Button>
               )}
@@ -310,7 +311,7 @@ export default function AccountPayoutsPage() {
                           {deletingPayoutId === payout.id ? (
                             <Spinner className="h-4 w-4" />
                           ) : (
-                            <Trash2 className="h-4 w-4" />
+                            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
                           )}
                         </Button>
                       )}

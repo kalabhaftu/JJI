@@ -2,17 +2,18 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, CheckCircle2, Compass, FileSpreadsheet, Info, LayoutGrid, RefreshCw, Sparkles, X } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowLeft01Icon, ArrowRight01Icon, Cancel01Icon, CircleCheckIcon, CompassIcon, FileSpreadsheetIcon, InformationCircleIcon, LayoutGridIcon, RefreshIcon, SparklesIcon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { useTour } from '@/context/tour-context'
 
 const iconFor = (icon?: string) => {
-  if (icon === 'import') return FileSpreadsheet
-  if (icon === 'navigation') return Compass
-  if (icon === 'layout') return LayoutGrid
-  if (icon === 'check') return CheckCircle2
-  return icon === 'info' ? Info : Sparkles
+  if (icon === 'import') return FileSpreadsheetIcon
+  if (icon === 'navigation') return CompassIcon
+  if (icon === 'layout') return LayoutGridIcon
+  if (icon === 'check') return CircleCheckIcon
+  return icon === 'info' ? InformationCircleIcon : SparklesIcon
 }
 
 export const TourTooltip: React.FC = () => {
@@ -113,11 +114,11 @@ export const TourTooltip: React.FC = () => {
           <div className="space-y-4 p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <Icon className="h-4 w-4 shrink-0 text-primary" />
+                <HugeiconsIcon icon={Icon} className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} color="currentColor" />
                 <h2 className="text-base font-semibold text-heading-text">{currentStep.title}</h2>
               </div>
               <button type="button" onClick={() => void skipTour()} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Skip tour">
-                <X className="h-4 w-4" />
+                <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               </button>
             </div>
             <p className="text-sm leading-6 text-muted-foreground">{currentStep.content}</p>
@@ -132,14 +133,14 @@ export const TourTooltip: React.FC = () => {
             <div className="flex items-center justify-between border-t border-border pt-4">
               <span className="text-xs font-medium text-muted-foreground">Step {stepIndex + 1} of {totalSteps}</span>
               <div className="flex items-center gap-2">
-                {stepIndex > 0 && <Button variant="tertiary" size="sm" onClick={prevStep}><ArrowLeft className="mr-1 h-3.5 w-3.5" />Back</Button>}
+                {stepIndex > 0 && <Button variant="tertiary" size="sm" onClick={prevStep}><HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />Back</Button>}
                 {targetMissing ? (
                   <>
-                    <Button variant="secondary" size="sm" onClick={retryTarget}><RefreshCw className="mr-1 h-3.5 w-3.5" />Retry</Button>
-                    <Button size="sm" onClick={nextStep}>Skip <ArrowRight className="ml-1 h-3.5 w-3.5" /></Button>
+                    <Button variant="secondary" size="sm" onClick={retryTarget}><HugeiconsIcon icon={RefreshIcon} className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />Retry</Button>
+                    <Button size="sm" onClick={nextStep}>Skip <HugeiconsIcon icon={ArrowRight01Icon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" /></Button>
                   </>
                 ) : (currentStep.desktopOnly && isNarrowViewport) || !currentStep.completion || currentStep.completion.type === 'route' ? (
-                  <Button size="sm" onClick={nextStep}>Next <ArrowRight className="ml-1 h-3.5 w-3.5" /></Button>
+                  <Button size="sm" onClick={nextStep}>Next <HugeiconsIcon icon={ArrowRight01Icon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" /></Button>
                 ) : (
                   <>
                     <span className="text-xs font-medium text-primary">Complete the highlighted action</span>

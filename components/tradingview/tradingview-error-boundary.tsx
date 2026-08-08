@@ -3,7 +3,8 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Alert02Icon, RefreshIcon } from '@hugeicons/core-free-icons'
 import { reportError } from '@/lib/observability/report-error'
 
 interface TradingViewErrorBoundaryProps {
@@ -51,7 +52,7 @@ export class TradingViewErrorBoundary extends React.Component<
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
               Chart Loading Error
             </CardTitle>
             <CardDescription>
@@ -64,7 +65,7 @@ export class TradingViewErrorBoundary extends React.Component<
             </div>
             <div className="flex gap-2">
               <Button onClick={this.handleRetry} size="sm">
-                <RefreshCw className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                 Retry
               </Button>
             </div>

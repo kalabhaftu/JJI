@@ -15,12 +15,12 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  ChevronRight,
-  Loader2,
-  Sparkles,
-  Trophy
-} from "lucide-react"
+  Award01Icon,
+  ChevronRightIcon,
+  SparklesIcon,
+} from '@hugeicons/core-free-icons'
 import { toast } from "sonner"
 import { reportClientError } from '@/lib/observability/report-error'
 import type { NotificationRow } from '@/lib/db/schema/users';
@@ -179,9 +179,9 @@ export function PhaseTransitionApprovalDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isTransitioningToFunded ? (
-              <Trophy className="h-5 w-5 text-primary" />
+              <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
             ) : (
-              <ChevronRight className="h-5 w-5 text-muted-foreground" />
+              <HugeiconsIcon icon={ChevronRightIcon} className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
             )}
             {isTransitioningToFunded ? 'Ready for Funded Account!' : `Advance to ${nextPhaseName}`}
           </DialogTitle>
@@ -195,7 +195,7 @@ export function PhaseTransitionApprovalDialog({
 
         <div className="space-y-4">
           <Alert className={isTransitioningToFunded ? "border-primary/50 bg-primary/10" : "border-muted"}>
-            <Sparkles className={`h-4 w-4 ${isTransitioningToFunded ? 'text-primary' : 'text-muted-foreground'}`} />
+            <HugeiconsIcon icon={SparklesIcon} className={`h-4 w-4 ${isTransitioningToFunded ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={1.5} color="currentColor" />
             <AlertDescription>
               {isTransitioningToFunded
                 ? "You've completed the evaluation! Enter your funded account ID."
@@ -245,7 +245,7 @@ export function PhaseTransitionApprovalDialog({
               ) : (
                 <>
                   Activate {nextPhaseName}
-                  <ChevronRight className="h-4 w-4 ml-2" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4 ml-2" strokeWidth={1.5} color="currentColor" />
                 </>
               )}
             </Button>

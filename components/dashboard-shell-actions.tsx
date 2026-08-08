@@ -2,22 +2,22 @@
 
 import { useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
+import { HugeiconsIcon, type HugeiconsIconProps } from '@hugeicons/react'
 import {
-  BookOpen,
-  Calendar as CalendarBlank,
-  FileText,
-  FlaskConical as Flask,
-  LayoutGrid as SquaresFour,
-  Moon,
-  Plus,
-  RefreshCw,
-  Settings as SettingsIcon,
-  Sun,
-  Table,
-  Users,
-  BarChart3 as ChartBar,
-  type LucideIcon,
-} from 'lucide-react'
+  BookOpen01Icon,
+  Calendar01Icon,
+  File01Icon,
+  FlaskConicalIcon,
+  LayoutGridIcon,
+  MoonIcon,
+  Add01Icon,
+  RefreshIcon,
+  Setting06Icon,
+  Sun01Icon,
+  TableIcon,
+  UserMultipleIcon,
+  BarChartIcon
+} from '@hugeicons/core-free-icons'
 
 import { useTheme } from '@/context/theme-provider'
 import { useData } from '@/context/data-provider'
@@ -30,7 +30,7 @@ interface DashboardShellAction {
   id: string
   title: string
   description: string
-  icon: LucideIcon
+  icon: HugeiconsIconProps['icon']
   keywords: string[]
   perform: () => void
 }
@@ -63,7 +63,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: navigationEntry('overview').id,
             title: navigationEntry('overview').label,
             description: navigationEntry('overview').description!,
-            icon: SquaresFour,
+            icon: LayoutGridIcon,
             perform: () => router.push(routeHref('overview')),
             keywords: [...(navigationEntry('overview').keywords ?? [])],
           },
@@ -71,7 +71,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'reports',
             title: 'Reports',
             description: 'Open performance reports',
-            icon: ChartBar,
+            icon: BarChartIcon,
             perform: () => router.push(routeHref('reports')),
             keywords: ['stats', 'analytics', 'performance'],
           },
@@ -79,7 +79,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'journal',
             title: 'Journal',
             description: 'Open your trading journal',
-            icon: BookOpen,
+            icon: BookOpen01Icon,
             perform: () => router.push(routeHref('journal')),
             keywords: ['notes', 'log', 'review'],
           },
@@ -87,7 +87,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'accounts',
             title: 'Accounts',
             description: 'Manage live and prop-firm accounts',
-            icon: Users,
+            icon: UserMultipleIcon,
             perform: () => router.push(routeHref('accounts')),
             keywords: ['broker', 'prop firm'],
           },
@@ -95,7 +95,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'trades',
             title: 'Trades',
             description: 'Open the trade table',
-            icon: Table,
+            icon: TableIcon,
             perform: () => router.push(routeHref('table')),
             keywords: ['history', 'list', 'executions'],
           },
@@ -103,7 +103,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'playbook',
             title: 'Playbook',
             description: 'Open your setups and strategy rules',
-            icon: FileText,
+            icon: File01Icon,
             perform: () => router.push(routeHref('playbook')),
             keywords: ['strategies', 'setups', 'rules'],
           },
@@ -111,7 +111,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'backtesting',
             title: 'Backtesting',
             description: 'Review and log backtests',
-            icon: Flask,
+            icon: FlaskConicalIcon,
             perform: () => router.push(routeHref('backtesting')),
             keywords: ['test', 'simulate', 'paper'],
           },
@@ -119,7 +119,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'settings',
             title: 'Settings',
             description: 'Open app settings',
-            icon: SettingsIcon,
+            icon: Setting06Icon,
             perform: () => router.push(routeHref('settings')),
             keywords: ['preferences', 'config', 'options'],
           },
@@ -127,7 +127,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'calendar',
             title: 'Calendar View',
             description: 'Jump to the dashboard calendar',
-            icon: CalendarBlank,
+            icon: Calendar01Icon,
             perform: () => router.push(routeHref('overview')),
             keywords: ['dates', 'pnl', 'monthly'],
           },
@@ -141,7 +141,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'add-trade',
             title: 'Add New Trade',
             description: 'Open the full trade entry workflow',
-            icon: Plus,
+            icon: Add01Icon,
             perform: () => isDemoMode ? openQuickAdd() : router.push(buildTradeEntryHref({ origin: 'command-palette', returnTo: routeHref('overview') })),
             keywords: ['new', 'create', 'entry', 'order', 'quick add'],
           },
@@ -149,7 +149,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'refresh-data',
             title: 'Refresh Data',
             description: 'Refresh trade and dashboard data',
-            icon: RefreshCw,
+            icon: RefreshIcon,
             perform: refreshTrades,
             keywords: ['reload', 'sync', 'refresh'],
           },
@@ -163,7 +163,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'toggle-theme',
             title: 'Toggle Theme',
             description: `Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`,
-            icon: theme === 'dark' ? Sun : Moon,
+            icon: theme === 'dark' ? Sun01Icon : MoonIcon,
             perform: toggleTheme,
             keywords: ['theme', 'dark', 'light', 'mode'],
           },
@@ -171,7 +171,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'set-light',
             title: 'Light Mode',
             description: 'Set the application theme to light',
-            icon: Sun,
+            icon: Sun01Icon,
             perform: () => setTheme('light'),
             keywords: ['theme', 'light', 'day'],
           },
@@ -179,7 +179,7 @@ export function useDashboardShellActionGroups(): DashboardShellActionGroup[] {
             id: 'set-dark',
             title: 'Dark Mode',
             description: 'Set the application theme to dark',
-            icon: Moon,
+            icon: MoonIcon,
             perform: () => setTheme('dark'),
             keywords: ['theme', 'dark', 'night'],
           },

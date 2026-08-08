@@ -15,7 +15,8 @@ import {
   isToday
 } from 'date-fns'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronLeft, ChevronRight, TrendingUp, TrendingDown, LayoutGrid, Calendar as CalendarIcon, MousePointerClick, FileText } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ChevronLeftIcon, ChevronRightIcon, Mouse01Icon, File01Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -103,13 +104,13 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2">
           <Button variant="secondary" size="icon" onClick={handlePreviousMonth} className="h-11 w-11" aria-label="Previous month">
-            <ChevronLeft className="h-4 w-4" />
+            <HugeiconsIcon icon={ChevronLeftIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
           </Button>
           <Button variant="secondary" onClick={handleToday} className="h-9 font-medium text-xs tracking-wider uppercase">
             Today
           </Button>
           <Button variant="secondary" size="icon" onClick={handleNextMonth} className="h-11 w-11" aria-label="Next month">
-            <ChevronRight className="h-4 w-4" />
+            <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
           </Button>
           <h2 className="ml-2 text-xl font-black uppercase tracking-widest">{format(currentDate, 'MMMM yyyy')}</h2>
         </div>
@@ -238,7 +239,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                     title={hasJournalEntry ? "Open daily journal" : "Add daily journal"}
                     aria-label={`${hasJournalEntry ? 'Open' : 'Add'} daily journal for ${format(day, 'MMMM d, yyyy')}`}
                   >
-                    <FileText className="h-3 w-3 text-primary" />
+                    <HugeiconsIcon icon={File01Icon} className="h-3 w-3 text-primary" strokeWidth={1.5} color="currentColor" />
                   </button>
                 )}
 
@@ -246,7 +247,7 @@ export function JournalCalendar({ trades, onDayClick, onDayNoteClick }: JournalC
                 <div className="absolute inset-0 bg-background/0 group-hover:bg-background/5 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
                   {dailyTrades.length > 0 ? (
                     <span className="bg-background/90 text-foreground border shadow-sm px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1">
-                      <MousePointerClick className="w-3 h-3" /> Open Cards
+                      <HugeiconsIcon icon={Mouse01Icon} className="w-3 h-3" strokeWidth={1.5} color="currentColor" /> Open Cards
                     </span>
                   ) : isCurrentMonth ? (
                     <span className="bg-background/90 text-muted-foreground border shadow-sm px-2 py-1 rounded text-[10px] font-bold flex items-center gap-1">

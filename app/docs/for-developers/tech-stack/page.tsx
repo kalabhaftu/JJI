@@ -1,4 +1,3 @@
-import { Code2, Database, Globe, Layers3, Smartphone } from 'lucide-react'
 import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function TechStackDocsPage() {
@@ -20,7 +19,7 @@ export default function TechStackDocsPage() {
           <li><strong>Drag &amp; Drop:</strong> react-grid-layout</li>
           <li><strong>Tables:</strong> @tanstack/react-table</li>
           <li><strong>Client Data:</strong> TanStack Query for server state, Zustand for local state</li>
-          <li><strong>Icons:</strong> Lucide React</li>
+          <li><strong>Icons:</strong> Hugeicons</li>
         </ul>
       </DocsSection>
 

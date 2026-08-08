@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react'
 import Image from 'next/image'
-import { Target, MoreHorizontal, Eye, Pencil as Edit, Trash2 as Trash } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Target01Icon, MoreVerticalIcon, EyeIcon, PencilEdit01Icon, Delete02Icon } from '@hugeicons/core-free-icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { RevealAction } from '@/components/ui/reveal-action'
@@ -69,21 +70,21 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <RevealAction size="icon" className="h-10 w-10" aria-label="Backtest options">
-                <MoreHorizontal className="h-4 w-4" />
+                <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               </RevealAction>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onView}>
-                <Eye className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                 View Details
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onEdit}>
-                <Edit className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                 Edit Backtest
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                <Trash className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                 Delete Backtest
               </DropdownMenuItem>
             </DropdownMenuContent>

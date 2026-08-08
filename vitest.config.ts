@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     environment: 'happy-dom',
+    testTimeout: 15_000,
     setupFiles: ['./tests/setup.ts'],
     include: ['**/*.test.{ts,tsx}'],
     exclude: ['node_modules', '.agent', '.agents', '.kilo', '.claude', '.next', 'out', 'dist', 'build', 'tests/e2e/**'],

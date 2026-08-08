@@ -1,7 +1,8 @@
 'use client'
 
 import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { Database, FileSpreadsheet, Plus, RefreshCw, Sparkles, Trash2, Upload, Wallet, type LucideIcon } from 'lucide-react'
+import { HugeiconsIcon, type HugeiconsIconProps } from '@hugeicons/react'
+import { DatabaseIcon, File01Icon, FileSpreadsheetIcon, Add01Icon, RefreshIcon, SparklesIcon, Delete02Icon, Upload01Icon, Wallet01Icon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -143,7 +144,7 @@ export function OnboardingShell() {
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-xl" data-onboarding-layer>
           <DialogHeader>
             <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-              {view === 'create' ? <Wallet className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
+              {view === 'create' ? <HugeiconsIcon icon={Wallet01Icon} className="h-5 w-5" /> : <HugeiconsIcon icon={SparklesIcon} className="h-5 w-5" />}
             </div>
             <DialogTitle className="text-2xl">{view === 'welcome' ? 'Welcome to JJI' : view === 'create' ? 'Create your first trading account' : 'Choose how to begin'}</DialogTitle>
             <DialogDescription>
@@ -159,12 +160,12 @@ export function OnboardingShell() {
             <div className="space-y-5">
               <div className="grid gap-3 sm:grid-cols-3">
                 {([
-                  ['Import', 'Bring in broker or CSV history.', FileSpreadsheet],
-                  ['Review', 'See performance in context.', Database],
-                  ['Improve', 'Turn patterns into decisions.', RefreshCw],
-                ] as Array<[string, string, LucideIcon]>).map(([title, copy, Icon]) => (
+                  ['Import', 'Bring in broker or CSV history.', FileSpreadsheetIcon],
+                  ['Review', 'See performance in context.', DatabaseIcon],
+                  ['Improve', 'Turn patterns into decisions.', RefreshIcon],
+                ] as Array<[string, string, HugeiconsIconProps['icon']]>).map(([title, copy, Icon]) => (
                   <div key={String(title)} className="rounded-lg border border-border bg-muted/20 p-3">
-                    <Icon className="mb-3 h-4 w-4 text-primary" />
+                    <HugeiconsIcon icon={Icon} className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                     <p className="text-sm font-medium">{title}</p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">{copy}</p>
                   </div>
@@ -180,11 +181,11 @@ export function OnboardingShell() {
           {view === 'choice' && (
             <div className="space-y-3">
               <button type="button" className="flex w-full items-start gap-4 rounded-xl border border-primary/40 bg-primary/5 p-4 text-left transition-colors hover:bg-primary/10" onClick={() => void handleMode('real_import')}>
-                <Upload className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+                <HugeiconsIcon icon={Upload01Icon} className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
                 <span><span className="block text-sm font-semibold">Import my trades</span><span className="mt-1 block text-sm leading-5 text-muted-foreground">Use your own account and history to reach useful analytics immediately.</span></span>
               </button>
               <button type="button" className="flex w-full items-start gap-4 rounded-xl border border-border p-4 text-left transition-colors hover:bg-muted/40" onClick={() => void handleMode('sample_import')} disabled={isCreatingSample}>
-                <FileSpreadsheet className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+                <HugeiconsIcon icon={File01Icon} className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
                 <span><span className="block text-sm font-semibold">Use a sample workspace</span><span className="mt-1 block text-sm leading-5 text-muted-foreground">JJI downloads a small CSV, creates a temporary workspace, and removes it after the core tour.</span></span>
               </button>
               <div className="flex justify-between border-t border-border pt-4"><Button variant="tertiary" onClick={() => setView('welcome')}>Back</Button><Button variant="tertiary" onClick={() => void skipSetup()}>Skip for now</Button></div>
@@ -199,7 +200,7 @@ export function OnboardingShell() {
                 <div className="space-y-2"><Label htmlFor="onboarding-account-broker">Broker</Label><Input id="onboarding-account-broker" required value={accountForm.broker} onChange={(event) => setAccountForm({ ...accountForm, broker: event.target.value })} placeholder="Broker or platform" /></div>
                 <div className="space-y-2"><Label htmlFor="onboarding-account-balance">Starting balance</Label><Input id="onboarding-account-balance" required type="number" min="0" value={accountForm.startingBalance} onChange={(event) => setAccountForm({ ...accountForm, startingBalance: event.target.value })} /></div>
               </div>
-              <div className="flex justify-between border-t border-border pt-4"><Button type="button" variant="tertiary" onClick={() => setView('choice')}>Back</Button><Button type="submit" disabled={isCreatingAccount}><Plus className="mr-2 h-4 w-4" />{isCreatingAccount ? 'Creating…' : 'Create account and import'}</Button></div>
+              <div className="flex justify-between border-t border-border pt-4"><Button type="button" variant="tertiary" onClick={() => setView('choice')}>Back</Button><Button type="submit" disabled={isCreatingAccount}><HugeiconsIcon icon={Add01Icon} className="mr-2 h-4 w-4" />{isCreatingAccount ? 'Creating…' : 'Create account and import'}</Button></div>
             </form>
           )}
         </DialogContent>
@@ -207,7 +208,7 @@ export function OnboardingShell() {
 
       {cleanupError && (
         <div className="fixed bottom-4 right-4 z-[10000] flex max-w-sm items-center gap-3 rounded-lg border border-warning/30 bg-background p-4 shadow-xl" role="status">
-          <Trash2 className="h-4 w-4 shrink-0 text-warning-foreground" />
+          <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 shrink-0 text-warning-foreground" />
           <p className="flex-1 text-sm text-muted-foreground">{cleanupError}</p>
           <Button size="sm" variant="secondary" onClick={() => void retrySampleCleanup()}>Retry</Button>
         </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 
+import { HugeiconsIcon } from '@hugeicons/react'
 import { useDashboardShellActionGroups } from '@/components/dashboard-shell-actions'
 import {
   CommandDialog,
@@ -57,7 +58,7 @@ export function CommandPalette() {
                     }}
                     className="flex items-center gap-3 rounded-lg px-3 py-3"
                   >
-                    <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <HugeiconsIcon icon={Icon} className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">{item.title}</div>
                       <div className="truncate text-xs text-muted-foreground">{item.description}</div>

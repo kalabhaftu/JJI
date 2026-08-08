@@ -11,7 +11,8 @@ import {
   parsePositionTime,
 } from '@/lib/trading/trade-formatting'
 import { formatTradePrice } from '@/lib/trading/precision'
-import { ChevronDown, ChevronRight, BarChart3, Eye, Pencil } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ChevronDownIcon, ChevronRightIcon, BarChartIcon, ViewIcon, PencilEdit01Icon } from '@hugeicons/core-free-icons'
 import { formatInTimeZone } from 'date-fns-tz'
 import { ExtendedTrade } from './trade-table-review'
 
@@ -82,9 +83,9 @@ export function TradeTableMobileCard({
               className="h-6 w-6 p-0"
             >
               {isExpanded ? (
-                <ChevronDown className="h-4 w-4" />
+                <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               ) : (
-                <ChevronRight className="h-4 w-4" />
+                <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               )}
             </Button>
           )}
@@ -172,7 +173,7 @@ export function TradeTableMobileCard({
           onClick={onViewDetails}
           className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
         >
-          <Eye className="h-4 w-4 mr-1.5" />
+          <HugeiconsIcon icon={ViewIcon} className="h-4 w-4 mr-1.5" strokeWidth={1.5} color="currentColor" />
           View
         </Button>
         <Button
@@ -181,7 +182,7 @@ export function TradeTableMobileCard({
           onClick={onEdit}
           className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
         >
-          <Pencil className="h-4 w-4 mr-1.5" />
+          <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-1.5" strokeWidth={1.5} color="currentColor" />
           Edit
         </Button>
         {(trade as any).imageOne && (
@@ -191,7 +192,7 @@ export function TradeTableMobileCard({
             onClick={onViewChart}
             className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
           >
-            <BarChart3 className="h-4 w-4 mr-1.5" />
+            <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 mr-1.5" strokeWidth={1.5} color="currentColor" />
             Chart
           </Button>
         )}

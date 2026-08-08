@@ -2,9 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-    AlertCircle as WarningCircle
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Alert02Icon } from '@hugeicons/core-free-icons'
 import { createChart, IChartApi, Time, CandlestickSeries, createSeriesMarkers, type SeriesMarker } from 'lightweight-charts'
 import { getMarketData } from '@/app/actions/get-market-data'
 import { getTimezoneOffset } from 'date-fns-tz'
@@ -227,7 +226,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
 
             {error && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/95 z-20 p-6 text-center">
-                    <WarningCircle className="h-10 w-10 text-destructive mb-4" />
+                    <HugeiconsIcon icon={Alert02Icon} className="h-10 w-10 text-destructive mb-4" />
                     <h3 className="text-sm font-semibold mb-2">Market Data Error</h3>
                     <p className="text-xs text-muted-foreground mb-4">{error}</p>
                     <Button

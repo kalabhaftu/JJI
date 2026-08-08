@@ -1,13 +1,14 @@
 "use client"
 
 import React from 'react'
-import type { LucideIcon } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { HugeiconsIconProps } from '@hugeicons/react'
 import { MagicTab } from "@/components/godui/magic-tab"
 import { emitTourEvent } from '@/lib/tours/events'
 
 export type SettingsSectionId = "profile" | "preferences" | "integrations" | "connections" | "security" | "help"
 
-export function SettingsNavigation({ categories, value, onValueChange }: { categories: Array<{ id: SettingsSectionId; label: string; icon: LucideIcon }>; value: SettingsSectionId; onValueChange: (value: SettingsSectionId) => void }) {
+export function SettingsNavigation({ categories, value, onValueChange }: { categories: Array<{ id: SettingsSectionId; label: string; icon: HugeiconsIconProps['icon'] }>; value: SettingsSectionId; onValueChange: (value: SettingsSectionId) => void }) {
   const [isDesktop, setIsDesktop] = React.useState<boolean>(false)
 
   React.useEffect(() => {
@@ -28,6 +29,14 @@ export function SettingsNavigation({ categories, value, onValueChange }: { categ
     }}
     orientation={isDesktop ? "vertical" : "horizontal"}
     rainbow={false}
-    items={categories.map((category) => ({ value: category.id, label: <span data-tour={`settings-tab-${category.id}`} className="flex items-center gap-2"><category.icon className="size-4" aria-hidden />{category.label}</span> }))}
+    items={categories.map((category) => ({
+      value: category.id,
+      label: (
+        <span data-tour={`settings-tab-${category.id}`} className="flex items-center gap-2">
+          <HugeiconsIcon icon={category.icon} className="size-4" aria-hidden />
+          {category.label}
+        </span>
+      ),
+    }))}
   />
 }

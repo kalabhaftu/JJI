@@ -1,5 +1,6 @@
 import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
-import { Database, Gauge, Server, Zap } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { FlashIcon, GaugeIcon } from '@hugeicons/core-free-icons'
 
 export default function DatabaseOptimizationDocsPage() {
   return (
@@ -28,7 +29,7 @@ export default function DatabaseOptimizationDocsPage() {
       <DocsSection title="Drizzle ORM Performance Patterns">
         <DocsCardGrid>
           <DocsInfoCard
-            icon={<Zap />}
+            icon={<HugeiconsIcon icon={FlashIcon} strokeWidth={1.5} color="currentColor" />}
             title="Batch Loading & Relational Queries"
             description="Fetch related trades, tags, and account records in single database roundtrips using Drizzle's relational query API or batch statement execution."
             items={[
@@ -38,7 +39,7 @@ export default function DatabaseOptimizationDocsPage() {
             ]}
           />
           <DocsInfoCard
-            icon={<Gauge />}
+            icon={<HugeiconsIcon icon={GaugeIcon} strokeWidth={1.5} color="currentColor" />}
             title="Prepared Statements & Cache Versioning"
             description="Use prepared parameter queries for high-throughput API endpoints and increment cache versioning counters to invalidate stale dashboard metrics."
             items={[

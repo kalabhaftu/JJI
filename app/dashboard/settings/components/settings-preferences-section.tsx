@@ -1,27 +1,28 @@
 'use client'
 
 import type { Dispatch, SetStateAction } from 'react'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Activity,
-  BellRing,
-  Bot,
-  Calendar,
-  Check,
-  ChevronDown,
-  ChevronRight as CaretRight,
-  Clock,
-  Eye,
-  Globe,
-  Laptop,
-  LayoutGrid,
-  Moon,
-  Palette,
-  Sparkles,
-  Sun,
-  SunMoon,
-  Target,
-  TrendingUp,
-} from 'lucide-react'
+  Activity01Icon,
+  BellRingIcon,
+  BotIcon,
+  Calendar01Icon,
+  Tick01Icon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  Clock01Icon,
+  ContrastIcon,
+  EyeIcon,
+  Globe02Icon,
+  LaptopIcon,
+  LayoutGridIcon,
+  MoonIcon,
+  PaintBrush01Icon,
+  SparklesIcon,
+  Sun01Icon,
+  Target01Icon,
+  TrendingUpDownIcon,
+} from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
@@ -101,12 +102,12 @@ export function SettingsPreferencesSection({
   onAiSettingsChange: handleAiSettingsChange,
 }: SettingsPreferencesSectionProps) {
   const themeInfo = theme === 'dark'
-    ? { icon: Moon, label: 'Dark' }
+    ? { icon: MoonIcon, label: 'Dark' }
     : theme === 'light'
-      ? { icon: Sun, label: 'Light' }
+      ? { icon: Sun01Icon, label: 'Light' }
       : theme === 'black'
-        ? { icon: Moon, label: 'Black' }
-        : { icon: Laptop, label: 'System' }
+        ? { icon: MoonIcon, label: 'Black' }
+        : { icon: LaptopIcon, label: 'System' }
 
   return (
       <div className="space-y-6">
@@ -118,37 +119,37 @@ export function SettingsPreferencesSection({
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-1" data-tour="settings-card-preferences">
           {                     }
           <SettingRow
-            icon={SunMoon}
+            icon={ContrastIcon}
             label="Theme"
             description="Choose your preferred color scheme"
             action={
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 min-w-[110px] h-8 text-xs" data-tour="theme-switcher-container">
-                    <themeInfo.icon className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={themeInfo.icon} className="h-3.5 w-3.5" />
                     {themeInfo.label}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
-                    <Moon className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={MoonIcon} className="mr-2 h-3.5 w-3.5" />
                     Dark
-                    {theme === 'dark' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'dark' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange("light")}>
-                    <Sun className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={Sun01Icon} className="mr-2 h-3.5 w-3.5" />
                     Light
-                    {theme === 'light' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'light' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange("system")}>
-                    <Laptop className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={LaptopIcon} className="mr-2 h-3.5 w-3.5" />
                     System
-                    {theme === 'system' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'system' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange("black")}>
-                    <Moon className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={MoonIcon} className="mr-2 h-3.5 w-3.5" />
                     Black
-                    {theme === 'black' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'black' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -159,7 +160,7 @@ export function SettingsPreferencesSection({
 
           {                            }
           <SettingRow
-            icon={Palette}
+            icon={PaintBrush01Icon}
             label="Color Accent"
             description={accentPack === 'reports' ? 'Forest' : accentPack === 'violet' ? 'Orchid' : accentPack === 'slate' ? 'Graphite' : 'Classic'}
             action={
@@ -177,7 +178,7 @@ export function SettingsPreferencesSection({
                       </span>
                       {accentPack === 'reports' ? 'Forest' : accentPack === 'violet' ? 'Orchid' : accentPack === 'slate' ? 'Graphite' : 'Classic'}
                     </span>
-                    <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+                    <HugeiconsIcon icon={ChevronDownIcon} className="h-3 w-3 opacity-50 shrink-0" strokeWidth={1.5} color="currentColor" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -189,7 +190,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Classic
                     </div>
-                    {accentPack === 'classic' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'classic' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleAccentChange('reports')}>
                     <div className="flex items-center gap-2">
@@ -199,7 +200,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Forest
                     </div>
-                    {accentPack === 'reports' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'reports' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleAccentChange('violet')}>
                     <div className="flex items-center gap-2">
@@ -209,7 +210,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Orchid
                     </div>
-                    {accentPack === 'violet' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'violet' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleAccentChange('slate')}>
                     <div className="flex items-center gap-2">
@@ -219,7 +220,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Graphite
                     </div>
-                    {accentPack === 'slate' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'slate' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -230,7 +231,7 @@ export function SettingsPreferencesSection({
 
           {                        }
           <SettingRow
-            icon={Globe}
+            icon={Globe02Icon}
             label="Timezone"
             description={timezone.replace('_', ' ')}
             action={
@@ -238,7 +239,7 @@ export function SettingsPreferencesSection({
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     Change
-                    <CaretRight className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -260,7 +261,7 @@ export function SettingsPreferencesSection({
 
           {                 }
           <SettingRow
-            icon={Clock}
+            icon={Clock01Icon}
             label="Time Format"
             description={use24HourFormat ? "24-hour" : "12-hour"}
             action={
@@ -268,7 +269,7 @@ export function SettingsPreferencesSection({
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     Change
-                    <CaretRight className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -291,7 +292,7 @@ export function SettingsPreferencesSection({
 
           {                     }
           <SettingRow
-            icon={Target}
+            icon={Target01Icon}
             label="Break-even threshold"
             description={`Breakeven band: ${formatBreakevenBand(profileData.breakEvenThreshold)}. Counted as win above +$${profileData.breakEvenThreshold}, loss below -$${profileData.breakEvenThreshold}.`}
             action={
@@ -320,7 +321,7 @@ export function SettingsPreferencesSection({
 
           {                 }
           <SettingRow
-            icon={TrendingUp}
+            icon={TrendingUpDownIcon}
             label="P&L display"
             description={profileData.pnlDisplayMode === 'gross'
               ? 'Show gross P&L before commissions and swap on dashboard/report money surfaces.'
@@ -330,7 +331,7 @@ export function SettingsPreferencesSection({
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     {profileData.pnlDisplayMode === 'gross' ? 'Gross' : 'Net'}
-                    <CaretRight className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -350,7 +351,7 @@ export function SettingsPreferencesSection({
 
           {                  }
           <SettingRow
-            icon={LayoutGrid}
+            icon={LayoutGridIcon}
             label="Widget Style"
             description={widgetStyle === 'glass' ? 'Glassmorphism with distinct borders' : 'Standard muted panel style'}
             action={
@@ -363,11 +364,11 @@ export function SettingsPreferencesSection({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleWidgetStyleChange('default')}>
                     Standard
-                    {widgetStyle === 'default' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {widgetStyle === 'default' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleWidgetStyleChange('glass')}>
                     Glassmorphism
-                    {widgetStyle === 'glass' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {widgetStyle === 'glass' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -378,7 +379,7 @@ export function SettingsPreferencesSection({
 
           {                 }
           <SettingRow
-            icon={Activity}
+            icon={Activity01Icon}
             label="Chart Edge Style"
             description={chartStyle === 'sharp' ? 'Sharp angular lines following your color accent' : 'Smooth curved lines following your color accent'}
             action={
@@ -391,11 +392,11 @@ export function SettingsPreferencesSection({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleChartStyleChange('smooth')}>
                     Smooth
-                    {chartStyle === 'smooth' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {chartStyle === 'smooth' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleChartStyleChange('sharp')}>
                     Sharp
-                    {chartStyle === 'sharp' && <Check className="ml-auto h-3.5 w-3.5" />}
+                    {chartStyle === 'sharp' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -406,7 +407,7 @@ export function SettingsPreferencesSection({
 
           {                  }
           <SettingRow
-            icon={Eye}
+            icon={EyeIcon}
             label="Privacy Mode"
             description="Hide monetary balances across the dashboard"
             action={
@@ -421,7 +422,7 @@ export function SettingsPreferencesSection({
 
           {                      }
           <SettingRow
-            icon={Calendar}
+            icon={Calendar01Icon}
             label="Auto-adjust Account Date"
             description="Automatically set account start date to your first trade"
             action={
@@ -440,13 +441,13 @@ export function SettingsPreferencesSection({
         {                    }
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
           <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-            <Bot className="h-4 w-4" />
+            <HugeiconsIcon icon={BotIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
             AI Preferences
           </h3>
 
           <div className="space-y-1">
             <SettingRow
-              icon={Sparkles}
+              icon={SparklesIcon}
               label="Weekly AI Performance Reviews"
               description="Get an AI-generated weekly report card every weekend"
               action={
@@ -461,7 +462,7 @@ export function SettingsPreferencesSection({
             <Separator className="my-1 border-border/30" />
 
             <SettingRow
-              icon={BellRing}
+              icon={BellRingIcon}
               label="AI insights in notifications"
               description="Create a notification with a summary when you run an AI analysis"
               action={

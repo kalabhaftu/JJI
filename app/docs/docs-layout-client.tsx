@@ -4,23 +4,16 @@ import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 're
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Fuse from 'fuse.js'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  BookOpenText,
-  Bot,
-  CalendarDays,
-  ChevronRight,
-  Code,
-  Download,
-  FileText,
-  FlaskConical,
-  GanttChartSquare,
-  Goal,
-  List,
-  NotebookPen,
-  Rocket,
-  Search,
-  Smartphone,
-} from 'lucide-react'
+  BookOpen01Icon,
+  ChevronRightIcon,
+  CodeIcon,
+  File01Icon,
+  Menu01Icon,
+  RocketIcon,
+  Search01Icon,
+} from '@hugeicons/core-free-icons'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -43,14 +36,14 @@ type DocsNavItem = {
 
 type DocsNavSection = {
   title: string
-  icon: typeof Rocket
+  icon: typeof RocketIcon
   items: DocsNavItem[]
 }
 
 const docsNavigation: DocsNavSection[] = [
   {
     title: 'Getting Started',
-    icon: Rocket,
+    icon: RocketIcon,
     items: [
       { title: 'Introduction', href: '/docs', description: 'Overview of JJI web and mobile' },
       { title: 'Quick Start Guide', href: '/docs/getting-started', description: 'Step-by-step setup tutorial' },
@@ -59,7 +52,7 @@ const docsNavigation: DocsNavSection[] = [
   },
   {
     title: 'Features',
-    icon: BookOpenText,
+    icon: BookOpen01Icon,
     items: [
       { title: 'Trade Import', href: '/docs/features/importing', description: 'Import trades from brokers and files', keywords: ['csv', 'webhook', 'broker', 'sync', 'file upload', 'custom mapper', 'ninja trader', 'tradovate', 'rithmic', 'interactive brokers', 'webull', 'thor', 'match-trader', 'exness'] },
       { title: 'Dashboard', href: '/docs/features/dashboard', description: 'KPI cards, widgets, filters, templates', keywords: ['kpi', 'metrics', 'widgets', 'grid', 'templates'] },
@@ -84,7 +77,7 @@ const docsNavigation: DocsNavSection[] = [
   },
   {
     title: 'Resources',
-    icon: FileText,
+    icon: File01Icon,
     items: [
       {
         title: 'FAQ & Troubleshooting',
@@ -106,7 +99,7 @@ const docsNavigation: DocsNavSection[] = [
   },
   {
     title: 'For Developers',
-    icon: Code,
+    icon: CodeIcon,
     items: [
       { title: 'Tech Stack', href: '/docs/for-developers/tech-stack', description: 'Technologies used across the platform' },
       { title: 'Frontend Guidelines', href: '/docs/for-developers/frontend', description: 'UI patterns and conventions' },
@@ -184,7 +177,7 @@ function DocsNav({
       {docsNavigation.map((section) => (
         <section key={section.title} className="space-y-2">
           <div className="flex items-center gap-2 px-1 text-[10px] font-black uppercase tracking-[0.24em] text-muted-foreground/70">
-            <section.icon className="h-3.5 w-3.5" />
+            <HugeiconsIcon icon={section.icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             <span>{section.title}</span>
           </div>
 
@@ -207,11 +200,14 @@ function DocsNav({
                     )}
                   >
                     <span className="truncate">{item.title}</span>
-                    <ChevronRight
+                    <HugeiconsIcon
+icon={ChevronRightIcon}
                       className={cn(
                         'ml-auto h-3.5 w-3.5 transition-transform',
                         itemActive ? 'text-primary-foreground/80' : 'translate-x-0.5 text-muted-foreground/60'
                       )}
+                      strokeWidth={1.5}
+                      color="currentColor"
                     />
                   </Link>
 
@@ -283,7 +279,7 @@ function DocsSearchPanel({
 
   return (
     <div className="relative">
-      <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+      <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
       <Input
         ref={inputRef}
         value={searchQuery}
@@ -321,7 +317,7 @@ function DocsSearchPanel({
                       {result.section}
                     </p>
                   </div>
-                  <ChevronRight className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                 </Link>
               ))
             ) : (
@@ -446,7 +442,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="secondary" className="rounded-2xl">
-                  <List className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={Menu01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                   Browse Docs
                 </Button>
               </SheetTrigger>

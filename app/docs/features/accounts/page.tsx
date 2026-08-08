@@ -1,4 +1,3 @@
-import { Building2, Filter, Smartphone, Users } from 'lucide-react'
 import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function AccountsDocsPage() {

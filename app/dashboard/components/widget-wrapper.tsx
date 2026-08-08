@@ -2,7 +2,8 @@
 
 import React, { Component, type ReactNode } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
-import { AlertCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { AlertCircleIcon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { reportError } from '@/lib/observability/report-error'
 
@@ -45,7 +46,7 @@ export class WidgetErrorBoundary extends Component<WidgetErrorBoundaryProps, Wid
         <Card role="alert" aria-live="assertive" className="h-full w-full border-destructive/20 bg-destructive/5">
           <CardContent className="flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
             <div className="rounded-full bg-destructive/20 p-3">
-              <AlertCircle className="h-6 w-6 text-destructive" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-6 w-6 text-destructive" strokeWidth={1.5} color="currentColor" />
             </div>
             <div className="flex flex-col gap-1">
               <h3 className="text-sm font-medium text-destructive">

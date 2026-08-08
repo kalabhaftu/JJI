@@ -2,26 +2,28 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { HugeiconsIconProps } from '@hugeicons/react'
 import {
-  LayoutDashboard,
-  LineChart,
-  CalendarDays,
-  Briefcase,
-  ListTodo,
-  BookOpen,
-  FlaskConical,
-  Settings,
-  Database,
-  BookMarked,
-  RefreshCw,
-  PanelLeftClose,
-  PanelLeftOpen,
-  MessageSquare,
-  Heart,
-  Trophy,
-  LogOut,
-  Brain,
-} from 'lucide-react'
+  DashboardSquare01Icon,
+  AnalyticsUpIcon,
+  Calendar01Icon,
+  Briefcase01Icon,
+  Task01Icon,
+  BookOpen01Icon,
+  TestTube01Icon,
+  Settings02Icon,
+  Database01Icon,
+  Bookmark01Icon,
+  RefreshIcon,
+  SidebarLeft01Icon,
+  SidebarLeftIcon,
+  Comment01Icon,
+  FavouriteIcon,
+  Award01Icon,
+  Logout01Icon,
+  Brain01Icon,
+} from '@hugeicons/core-free-icons'
 
 import {
   Sidebar,
@@ -57,11 +59,11 @@ import {
   type NavigationId,
 } from '@/lib/navigation/registry'
 
-const navigationIcons: Record<NavigationId, typeof LayoutDashboard> = {
-  overview: LayoutDashboard, journal: CalendarDays, reports: LineChart, table: ListTodo,
-  accounts: Briefcase, playbook: BookOpen, backtesting: FlaskConical, goals: Trophy,
-  assistant: Brain, data: Database, settings: Settings, docs: BookMarked,
-  feedback: MessageSquare, donate: Heart, more: LayoutDashboard,
+const navigationIcons: Record<NavigationId, HugeiconsIconProps['icon']> = {
+  overview: DashboardSquare01Icon, journal: Calendar01Icon, reports: AnalyticsUpIcon, table: Task01Icon,
+  accounts: Briefcase01Icon, playbook: BookOpen01Icon, backtesting: TestTube01Icon, goals: Award01Icon,
+  assistant: Brain01Icon, data: Database01Icon, settings: Settings02Icon, docs: Bookmark01Icon,
+  feedback: Comment01Icon, donate: FavouriteIcon, more: DashboardSquare01Icon,
 }
 
 export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSettingsPayload }) {
@@ -185,7 +187,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
 
   const activeId = getActiveNavigationId(pathname || '', navigationContext)
   const collapseLabel = isCollapsed ? 'Expand' : 'Collapse'
-  const CollapseIcon = isCollapsed ? PanelLeftOpen : PanelLeftClose
+  const CollapseIcon = isCollapsed ? SidebarLeftIcon : SidebarLeft01Icon
 
   const handleMobileClose = () => {
     if (isOverlay) {
@@ -247,7 +249,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                         )}
                       >
                          <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
-                           <ItemIcon />
+                           <HugeiconsIcon icon={ItemIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -278,7 +280,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                         )}
                       >
                          <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose}>
-                           <ItemIcon />
+                           <HugeiconsIcon icon={ItemIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -306,7 +308,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                       )}
                     >
                        <Link href={resolveNavigationPath('assistant', navigationContext)} onClick={handleMobileClose}>
-                        <Brain />
+                        <HugeiconsIcon icon={Brain01Icon} className="size-4" strokeWidth={1.5} color="currentColor" />
                         <span>Assistant</span>
                       </Link>
                     </SidebarMenuButton>
@@ -334,7 +336,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                       }}
                       disabled={isSyncing}
                     >
-                      <RefreshCw className={cn(isSyncing && "animate-spin")} />
+                      <HugeiconsIcon icon={RefreshIcon} className={cn("size-4", isSyncing && "animate-spin")} strokeWidth={1.5} color="currentColor" />
                       <span>{isSyncing ? "Syncing..." : "Sync Data"}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -355,7 +357,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                         )}
                       >
                          <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
-                           <ItemIcon />
+                           <HugeiconsIcon icon={ItemIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -392,7 +394,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                     !isOverlay && !isCollapsed && 'justify-start px-3'
                   )}
                 >
-                  <LogOut className="h-4 w-4 shrink-0" />
+                  <HugeiconsIcon icon={Logout01Icon} className="h-4 w-4 shrink-0" strokeWidth={1.5} color="currentColor" />
                   {(!isCollapsed || isOverlay) && <span>Exit Demo</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -409,7 +411,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                   !isOverlay && !isCollapsed && 'justify-start px-3'
                 )}
               >
-                <CollapseIcon />
+                <HugeiconsIcon icon={CollapseIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
                 {(!isCollapsed || isOverlay) && <span>{collapseLabel}</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>

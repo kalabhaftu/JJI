@@ -5,7 +5,8 @@ import { useDropzone } from 'react-dropzone'
 import Papa from 'papaparse'
 import { ImportType } from './import-type-selection'
 import { Progress } from "@/components/ui/progress"
-import { X, File, AlertCircle, ArrowUpCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Cancel01Icon, File01Icon, Alert02Icon, UploadCircle01Icon } from '@hugeicons/core-free-icons'
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { RevealAction } from "@/components/ui/reveal-action"
@@ -204,7 +205,8 @@ export default function FileUpload({
         <input {...getInputProps()} />
         <div className="flex flex-col items-center gap-3.5">
           <div className="relative p-3 rounded-2xl bg-muted border border-border group-hover:scale-105 group-hover:border-primary/25 transition-all duration-300 shadow-sm">
-            <ArrowUpCircle 
+            <HugeiconsIcon 
+              icon={UploadCircle01Icon}
               className={cn(
                 "h-10 w-10 transition-all duration-300",
                 isDragActive 
@@ -252,7 +254,7 @@ export default function FileUpload({
               >
                 <div className="flex items-center space-x-3 min-w-0">
                   <div className="bg-muted p-2 rounded-lg border border-border group-hover:scale-102 transition-transform">
-                    <File className="h-4 w-4 text-foreground/70" />
+                    <HugeiconsIcon icon={File01Icon} className="h-4 w-4 text-foreground/70" />
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-semibold text-foreground/90 truncate max-w-[200px] sm:max-w-[320px]">{file.name}</span>
@@ -273,7 +275,7 @@ export default function FileUpload({
                     onClick={() => removeFile(index)}
                     className="h-10 w-10 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
-                    <X className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={Cancel01Icon} className="h-3.5 w-3.5" />
                     <span className="sr-only">Remove file</span>
                   </RevealAction>
                 </div>
@@ -285,7 +287,7 @@ export default function FileUpload({
 
       {uploadedFiles.length > 0 && (
         <div className="flex items-start gap-3 bg-muted/40 border border-border p-3.5 rounded-xl text-xs text-muted-foreground w-full animate-in slide-in-from-bottom-5">
-          <AlertCircle className="h-4 w-4 text-muted-foreground/80 shrink-0 mt-0.5" />
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-muted-foreground/80 shrink-0 mt-0.5" />
           <p className="leading-relaxed">
             Note: All uploaded files will be concatenated and processed using the selected import type configuration.
           </p>
@@ -294,7 +296,7 @@ export default function FileUpload({
 
       {rejectedFiles.length > 0 && (
         <Alert variant="destructive" className="w-full" data-testid="file-rejection-alert">
-          <AlertCircle className="h-4 w-4" />
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
           <AlertTitle>
             {rejectedFiles.length === 1 ? 'This file could not be imported' : 'Some files could not be imported'}
           </AlertTitle>

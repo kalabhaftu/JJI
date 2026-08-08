@@ -8,7 +8,8 @@ import { EditBacktestDialog } from './edit-backtest-dialog'
 import { ViewBacktestDialog } from './view-backtest-dialog'
 import { AnalyticsTab } from './analytics-tab'
 import { BacktestTrade, BacktestStats } from '@/types/backtesting-types'
-import { Search, Filter, TrendingUp as TrendUp, BarChart3, Plus, AlertCircle as AlertTriangle } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Search01Icon, FilterIcon, ArrowUp01Icon, BarChartIcon, Add01Icon, Alert02Icon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
 import {
@@ -125,12 +126,12 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
           </div>
           <TabsList className="grid w-full sm:w-fit grid-cols-2 flex-shrink-0">
             <TabsTrigger value="backtests" className="gap-2">
-              <BarChart3 className="h-4 w-4" />
+              <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               <span className="hidden sm:inline">Backtests</span>
               <span className="sm:hidden">Tests</span>
             </TabsTrigger>
             <TabsTrigger value="analytics" className="gap-2">
-              <TrendUp className="h-4 w-4" />
+              <HugeiconsIcon icon={ArrowUp01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               <span>Analytics</span>
             </TabsTrigger>
           </TabsList>
@@ -139,7 +140,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
         <TabsContent value="backtests" className="space-y-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
               <Input
                 placeholder="Search by pair, model, or tags..."
                 value={searchTerm}
@@ -152,7 +153,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" className="gap-2">
-                    <Filter className="h-4 w-4" />
+                    <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                     {filterBy === 'all' ? 'All' : filterBy === 'wins' ? 'Wins' : filterBy === 'losses' ? 'Losses' : filterBy === 'longs' ? 'Longs' : 'Shorts'}
                   </Button>
                 </DropdownMenuTrigger>
@@ -176,7 +177,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
               </DropdownMenu>
 
               <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
+                <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 Add Backtest
               </Button>
             </div>
@@ -189,7 +190,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
                   <span className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground/80">
                     Total
                   </span>
-                  <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  <HugeiconsIcon icon={BarChartIcon} className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={1.5} color="currentColor" />
                 </div>
                 <p className="text-2xl font-bold tracking-tight">{stats.totalBacktests}</p>
               </CardContent>
@@ -202,9 +203,9 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
                     Win Rate
                   </span>
                   {stats.winRate >= 50 ? (
-                    <TrendUp className="h-3.5 w-3.5 text-long/50" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="h-3.5 w-3.5 text-long/50" strokeWidth={1.5} color="currentColor" />
                   ) : (
-                    <TrendUp className="h-3.5 w-3.5 text-short/50 rotate-180" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="h-3.5 w-3.5 text-short/50 rotate-180" strokeWidth={1.5} color="currentColor" />
                   )}
                 </div>
                 <p className="text-2xl font-bold tracking-tight">{stats.winRate}%</p>
@@ -218,9 +219,9 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
                     Points/Pips
                   </span>
                   {stats.totalPnL >= 0 ? (
-                    <TrendUp className="h-3.5 w-3.5 text-long/50" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="h-3.5 w-3.5 text-long/50" strokeWidth={1.5} color="currentColor" />
                   ) : (
-                    <TrendUp className="h-3.5 w-3.5 text-short/50 rotate-180" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="h-3.5 w-3.5 text-short/50 rotate-180" strokeWidth={1.5} color="currentColor" />
                   )}
                 </div>
                 <p className={cn("text-2xl font-bold tracking-tight", stats.totalPnL >= 0 ? "text-long" : "text-short")}>
@@ -235,7 +236,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
                   <span className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground/80">
                     Avg R:R
                   </span>
-                  <TrendUp className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  <HugeiconsIcon icon={ArrowUp01Icon} className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={1.5} color="currentColor" />
                 </div>
                 <p className="text-2xl font-bold tracking-tight">1:{stats.averageRR.toFixed(2)}</p>
               </CardContent>
@@ -246,7 +247,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
             <Card className="border-dashed border-border/50 bg-card/40">
               <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                 <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted/40">
-                  <AlertTriangle className="h-7 w-7 text-muted-foreground" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-7 w-7 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                 </div>
                 <h3 className="mb-2 text-lg font-semibold">No backtests found</h3>
                 <p className="mb-5 max-w-md text-sm text-muted-foreground">
@@ -256,7 +257,7 @@ export function BacktestingClient({ initialBacktests }: BacktestingClientProps) 
                 </p>
                 {!searchTerm && filterBy === 'all' && (
                   <Button onClick={() => setIsAddDialogOpen(true)} className="gap-2">
-                    <Plus className="h-4 w-4" />
+                    <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                     Add Backtest
                   </Button>
                 )}

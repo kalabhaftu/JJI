@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useState, useEffect, useRef } from 'react'
-import { Brain, Check, Edit3, Info, PanelLeft, X } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Brain01Icon, Tick01Icon, Edit03Icon, InformationCircleIcon, PanelLeftIcon, Cancel01Icon } from '@hugeicons/core-free-icons'
 import { useData } from '@/context/data-provider'
 import { Button } from '@/components/ui/button'
 import {
@@ -599,7 +600,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center gap-5 px-6 text-center">
         <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
-          <Brain className="h-6 w-6" />
+          <HugeiconsIcon icon={Brain01Icon} className="h-6 w-6" strokeWidth={1.5} color="currentColor" />
         </div>
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">AI performance assistant</h1>
@@ -735,26 +736,26 @@ With an active workspace, the assistant analyzes your actual trading records. He
       <section className="flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Assistant conversation">
         {isDemoMode && (
           <div className="flex shrink-0 items-center justify-between gap-4 border-b border-border/70 bg-[hsl(var(--surface-subtle))] px-4 py-2">
-            <p className="flex items-center gap-2 text-xs text-muted-foreground"><Info className="h-4 w-4 shrink-0" /><span><strong className="text-foreground">Demo data.</strong> Responses are examples, not analysis of a connected account.</span></p>
+            <p className="flex items-center gap-2 text-xs text-muted-foreground"><HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 shrink-0" strokeWidth={1.5} color="currentColor" /><span><strong className="text-foreground">Demo data.</strong> Responses are examples, not analysis of a connected account.</span></p>
             <Button size="sm" asChild><Link href="/subscribe">Upgrade</Link></Button>
           </div>
         )}
 
         <header className="flex min-h-14 shrink-0 items-center justify-between gap-4 border-b border-border/70 px-4 sm:px-6">
           <div className="flex min-w-0 items-center gap-2">
-            <Button className="lg:hidden" variant="tertiary" size="icon" onClick={() => setMobileWorkspaceOpen(true)} aria-label="Open workspace library"><PanelLeft /></Button>
-            {sidebarCollapsed && <Button className="hidden lg:inline-flex" variant="tertiary" size="icon" onClick={() => setSidebarCollapsed(false)} aria-label="Open workspace library"><PanelLeft /></Button>}
+            <Button className="lg:hidden" variant="tertiary" size="icon" onClick={() => setMobileWorkspaceOpen(true)} aria-label="Open workspace library"><HugeiconsIcon icon={PanelLeftIcon} size={24} strokeWidth={1.5} color="currentColor" /></Button>
+            {sidebarCollapsed && <Button className="hidden lg:inline-flex" variant="tertiary" size="icon" onClick={() => setSidebarCollapsed(false)} aria-label="Open workspace library"><HugeiconsIcon icon={PanelLeftIcon} size={24} strokeWidth={1.5} color="currentColor" /></Button>}
             {selectedChatId ? (
               isRenameMode ? (
                 <div className="flex min-w-0 items-center gap-1">
                   <label className="sr-only" htmlFor="conversation-title">Conversation title</label>
                   <input id="conversation-title" value={renameValue} onChange={(event) => setRenameValue(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && handleRenameChat(selectedChatId)} autoFocus className="h-10 min-w-0 max-w-72 rounded-xl border border-border bg-background px-3 text-sm font-semibold outline-none focus:ring-2 focus:ring-ring" />
-                  <Button variant="tertiary" size="icon" onClick={() => handleRenameChat(selectedChatId)} aria-label="Save conversation title"><Check /></Button>
-                  <Button variant="tertiary" size="icon" onClick={() => setIsRenameMode(false)} aria-label="Cancel rename"><X /></Button>
+                  <Button variant="tertiary" size="icon" onClick={() => handleRenameChat(selectedChatId)} aria-label="Save conversation title"><HugeiconsIcon icon={Tick01Icon} size={24} strokeWidth={1.5} color="currentColor" /></Button>
+                  <Button variant="tertiary" size="icon" onClick={() => setIsRenameMode(false)} aria-label="Cancel rename"><HugeiconsIcon icon={Cancel01Icon} size={24} strokeWidth={1.5} color="currentColor" /></Button>
                 </div>
               ) : (
                 <>
-                  <Brain className="h-4 w-4 shrink-0" />
+                  <HugeiconsIcon icon={Brain01Icon} className="h-4 w-4 shrink-0" strokeWidth={1.5} color="currentColor" />
                   <h1 className="truncate text-sm font-semibold">{currentChat?.title || 'Active conversation'}</h1>
                   <Button
                     variant="tertiary"
@@ -766,7 +767,7 @@ With an active workspace, the assistant analyzes your actual trading records. He
                     }}
                     aria-label="Rename conversation"
                   >
-                    <Edit3 />
+                    <HugeiconsIcon icon={Edit03Icon} size={24} strokeWidth={1.5} color="currentColor" />
                   </Button>
                 </>
               )

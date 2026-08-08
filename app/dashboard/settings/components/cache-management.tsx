@@ -14,7 +14,8 @@ import {
 } from '@/lib/cache/persistent-cache'
 import { queryKeyPrefixes } from '@/lib/query/query-keys'
 import { useQueryScope } from '@/lib/query/use-query-scope'
-import { Trash2 as Trash, Info, CheckCircle2 as CheckCircle } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Delete02Icon, InformationCircleIcon, CircleCheckIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
 
@@ -125,7 +126,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
       </div>
 
       <Alert className="border-border/40 bg-muted/15">
-        <Info className="h-4 w-4" />
+        <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
         <AlertDescription>
           The app automatically clears stale caches when detecting version changes.
           Only use manual clearing if you&apos;re experiencing issues with outdated data.
@@ -134,7 +135,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
 
       {lastCleared && (
         <div className="flex items-center gap-2 text-sm text-profit">
-          <CheckCircle className="h-4 w-4" />
+          <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
           <span>
             Cache cleared at {formatTimeInZone(lastCleared, 'HH:mm')} NY
           </span>
@@ -158,7 +159,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
             {isClearing ? (
               <Spinner className="h-4 w-4" />
             ) : (
-              <Trash className="h-4 w-4" />
+              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
             )}
             <span className="ml-2">Clear</span>
           </Button>
@@ -180,7 +181,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
             {isClearing ? (
               <Spinner className="h-4 w-4" />
             ) : (
-              <Trash className="h-4 w-4" />
+              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
             )}
             <span className="ml-2">Clear All</span>
           </Button>

@@ -26,7 +26,20 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { toast } from "sonner"
-import { Target, Plus, Trash2, CheckCircle2, TrendingUp, Trophy, DollarSign, Flame, BarChart2, TrendingDown, Star, Pencil } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Target01Icon,
+  Add01Icon,
+  Delete02Icon,
+  CircleCheckIcon,
+  TrendingUpDownIcon,
+  Award01Icon,
+  Dollar01Icon,
+  FlameIcon,
+  BarChartIcon,
+  StarIcon,
+  PencilEdit01Icon,
+} from '@hugeicons/core-free-icons'
 import { GoalsPageSkeleton } from "./components/goals-page-skeleton"
 import { isDemoSurface } from "@/lib/public-surface-routing"
 
@@ -57,13 +70,13 @@ const METRIC_LABELS: Record<GoalMetric, string> = {
   custom: "Custom",
 }
 
-const METRIC_ICONS: Record<GoalMetric, ComponentType<{ className?: string }>> = {
-  pnl: DollarSign,
-  winRate: Target,
-  trades: BarChart2,
-  streak: Flame,
-  drawdown: TrendingDown,
-  custom: Star,
+const METRIC_ICONS: Record<GoalMetric, import('@hugeicons/react').HugeiconsIconProps['icon']> = {
+  pnl: Dollar01Icon,
+  winRate: Target01Icon,
+  trades: BarChartIcon,
+  streak: FlameIcon,
+  drawdown: TrendingUpDownIcon,
+  custom: StarIcon,
 }
 
 async function fetchGoals(): Promise<{ goals: Goal[] }> {
@@ -95,7 +108,7 @@ async function deleteGoal(id: string): Promise<void> {
 
 function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: string) => void; onEdit?: (goal: Goal) => void }) {
   const progressPct = Math.min((goal.currentValue / goal.targetValue) * 100, 100)
-  const MetricIcon = METRIC_ICONS[goal.metric as GoalMetric]
+  const metricIcon = METRIC_ICONS[goal.metric as GoalMetric]
 
   return (
     <div className={cn(
@@ -107,7 +120,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-            <MetricIcon className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={metricIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
           </span>
           <div>
             <p className="text-sm font-bold leading-tight">{goal.title}</p>
@@ -117,7 +130,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {goal.isCompleted && <CheckCircle2 className="h-4 w-4 text-long" />}
+          {goal.isCompleted && <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />}
           <Badge variant="outline" className="text-[9px] font-black uppercase tracking-wider border-border/20">
             {goal.period}
           </Badge>
@@ -130,7 +143,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
                className="h-11 w-11 text-muted-foreground"
               onClick={(e) => { e.stopPropagation(); onEdit(goal) }}
             >
-              <Pencil className="h-3 w-3" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
             </Button>
           )}
           <Button
@@ -141,7 +154,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
              className="h-11 w-11 text-muted-foreground hover:text-short"
             onClick={(e) => { e.stopPropagation(); onDelete(goal.id) }}
           >
-            <Trash2 className="h-3 w-3" />
+            <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
           </Button>
         </div>
       </div>
@@ -169,7 +182,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
 function EmptyGoals() {
   return (
     <div className="flex flex-col items-center justify-center rounded-[28px] border border-dashed border-border/30 bg-card/20 py-24 gap-4">
-      <Trophy className="h-12 w-12 text-muted-foreground/20" />
+      <HugeiconsIcon icon={Award01Icon} className="h-12 w-12 text-muted-foreground/20" strokeWidth={1.5} color="currentColor" />
       <div className="text-center">
         <p className="text-sm font-bold text-muted-foreground/50 uppercase tracking-widest">No goals yet</p>
         <p className="text-xs text-muted-foreground/30 mt-1">Create your first trading goal to get started</p>
@@ -414,7 +427,7 @@ export function GoalsPageClient() {
         meta="Track progress towards your trading objectives"
         actions={
           <Button size="sm" onClick={() => setIsCreateOpen(true)} className="gap-1.5">
-            <Plus className="h-3.5 w-3.5" />
+            <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             New Goal
           </Button>
         }
@@ -427,7 +440,7 @@ export function GoalsPageClient() {
           {active.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                <TrendingUp className="h-3.5 w-3.5" />
+                <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                 Active ({active.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -440,7 +453,7 @@ export function GoalsPageClient() {
           {completed.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                <CheckCircle2 className="h-3.5 w-3.5 text-long" />
+                <HugeiconsIcon icon={CircleCheckIcon} className="h-3.5 w-3.5 text-long" strokeWidth={1.5} color="currentColor" />
                 Completed ({completed.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -457,7 +470,7 @@ export function GoalsPageClient() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
-              <Target className="h-4 w-4 text-primary" />
+              <HugeiconsIcon icon={Target01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
               Create New Goal
             </DialogTitle>
           </DialogHeader>
@@ -486,11 +499,11 @@ export function GoalsPageClient() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(METRIC_LABELS).map(([k, v]) => {
-                      const ItemIcon = METRIC_ICONS[k as GoalMetric]
+                      const itemIcon = METRIC_ICONS[k as GoalMetric]
                       return (
                         <SelectItem key={k} value={k}>
                           <span className="flex items-center gap-1.5">
-                            <ItemIcon className="h-3.5 w-3.5" />
+                            <HugeiconsIcon icon={itemIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                             {v}
                           </span>
                         </SelectItem>
@@ -555,7 +568,7 @@ export function GoalsPageClient() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
-              <Pencil className="h-4 w-4 text-primary" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
               Edit Goal
             </DialogTitle>
           </DialogHeader>
@@ -584,11 +597,11 @@ export function GoalsPageClient() {
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     {Object.entries(METRIC_LABELS).map(([k, v]) => {
-                      const ItemIcon = METRIC_ICONS[k as GoalMetric]
+                      const itemIcon = METRIC_ICONS[k as GoalMetric]
                       return (
                         <SelectItem key={k} value={k}>
                           <span className="flex items-center gap-1.5">
-                            <ItemIcon className="h-3.5 w-3.5" />
+                            <HugeiconsIcon icon={itemIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                             {v}
                           </span>
                         </SelectItem>

@@ -2,24 +2,25 @@
 
 import { formatDistanceToNow } from 'date-fns'
 import { NotificationRow as Notification } from '@/lib/db/schema/users'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Check,
-  Trash2,
-  Trophy,
-  XCircle,
-  DollarSign,
-  Bell,
-  ChevronRight,
-  AlertTriangle,
-  ArrowRight,
-  X,
-  ShieldAlert,
-  Download,
-  TrendingUp,
-  Megaphone,
-  BarChart3,
-  RefreshCw
-} from 'lucide-react'
+  Alert02Icon,
+  ArrowRight01Icon,
+  Award01Icon,
+  BarChartIcon,
+  BellIcon,
+  ChartUpIcon,
+  CheckIcon,
+  ChevronRightIcon,
+  CircleXIcon,
+  Delete02Icon,
+  Dollar01Icon,
+  Download01Icon,
+  Megaphone01Icon,
+  RefreshIcon,
+  Shield01Icon,
+  Tick01Icon
+} from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import type { NotificationType } from '@/lib/db/schema/users';
@@ -32,37 +33,37 @@ interface NotificationItemProps {
 }
 
 const notificationIcons: Record<NotificationType, React.ReactNode> = {
-  FUNDED_PENDING_APPROVAL: <Trophy className="h-4 w-4 text-primary" />,
-  FUNDED_APPROVED: <Trophy className="h-4 w-4 text-long" />,
-  FUNDED_DECLINED: <XCircle className="h-4 w-4 text-short" />,
-  PHASE_TRANSITION_PENDING: <ArrowRight className="h-4 w-4 text-primary" />,
-  PAYOUT_APPROVED: <DollarSign className="h-4 w-4 text-long" />,
-  PAYOUT_REJECTED: <DollarSign className="h-4 w-4 text-short" />,
-  SYSTEM: <Bell className="h-4 w-4 text-muted-foreground" />,
-  RISK_ALERT: <ShieldAlert className="h-4 w-4 text-destructive" />,
-  RISK_BREACH: <ShieldAlert className="h-4 w-4 text-destructive" />,
-  IMPORT_STATUS: <Download className="h-4 w-4 text-primary" />,
-  WEEKLY_PERFORMANCE: <BarChart3 className="h-4 w-4 text-long" />,
-  STRATEGY_DEVIATION: <TrendingUp className="h-4 w-4 text-warning" />,
-  SYSTEM_ANNOUNCEMENT: <Megaphone className="h-4 w-4 text-muted-foreground" />,
-  TRADE_STATUS: <RefreshCw className="h-4 w-4 text-muted-foreground" />,
-  RISK_DAILY_LOSS_80: <ShieldAlert className="h-4 w-4 text-warning" />,
-  RISK_DAILY_LOSS_95: <ShieldAlert className="h-4 w-4 text-destructive" />,
-  RISK_MAX_DRAWDOWN_80: <ShieldAlert className="h-4 w-4 text-warning" />,
-  RISK_MAX_DRAWDOWN_95: <ShieldAlert className="h-4 w-4 text-destructive" />,
-  IMPORT_PROCESSING: <Download className="h-4 w-4 text-primary animate-pulse" />,
-  IMPORT_COMPLETE: <Download className="h-4 w-4 text-long" />,
-  STRATEGY_SESSION_VIOLATION: <TrendingUp className="h-4 w-4 text-warning" />,
-  FEEDBACK_REPLY: <Bell className="h-4 w-4 text-primary" />,
-  PAYMENT_DUE_SOON: <DollarSign className="h-4 w-4 text-warning" />,
-  PAYMENT_DUE_TODAY: <DollarSign className="h-4 w-4 text-warning" />,
-  PAYMENT_OVERDUE: <AlertTriangle className="h-4 w-4 text-destructive" />,
-  SUBSCRIPTION_EXPIRED: <XCircle className="h-4 w-4 text-destructive" />,
-  PAYMENT_RECEIVED: <Check className="h-4 w-4 text-long" />,
-  PAYMENT_FAILED: <XCircle className="h-4 w-4 text-destructive" />,
-  ACCESS_RESTORED: <Check className="h-4 w-4 text-long" />,
-  ADMIN_FREE_ACCESS_GRANTED: <Check className="h-4 w-4 text-long" />,
-  ADMIN_FREE_ACCESS_REVOKED: <XCircle className="h-4 w-4 text-warning" />
+  FUNDED_PENDING_APPROVAL: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
+  FUNDED_APPROVED: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
+  FUNDED_DECLINED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />,
+  PHASE_TRANSITION_PENDING: <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
+  PAYOUT_APPROVED: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
+  PAYOUT_REJECTED: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />,
+  SYSTEM: <HugeiconsIcon icon={BellIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />,
+  RISK_ALERT: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
+  RISK_BREACH: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
+  IMPORT_STATUS: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
+  WEEKLY_PERFORMANCE: <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
+  STRATEGY_DEVIATION: <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
+  SYSTEM_ANNOUNCEMENT: <HugeiconsIcon icon={Megaphone01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />,
+  TRADE_STATUS: <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />,
+  RISK_DAILY_LOSS_80: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
+  RISK_DAILY_LOSS_95: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
+  RISK_MAX_DRAWDOWN_80: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
+  RISK_MAX_DRAWDOWN_95: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
+  IMPORT_PROCESSING: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-primary animate-pulse" strokeWidth={1.5} color="currentColor" />,
+  IMPORT_COMPLETE: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
+  STRATEGY_SESSION_VIOLATION: <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
+  FEEDBACK_REPLY: <HugeiconsIcon icon={BellIcon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
+  PAYMENT_DUE_SOON: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
+  PAYMENT_DUE_TODAY: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
+  PAYMENT_OVERDUE: <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
+  SUBSCRIPTION_EXPIRED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
+  PAYMENT_RECEIVED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
+  PAYMENT_FAILED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
+  ACCESS_RESTORED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
+  ADMIN_FREE_ACCESS_GRANTED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
+  ADMIN_FREE_ACCESS_REVOKED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />
 }
 
 const notificationColors: Record<NotificationType, string> = {
@@ -137,7 +138,7 @@ export function NotificationItem({
         aria-label="Delete notification"
         title="Delete notification"
       >
-        <X className="h-3.5 w-3.5" />
+        <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
       </Button>
 
       <div className="flex items-start gap-3 pr-6">
@@ -181,7 +182,7 @@ export function NotificationItem({
                   }}
                 >
                   {actionLabel}
-                  <ChevronRight className="h-3 w-3 ml-1" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="h-3 w-3 ml-1" strokeWidth={1.5} color="currentColor" />
                 </Button>
               )}
               {!notification.isRead && (
@@ -194,7 +195,7 @@ export function NotificationItem({
                     onMarkAsRead(notification.id)
                   }}
                 >
-                  <Check className="h-3 w-3 mr-1" />
+                  <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
                   Mark read
                 </Button>
               )}
@@ -204,7 +205,7 @@ export function NotificationItem({
           {notification.type === 'FUNDED_DECLINED' && !!notification.data && (
             <div className="mt-2 p-2 bg-destructive/10 rounded text-xs">
               <div className="flex items-center gap-1 text-destructive">
-                <AlertTriangle className="h-3 w-3" />
+                <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                 <span className="font-medium">Decline reason:</span>
               </div>
               <p className="mt-1 text-muted-foreground">

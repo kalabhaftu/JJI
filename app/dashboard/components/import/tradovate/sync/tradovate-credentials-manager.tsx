@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Loader2, Trash2, Plus, RefreshCw, MoreVertical } from "lucide-react";
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Loading03Icon, Delete02Icon, Add01Icon, Refresh01Icon, MoreVerticalIcon, Alert02Icon } from '@hugeicons/core-free-icons'
 import {
   Dialog,
   DialogContent,
@@ -32,6 +33,7 @@ import { useTradovateSyncStore } from "@/store/tradovate-sync-store";
 import { useTradovateSyncContext } from "@/context/tradovate-sync-context";
 import { reportError } from '@/lib/observability/report-error'
 import { apiRequest } from '@/lib/api/client';
+import { DIRECT_SYNC_STATUS, directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status';
 
 function translateTradovateFeeType(key: string): string {
   switch (key) {
@@ -93,6 +95,10 @@ export function TradovateCredentialsManager() {
   );
 
   const handleStartOAuth = useCallback(async (accountId: string = "default") => {
+    if (DIRECT_SYNC_STATUS.isPaused) {
+      toast.info(directSyncUnderDevelopmentMessage('Tradovate'));
+      return;
+    }
     try {
       setIsLoading(true);
       const response = await apiRequest<{ authUrl?: string; state?: string; error?: string }>(
@@ -133,6 +139,7 @@ export function TradovateCredentialsManager() {
   }
 
   const handleReloadAccounts = useCallback(async () => {
+    if (DIRECT_SYNC_STATUS.isPaused) return;
     try {
       setIsReloading(true);
       await loadAccounts();
@@ -297,6 +304,20 @@ export function TradovateCredentialsManager() {
 
   return (
     <div className="space-y-4">
+      {DIRECT_SYNC_STATUS.isPaused && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 dark:text-amber-200">
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" strokeWidth={1.5} color="currentColor" />
+          <div className="space-y-1">
+            <p className="font-medium text-amber-950 dark:text-amber-100">
+              Tradovate direct sync is currently paused
+            </p>
+            <p className="text-amber-800/90 dark:text-amber-200/90">
+              {directSyncUnderDevelopmentMessage('Tradovate')}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -305,13 +326,13 @@ export function TradovateCredentialsManager() {
               onClick={handleReloadAccounts}
               size="sm"
               variant="tertiary"
-              disabled={isReloading}
+              disabled={isReloading || DIRECT_SYNC_STATUS.isPaused}
               className="h-8 w-8 p-0"
             >
               {isReloading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
               ) : (
-                <RefreshCw className="h-4 w-4" />
+                <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               )}
             </Button>
           </div>
@@ -322,22 +343,22 @@ export function TradovateCredentialsManager() {
               }}
               size="sm"
               variant="secondary"
-              disabled={syncingId !== null}
+              disabled={syncingId !== null || DIRECT_SYNC_STATUS.isPaused}
               className="h-8"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
               Sync All
             </Button>
             <Button
               onClick={() => handleStartOAuth()}
-              disabled={isLoading}
+              disabled={isLoading || DIRECT_SYNC_STATUS.isPaused}
               size="sm"
               className="h-8"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 mr-2 animate-spin" strokeWidth={1.5} color="currentColor" />
               ) : (
-                <Plus className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
               )}
               Add New Account
             </Button>
@@ -420,13 +441,13 @@ export function TradovateCredentialsManager() {
                             setSyncingId(null);
                           }
                         }}
-                        disabled={syncingId !== null || isExpired}
+                        disabled={syncingId !== null || isExpired || DIRECT_SYNC_STATUS.isPaused}
                         aria-label="Sync account"
                       >
                         {syncingId === account.accountId ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
                         ) : (
-                          <RefreshCw className="h-4 w-4 text-muted-foreground" />
+                          <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                         )}
                       </Button>
                       <Popover modal>
@@ -437,7 +458,7 @@ export function TradovateCredentialsManager() {
                             className="h-8 w-8 p-0"
                             aria-label="More options"
                           >
-                            <MoreVertical className="h-4 w-4" />
+                            <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                           </Button>
                         </PopoverTrigger>
                         <PopoverContent className="w-48 p-2" align="end">
@@ -459,7 +480,7 @@ export function TradovateCredentialsManager() {
                                 setIsDeleteDialogOpen(true);
                               }}
                             >
-                              <Trash2 className="h-4 w-4 mr-2" />
+                              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                               Delete Connection
                             </Button>
                           </div>
@@ -638,7 +659,7 @@ export function TradovateCredentialsManager() {
               >
                 {isSavingTime ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 mr-2 animate-spin" strokeWidth={1.5} color="currentColor" />
                     Saving...
                   </>
                 ) : (

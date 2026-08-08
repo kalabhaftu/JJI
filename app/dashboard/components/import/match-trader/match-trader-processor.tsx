@@ -6,7 +6,8 @@ import { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
 import { useUserStore } from '@/store/user-store'
 import { ImportLoading } from '../components/import-loading'
-import { CheckCircle2 } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CheckmarkCircle01Icon } from '@hugeicons/core-free-icons'
 import { Spinner } from '@/components/ui/spinner'
 
 interface MatchTraderProcessorProps {
@@ -192,7 +193,7 @@ const MatchTraderProcessor = ({
     <div className="flex items-center justify-center h-full">
       <div className="text-center space-y-4 max-w-md">
         <div className="w-16 h-16 rounded-full bg-long/10 flex items-center justify-center mx-auto">
-          <CheckCircle2 className="w-8 h-8 text-long" />
+          <HugeiconsIcon icon={CheckmarkCircle01Icon} className="w-8 h-8 text-long" strokeWidth={1.5} color="currentColor" />
         </div>
         <div className="space-y-2">
           <h3 className="text-lg font-semibold">Trades Processed Successfully</h3>

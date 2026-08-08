@@ -1,4 +1,5 @@
-import { Brain, ChevronLeft, ChevronRight } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Brain01Icon, ChevronLeftIcon, ChevronRightIcon } from '@hugeicons/core-free-icons'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -30,14 +31,14 @@ export function ReviewDialog({ open, review, index, total, isSending, onOpenChan
         <DialogHeader>
           <div className="flex items-start justify-between gap-4 pr-8">
             <div>
-              <DialogTitle className="flex items-center gap-2"><Brain className="h-5 w-5" /> Weekly performance review</DialogTitle>
+              <DialogTitle className="flex items-center gap-2"><HugeiconsIcon icon={Brain01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" /> Weekly performance review</DialogTitle>
               <DialogDescription className="mt-1">{review.weekStart ? `Week of ${format(new Date(review.weekStart), 'MMMM d, yyyy')}` : 'Saved analysis'}</DialogDescription>
             </div>
             {total > 1 && index !== null && (
               <div className="flex items-center gap-1 rounded-xl border border-border p-1">
-                <Button variant="tertiary" size="icon" className="touch-target-compact h-8 w-8" disabled={index >= total - 1} onClick={() => onNavigate(index + 1)} aria-label="Older review"><ChevronLeft /></Button>
+                <Button variant="tertiary" size="icon" className="touch-target-compact h-8 w-8" disabled={index >= total - 1} onClick={() => onNavigate(index + 1)} aria-label="Older review"><HugeiconsIcon icon={ChevronLeftIcon} size={24} strokeWidth={1.5} color="currentColor" /></Button>
                 <span className="min-w-12 text-center text-[11px] font-semibold text-muted-foreground">{index + 1} / {total}</span>
-                <Button variant="tertiary" size="icon" className="touch-target-compact h-8 w-8" disabled={index <= 0} onClick={() => onNavigate(index - 1)} aria-label="Newer review"><ChevronRight /></Button>
+                <Button variant="tertiary" size="icon" className="touch-target-compact h-8 w-8" disabled={index <= 0} onClick={() => onNavigate(index - 1)} aria-label="Newer review"><HugeiconsIcon icon={ChevronRightIcon} size={24} strokeWidth={1.5} color="currentColor" /></Button>
               </div>
             )}
           </div>
@@ -57,7 +58,7 @@ export function ReviewDialog({ open, review, index, total, isSending, onOpenChan
           <ListSection title="Performance evidence" items={review.performanceInsights || []} />
           <ListSection title="Emotional patterns" items={review.emotionalPatterns || []} />
           {priority && <div className="rounded-xl bg-destructive/10 p-4"><p className="text-xs font-semibold uppercase tracking-[0.12em] text-destructive">Top priority</p><p className="mt-2 text-sm leading-6 text-foreground">{priority}</p></div>}
-          <Button className="w-full" disabled={isSending} onClick={() => onDiscuss(review)}><Brain /> Discuss this review</Button>
+          <Button className="w-full" disabled={isSending} onClick={() => onDiscuss(review)}><HugeiconsIcon icon={Brain01Icon} size={24} strokeWidth={1.5} color="currentColor" /> Discuss this review</Button>
         </div>
       </DialogContent>
     </Dialog>

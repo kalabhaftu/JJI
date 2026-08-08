@@ -2,7 +2,8 @@ import PublicLayout from '@/components/layouts/public-layout'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
-import { Heart, Github, Mail, Target, Shield, Zap } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Target01Icon, Shield01Icon, FlashIcon, HeartIcon, Mail01Icon } from '@hugeicons/core-free-icons'
 import { getSiteUiSettings } from '@/server/site-ui-settings'
 import { DOCS_ORIGIN } from '@/lib/public-surface-routing'
 
@@ -22,14 +23,14 @@ export default async function AboutPage() {
 
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            { icon: Target, title: 'Mission', desc: 'Make trade journaling accessible to every trader.' },
-            { icon: Shield, title: 'Privacy First', desc: 'Your trading data stays yours. No selling data, no third-party analytics, no hidden tracking.' },
-            { icon: Zap, title: 'Built for Traders', desc: 'Maintained with a commitment to stable performance and clean design.' },
+            { icon: Target01Icon, title: 'Mission', desc: 'Make trade journaling accessible to every trader.' },
+            { icon: Shield01Icon, title: 'Privacy First', desc: 'Your trading data stays yours. No selling data, no third-party analytics, no hidden tracking.' },
+            { icon: FlashIcon, title: 'Built for Traders', desc: 'Maintained with a commitment to stable performance and clean design.' },
           ].map((item, i) => (
             <Card key={i}>
               <CardContent className="pt-6 text-center">
                 <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
-                  <item.icon className="h-6 w-6 text-primary" />
+                  <HugeiconsIcon icon={item.icon} className="h-6 w-6 text-primary" strokeWidth={1.5} color="currentColor" />
                 </div>
                 <h3 className="font-bold mb-2">{item.title}</h3>
                 <p className="text-sm text-muted-foreground">{item.desc}</p>
@@ -62,16 +63,25 @@ export default async function AboutPage() {
         <div className="flex flex-wrap justify-center gap-4">
           {siteUiSettings.showDonateButton && (
             <Button asChild size="lg">
-              <Link href="/donate"><Heart className="h-4 w-4 mr-2" />Support the Project</Link>
+              <Link href="/donate">
+                <HugeiconsIcon icon={HeartIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                Support the Project
+              </Link>
             </Button>
           )}
           {siteUiSettings.showFeedbackButton && (
             <Button asChild variant="secondary" size="lg">
-              <Link href="/feedback"><Mail className="h-4 w-4 mr-2" />Send Feedback</Link>
+              <Link href="/feedback">
+                <HugeiconsIcon icon={Mail01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                Send Feedback
+              </Link>
             </Button>
           )}
           <Button asChild variant="secondary" size="lg">
-            <Link href={DOCS_ORIGIN}><Zap className="h-4 w-4 mr-2" />Read the Docs</Link>
+            <Link href={DOCS_ORIGIN}>
+              <HugeiconsIcon icon={FlashIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+              Read the Docs
+            </Link>
           </Button>
         </div>
       </div>

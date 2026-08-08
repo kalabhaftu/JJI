@@ -22,7 +22,8 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
-import { Pencil, Trash2, Plus, X, LayoutTemplate, Loader2 } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { PencilEdit01Icon, Delete02Icon, Add01Icon, Cancel01Icon, Layout01Icon, Loading01Icon } from '@hugeicons/core-free-icons'
 import { FileDropzone } from '@/components/ui/file-dropzone'
 import { TradeImagesGallery } from './trade-images-gallery'
 import { parseTradePreviewImageValue } from '@/lib/trade-preview-image'
@@ -357,7 +358,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                     size="sm"
                                     className="h-8 px-3 text-xs font-semibold bg-muted/20 shrink-0"
                                 >
-                                    <LayoutTemplate className="h-3.5 w-3.5 mr-2" />
+                                    <HugeiconsIcon icon={Layout01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
                                     Templates
                                 </Button>
                             </DropdownMenuTrigger>
@@ -382,7 +383,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                 <DropdownMenuLabel>My Templates ({customTemplates.length}/{MAX_CUSTOM_TEMPLATES})</DropdownMenuLabel>
                                 {isLoadingTemplates ? (
                                     <div className="px-2 py-2 text-xs text-muted-foreground flex items-center gap-2">
-                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                        <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" strokeWidth={1.5} color="currentColor" />
                                         Loading custom templates...
                                     </div>
                                 ) : customTemplates.length === 0 ? (
@@ -419,9 +420,9 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                                     }}
                                                 >
                                                     {deletingTemplateId === template.id ? (
-                                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                                        <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" strokeWidth={1.5} color="currentColor" />
                                                     ) : (
-                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                        <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                                                     )}
                                                 </Button>
                                             </div>
@@ -444,9 +445,9 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                         onClick={openSaveTemplateDialog}
                                     >
                                         {isSavingTemplate ? (
-                                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                            <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" strokeWidth={1.5} color="currentColor" />
                                         ) : (
-                                            <Plus className="h-3.5 w-3.5" />
+                                            <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                                         )}
                                     </Button>
                                 </span>
@@ -535,7 +536,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                         >
                             {isSavingTemplate ? (
                                 <>
-                                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                                    <HugeiconsIcon icon={Loading01Icon} className="mr-2 h-3.5 w-3.5 animate-spin" strokeWidth={1.5} color="currentColor" />
                                     Saving...
                                 </>
                             ) : (
@@ -585,7 +586,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                                 input.click()
                                             }}
                                         >
-                                            <Pencil className="h-3.5 w-3.5 mr-2" />
+                                            <HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
                                             Replace
                                         </Button>
                                         <Button
@@ -595,7 +596,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                             className="h-9 px-4 text-xs font-semibold hover:bg-destructive/90 transition-all"
                                             onClick={() => onRemove('cardPreviewImage')}
                                         >
-                                            <Trash2 className="h-3.5 w-3.5 mr-2" />
+                                            <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
                                             Remove
                                         </Button>
                                     </div>
@@ -603,7 +604,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                             ) : (
                                 <div className="relative aspect-video rounded-xl overflow-hidden border border-border/50 bg-muted/30">
                                     <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                                        <X className="h-8 w-8 text-destructive/50 mb-2" />
+                                        <HugeiconsIcon icon={Cancel01Icon} className="h-8 w-8 text-destructive/50 mb-2" strokeWidth={1.5} color="currentColor" />
                                         <p className="text-xs text-muted-foreground">Image link broken</p>
                                     </div>
                                 </div>
@@ -619,7 +620,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                     accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] }}
                                     className="h-full border-none bg-muted/50 hover:bg-muted/80"
                                     description="Drag & drop or click to upload preview"
-                                    icon={<Plus className="h-8 w-8 text-muted-foreground/40 mb-2" />}
+                                    icon={<HugeiconsIcon icon={Add01Icon} className="h-8 w-8 text-muted-foreground/40 mb-2" strokeWidth={1.5} color="currentColor" />}
                                     disabled={uploadingField === 'cardPreviewImage'}
                                 />
                             </div>
@@ -678,7 +679,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                                         setChartLinks(newLinks)
                                     }}
                                 >
-                                    <X className="h-4 w-4" />
+                                    <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                                 </Button>
                             )}
                         </div>
@@ -691,7 +692,7 @@ export function TradeNotesTab<TFieldValues extends TradeNotesFieldValues = Trade
                             onClick={() => setChartLinks([...chartLinks, ''])}
                             className="w-full h-9 border-dashed border-border/60 hover:border-primary/50 text-muted-foreground hover:text-primary transition-all"
                         >
-                            <Plus className="h-4 w-4 mr-2" />
+                            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                             Add Analysis Link ({chartLinks.length}/8)
                         </Button>
                     )}

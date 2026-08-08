@@ -2,7 +2,8 @@
 
 import React, { useState, useMemo, useCallback, useRef } from "react"
 import { format, addMonths, subMonths } from "date-fns"
-import { ChevronLeft, ChevronRight, Camera, ImageIcon, Sparkles } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ChevronLeftIcon, ChevronRightIcon, Camera01Icon, Image01Icon, SparklesIcon } from "@hugeicons/core-free-icons"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -190,13 +191,13 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
           <div className="flex items-center gap-1 shrink-0">
             <div className="flex items-center gap-0.5 bg-muted/30 rounded-lg p-0.5 border border-border/30">
               <Button variant="icon-only" size="icon" onClick={handlePrev} className="h-11 w-11 hover:bg-background" aria-label="Previous month">
-                <ChevronLeft className="h-3.5 w-3.5" />
+                <HugeiconsIcon icon={ChevronLeftIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
               </Button>
               <span className="text-[11px] font-black tracking-tight px-2 min-w-[80px] text-center">
                 {format(currentDate, 'MMM yyyy')}
               </span>
               <Button variant="icon-only" size="icon" onClick={handleNext} className="h-11 w-11 hover:bg-background" aria-label="Next month">
-                <ChevronRight className="h-3.5 w-3.5" />
+                <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
               </Button>
             </div>
             <Button
@@ -231,16 +232,16 @@ function MiniCalendar({ calendarData }: MiniCalendarProps) {
                   size="icon"
                   aria-label="Take screenshot"
                 >
-                  <Camera className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={Camera01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-36">
                 <DropdownMenuItem onClick={() => handleScreenshot('basic')} className="gap-2 text-xs font-medium">
-                  <ImageIcon className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={Image01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                   Basic
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleScreenshot('random')} className="gap-2 text-xs font-medium">
-                  <Sparkles className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={SparklesIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                   Random Gradient
                 </DropdownMenuItem>
               </DropdownMenuContent>

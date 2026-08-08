@@ -23,7 +23,8 @@ import { calculateDailyStats } from "./calendar-utils"
 import { useData } from '@/context/data-provider'
 import { classifyOutcome, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
-import { Calendar as CalendarIcon } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Calendar01Icon } from "@hugeicons/core-free-icons"
 import { useJournalData } from "@/app/dashboard/hooks/use-journal-data"
 
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const
@@ -104,7 +105,7 @@ const DayCell = memo(function DayCell({
     >
       {}
       {!isMiniCalendar && hasJournal && (
-        <CalendarIcon className={cn(
+        <HugeiconsIcon icon={Calendar01Icon} className={cn(
           "absolute top-2 left-2 h-3.5 w-3.5",
           hasTrades
             ? isProfit 
@@ -113,7 +114,7 @@ const DayCell = memo(function DayCell({
                 ? "text-short/70 dark:text-white/70" 
                 : "text-muted-foreground/85"
             : "text-muted-foreground/60"
-        )} />
+        )} strokeWidth={1.5} color="currentColor" />
       )}
 
 
@@ -358,7 +359,7 @@ const MobileDayRow = memo(function MobileDayRow({
         <span className="min-w-0">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
             {format(date, 'EEE')}
-            {hasJournal && <CalendarIcon className="h-3.5 w-3.5 text-primary" aria-label="Journal entry" />}
+            {hasJournal && <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} color="currentColor" aria-label="Journal entry" />}
           </span>
           <span className="text-[11px] text-muted-foreground">
             {hasTrades ? `${dayData?.tradeNumber} trade${dayData?.tradeNumber === 1 ? '' : 's'}` : 'No trades'}

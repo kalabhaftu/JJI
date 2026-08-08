@@ -2,7 +2,14 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, Clock, Loader2, RefreshCw, XCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  CancelCircleIcon,
+  CheckmarkCircle02Icon,
+  Clock01Icon,
+  Loading01Icon,
+  RefreshIcon,
+} from '@hugeicons/core-free-icons'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
@@ -77,13 +84,13 @@ export default function SubscribeStatusPage() {
 
           {loading ? (
             <div className="space-y-3">
-              <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+              <HugeiconsIcon icon={Loading01Icon} className="mx-auto h-8 w-8 animate-spin text-primary" strokeWidth={1.5} color="currentColor" />
               <h1 className="text-xl font-semibold">Checking payment</h1>
               <p className="text-sm text-muted-foreground">We are checking the latest server-side status.</p>
             </div>
           ) : error ? (
             <div className="space-y-4">
-              <XCircle className="mx-auto h-10 w-10 text-destructive" />
+              <HugeiconsIcon icon={CancelCircleIcon} className="mx-auto h-10 w-10 text-destructive" strokeWidth={1.5} color="currentColor" />
               <h1 className="text-xl font-semibold">Status unavailable</h1>
               <p className="text-sm text-muted-foreground">{error}</p>
               <Button onClick={() => router.push('/subscribe')} className="w-full">Start Payment</Button>
@@ -91,11 +98,11 @@ export default function SubscribeStatusPage() {
           ) : (
             <div className="space-y-4">
               {isFinished ? (
-                <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-500" />
+                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="mx-auto h-10 w-10 text-emerald-500" strokeWidth={1.5} color="currentColor" />
               ) : isFailed ? (
-                <XCircle className="mx-auto h-10 w-10 text-destructive" />
+                <HugeiconsIcon icon={CancelCircleIcon} className="mx-auto h-10 w-10 text-destructive" strokeWidth={1.5} color="currentColor" />
               ) : (
-                <Clock className="mx-auto h-10 w-10 text-amber-500" />
+                <HugeiconsIcon icon={Clock01Icon} className="mx-auto h-10 w-10 text-amber-500" strokeWidth={1.5} color="currentColor" />
               )}
 
               <div>
@@ -145,7 +152,7 @@ export default function SubscribeStatusPage() {
                 ) : (
                   <>
                     <Button onClick={() => paymentId && loadStatus(paymentId)} className="w-full">
-                      <RefreshCw className="mr-2 h-4 w-4" />
+                      <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                       Refresh Status
                     </Button>
                     {status?.canOpenInvoice && status?.paymentUrl && (

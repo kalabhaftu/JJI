@@ -3,7 +3,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { useRithmicSyncStore } from '@/store/rithmic-sync-store'
 import { Badge } from "@/components/ui/badge"
-import { Clock } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Clock01Icon } from '@hugeicons/core-free-icons'
 import { useRithmicSyncContext } from '@/context/rithmic-sync-context'
 import { logger } from '@/lib/logger';
 import { reportError } from '@/lib/observability/report-error'
@@ -70,7 +71,7 @@ export function SyncCountdown({ lastSyncTime, isAutoSyncing, credentialId }: Syn
 
   return (
     <Badge variant={isAutoSyncing ? "default" : "secondary"} className="ml-2">
-      <Clock className="h-3 w-3 mr-1" />
+      <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3 mr-1" />
       {timeLeft}
     </Badge>
   )

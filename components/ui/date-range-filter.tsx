@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { format, subDays } from 'date-fns'
-import { CalendarDays, ChevronDown } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CalendarDaysIcon, ChevronDownIcon } from '@hugeicons/core-free-icons'
 
 import { Button } from '@/components/ui/button'
 import { CustomDateRangePicker, type DateRange } from '@/components/ui/custom-date-range-picker'
@@ -47,9 +48,9 @@ export function DateRangeFilter({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="secondary" aria-label={`Date range: ${label}`} className={cn('min-h-11 justify-start gap-2', className)}>
-          <CalendarDays className="size-4" aria-hidden />
+          <HugeiconsIcon icon={CalendarDaysIcon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
           <span className="truncate">{label}</span>
-          <ChevronDown className="ml-auto size-4 opacity-60" aria-hidden />
+          <HugeiconsIcon icon={ChevronDownIcon} className="ml-auto size-4 opacity-60" strokeWidth={1.5} color="currentColor" aria-hidden />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto max-w-[calc(100vw-1rem)] p-3" align="start">

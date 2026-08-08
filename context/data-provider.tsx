@@ -11,7 +11,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import type { DashboardTemplateType as DashboardLayoutType } from '@/lib/db/schema';
 
-import { apiRequest } from '@/lib/api/client';
+import { apiRequest, apiRequestData } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase';
 import { signOut } from '@/server/auth/providers';
 import { useUserStore } from '@/store/user-store';
@@ -294,16 +294,10 @@ export const DataProvider: React.FC<{
 
         const initData = initialBootstrapData?.isAuthenticated
           ? initialBootstrapData
-          : await (async () => {
-              const initResponse = await fetch('/api/v1/init', {
-                cache: 'no-store',
-                headers: { 'Cache-Control': 'no-cache' }
-              })
-
-              if (!initResponse.ok) throw new Error('Failed to fetch initial data')
-              const payload = await initResponse.json()
-              return payload.data
-            })()
+          : await apiRequestData<any>('/api/v1/init', {
+              cache: 'no-store',
+              headers: { 'Cache-Control': 'no-cache' },
+            })
         
         if (!initData.isAuthenticated) {
           await signOut().catch(() => undefined)

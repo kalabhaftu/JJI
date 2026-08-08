@@ -3,7 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, Minus, Calendar, DollarSign } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Add01Icon, Remove01Icon, Calendar01Icon, Dollar01Icon } from '@hugeicons/core-free-icons'
 import { format } from 'date-fns'
 import { useQuery } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
@@ -45,7 +46,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Transaction History
           </CardTitle>
         </CardHeader>
@@ -74,7 +75,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Transaction History
           </CardTitle>
         </CardHeader>
@@ -99,13 +100,13 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Transaction History
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-12 h-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
             <p className="text-muted-foreground">No transactions yet</p>
             <p className="text-sm text-muted-foreground">
               Deposits and withdrawals will appear here
@@ -120,7 +121,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Calendar className="w-5 h-5" />
+          <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
           Transaction History
         </CardTitle>
       </CardHeader>
@@ -137,9 +138,9 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
                   : 'bg-short/10 text-short'
                   }`}>
                   {transaction.type === 'DEPOSIT' ? (
-                    <Plus className="w-4 h-4" />
+                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
                   ) : (
-                    <Minus className="w-4 h-4" />
+                    <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
                   )}
                 </div>
                 <div>
@@ -152,7 +153,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="w-3 h-3" />
+                    <HugeiconsIcon icon={Calendar01Icon} className="w-3 h-3" strokeWidth={1.5} color="currentColor" />
                     {format(new Date(transaction.createdAt), 'MMM dd, yyyy HH:mm')}
                   </div>
                   {transaction.description && (

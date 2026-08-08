@@ -2,7 +2,16 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { cn } from '@/lib/utils'
-import { Activity, Calendar, Eye, LockKeyhole, Share2, ShieldCheck, TrendingUp } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Activity01Icon,
+  Calendar01Icon,
+  EyeIcon,
+  LockKeyIcon,
+  Share01Icon,
+  Shield01Icon,
+  TradeUpIcon,
+} from '@hugeicons/core-free-icons'
 import { Badge } from '@/components/ui/badge'
 import { recordSharedReportView } from '@/lib/api/shared-report-client'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -37,7 +46,7 @@ function StateScreen({ title, message }: { title: string; message: string }) {
   return (
     <main id="main-content" className="mx-auto max-w-6xl px-5 py-16">
       <div className="rounded-sm border border-slate-200 bg-white px-6 py-16 text-center">
-        <ShieldCheck className="mx-auto h-8 w-8 text-slate-300" />
+        <HugeiconsIcon icon={Shield01Icon} className="mx-auto h-8 w-8 text-slate-300" strokeWidth={1.5} color="currentColor" />
         <h2 className="mt-4 text-sm font-extrabold uppercase tracking-[0.16em] text-slate-600">{title}</h2>
         <p className="mt-2 text-sm font-semibold text-slate-500">{message}</p>
       </div>
@@ -135,25 +144,25 @@ export function SharedReportView({ state }: Props) {
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-5 py-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-sm bg-slate-950 text-white">
-              <TrendingUp className="h-4 w-4" />
+              <HugeiconsIcon icon={TradeUpIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
             </div>
             <div>
               <h1 className="text-lg font-extrabold tracking-tight">{report.title}</h1>
               <div className="mt-1.5 flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                 <div className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                  <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5 text-slate-400" strokeWidth={1.5} color="currentColor" />
                   <span>{dateRange}</span>
                 </div>
                 <span className="text-slate-300 font-normal">|</span>
                 <div className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-slate-600 border border-slate-200/50">
-                  <Eye className="h-3.5 w-3.5 text-slate-400" />
+                  <HugeiconsIcon icon={EyeIcon} className="h-3.5 w-3.5 text-slate-400" strokeWidth={1.5} color="currentColor" />
                   <span>{viewCount} views</span>
                 </div>
               </div>
             </div>
           </div>
           <Badge variant="outline" className="h-8 rounded-sm border-slate-300 bg-white px-3 text-[10px] font-extrabold uppercase tracking-[0.16em] text-slate-700">
-            <Share2 className="mr-1.5 h-3.5 w-3.5" />
+            <HugeiconsIcon icon={Share01Icon} className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             Public Report
           </Badge>
         </div>
@@ -214,7 +223,7 @@ export function SharedReportView({ state }: Props) {
           {sessions && (
             <section className="border-t border-slate-200 px-6 py-5">
               <div className="mb-3 flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-[0.2em] text-slate-500">
-                <Activity className="h-3.5 w-3.5" />
+                <HugeiconsIcon icon={Activity01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                 Session Performance
               </div>
               <div className="overflow-x-auto">
@@ -246,7 +255,7 @@ export function SharedReportView({ state }: Props) {
           <footer className="flex flex-col gap-2 border-t border-slate-200 px-6 py-4 text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400 md:flex-row md:items-center md:justify-between">
             <span>Generated with JJI</span>
             <span className="flex items-center gap-1.5">
-              <LockKeyhole className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={LockKeyIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
               Read-only public snapshot
             </span>
           </footer>

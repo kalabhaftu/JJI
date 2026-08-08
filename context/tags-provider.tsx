@@ -3,6 +3,8 @@
 import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react'
 import { CACHE_DURATION_MEDIUM } from '@/lib/constants'
 import { reportClientError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
+import { ApiClientError } from '@/lib/api/errors'
 
 export interface TradeTag {
   id: string
@@ -55,17 +57,16 @@ export function TagsProvider({ children }: { children: React.ReactNode }) {
 
     fetchPromise = (async () => {
       const request = async (): Promise<TradeTag[] | null> => {
-        const response = await fetch('/api/v1/tags', {
-          headers: { 'Cache-Control': 'no-cache' }
-        })
-
-        if (response.ok) {
-          const data = await response.json()
-          return data.data || []
-        } else if (response.status === 401 || response.status === 403) {
-          return null
-        } else {
-          throw Object.assign(new Error('Failed to fetch tags'), { status: response.status })
+        try {
+          const data = await apiRequestData<TradeTag[]>('/api/v1/tags', {
+            headers: { 'Cache-Control': 'no-cache' },
+          })
+          return data || []
+        } catch (err) {
+          if (err instanceof ApiClientError && (err.status === 401 || err.status === 403)) {
+            return null
+          }
+          throw err
         }
       }
 

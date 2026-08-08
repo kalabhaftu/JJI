@@ -5,7 +5,8 @@ import { WidgetCard } from '../widget-card'
 import { CircularProgress } from '@/components/ui/circular-progress'
 import { useTradeStatistics } from '@/hooks/use-trade-statistics'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
-import { Info } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { InformationCircleIcon } from '@hugeicons/core-free-icons'
 import { formatBreakevenBand, getBreakEvenThreshold } from '@/lib/metrics/outcome'
 import {
   Tooltip,
@@ -44,7 +45,7 @@ const TradeWinRate = React.memo(function TradeWinRate({ size }: TradeWinRateProp
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="cursor-help w-4 h-4 rounded-full border border-border/60 flex items-center justify-center shrink-0">
-                  <Info className="h-2.5 w-2.5 text-muted-foreground/60" />
+                  <HugeiconsIcon icon={InformationCircleIcon} className="h-2.5 w-2.5 text-muted-foreground/60" strokeWidth={1.5} color="currentColor" />
                 </div>
               </TooltipTrigger>
               <TooltipContent side="bottom" sideOffset={5} className="max-w-[220px]">

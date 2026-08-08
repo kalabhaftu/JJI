@@ -1,22 +1,23 @@
 'use client'
 
 import { cn } from "@/lib/utils"
+import { HugeiconsIcon, type HugeiconsIconProps } from '@hugeicons/react'
 import {
-  LayoutDashboard,
-  CalendarDays,
-  LineChart,
-  ListTodo,
-  MoreHorizontal,
-  Briefcase,
-  BookOpen,
-  FlaskConical,
-  Trophy,
-  Brain,
-  Database,
-  Settings,
-  BookMarked,
-  RefreshCw,
-} from "lucide-react"
+  DashboardSquare01Icon,
+  CalendarDaysIcon,
+  BarChartIcon,
+  CheckListIcon,
+  MoreHorizontalIcon,
+  Briefcase01Icon,
+  BookOpen01Icon,
+  FlaskConicalIcon,
+  Award01Icon,
+  Brain01Icon,
+  DatabaseIcon,
+  Setting06Icon,
+  Bookmark01Icon,
+  RefreshIcon
+} from '@hugeicons/core-free-icons'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useState } from 'react'
@@ -42,16 +43,16 @@ import { getMoreNavigation, resolveNavigationPath, type NavigationContext, type 
 interface MobileNavItem {
   id: MobileNavId
   label: string
-  icon: React.ComponentType<{ className?: string; weight?: any }>
+  icon: HugeiconsIconProps['icon']
   href: string
 }
 
 const icons: Record<MobileNavId, MobileNavItem['icon']> = {
-  widgets: LayoutDashboard,
-  journal: CalendarDays,
-  reports: LineChart,
-  table: ListTodo,
-  more: MoreHorizontal,
+  widgets: DashboardSquare01Icon,
+  journal: CalendarDaysIcon,
+  reports: BarChartIcon,
+  table: CheckListIcon,
+  more: MoreHorizontalIcon,
 }
 
 const mobileNavItems: MobileNavItem[] = MOBILE_NAV_DESTINATIONS.map((item) => ({
@@ -68,9 +69,9 @@ export function MobileBottomNav() {
 
   const activeTab = getActiveMobileNavId(pathname || '', Boolean(isDemoMode), hostname)
   const navigationContext: NavigationContext = { surface: isDemoMode ? 'demo' : 'authenticated', isDemo: Boolean(isDemoMode), hostname }
-  const moreIcons: Partial<Record<NavigationId, typeof Briefcase>> = {
-    accounts: Briefcase, playbook: BookOpen, backtesting: FlaskConical, goals: Trophy,
-    assistant: Brain, data: Database, settings: Settings, docs: BookMarked,
+  const moreIcons: Partial<Record<NavigationId, HugeiconsIconProps['icon']>> = {
+    accounts: Briefcase01Icon, playbook: BookOpen01Icon, backtesting: FlaskConicalIcon, goals: Award01Icon,
+    assistant: Brain01Icon, data: DatabaseIcon, settings: Setting06Icon, docs: Bookmark01Icon,
   }
   const moreItems = getMoreNavigation(navigationContext)
 
@@ -78,7 +79,6 @@ export function MobileBottomNav() {
     <nav aria-label="Primary mobile navigation" className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-50 border-t border-border/70 bg-background lg:hidden">
       <div className="mx-auto flex min-h-16 max-w-lg items-center justify-around px-2">
         {mobileNavItems.map((item) => {
-          const Icon = item.icon
           const isActive = activeTab === item.id
 
           if (item.id === 'more') {
@@ -96,7 +96,7 @@ export function MobileBottomNav() {
                 )}
               >
                 <div className={cn("flex h-7 w-10 items-center justify-center rounded-full transition-colors", isActive && "bg-primary/15")}>
-                  <Icon className="h-[18px] w-[18px] shrink-0" />
+                  <HugeiconsIcon icon={item.icon} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} color="currentColor" />
                 </div>
                 <span className={cn("mt-0.5 text-xs font-semibold", isActive ? "text-primary" : "text-muted-foreground")}>
                   {item.label}
@@ -121,12 +121,9 @@ export function MobileBottomNav() {
                 "flex h-7 w-10 items-center justify-center rounded-full transition-colors",
                 isActive && "bg-primary/15"
               )}>
-                <Icon className="h-[18px] w-[18px] shrink-0" />
+                <HugeiconsIcon icon={item.icon} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} color="currentColor" />
               </div>
-              <span className={cn(
-                "mt-0.5 text-xs font-semibold",
-                isActive ? "text-primary" : "text-muted-foreground/80"
-              )}>
+              <span className={cn("mt-0.5 text-xs font-semibold", isActive ? "text-primary" : "text-muted-foreground/80")}>
                 {item.label}
               </span>
             </Link>
@@ -140,18 +137,19 @@ export function MobileBottomNav() {
             <DialogDescription>Open tools, account settings, documentation, or sync your data.</DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-2">
-             {moreItems.map((item) => {
-               const MoreIcon = moreIcons[item.id]!
-               return <Button key={item.id} asChild variant="secondary" className="h-12 justify-start gap-3">
-                 <Link
-                   href={resolveNavigationPath(item, navigationContext) as any}
-                  onClick={() => setMoreOpen(false)}
-                >
-                  <MoreIcon className="h-4 w-4" />
-                   {item.label}
-                 </Link>
-               </Button>
-             })}
+              {moreItems.map((item) => {
+                const moreIcon = moreIcons[item.id]
+                if (!moreIcon) return null
+                return <Button key={item.id} asChild variant="secondary" className="h-12 justify-start gap-3">
+                  <Link
+                    href={resolveNavigationPath(item, navigationContext) as any}
+                   onClick={() => setMoreOpen(false)}
+                 >
+                   <HugeiconsIcon icon={moreIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                    {item.label}
+                  </Link>
+                </Button>
+              })}
           </div>
           <Button
             type="button"
@@ -162,7 +160,7 @@ export function MobileBottomNav() {
               setMoreOpen(false)
             }}
           >
-            <RefreshCw className="h-4 w-4" />
+            <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
             Sync data
           </Button>
         </DialogContent>

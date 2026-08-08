@@ -9,6 +9,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { queryKeyPrefixes } from '@/lib/query/query-keys'
 import { useQueryScope } from '@/lib/query/use-query-scope'
 import { reportError } from '@/lib/observability/report-error'
+import { apiRequestData } from '@/lib/api/client'
 import { TOURS } from '@/lib/tours/definitions'
 import {
   mergeOnboardingStatus,
@@ -100,8 +101,11 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const updatedUser = await persistOnboardingStatus(nextStatus)
       if (updatedUser) setDbUser(updatedUser)
-    } catch (error) {
-      reportError(error, { surface: 'client', operation: 'save-tour-status', route: '/api/auth/profile' })
+    } catch (error: any) {
+      const isRateLimited = error?.status === 429 || error?.message?.includes('429') || error?.code === 'RATE_LIMITED'
+      if (!isRateLimited) {
+        reportError(error, { surface: 'client', operation: 'save-tour-status', route: '/api/auth/profile' })
+      }
     }
   }, [onboardingStatus, setDbUser, storeUser])
 
@@ -157,12 +161,10 @@ export const TourProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (!sampleAccountId) return true
 
     try {
-      const response = await fetch('/api/v1/onboarding/sample-workspace', {
+      await apiRequestData('/api/v1/onboarding/sample-workspace', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ accountId: sampleAccountId }),
       })
-      if (!response.ok) throw new Error('Sample workspace cleanup failed')
       await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.accounts(scope) })
       await queryClient.invalidateQueries({ queryKey: queryKeyPrefixes.dataManagementAccounts(scope) })
       setCleanupError(null)

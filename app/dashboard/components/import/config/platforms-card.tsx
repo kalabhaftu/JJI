@@ -11,7 +11,8 @@ import MatchTraderProcessor from '../match-trader/match-trader-processor'
 import ExnessProcessor from '../exness/exness-processor'
 import ManualTradeFormCard from '../manual-trade-entry/manual-trade-form-card'
 import { Step } from '../import-button'
-import { Sparkles, Plus } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { SparklesIcon, Add01Icon } from '@hugeicons/core-free-icons'
 
 type StepText = string
 
@@ -128,7 +129,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Perfect for manual journal entries with all trade context and analysis',
     logo: {
-      component: () => <Plus className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />,
     },
     customCardComponent: ManualTradeFormCard,
     steps: [
@@ -156,7 +157,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: '',
     logo: {
-      component: () => <Sparkles className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={SparklesIcon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />,
     },
     requiresAccountSelection: true,
     processFile: processStandardCsv,

@@ -2,7 +2,8 @@
 
 import * as React from 'react'
 import { useDropzone, DropzoneOptions } from 'react-dropzone'
-import { Upload, FileUp, X, FileText, AlertCircle } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Cancel01Icon, File01Icon, FileUploadIcon, InformationCircleIcon, Upload01Icon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
@@ -48,7 +49,7 @@ export function FileDropzone({
             >
                 <input {...getInputProps()} />
                 <div className="flex flex-col items-center justify-center p-2 text-center space-y-1">
-                    {icon || <Upload className={cn("h-4 w-4", isDragActive ? "text-primary" : "text-muted-foreground/40")} />}
+                    {icon || <HugeiconsIcon icon={Upload01Icon} className={cn("h-4 w-4", isDragActive ? "text-primary" : "text-muted-foreground/40")} strokeWidth={1.5} color="currentColor" />}
                     {isDragActive && (
                 <span className="text-xs font-medium text-primary">Drop</span>
                     )}
@@ -78,7 +79,7 @@ export function FileDropzone({
                     <div className="flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-200">
                         <div className="p-3 bg-background rounded-full shadow-sm mb-3 relative group">
                             {}
-                            <FileText className="h-8 w-8 text-primary" />
+                            <HugeiconsIcon icon={File01Icon} className="h-8 w-8 text-primary" strokeWidth={1.5} color="currentColor" />
 
                             {}
                             {onClear && (
@@ -91,7 +92,7 @@ export function FileDropzone({
                                     }}
                                     className="absolute -right-1 -top-1 rounded-full bg-destructive p-1 text-destructive-foreground opacity-100 shadow-md transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:group-focus-within:opacity-100"
                                 >
-                                    <X className="h-3 w-3" />
+                                    <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                                 </button>
                             )}
                         </div>
@@ -112,7 +113,7 @@ export function FileDropzone({
                             isDragActive ? "bg-primary/20" : "bg-muted/40"
                         )}>
                             {icon || (
-                                isDragActive ? <FileUp className="h-8 w-8 text-primary" /> : <Upload className="h-8 w-8 text-muted-foreground/60" />
+                                isDragActive ? <HugeiconsIcon icon={FileUploadIcon} className="h-8 w-8 text-primary" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={Upload01Icon} className="h-8 w-8 text-muted-foreground/60" strokeWidth={1.5} color="currentColor" />
                             )}
                         </div>
 
@@ -138,7 +139,7 @@ export function FileDropzone({
             {                    }
             {fileRejections.length > 0 && (
                 <div role="alert" aria-live="assertive" className="flex items-start gap-2 rounded-lg bg-destructive/10 p-2 text-xs text-destructive">
-                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                    <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 shrink-0 mt-0.5" strokeWidth={1.5} color="currentColor" />
                     <div className="space-y-0.5">
                         <span className="font-semibold">File not accepted:</span>
                         <ul className="list-disc pl-4 space-y-0.5">

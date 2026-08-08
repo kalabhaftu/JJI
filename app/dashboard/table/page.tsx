@@ -5,7 +5,8 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useData } from '@/context/data-provider'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { Button } from '@/components/ui/button'
-import { ArrowLeft } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowLeft01Icon } from '@hugeicons/core-free-icons'
 import { Suspense } from 'react'
 import { cn } from '@/lib/utils'
 import {
@@ -70,7 +71,7 @@ function TableView() {
                 }}
                 className="h-8 px-2 text-xs hover:bg-accent/50"
               >
-                <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="hidden h-4 w-px bg-border/60 sm:block" />

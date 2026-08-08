@@ -3,7 +3,8 @@ import { Spinner } from '@/components/ui/spinner'
 import React from 'react'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
-import { Pencil, Trash2, Plus, X, Loader2, Upload } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { PencilEdit01Icon, Delete02Icon, Add01Icon, Cancel01Icon, Loading01Icon, Upload01Icon } from '@hugeicons/core-free-icons'
 import { FileDropzone } from '@/components/ui/file-dropzone'
 
 type ImageField = 'imageOne' | 'imageTwo' | 'imageThree' | 'imageFour' | 'imageFive' | 'imageSix'
@@ -53,12 +54,12 @@ export function TradeImagesGallery({
                                         />
                                     ) : (
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <X className="h-4 w-4 text-destructive/40" />
+                                            <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 text-destructive/40" strokeWidth={1.5} color="currentColor" />
                                         </div>
                                     )}
                                     <div className="absolute inset-0 bg-background/90 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
                                         <InputButton
-                                            icon={<Pencil className="h-3.5 w-3.5" />}
+                                            icon={<HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />}
                                             onClick={(file) => onUpload(field, file)}
                                             className="bg-secondary border-border hover:bg-accent"
                                             title="Edit"
@@ -71,7 +72,7 @@ export function TradeImagesGallery({
                                             title="Delete"
                                             onClick={() => onRemove(field)}
                                         >
-                                            <Trash2 className="h-3.5 w-3.5" />
+                                            <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                                         </Button>
                                     </div>
                                 </>
@@ -84,7 +85,7 @@ export function TradeImagesGallery({
                                     }}
                                     accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] }}
                                     className="h-full w-full bg-muted/30 hover:bg-muted/50 border-dashed"
-                                    icon={<Upload className="h-4 w-4 text-muted-foreground/40 mb-1" />}
+                                    icon={<HugeiconsIcon icon={Upload01Icon} className="h-4 w-4 text-muted-foreground/40 mb-1" strokeWidth={1.5} color="currentColor" />}
                                     description="Drag or Click"
                                     disabled={uploadingField === field}
                                 />

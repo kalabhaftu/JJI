@@ -3,7 +3,8 @@
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
-import { Home as House, ArrowLeft } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Home01Icon, ArrowLeft01Icon } from "@hugeicons/core-free-icons"
 import { useUserStore } from '@/store/user-store'
 
 export default function NotFound() {
@@ -26,7 +27,7 @@ export default function NotFound() {
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="gap-2">
             <Link href={isAuthenticated ? "/dashboard" : "/"}>
-              <House className="w-4 h-4" />
+              <HugeiconsIcon icon={Home01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
               {isAuthenticated ? "Back to Dashboard" : "Back home"}
             </Link>
           </Button>
@@ -36,7 +37,7 @@ export default function NotFound() {
             onClick={() => router.back()}
             className="gap-2"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
             Go back
           </Button>
         </div>

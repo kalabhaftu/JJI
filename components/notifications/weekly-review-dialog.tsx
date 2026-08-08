@@ -14,17 +14,18 @@ import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { Spinner } from '@/components/ui/spinner'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  AlertTriangle,
-  BarChart3,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Target,
-  TrendingDown,
-  TrendingUp,
-  Trophy,
-} from 'lucide-react'
+  Alert02Icon,
+  Award01Icon,
+  BarChartIcon,
+  Calendar01Icon,
+  ChartDownIcon,
+  ChartUpIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  Target01Icon,
+} from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { apiRequestData } from '@/lib/api/client'
 import { dashboardModalShell } from '@/components/ui/dashboard-modal-shell'
@@ -145,7 +146,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
           </div>
         ) : !review ? (
           <div className="flex flex-col items-center justify-center p-16 text-muted-foreground">
-            <BarChart3 className="mb-3 h-10 w-10 opacity-50" />
+            <HugeiconsIcon icon={BarChartIcon} className="mb-3 h-10 w-10 opacity-50" strokeWidth={1.5} color="currentColor" />
             <p className="text-sm">No weekly reviews yet.</p>
             <p className="mt-1 text-xs">Reviews are generated automatically each weekend.</p>
           </div>
@@ -155,7 +156,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
               <DialogHeader>
                 <div className="flex items-center justify-between gap-4">
                   <DialogTitle className="flex items-center gap-2 text-lg">
-                    <BarChart3 className="h-5 w-5" />
+                    <HugeiconsIcon icon={BarChartIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
                     Weekly Performance Review
                   </DialogTitle>
                   {review.grade && (
@@ -171,7 +172,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                   )}
                 </div>
                 <DialogDescription className="mt-1 flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                   {format(new Date(review.weekStart), 'MMM d')} - {format(new Date(review.weekEnd), 'MMM d, yyyy')}
                 </DialogDescription>
               </DialogHeader>
@@ -218,13 +219,13 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                 {review.highlights.length > 0 && (
                   <div>
                     <h4 className="mb-2.5 flex items-center gap-2 text-sm font-medium">
-                      <TrendingUp className="h-4 w-4 text-long" />
+                      <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
                       What Went Well
                     </h4>
                     <ul className="space-y-2">
                       {review.highlights.map((highlight, index) => (
                         <li key={index} className="flex items-start gap-2 text-sm text-foreground/80">
-                          <Trophy className="mt-0.5 h-3.5 w-3.5 shrink-0 text-long" />
+                          <HugeiconsIcon icon={Award01Icon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-long" strokeWidth={1.5} color="currentColor" />
                           {highlight}
                         </li>
                       ))}
@@ -235,13 +236,13 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                 {review.lowlights.length > 0 && (
                   <div>
                     <h4 className="mb-2.5 flex items-center gap-2 text-sm font-medium">
-                      <TrendingDown className="h-4 w-4 text-short" />
+                      <HugeiconsIcon icon={ChartDownIcon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />
                       What Needs Work
                     </h4>
                     <ul className="space-y-2">
                       {review.lowlights.map((lowlight, index) => (
                         <li key={index} className="flex items-start gap-2 text-sm text-foreground/80">
-                          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-short" />
+                          <HugeiconsIcon icon={Alert02Icon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-short" strokeWidth={1.5} color="currentColor" />
                           {lowlight}
                         </li>
                       ))}
@@ -254,7 +255,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                     <Separator />
                     <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
                       <h4 className="mb-2 flex items-center gap-2 text-sm font-medium">
-                        <Target className="h-4 w-4 text-primary" />
+                        <HugeiconsIcon icon={Target01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                         Focus Next Week
                       </h4>
                       <p className="text-sm text-foreground/80">{review.focusNextWeek}</p>
@@ -300,7 +301,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                   onClick={() => setCurrentIndex((index) => index + 1)}
                   disabled={!canGoNext}
                 >
-                  <ChevronLeft className="mr-1 h-4 w-4" />
+                  <HugeiconsIcon icon={ChevronLeftIcon} className="mr-1 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                   Older
                 </Button>
                 <span className="text-xs text-muted-foreground">
@@ -313,7 +314,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                   disabled={!canGoPrev}
                 >
                   Newer
-                  <ChevronRight className="ml-1 h-4 w-4" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="ml-1 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 </Button>
               </div>
             )}

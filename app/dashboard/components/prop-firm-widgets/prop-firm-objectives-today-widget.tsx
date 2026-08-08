@@ -1,6 +1,7 @@
 "use client"
 
-import { Target, ShieldAlert, CalendarClock, Trophy, TrendingDown, Activity, type LucideIcon } from 'lucide-react'
+import { HugeiconsIcon, HugeiconsIconProps } from '@hugeicons/react'
+import { Target01Icon, Shield01Icon, CalendarClockIcon, Award01Icon, ChartDecreaseIcon, Activity01Icon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { PropFirmWidgetShell } from './prop-firm-widget-shell'
 import { clampPercent, formatInteger, formatPercent, getObjectiveTone } from './prop-firm-widget-utils'
@@ -21,7 +22,7 @@ function ObjectiveCard({
   danger = false,
 }: {
   title: string
-  icon: LucideIcon
+  icon: HugeiconsIconProps['icon']
   rows: ObjectiveRow[]
   progress: number
   danger?: boolean
@@ -35,7 +36,7 @@ function ObjectiveCard({
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className={cn('rounded-lg p-2', tone === 'long' ? 'bg-long/10 text-long' : 'bg-short/10 text-short')}>
-            <Icon className="h-4 w-4" />
+            <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
           </span>
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">{title}</p>
         </div>
@@ -66,14 +67,14 @@ function StatTile({
 }: {
   label: string
   value: string
-  icon: LucideIcon
+  icon: HugeiconsIconProps['icon']
   tone?: 'positive' | 'negative' | 'neutral'
 }) {
   return (
     <div className="rounded-xl border border-border/25 bg-muted/10 p-3">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
-        <Icon className={cn('h-4 w-4', tone === 'positive' && 'text-long', tone === 'negative' && 'text-short', tone === 'neutral' && 'text-muted-foreground')} />
+        <HugeiconsIcon icon={Icon} className={cn('h-4 w-4', tone === 'positive' && 'text-long', tone === 'negative' && 'text-short', tone === 'neutral' && 'text-muted-foreground')} strokeWidth={1.5} color="currentColor" />
       </div>
       <p className="font-mono text-lg font-black tracking-tight">{value}</p>
     </div>
@@ -106,7 +107,7 @@ export function PropFirmObjectivesTodayWidget() {
             <div className="grid gap-3 lg:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
               <ObjectiveCard
                 title="Profit target"
-                icon={Target}
+                icon={Target01Icon}
                 progress={targetAmount > 0 ? (grossPnl / targetAmount) * 100 : 0}
                 rows={[
                   { label: 'Current result', value: formatValue(grossPnl, { kind: 'money', sensitive: true, forceMode: forcedMode }), tone: grossPnl >= 0 ? 'positive' : 'negative' },
@@ -116,7 +117,7 @@ export function PropFirmObjectivesTodayWidget() {
               />
               <ObjectiveCard
                 title="Maximum loss limit"
-                icon={ShieldAlert}
+                icon={Shield01Icon}
                 progress={maxLossLimit > 0 ? (maxUsed / maxLossLimit) * 100 : 0}
                 danger={maxRemaining <= maxLossLimit * 0.25}
                 rows={[
@@ -127,7 +128,7 @@ export function PropFirmObjectivesTodayWidget() {
               />
               <ObjectiveCard
                 title="Daily loss limit"
-                icon={CalendarClock}
+                icon={CalendarClockIcon}
                 progress={dailyLossLimit > 0 ? (dailyUsed / dailyLossLimit) * 100 : 0}
                 danger={dailyRemaining <= dailyLossLimit * 0.25}
                 rows={[
@@ -138,12 +139,12 @@ export function PropFirmObjectivesTodayWidget() {
               />
             </div>
             <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1 2xl:grid-cols-2">
-              <StatTile label={`Today P&L (${resetLabel})`} icon={Activity} value={formatValue(data.todayStats.pnl, { kind: 'money', sensitive: true, forceMode: forcedMode })} tone={data.todayStats.pnl >= 0 ? 'positive' : 'negative'} />
-              <StatTile label={`Today trades (${resetLabel})`} icon={CalendarClock} value={formatValue(data.todayStats.trades, { kind: 'count', sensitive: false, forceMode: forcedMode })} />
-              <StatTile label="Today win rate" icon={Trophy} value={formatValue(data.todayStats.winRate, { kind: 'percent', forceMode: forcedMode })} tone="positive" />
-              <StatTile label="Today W / L" icon={TrendingDown} value={`${data.todayStats.wins} / ${data.todayStats.losses}`} />
-              <StatTile label="Best phase trade" icon={Trophy} value={formatValue(data.accountExtremes.bestTrade, { kind: 'money', sensitive: true, forceMode: forcedMode })} tone="positive" />
-              <StatTile label="Worst phase trade" icon={TrendingDown} value={formatValue(data.accountExtremes.worstTrade, { kind: 'money', sensitive: true, forceMode: forcedMode })} tone="negative" />
+              <StatTile label={`Today P&L (${resetLabel})`} icon={Activity01Icon} value={formatValue(data.todayStats.pnl, { kind: 'money', sensitive: true, forceMode: forcedMode })} tone={data.todayStats.pnl >= 0 ? 'positive' : 'negative'} />
+              <StatTile label={`Today trades (${resetLabel})`} icon={CalendarClockIcon} value={formatValue(data.todayStats.trades, { kind: 'count', sensitive: false, forceMode: forcedMode })} />
+              <StatTile label="Today win rate" icon={Award01Icon} value={formatValue(data.todayStats.winRate, { kind: 'percent', forceMode: forcedMode })} tone="positive" />
+              <StatTile label="Today W / L" icon={ChartDecreaseIcon} value={`${data.todayStats.wins} / ${data.todayStats.losses}`} />
+              <StatTile label="Best phase trade" icon={Award01Icon} value={formatValue(data.accountExtremes.bestTrade, { kind: 'money', sensitive: true, forceMode: forcedMode })} tone="positive" />
+              <StatTile label="Worst phase trade" icon={ChartDecreaseIcon} value={formatValue(data.accountExtremes.worstTrade, { kind: 'money', sensitive: true, forceMode: forcedMode })} tone="negative" />
             </div>
           </div>
         )

@@ -1,4 +1,3 @@
-import { BookCopy, ListChecks, Tags, Target } from 'lucide-react'
 import { DocsPage, DocsSection, DocsCallout } from '@/components/docs/docs-page'
 
 export default function PlaybookDocsPage() {

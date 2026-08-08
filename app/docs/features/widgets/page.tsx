@@ -1,4 +1,3 @@
-import { Grip, LayoutGrid, Save } from 'lucide-react'
 import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function WidgetsDocsPage() {

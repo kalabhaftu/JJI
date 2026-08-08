@@ -4,7 +4,8 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import type { TradeType as Trade } from '@/lib/db/schema';
 
-import { ArrowUpRight, ArrowDownRight, CalendarDays, Clock, Target, DollarSign, MoreVertical, Eye, Pencil, Trash2 as Trash, AlertCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowUpRight01Icon, ArrowDownRight01Icon, MoreVerticalIcon, EyeIcon, PencilEdit01Icon, Delete02Icon, AlertCircleIcon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import {
   classifyTrade,
@@ -214,21 +215,21 @@ export function TradeCard({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <RevealAction size="icon" className="h-10 w-10" aria-label="Trade options">
-                  <MoreVertical className="h-4 w-4" />
+                  <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 </RevealAction>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={onView}>
-                  <Eye className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" />
                   View Details
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onEdit}>
-                  <Pencil className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" />
                   Edit Trade
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                  <Trash className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" />
                   Delete Trade
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -275,9 +276,9 @@ export function TradeCard({
               {(trade as any).isMissedTrade ? (
                 <div className="h-3 w-3 rounded-full border border-purple-500 flex-shrink-0" />
               ) : isWin ? (
-                <ArrowUpRight className="h-3 w-3 text-long flex-shrink-0" />
+                <HugeiconsIcon icon={ArrowUpRight01Icon} className="h-3 w-3 text-long flex-shrink-0" strokeWidth={1.5} color="currentColor" />
               ) : isLoss ? (
-                <ArrowDownRight className="h-3 w-3 text-short flex-shrink-0" />
+                <HugeiconsIcon icon={ArrowDownRight01Icon} className="h-3 w-3 text-short flex-shrink-0" strokeWidth={1.5} color="currentColor" />
               ) : (
                 <div className="h-3 w-3 rounded-full border border-muted-foreground flex-shrink-0" />
               )}
@@ -332,7 +333,7 @@ export function TradeCard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <AlertCircle className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                      <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3 text-muted-foreground flex-shrink-0" strokeWidth={1.5} color="currentColor" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs">Trade has incomplete SL or TP data</p>

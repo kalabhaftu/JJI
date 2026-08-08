@@ -1,4 +1,3 @@
-import { Database, RefreshCw, Table2, Trash2 } from 'lucide-react'
 import { DocsCallout, DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function DataManagementDocsPage() {

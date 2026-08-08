@@ -2,7 +2,8 @@
 
 import { useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
-import { Loader2, Trash2, Plus, RefreshCw, MoreVertical, ChevronDown } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Loading03Icon, Delete02Icon, Add01Icon, Refresh01Icon, MoreVerticalIcon, ChevronDownIcon, Alert02Icon } from '@hugeicons/core-free-icons'
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,7 @@ import { toast } from 'sonner'
 import { useDxFeedSyncContext } from '@/context/dxfeed-sync-context'
 import { reportError } from '@/lib/observability/report-error'
 import { apiRequest } from '@/lib/api/client'
+import { DIRECT_SYNC_STATUS, directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
 
 export function DxFeedCredentialsManager() {
   const {
@@ -71,6 +73,11 @@ export function DxFeedCredentialsManager() {
   )
 
   const handleAddAccount = useCallback(async () => {
+    if (DIRECT_SYNC_STATUS.isPaused) {
+      toast.info(directSyncUnderDevelopmentMessage('DxFeed'))
+      return
+    }
+
     if (!loginEmail || !loginPassword) {
       toast.error("Email and password are required")
       return
@@ -114,6 +121,7 @@ export function DxFeedCredentialsManager() {
   }
 
   const handleReloadAccounts = useCallback(async () => {
+    if (DIRECT_SYNC_STATUS.isPaused) return
     try {
       setIsReloading(true)
       await loadAccounts()
@@ -245,6 +253,20 @@ export function DxFeedCredentialsManager() {
 
   return (
     <div className="space-y-4">
+      {DIRECT_SYNC_STATUS.isPaused && (
+        <div className="flex items-start gap-3 rounded-lg border border-amber-500/30 bg-amber-500/10 p-3.5 text-xs text-amber-900 dark:text-amber-200">
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 shrink-0" strokeWidth={1.5} color="currentColor" />
+          <div className="space-y-1">
+            <p className="font-medium text-amber-950 dark:text-amber-100">
+              DxFeed direct sync is currently paused
+            </p>
+            <p className="text-amber-800/90 dark:text-amber-200/90">
+              {directSyncUnderDevelopmentMessage('DxFeed')}
+            </p>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col gap-4">
         <div className="flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -253,13 +275,13 @@ export function DxFeedCredentialsManager() {
               onClick={handleReloadAccounts}
               size="sm"
               variant="tertiary"
-              disabled={isReloading}
+              disabled={isReloading || DIRECT_SYNC_STATUS.isPaused}
               className="h-8 w-8 p-0"
             >
               {isReloading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
               ) : (
-                <RefreshCw className="h-4 w-4" />
+                <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               )}
             </Button>
           </div>
@@ -270,22 +292,28 @@ export function DxFeedCredentialsManager() {
               }}
               size="sm"
               variant="secondary"
-              disabled={syncingId !== null}
+              disabled={syncingId !== null || DIRECT_SYNC_STATUS.isPaused}
               className="h-8"
             >
-              <RefreshCw className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
               Sync All
             </Button>
             <Button
-              onClick={() => setIsAddDialogOpen(true)}
-              disabled={isLoading}
+              onClick={() => {
+                if (DIRECT_SYNC_STATUS.isPaused) {
+                  toast.info(directSyncUnderDevelopmentMessage('DxFeed'))
+                  return
+                }
+                setIsAddDialogOpen(true)
+              }}
+              disabled={isLoading || DIRECT_SYNC_STATUS.isPaused}
               size="sm"
               className="h-8"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 mr-2 animate-spin" strokeWidth={1.5} color="currentColor" />
               ) : (
-                <Plus className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
               )}
               Add New Account
             </Button>
@@ -318,7 +346,7 @@ export function DxFeedCredentialsManager() {
                               : `${account.accountNumbers.length} accounts`}
                           </span>
                           {account.accountNumbers.length > 1 && (
-                            <ChevronDown className="ml-1 h-3 w-3 shrink-0 opacity-50" />
+                            <HugeiconsIcon icon={ChevronDownIcon} className="ml-1 h-3 w-3 shrink-0 opacity-50" strokeWidth={1.5} color="currentColor" />
                           )}
                         </Button>
                       </PopoverTrigger>
@@ -393,19 +421,19 @@ export function DxFeedCredentialsManager() {
                           setSyncingId(null)
                         }
                       }}
-                      disabled={syncingId !== null || !account.hasToken}
+                      disabled={syncingId !== null || !account.hasToken || DIRECT_SYNC_STATUS.isPaused}
                       aria-label="Sync account"
                     >
                       {syncingId === account.accountId ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
+                        <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
                       ) : (
-                        <RefreshCw className="h-4 w-4 text-muted-foreground" />
+                        <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                       )}
                     </Button>
                     <Popover modal>
                       <PopoverTrigger asChild>
                         <Button variant="tertiary" size="sm" className="h-8 w-8 p-0" aria-label="More options">
-                          <MoreVertical className="h-4 w-4" />
+                          <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-48 p-2" align="end">
@@ -419,7 +447,7 @@ export function DxFeedCredentialsManager() {
                               setIsDeleteDialogOpen(true)
                             }}
                           >
-                            <Trash2 className="h-4 w-4 mr-2" />
+                            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                             Delete Connection
                           </Button>
                         </div>
@@ -475,7 +503,7 @@ export function DxFeedCredentialsManager() {
               <Button onClick={handleAddAccount} disabled={isLoading}>
                 {isLoading ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 mr-2 animate-spin" strokeWidth={1.5} color="currentColor" />
                     Connecting...
                   </>
                 ) : (
@@ -579,7 +607,7 @@ export function DxFeedCredentialsManager() {
               <Button onClick={handleSaveDailySyncTime} disabled={isSavingTime}>
                 {isSavingTime ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <HugeiconsIcon icon={Loading03Icon} className="h-4 w-4 mr-2 animate-spin" strokeWidth={1.5} color="currentColor" />
                     Saving...
                   </>
                 ) : (

@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LexicalEditor } from '@/components/ui/editor/lexical-editor'
-import { Plus, X, AlertTriangle as Warning, Layers } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Add01Icon, Cancel01Icon, Alert02Icon, Layers01Icon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -219,7 +220,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                   onClick={handleAddRule}
                   className="h-8 px-3 font-black uppercase tracking-tighter text-[10px]"
                 >
-                  <Plus className="h-3 w-3 mr-1.5" />
+                  <HugeiconsIcon icon={Add01Icon} className="h-3 w-3 mr-1.5" />
                   Append Rule
                 </Button>
               </div>
@@ -256,7 +257,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                         onClick={() => handleRemoveRule(index)}
                         className="h-10 w-10 shrink-0 opacity-40 hover:opacity-100 transition-opacity"
                       >
-                        <X className="h-4 w-4" />
+                        <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" />
                       </Button>
                     </div>
                   )
@@ -271,7 +272,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Layers className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  <HugeiconsIcon icon={Layers01Icon} className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={1.5} color="currentColor" />
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Trade Setups</Label>
                 </div>
               </div>
@@ -308,7 +309,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                   disabled={!newSetup.trim()}
                   className="h-9 px-3 font-black uppercase tracking-tighter text-[10px] shrink-0"
                 >
-                  <Plus className="h-3 w-3 mr-1" />
+                  <HugeiconsIcon icon={Add01Icon} className="h-3 w-3 mr-1" />
                   Add
                 </Button>
               </div>
@@ -323,7 +324,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                         onClick={() => setSetups(setups.filter((_, idx) => idx !== i))}
                         className="text-muted-foreground/40 hover:text-destructive transition-colors"
                       >
-                        <X className="h-3 w-3" />
+                        <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" />
                       </button>
                     </div>
                   ))}
@@ -363,7 +364,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <Warning className="h-5 w-5 text-warning" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-warning" strokeWidth={1.5} color="currentColor" />
               Unsaved Changes
             </AlertDialogTitle>
             <AlertDialogDescription>

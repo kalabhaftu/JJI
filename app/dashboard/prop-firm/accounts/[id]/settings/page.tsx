@@ -17,17 +17,35 @@ import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  ArrowLeft,
-  RefreshCcw,
-  Save,
-  ChevronLeft, Settings as SettingsIcon, Info, User, Mail, Calendar, Contact, ShieldCheck, MapPin, Globe, CreditCard, Diamond, Clock, Users, Tag, AlertTriangle, CheckCircle2, XCircle,
-  Target,
-  Shield,
-  Trash2,
-  Upload,
-  Download
-} from "lucide-react"
+  ArrowLeft01Icon,
+  RefreshIcon,
+  SaveIcon,
+  ChevronLeftIcon,
+  Setting06Icon,
+  InformationCircleIcon,
+  User02Icon,
+  Mail01Icon,
+  Calendar01Icon,
+  ContactIcon,
+  Shield01Icon,
+  MapPinIcon,
+  Globe02Icon,
+  CreditCardIcon,
+  DiamondIcon,
+  Clock01Icon,
+  UserMultipleIcon,
+  TagsIcon,
+  Alert02Icon,
+  CircleCheckIcon,
+  CircleXIcon,
+  Target01Icon,
+  Shield02Icon,
+  Delete02Icon,
+  Upload01Icon,
+  Download01Icon
+} from '@hugeicons/core-free-icons'
 import { cn } from "@/lib/utils"
 import { AccountStatus, PhaseType } from "@/types/prop-firm"
 import { AccountSettingsPageSkeleton } from "../components/account-loading-skeletons"
@@ -218,11 +236,11 @@ export default function AccountSettingsPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <ArrowLeft className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
               Go Back
             </Button>
           </div>
@@ -241,7 +259,7 @@ export default function AccountSettingsPage() {
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
             Back
           </Button>
           <div>
@@ -258,11 +276,11 @@ export default function AccountSettingsPage() {
             onClick={() => { void accountQuery.refetch() }}
             disabled={accountQuery.isFetching}
           >
-            {accountQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+            {accountQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" />}
             Refresh
           </Button>
           <Button onClick={handleSave} size="sm" loading={saveMutation.isPending} loadingText="Saving changes">
-            <Save className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={SaveIcon} className="h-4 w-4 mr-2" />
             Save Changes
           </Button>
         </div>
@@ -281,7 +299,7 @@ export default function AccountSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <SettingsIcon className="h-4 w-4" />
+                  <HugeiconsIcon icon={Setting06Icon} className="h-4 w-4" />
                   Account Information
                 </CardTitle>
               </CardHeader>
@@ -423,7 +441,7 @@ export default function AccountSettingsPage() {
             <CardContent>
               {phases.length === 0 ? (
                 <div className="text-center py-8">
-                  <Target className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <HugeiconsIcon icon={Target01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
                   <h3 className="text-lg font-semibold mb-2">No phases found</h3>
                   <p className="text-muted-foreground">This account doesn&apos;t have any phases yet.</p>
                 </div>
@@ -504,7 +522,7 @@ export default function AccountSettingsPage() {
                   size="sm"
                   onClick={handleDeleteAccount}
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" />
                   Delete Account
                 </Button>
               </CardContent>
@@ -524,12 +542,12 @@ export default function AccountSettingsPage() {
 
                 <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" />
                     Export as CSV
                   </Button>
 
                   <Button variant="secondary" size="sm">
-                    <Download className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" />
                     Export as JSON
                   </Button>
                 </div>

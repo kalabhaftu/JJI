@@ -1,4 +1,3 @@
-import { BarChart3, CalendarDays, MessageSquare, TrendingUp } from 'lucide-react'
 import { DocsCallout, DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function WeeklyReviewDocsPage() {

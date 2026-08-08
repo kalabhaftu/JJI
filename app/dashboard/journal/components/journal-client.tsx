@@ -4,24 +4,8 @@ import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import dynamic from 'next/dynamic'
 import { motion, AnimatePresence } from 'framer-motion'
 import { TradeCard } from './trade-card'
-import {
-  Search,
-  Filter,
-  AlertCircle,
-  RefreshCw,
-  ChevronLeft,
-  ChevronRight,
-  X,
-  Sparkles,
-  Tag,
-  TrendingUp,
-  TrendingDown,
-  BarChart3,
-  Clock,
-  BookOpen,
-  LayoutGrid,
-  Calendar as CalendarIcon
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Search01Icon, FilterIcon, Alert02Icon, RefreshIcon, ChevronLeftIcon, ChevronRightIcon, Cancel01Icon, TrendingUpDownIcon, BarChartIcon, Clock01Icon, BookOpen01Icon, LayoutGridIcon, Calendar01Icon, Tag01Icon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { emitTourEvent } from '@/lib/tours/events'
 import { Input } from '@/components/ui/input'
@@ -114,7 +98,7 @@ function JournalStats({ statistics }: { statistics: any }) {
             <span className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground/80">
               Total Trades
             </span>
-            <BarChart3 className="h-3.5 w-3.5 text-muted-foreground/50" />
+            <HugeiconsIcon icon={BarChartIcon} className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={1.5} color="currentColor" />
           </div>
           <p className="text-2xl font-bold tracking-tight">{stats.totalTrades}</p>
         </CardContent>
@@ -127,9 +111,9 @@ function JournalStats({ statistics }: { statistics: any }) {
               Win Rate
             </span>
             {stats.winRate >= 50 ? (
-              <TrendingUp className="h-3.5 w-3.5 text-long/50" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3.5 w-3.5 text-long/50" strokeWidth={1.5} color="currentColor" />
             ) : (
-              <TrendingDown className="h-3.5 w-3.5 text-short/50" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3.5 w-3.5 text-short/50" strokeWidth={1.5} color="currentColor" />
             )}
           </div>
           <p className="text-2xl font-bold tracking-tight">{stats.winRate.toFixed(1)}%</p>
@@ -144,9 +128,9 @@ function JournalStats({ statistics }: { statistics: any }) {
               Total P&L
             </span>
             {stats.totalPnl >= 0 ? (
-              <TrendingUp className="h-3.5 w-3.5 text-long/50" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3.5 w-3.5 text-long/50" strokeWidth={1.5} color="currentColor" />
             ) : (
-              <TrendingDown className="h-3.5 w-3.5 text-short/50" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3.5 w-3.5 text-short/50" strokeWidth={1.5} color="currentColor" />
             )}
           </div>
           <p className={cn("text-2xl font-bold tracking-tight", stats.totalPnl >= 0 ? "text-long" : "text-short")}>
@@ -161,7 +145,7 @@ function JournalStats({ statistics }: { statistics: any }) {
             <span className="text-[11px] uppercase tracking-wide font-bold text-muted-foreground/80">
               Avg Duration
             </span>
-            <Clock className="h-3.5 w-3.5 text-muted-foreground/50" />
+            <HugeiconsIcon icon={Clock01Icon} className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={1.5} color="currentColor" />
           </div>
           <p className="text-2xl font-bold tracking-tight">{stats.avgDuration}m</p>
         </CardContent>
@@ -183,7 +167,7 @@ function EmptyState({
     <Card className="border-dashed">
       <CardContent className="flex flex-col items-center justify-center py-16">
         <div className="h-16 w-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-          <BookOpen className="h-8 w-8 text-muted-foreground" />
+          <HugeiconsIcon icon={BookOpen01Icon} className="h-8 w-8 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
         </div>
         <h3 className="text-lg font-semibold mb-2">No trades found</h3>
         <p className="text-sm text-muted-foreground text-center max-w-sm">
@@ -381,7 +365,7 @@ export function JournalClient() {
                 disabled={isRefreshing}
                 className="gap-2 text-muted-foreground hover:text-foreground"
               >
-                {isRefreshing ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+                {isRefreshing ? <Spinner className="h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />}
                 <span className="hidden sm:inline">Refresh</span>
               </Button>
             </>
@@ -405,7 +389,7 @@ export function JournalClient() {
             emitTourEvent('journal.view.cards')
           }}
         >
-          <LayoutGrid className="h-4 w-4" />
+          <HugeiconsIcon icon={LayoutGridIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
           <span className="text-[10px] uppercase font-black tracking-widest">Cards</span>
         </Button>
         <Button
@@ -418,7 +402,7 @@ export function JournalClient() {
             emitTourEvent('journal.view.calendar')
           }}
         >
-          <CalendarIcon className="h-4 w-4" />
+          <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
           <span className="text-[10px] uppercase font-black tracking-widest">Calendar</span>
         </Button>
       </motion.div>
@@ -438,7 +422,7 @@ export function JournalClient() {
         className="flex flex-col sm:flex-row gap-3"
       >
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" strokeWidth={1.5} color="currentColor" />
           <Input
             ref={searchInputRef}
             placeholder="Search by symbol, alias, or notes..."
@@ -463,7 +447,7 @@ export function JournalClient() {
               }}
               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
             >
-              <X className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={Cancel01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             </Button>
           )}
         </div>
@@ -471,7 +455,7 @@ export function JournalClient() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="sm" className="gap-2 h-9 whitespace-nowrap">
-              <Filter className="h-4 w-4" />
+              <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               <span>
                 {filterBy === 'all'
                   ? 'All'
@@ -513,7 +497,7 @@ export function JournalClient() {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" size="sm" className="gap-2 h-9 whitespace-nowrap">
-              <Tag className="h-4 w-4" />
+              <HugeiconsIcon icon={Tag01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               <span>
                 {selectedTagIds.length === 0 ? 'Tags' : `${selectedTagIds.length} Selected`}
               </span>
@@ -586,7 +570,7 @@ export function JournalClient() {
                 onClick={() => setSelectedTagIds(prev => prev.filter(id => id !== tagId))}
               >
                 {tag.name}
-                <X className="h-3 w-3" />
+                <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
               </Badge>
             ) : null
           })}
@@ -670,7 +654,7 @@ export function JournalClient() {
                     disabled={currentPage === 1}
                     className="gap-1"
                   >
-                    <ChevronLeft className="h-4 w-4" />
+                    <HugeiconsIcon icon={ChevronLeftIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                     <span className="hidden sm:inline">Previous</span>
                   </Button>
                   <div className="flex items-center gap-1">
@@ -706,7 +690,7 @@ export function JournalClient() {
                     className="gap-1"
                   >
                     <span className="hidden sm:inline">Next</span>
-                    <ChevronRight className="h-4 w-4" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                   </Button>
                 </div>
               </motion.div>
@@ -723,7 +707,7 @@ export function JournalClient() {
         <AlertDialogContent className="z-[10002]">
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-destructive" />
+              <HugeiconsIcon icon={Alert02Icon} className="w-5 h-5 text-destructive" strokeWidth={1.5} color="currentColor" />
               Delete Trade?
             </AlertDialogTitle>
             <AlertDialogDescription>

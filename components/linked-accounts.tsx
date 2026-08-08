@@ -5,14 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Link2,
-  Unlink,
-  Mail,
-  MessageSquare,
-  Globe,
-  AlertCircle
-} from "lucide-react"
+  AlertCircleIcon,
+  Globe02Icon,
+  Link01Icon,
+  Mail01Icon,
+  Message01Icon,
+  Unlink01Icon,
+} from '@hugeicons/core-free-icons'
 import {
   linkDiscordAccount,
   linkGoogleAccount,
@@ -116,13 +117,13 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
   const getProviderIcon = (provider: string) => {
     switch (provider) {
       case 'discord':
-        return <MessageSquare className="h-4 w-4" />
+        return <HugeiconsIcon icon={Message01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       case 'google':
-        return <Globe className="h-4 w-4" />
+        return <HugeiconsIcon icon={Globe02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       case 'email':
-        return <Mail className="h-4 w-4" />
+        return <HugeiconsIcon icon={Mail01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       default:
-        return <AlertCircle className="h-4 w-4" />
+        return <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
     }
   }
 
@@ -148,7 +149,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
         <div className="space-y-4">
           <div>
             <h3 className="text-base font-semibold flex items-center gap-2">
-              <Link2 className="h-5 w-5" />
+              <HugeiconsIcon icon={Link01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
               Linked Accounts
             </h3>
             <p className="text-xs text-muted-foreground/85">
@@ -165,7 +166,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
+            <HugeiconsIcon icon={Link01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
             Linked Accounts
           </CardTitle>
           <CardDescription>
@@ -213,7 +214,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button variant="secondary" size="sm" className="w-full sm:w-auto">
-                          <Unlink className="h-4 w-4 sm:mr-2" />
+                          <HugeiconsIcon icon={Unlink01Icon} className="h-4 w-4 sm:mr-2" strokeWidth={1.5} color="currentColor" />
                           <span className="hidden sm:inline">Unlink</span>
                           <span className="sm:hidden">Unlink Account</span>
                         </Button>
@@ -259,7 +260,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
               onClick={handleLinkDiscord}
               disabled={linking}
             >
-              <MessageSquare className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={Message01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
               Link Discord
             </Button>
           )}
@@ -270,7 +271,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
               onClick={handleLinkGoogle}
               disabled={linking}
             >
-              <Globe className="mr-2 h-4 w-4" />
+              <HugeiconsIcon icon={Globe02Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
               Link Google
             </Button>
           )}
@@ -289,7 +290,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
       <div className="space-y-6">
         <div>
           <h3 className="text-base font-semibold flex items-center gap-2">
-            <Link2 className="h-5 w-5" />
+            <HugeiconsIcon icon={Link01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
             Linked Accounts
           </h3>
           <p className="text-xs text-muted-foreground/85">
@@ -305,7 +306,7 @@ export function LinkedAccounts({ plain = false }: { plain?: boolean }) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Link2 className="h-5 w-5" />
+          <HugeiconsIcon icon={Link01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
           Linked Accounts
         </CardTitle>
         <CardDescription>

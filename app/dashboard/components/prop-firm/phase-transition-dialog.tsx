@@ -20,19 +20,20 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  TrendingUp,
-  Target,
-  DollarSign,
-  ArrowRight,
-  AlertCircle,
-  Trophy,
-  CheckCircle2,
-  Rocket,
-  Key,
-  Loader2,
-  Sparkles
-} from "lucide-react"
+  ChartIncreaseIcon,
+  Target01Icon,
+  Dollar01Icon,
+  ArrowRight01Icon,
+  AlertCircleIcon,
+  Award01Icon,
+  CheckmarkCircle01Icon,
+  RocketIcon,
+  Key01Icon,
+  Loading01Icon,
+  SparklesIcon
+} from "@hugeicons/core-free-icons"
 import { cn } from "@/lib/utils"
 import { formatPercent } from '@/lib/trading/trade-formatting'
 
@@ -109,7 +110,7 @@ export function PhaseTransitionDialog({
 
       toast.success("Phase Transition Successful", {
         description: `You've successfully advanced to ${getPhaseDisplayName(nextPhaseNumber)}! Importing trades to the new phase...`,
-        icon: <CheckCircle2 className="h-4 w-4" />
+        icon: <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       })
 
 
@@ -127,7 +128,7 @@ export function PhaseTransitionDialog({
       reportClientError(error, { operation: 'transition-prop-firm-phase', route: '/api/v1/prop-firm/accounts' })
       toast.error("Transition Failed", {
         description: error instanceof Error ? error.message : 'Failed to transition to next phase',
-        icon: <AlertCircle className="h-4 w-4" />
+        icon: <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       })
     } finally {
       setIsTransitioning(false)
@@ -136,9 +137,9 @@ export function PhaseTransitionDialog({
 
   const getTransitionIcon = () => {
     if (isFundedPhase(nextPhaseNumber)) {
-      return <Trophy className="h-10 w-10" />
+      return <HugeiconsIcon icon={Award01Icon} className="h-10 w-10" strokeWidth={1.5} color="currentColor" />
     }
-    return <Sparkles className="h-10 w-10" />
+    return <HugeiconsIcon icon={SparklesIcon} className="h-10 w-10" strokeWidth={1.5} color="currentColor" />
   }
 
   const getTransitionTitle = () => {
@@ -200,7 +201,7 @@ export function PhaseTransitionDialog({
                   <span className="text-sm text-muted-foreground">Profit Target</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{formatPercent(currentPhase.profitTargetPercent)}</span>
-                    <CheckCircle2 className="h-4 w-4 text-long" />
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
                   </div>
                 </div>
               )}
@@ -221,18 +222,18 @@ export function PhaseTransitionDialog({
           <div className="relative flex items-center justify-center gap-4 py-2">
             <div className="text-center">
               <div className="relative w-14 h-14 bg-long/10 rounded-xl flex items-center justify-center mb-2 transition-all hover:scale-105">
-                <CheckCircle2 className="h-6 w-6 text-long" />
+                <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-6 w-6 text-long" strokeWidth={1.5} color="currentColor" />
               </div>
               <span className="text-sm font-medium">{getPhaseDisplayName(currentPhase.phaseNumber)}</span>
               <div className="text-xs text-muted-foreground">Completed</div>
             </div>
 
-            <ArrowRight className="h-6 w-6 text-muted-foreground" />
+            <HugeiconsIcon icon={ArrowRight01Icon} className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
 
             <div className="text-center">
               <div className="relative w-14 h-14 bg-muted/30 rounded-xl flex items-center justify-center mb-2 transition-all hover:scale-105">
                 <Skeleton className="absolute inset-0 rounded-xl bg-muted/40" />
-                <Rocket className="h-6 w-6 text-foreground relative z-10" />
+                <HugeiconsIcon icon={RocketIcon} className="h-6 w-6 text-foreground relative z-10" strokeWidth={1.5} color="currentColor" />
               </div>
               <span className="text-sm font-medium">{getPhaseDisplayName(nextPhaseNumber)}</span>
               <div className="text-xs text-muted-foreground">Ready</div>
@@ -243,7 +244,7 @@ export function PhaseTransitionDialog({
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 bg-muted/50 border border-border rounded-lg">
               <div className="p-2 bg-muted rounded-lg">
-                <Key className="h-5 w-5 text-foreground" />
+                <HugeiconsIcon icon={Key01Icon} className="h-5 w-5 text-foreground" strokeWidth={1.5} color="currentColor" />
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium">
@@ -297,7 +298,7 @@ export function PhaseTransitionDialog({
               ) : (
                 <>
                   Start {getPhaseDisplayName(nextPhaseNumber)}
-                  <ArrowRight className="h-4 w-4 ml-2" />
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 ml-2" strokeWidth={1.5} color="currentColor" />
                 </>
               )}
             </Button>

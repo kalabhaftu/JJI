@@ -10,19 +10,21 @@ import {
 import { cn } from '@/lib/utils'
 import type { DashboardDisplayMode } from '@/lib/dashboard/display-mode'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
+import { HugeiconsIcon } from '@hugeicons/react'
+import type { HugeiconsIconProps } from '@hugeicons/react'
 import {
-  CircleDollarSign,
-  EyeOff,
-  Percent,
-  ScanEye,
-  Target,
-} from 'lucide-react'
+  DollarCircleIcon,
+  EyeOffIcon,
+  PercentIcon,
+  ScanEyeIcon,
+  Target01Icon,
+} from '@hugeicons/core-free-icons'
 
-const ICONS: Record<DashboardDisplayMode, typeof CircleDollarSign> = {
-  dollars: CircleDollarSign,
-  percentage: Percent,
-  privacy: EyeOff,
-  rMultiple: Target,
+const ICONS: Record<DashboardDisplayMode, HugeiconsIconProps['icon']> = {
+  dollars: DollarCircleIcon,
+  percentage: PercentIcon,
+  privacy: EyeOffIcon,
+  rMultiple: Target01Icon,
 }
 
 export function DashboardDisplayModeSelector({
@@ -47,7 +49,7 @@ export function DashboardDisplayModeSelector({
           title={allModes[mode].label}
           aria-label={allModes[mode].label}
         >
-          <ActiveIcon aria-hidden />
+          <HugeiconsIcon icon={ActiveIcon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-56">
@@ -67,12 +69,12 @@ export function DashboardDisplayModeSelector({
                   isActive ? 'border-primary/30 bg-primary/10 text-primary' : 'border-border/50 bg-muted/30 text-muted-foreground'
                 )}
               >
-                <Icon className="h-4 w-4" />
+                <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{allModes[value].label}</span>
-                  {isActive && <ScanEye className="h-3.5 w-3.5 text-primary" />}
+                  {isActive && <HugeiconsIcon icon={ScanEyeIcon} className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} color="currentColor" />}
                 </div>
                 <p className="text-xs text-muted-foreground">{allModes[value].description}</p>
               </div>

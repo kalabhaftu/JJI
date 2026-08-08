@@ -8,19 +8,20 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Trash2,
-  AlertCircle,
-  Pencil,
-  Loader2,
-  ChevronDown,
-  ChevronRight,
-  Upload,
-  Download,
-  Building2,
-  User,
-  BarChart2
-} from "lucide-react"
+  Delete02Icon,
+  Alert02Icon,
+  PencilEdit01Icon,
+  Loading01Icon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  Upload01Icon,
+  Download01Icon,
+  Building02Icon,
+  User02Icon,
+  BarChartIcon
+} from '@hugeicons/core-free-icons'
 import { apiRequestData } from '@/lib/api/client'
 import { toast } from 'sonner'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
@@ -370,7 +371,7 @@ export function DataManagementCard() {
   if (error) {
     return (
       <Alert variant="destructive">
-        <AlertCircle className="h-4 w-4" />
+        <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error.message}</AlertDescription>
       </Alert>
@@ -416,7 +417,7 @@ export function DataManagementCard() {
                       <Spinner className="h-4 w-4" />
                     ) : (
                       <>
-                        <Trash2 className="mr-2 h-4 w-4" />
+<HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" />
                         Delete selected ({selectedAccounts.length})
                       </>
                     )}
@@ -498,9 +499,9 @@ export function DataManagementCard() {
                     {hasMultiplePhases && (
                       <div className="text-muted-foreground">
                         {isExpanded ? (
-                          <ChevronDown className="h-4 w-4" />
+                          <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" />
                         ) : (
-                          <ChevronRight className="h-4 w-4" />
+                          <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" />
                         )}
                       </div>
                     )}
@@ -510,9 +511,9 @@ export function DataManagementCard() {
                       isPropFirm ? "bg-primary/10" : "bg-long/10"
                     )}>
                       {isPropFirm ? (
-                        <Building2 className="h-4 w-4 text-primary" />
+                        <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-primary" />
                       ) : (
-                        <User className="h-4 w-4 text-long" />
+                        <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-long" />
                       )}
                     </div>
 
@@ -528,7 +529,7 @@ export function DataManagementCard() {
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <BarChart2 className="h-3 w-3" />
+                          <HugeiconsIcon icon={BarChartIcon} className="h-3 w-3" />
                           {group.totalTrades} trades
                         </span>
                         {hasMultiplePhases && (
@@ -584,7 +585,7 @@ export function DataManagementCard() {
                             setRenameAccountDialogOpen(true)
                           }}
                         >
-                          <Pencil className="h-4 w-4" />
+                          <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4" />
                         </Button>
                       </div>
                     ))}
@@ -598,7 +599,7 @@ export function DataManagementCard() {
 
       {!accountsLoading && accountsWithTrades.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border/45 bg-card/30 py-16 text-center">
-          <BarChart2 className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+          <HugeiconsIcon icon={BarChartIcon} className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
           <h3 className="text-lg font-medium mb-2">No accounts yet</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Create your first account from the Accounts page
@@ -623,7 +624,7 @@ export function DataManagementCard() {
             className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={() => setDeleteAllDataDialogOpen(true)}
           >
-            <Trash2 className="mr-2 h-4 w-4" />
+            <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" />
             Delete All Data
           </Button>
         </div>

@@ -17,7 +17,14 @@ import { ThemeSwitcher } from '@/components/theme-switcher'
 import { TemplateSelector } from './template-selector'
 import { DashboardDisplayModeSelector } from './navbar-display-mode'
 import { signOut } from '@/server/auth/providers'
-import { Settings, LogOut, Wallet, Plus, SlidersHorizontal } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Settings02Icon,
+  Logout01Icon,
+  Wallet01Icon,
+  Add01Icon,
+  SlidersHorizontalIcon,
+} from '@hugeicons/core-free-icons'
 import { emitTourEvent } from '@/lib/tours/events'
 import { useQuickAddStore } from '@/store/quick-add-store'
 import {
@@ -108,7 +115,7 @@ export default function Navbar() {
             aria-label="Select accounts"
             data-tour="navbar-accounts-btn"
           >
-            <Wallet aria-hidden />
+            <HugeiconsIcon icon={Wallet01Icon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
           </Button>
           <Button
             variant="tertiary"
@@ -117,7 +124,7 @@ export default function Navbar() {
             onClick={() => setMobileFiltersOpen(true)}
             aria-label="Open filters"
           >
-            <SlidersHorizontal aria-hidden />
+            <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
           </Button>
 
           {}
@@ -127,7 +134,7 @@ export default function Navbar() {
           }}>
             <PopoverTrigger asChild>
               <Button variant="tertiary" size="navIcon" data-tour="navbar-accounts-btn" className="hidden sm:flex text-muted-foreground" aria-label="Trading accounts">
-                <Wallet aria-hidden />
+                <HugeiconsIcon icon={Wallet01Icon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
               </Button>
             </PopoverTrigger>
             <PopoverContent
@@ -169,7 +176,7 @@ export default function Navbar() {
             title="Quick Add Trade"
             aria-label="Quick add trade"
           >
-            <Plus aria-hidden />
+            <HugeiconsIcon icon={Add01Icon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
           </Button>
 
           {}
@@ -227,7 +234,7 @@ export default function Navbar() {
                   className="cursor-pointer"
                   onClick={() => setProfileMenuOpen(false)}
                 >
-                  <Settings className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={Settings02Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                   Settings
                 </Link>
               </DropdownMenuItem>
@@ -245,7 +252,7 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="text-destructive focus:text-destructive cursor-pointer"
               >
-                <LogOut className="mr-2 h-4 w-4" />
+                <HugeiconsIcon icon={Logout01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 Log Out
               </DropdownMenuItem>
             </DropdownMenuContent>

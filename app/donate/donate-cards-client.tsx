@@ -5,7 +5,8 @@ import Image from 'next/image'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Heart, Copy, Check } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { HeartIcon, CopyIcon, Tick01Icon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { getTokenMeta } from '@/lib/constants/crypto-tokens'
 import { apiRequestData } from '@/lib/api/client'
@@ -70,7 +71,7 @@ export function DonateCardsClient() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <Heart className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+          <HugeiconsIcon icon={HeartIcon} className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" strokeWidth={1.5} color="currentColor" />
           <p className="text-muted-foreground">No donation addresses are configured yet.</p>
         </CardContent>
       </Card>
@@ -128,9 +129,9 @@ export function DonateCardsClient() {
                       onClick={() => copyToClipboard(addr.address, index)}
                     >
                       {isCopied ? (
-                        <Check className="h-3.5 w-3.5 text-green-500" />
+                        <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-green-500" strokeWidth={1.5} color="currentColor" />
                       ) : (
-                        <Copy className="h-3.5 w-3.5" />
+                        <HugeiconsIcon icon={CopyIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                       )}
                     </Button>
                   </div>

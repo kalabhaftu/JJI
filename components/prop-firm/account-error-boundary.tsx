@@ -4,7 +4,8 @@ import React, { Component, ReactNode } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { AlertCircle, RefreshCcw, ArrowLeft } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { AlertCircleIcon, ArrowLeft01Icon, RefreshIcon } from '@hugeicons/core-free-icons'
 import { reportError } from '@/lib/observability/report-error'
 
 interface ErrorBoundaryProps {
@@ -52,13 +53,13 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
           <Card className="max-w-md w-full">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
-                <AlertCircle className="h-5 w-5" />
+                <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
                 Something went wrong
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
+                <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 <AlertDescription>
                   An unexpected error occurred while loading the account data.
                 </AlertDescription>
@@ -66,7 +67,7 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
 
               <div className="flex gap-2">
                 <Button onClick={this.handleReset} className="flex-1">
-                <RefreshCcw className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                   Try Again
                 </Button>
                 <Button
@@ -74,7 +75,7 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
                   onClick={() => window.history.back()}
                   className="flex-1"
                 >
-                  <ArrowLeft className="h-4 w-4 mr-2" />
+<HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                   Go Back
                 </Button>
               </div>
@@ -102,13 +103,13 @@ export function AccountNotFoundError({
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
-            <AlertCircle className="h-5 w-5" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
             Account Not Found
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
             <AlertDescription>
               Account {accountId} could not be found. It may have been deleted or you may not have permission to view it.
             </AlertDescription>
@@ -117,7 +118,7 @@ export function AccountNotFoundError({
           <div className="flex gap-2">
             {onRetry && (
               <Button onClick={onRetry} variant="secondary" className="flex-1">
-                <RefreshCcw className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                 Retry
               </Button>
             )}
@@ -125,7 +126,7 @@ export function AccountNotFoundError({
               onClick={onGoBack || (() => window.history.back())}
               className="flex-1"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
               Back to Accounts
             </Button>
           </div>
@@ -144,12 +145,12 @@ export function ConnectionError({
 }) {
   return (
     <Alert variant="destructive">
-      <AlertCircle className="h-4 w-4" />
+      <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       <AlertDescription className="flex items-center justify-between">
         <span>Connection Error: {error}</span>
         {onRetry && (
           <Button variant="secondary" size="sm" onClick={onRetry}>
-            <RefreshCcw className="h-3 w-3 mr-1" />
+            <HugeiconsIcon icon={RefreshIcon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
             Retry
           </Button>
         )}

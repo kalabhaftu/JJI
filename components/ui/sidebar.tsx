@@ -3,7 +3,8 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { VariantProps, cva } from "class-variance-authority"
-import { PanelLeft } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { PanelLeftIcon } from "@hugeicons/core-free-icons"
 
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { useIsMobile } from "@/hooks/use-is-mobile"
@@ -298,7 +299,7 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      <PanelLeft aria-hidden />
+      <HugeiconsIcon icon={PanelLeftIcon} aria-hidden strokeWidth={1.5} color="currentColor" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

@@ -1,7 +1,8 @@
 
 'use client'
 
-import { Check, Settings as SettingsIcon } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Tick01Icon, Settings02Icon } from "@hugeicons/core-free-icons"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Button } from "@/components/ui/button"
 import { useCalendarViewStore, VisibleStats } from "@/store/calendar-view-store"
@@ -27,7 +28,7 @@ export function CalendarSettings() {
                     title="Display Stats Settings"
                     aria-label="Display Stats Settings"
                 >
-                    <SettingsIcon className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground transition-colors" />
+                    <HugeiconsIcon icon={Settings02Icon} className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground transition-colors" strokeWidth={1.5} color="currentColor" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[210px] rounded-xl border border-border/40 bg-popover p-3 shadow-xl animate-in fade-in-50 zoom-in-95 duration-100" align="end">
@@ -54,7 +55,7 @@ export function CalendarSettings() {
                                         : "border border-muted-foreground/45 bg-muted/20"
                                 )}>
                                     {isChecked && (
-                                        <Check className="h-3 w-3 stroke-[3]" />
+                                        <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3" strokeWidth={2.5} color="currentColor" />
                                     )}
                                 </div>
                                 <span className="text-xs font-semibold text-foreground/80 tracking-tight">

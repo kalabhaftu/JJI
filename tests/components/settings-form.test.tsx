@@ -53,6 +53,7 @@ import { SettingsPreferencesSection } from '@/app/dashboard/settings/components/
 import SettingsPage from '@/app/dashboard/settings/page'
 import { defaultAiSettings } from '@/app/dashboard/settings/components/settings-config'
 import type { SettingsProfileData } from '@/app/dashboard/settings/components/settings-types'
+import { Settings01Icon, UserIcon } from '@hugeicons/core-free-icons'
 
 const roots: Array<ReturnType<typeof createRoot>> = []
 const containers: HTMLDivElement[] = []
@@ -117,8 +118,8 @@ function findButtonWithText(text: string): HTMLButtonElement {
 }
 
 const CATEGORIES = [
-  { id: 'profile', label: 'Profile', icon: () => <span /> },
-  { id: 'preferences', label: 'Preferences', icon: () => <span /> },
+  { id: 'profile', label: 'Profile', icon: UserIcon },
+  { id: 'preferences', label: 'Preferences', icon: Settings01Icon },
 ] as const
 
 const PROFILE_DATA: SettingsProfileData = {

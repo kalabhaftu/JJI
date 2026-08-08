@@ -9,6 +9,9 @@ import { DEFAULT_INCLUDED_FEE_TYPES } from '@/app/dashboard/components/import/tr
 import { useUserStore } from '@/store/user-store'
 import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
 import logger from '@/lib/logger'
+import { apiRequestData } from '@/lib/api/client'
+import { ApiClientError } from '@/lib/api/errors'
+import { DIRECT_SYNC_STATUS, directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
 
 interface TradovateSyncContextType {
 
@@ -67,63 +70,73 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
   )
 
   const loadAccounts = useCallback(async () => {
-    if (disabled) {
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) {
       setAccounts([])
       return
     }
 
     try {
-      const response = await fetch("/api/v1/tradovate/synchronizations", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
+      const data = await apiRequestData<any[]>('/api/v1/tradovate/synchronizations', {
+        method: 'GET',
+        retry: { mode: 'safe' },
+        operation: 'load-tradovate-accounts',
       })
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch Tradovate synchronizations")
-      }
-
-      const result = await response.json()
-      const data = Array.isArray(result.data) ? result.data : []
-      setAccounts(data.map(normalizeSynchronization))
+      const list = Array.isArray(data) ? data : []
+      setAccounts(list.map(normalizeSynchronization))
     } catch (error) {
-      reportError(error, { surface: 'client', operation: 'load-tradovate-accounts', route: '/api/v1/tradovate/accounts' })
+      if (error instanceof ApiClientError && error.status === 503) {
+        logger.info({ error: error.message }, 'Tradovate direct sync is paused/unavailable')
+        setAccounts([])
+        return
+      }
+      reportError(error, { surface: 'client', operation: 'load-tradovate-accounts', route: '/api/v1/tradovate/synchronizations' })
     }
   }, [disabled, normalizeSynchronization])
 
   const updateIncludedFeeTypesForAccount = useCallback(
     async (accountId: string, includedFeeTypes: Record<string, boolean>) => {
-      if (disabled) {
-        return { success: false, error: 'Tradovate sync is disabled in demo mode' }
+      if (disabled || DIRECT_SYNC_STATUS.isPaused) {
+        return { success: false, error: directSyncUnderDevelopmentMessage('Tradovate') }
       }
 
-      const res = await fetch('/api/v1/tradovate/synchronizations', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ accountId, includedFeeTypes }),
-      })
-      const data = await res.json()
-      if (!res.ok || !data.success) {
-        return { success: false, error: data.error?.message || data.message || 'Failed to update' }
+      try {
+        await apiRequestData(
+          '/api/v1/tradovate/synchronizations',
+          {
+            method: 'PATCH',
+            body: JSON.stringify({ accountId, includedFeeTypes }),
+          },
+        )
+        await loadAccounts()
+        return { success: true }
+      } catch (error) {
+        if (error instanceof ApiClientError && error.status === 503) {
+          return { success: false, error: directSyncUnderDevelopmentMessage('Tradovate') }
+        }
+        reportError(error, { surface: 'client', operation: 'update-tradovate-fees', entityId: accountId })
+        return { success: false, error: error instanceof Error ? error.message : 'Failed to update' }
       }
-      await loadAccounts()
-      return { success: true }
     },
     [disabled, loadAccounts]
   )
 
   const deleteAccount = useCallback(async (accountId: string) => {
     setAccounts(prev => prev.filter(acc => acc.accountId !== accountId))
-    if (disabled) return
-    await fetch("/api/v1/tradovate/synchronizations", {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ accountId })
-    })
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) return
+    try {
+      await apiRequestData('/api/v1/tradovate/synchronizations', {
+        method: 'DELETE',
+        body: JSON.stringify({ accountId }),
+      })
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 503) return
+      reportError(error, { surface: 'client', operation: 'delete-tradovate-account', entityId: accountId })
+    }
   }, [disabled])
 
   const performSyncForAccount = useCallback(async (accountId: string) => {
-    if (disabled) {
-      return { success: false, message: 'Tradovate sync is disabled in demo mode' }
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) {
+      return { success: false, message: directSyncUnderDevelopmentMessage('Tradovate') }
     }
 
     const account = accounts.find(acc => acc.accountId === accountId)
@@ -142,38 +155,26 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
         logger.debug({ accountId }, 'Starting Tradovate sync')
         if (!account.tokenExpiresAt || new Date(account.tokenExpiresAt).getTime() <= Date.now()) {
           const errorMsg = `Token for account ${accountId} is expired`
-          return errorMsg
-        }
-
-        const response = await fetch("/api/v1/tradovate/sync", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ accountId })
-        })
-
-        const payload = await response.json()
-
-        const responseMessage = payload?.error?.message ?? payload?.message
-        if (responseMessage === "DUPLICATE_TRADES") {
-          return "All trades from this account have already been imported"
-        }
-
-        if (!response.ok || !payload?.success) {
-          const errorMsg = responseMessage || `Sync error for account ${accountId}`
           throw new Error(errorMsg)
         }
 
-        const savedCount = payload.savedCount || 0
-        const ordersCount = payload.ordersCount || 0
+        const resultData = await apiRequestData<{
+          insertedTrades?: number
+          skippedTrades?: number
+          unmatchedClosingOrders?: number
+        }>('/api/v1/tradovate/sync', {
+          method: 'POST',
+          body: JSON.stringify({ accountId }),
+        })
 
-        logger.debug({ accountId, savedCount, ordersCount }, 'Tradovate sync complete')
-
-        let successMessage: string
-        if (savedCount > 0) {
-          successMessage = `Sync complete: ${savedCount} trades saved, ${ordersCount} orders processed for account ${accountId}.`
-        } else if (ordersCount > 0) {
-          successMessage = `Sync complete: No new trades found. ${ordersCount} orders processed for account ${accountId}.`
-        } else {
+        let successMessage = `Sync complete: ${resultData?.insertedTrades || 0} trades inserted.`
+        if (resultData?.skippedTrades && resultData.skippedTrades > 0) {
+          successMessage += ` ${resultData.skippedTrades} duplicate trades skipped.`
+        }
+        if (resultData?.unmatchedClosingOrders && resultData.unmatchedClosingOrders > 0) {
+          successMessage += ` ${resultData.unmatchedClosingOrders} unmatched closing orders found.`
+        }
+        if (resultData?.insertedTrades === 0 && (!resultData?.skippedTrades || resultData.skippedTrades === 0)) {
           successMessage = `Sync complete: No orders found for account ${accountId}.`
         }
 
@@ -204,7 +205,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
   }, [accounts, disabled, refreshTrades, loadAccounts])
 
   const performSyncForAllAccounts = useCallback(async () => {
-    if (disabled) return
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) return
     if (isAutoSyncing) {
       return
     }
@@ -242,7 +243,7 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
 
   const scheduleNextSync = useCallback(() => {
     clearNextSyncTimer()
-    if (!enableAutoSync) return
+    if (!enableAutoSync || disabled || DIRECT_SYNC_STATUS.isPaused) return
 
     const dueAt = accounts
       .filter((account) => account.lastSyncedAt)
@@ -254,10 +255,13 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     nextSyncTimerRef.current = setTimeout(() => {
       void checkAndPerformSyncsRef.current()
     }, Math.min(delay, 2_147_000_000))
-  }, [accounts, enableAutoSync, syncInterval, clearNextSyncTimer])
+  }, [accounts, disabled, enableAutoSync, syncInterval, clearNextSyncTimer])
 
   const checkAndPerformSyncs = useCallback(async () => {
-    if (disabled) return
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) {
+      clearNextSyncTimer()
+      return
+    }
     if (document.visibilityState === 'hidden') return
     if (!enableAutoSync || isAutoSyncing) return
 
@@ -281,13 +285,13 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
     }
 
     scheduleNextSync()
-  }, [disabled, enableAutoSync, isAutoSyncing, accounts, syncInterval, performSyncForAccount, scheduleNextSync]);
+  }, [disabled, enableAutoSync, isAutoSyncing, accounts, syncInterval, performSyncForAccount, scheduleNextSync, clearNextSyncTimer]);
 
   checkAndPerformSyncsRef.current = checkAndPerformSyncs
 
   useDatabaseRealtime({
     userId: user?.id,
-    enabled: enableAutoSync && !disabled,
+    enabled: enableAutoSync && !disabled && !DIRECT_SYNC_STATUS.isPaused,
     onSynchronizationChange: (change) => {
       if (change.event === 'UPDATE') void checkAndPerformSyncsRef.current()
     },
@@ -311,9 +315,13 @@ export function TradovateSyncContextProvider({ children, disabled = false }: { c
   }, [])
 
   useEffect(() => {
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) {
+      clearNextSyncTimer()
+      return
+    }
     scheduleNextSync()
     return clearNextSyncTimer
-  }, [scheduleNextSync, clearNextSyncTimer])
+  }, [disabled, scheduleNextSync, clearNextSyncTimer])
 
   useEffect(() => {
     loadAccounts()

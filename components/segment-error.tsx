@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Alert02Icon, RefreshIcon } from '@hugeicons/core-free-icons'
 
 import { Button } from '@/components/ui/button'
 import { reportError } from '@/lib/observability/report-error'
@@ -33,7 +34,7 @@ export function SegmentError({
       aria-live="assertive"
       className="mx-auto my-12 flex max-w-lg flex-col items-center gap-4 p-6 text-center"
     >
-      <AlertTriangle aria-hidden="true" className="size-9 text-destructive" />
+      <HugeiconsIcon icon={Alert02Icon} aria-hidden="true" className="size-9 text-destructive" strokeWidth={1.5} color="currentColor" />
       <div>
         <h1 className="text-xl font-semibold">This section could not load</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -51,7 +52,7 @@ export function SegmentError({
         </pre>
       ) : null}
       <Button onClick={reset} variant="secondary" className="gap-2">
-        <RefreshCw aria-hidden="true" className="size-4" />
+        <HugeiconsIcon icon={RefreshIcon} aria-hidden="true" className="size-4" strokeWidth={1.5} color="currentColor" />
         Try again
       </Button>
     </section>

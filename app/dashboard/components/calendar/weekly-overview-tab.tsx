@@ -2,19 +2,20 @@
 
 import { format } from 'date-fns'
 import { enUS } from 'date-fns/locale'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Activity,
-  AreaChart as AreaChartIcon,
-  Boxes,
-  Clock,
-  Coins,
-  Moon,
-  Percent,
-  ScrollText,
-  Sun,
-  TrendingDown,
-  TrendingUp,
-} from 'lucide-react'
+  Activity01Icon,
+  ChartAreaIcon,
+  Package01Icon,
+  Clock01Icon,
+  Coins01Icon,
+  Moon01Icon,
+  PercentIcon,
+  Note01Icon,
+  Sun01Icon,
+  ChartDecreaseIcon,
+  ChartIncreaseIcon,
+} from '@hugeicons/core-free-icons'
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { TabsContent } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
@@ -52,7 +53,7 @@ function MetricCard({
           isLoss && "bg-loss/10 text-loss",
           !isWin && !isLoss && "bg-muted/30 text-muted-foreground"
         )}>
-          <Icon className="h-3.5 w-3.5" />
+          <HugeiconsIcon icon={Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
         </span>
       </div>
       <div>
@@ -79,38 +80,38 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
                 {}
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
                   <MetricCard
-                    icon={Coins}
+                    icon={Coins01Icon}
                     label="Total P&L"
                     value={`$${weeklyData.pnl.toFixed(2)}`}
                     trend={weeklyData.pnl > 0 ? 'up' : weeklyData.pnl < 0 ? 'down' : 'neutral'}
                   />
                   <MetricCard
-                    icon={ScrollText}
+                    icon={Note01Icon}
                     label="Trades"
                     value={weeklyData.tradeNumber}
                     subValue={`${weeklyData.longNumber}L / ${weeklyData.shortNumber}S`}
                   />
                   <MetricCard
-                    icon={Percent}
+                    icon={PercentIcon}
                     label="Win Rate"
                     value={`${weeklyData.winRate.toFixed(1)}%`}
                     subValue={`${weeklyData.winningTrades}W / ${weeklyData.losingTrades}L`}
                     trend={weeklyData.winRate >= 50 ? 'up' : 'down'}
                   />
                   <MetricCard
-                    icon={TrendingUp}
+                    icon={ChartIncreaseIcon}
                     label="Avg Win"
                     value={`$${weeklyData.avgWin.toFixed(2)}`}
                     trend="up"
                   />
                   <MetricCard
-                    icon={TrendingDown}
+                    icon={ChartDecreaseIcon}
                     label="Avg Loss"
                     value={`$${weeklyData.avgLoss.toFixed(2)}`}
                     trend="down"
                   />
                   <MetricCard
-                    icon={Activity}
+                    icon={Activity01Icon}
                     label="Profit Factor"
                     value={stats?.profitFactor === Infinity ? '∞' : stats?.profitFactor?.toFixed(2) || '0.00'}
                     trend={stats && stats.profitFactor >= 1 ? 'up' : 'down'}
@@ -120,7 +121,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
                 {}
                 <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <AreaChartIcon className="h-4 w-4 text-primary" />
+                    <HugeiconsIcon icon={ChartAreaIcon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                     <h3 className="text-sm font-medium">Cumulative P&L</h3>
                   </div>
                   <div className="h-[200px]">
@@ -188,7 +189,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border/25 border border-border/30 bg-card/45 rounded-xl overflow-hidden">
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <Sun className="h-4 w-4 text-long" />
+                        <HugeiconsIcon icon={Sun01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Best Day</span>
                       </div>
                       <div>
@@ -203,7 +204,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
 
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <Moon className="h-4 w-4 text-short" />
+                        <HugeiconsIcon icon={Moon01Icon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Worst Day</span>
                       </div>
                       <div>
@@ -218,7 +219,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
 
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <Boxes className="h-4 w-4 text-primary" />
+                        <HugeiconsIcon icon={Package01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Top Instrument</span>
                       </div>
                       <div>
@@ -233,7 +234,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
 
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <Clock className="h-4 w-4 text-primary" />
+                        <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Best Session</span>
                       </div>
                       <div>

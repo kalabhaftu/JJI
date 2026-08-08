@@ -5,7 +5,8 @@ import { createChart, createSeriesMarkers, IChartApi, ISeriesApi, CandlestickSer
 import { ExtendedTrade } from '../tables/trade-table-review'
 import { Spinner } from '@/components/ui/spinner'
 import { Button } from '@/components/ui/button'
-import { Play, Pause, RotateCcw, FastForward } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { PlayIcon, PauseIcon, RotateLeft01Icon, FastForwardIcon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { apiStreamRequest } from '@/lib/api/stream-client'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -194,13 +195,13 @@ export function TradeReplayer({ trade, className }: TradeReplayerProps) {
       <div className="flex items-center justify-between p-2 border-b bg-muted/20">
          <div className="flex items-center gap-2">
             <Button variant="secondary" size="icon" aria-label={isPlaying ? 'Pause replay' : 'Play replay'} onClick={togglePlay} disabled={isLoading || !!error}>
-               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4 ml-0.5" />}
+               {isPlaying ? <HugeiconsIcon icon={PauseIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={PlayIcon} className="h-4 w-4 ml-0.5" strokeWidth={1.5} color="currentColor" />}
             </Button>
             <Button variant="tertiary" size="icon" aria-label="Restart replay" onClick={() => { setIsPlaying(false); setReplayIndex(0); seriesRef.current?.setData([]); }} disabled={isLoading || !!error}>
-               <RotateCcw className="h-4 w-4" />
+               <HugeiconsIcon icon={RotateLeft01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
             </Button>
             <Button variant="tertiary" size="icon" aria-label="Change replay speed" onClick={() => setSpeed(prev => prev === 1000 ? 500 : prev === 500 ? 100 : 1000)} disabled={isLoading || !!error}>
-               <FastForward className="h-4 w-4" />
+               <HugeiconsIcon icon={FastForwardIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                <span className="text-[10px] ml-1">{speed === 1000 ? '1x' : speed === 500 ? '2x' : '10x'}</span>
             </Button>
          </div>

@@ -2,29 +2,28 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { format } from 'date-fns'
+import { HugeiconsIcon, type HugeiconsIconProps } from '@hugeicons/react'
 import {
-  Save,
-  Trash2,
-  Loader2,
-  type LucideIcon,
-  ShieldCheck,
-  AlertTriangle,
-  Target,
-  Zap,
-  Waves,
-  Flame,
-  TrendingUp,
-  TrendingDown,
-  Ruler,
-  Gauge,
-  Smile,
-  Frown,
-  Circle,
-  Moon,
-  Sparkles,
-  Activity,
-  Leaf,
-} from 'lucide-react'
+  SaveIcon,
+  Delete02Icon,
+  Loading01Icon,
+  Shield01Icon,
+  Alert02Icon,
+  Target01Icon,
+  ZapIcon,
+  WaveIcon,
+  FlameIcon,
+  TrendingUpDownIcon,
+  RulerIcon,
+  GaugeIcon,
+  SmileIcon,
+  FrownIcon,
+  CircleIcon,
+  MoonIcon,
+  SparklesIcon,
+  Activity01Icon,
+  Leaf01Icon,
+} from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import dynamic from 'next/dynamic'
 
@@ -63,24 +62,24 @@ interface DailyNotePanelProps {
   }
 }
 
-const EMOTION_ICONS: Record<JournalEmotion, LucideIcon> = {
-  confident: ShieldCheck,
-  anxious: AlertTriangle,
-  focused: Target,
-  energetic: Zap,
-  calm: Waves,
-  frustrated: Flame,
-  optimistic: TrendingUp,
-  pessimistic: TrendingDown,
-  disciplined: Ruler,
-  impulsive: Gauge,
-  happy: Smile,
-  sad: Frown,
-  neutral: Circle,
-  tired: Moon,
-  excited: Sparkles,
-  stressed: Activity,
-  relaxed: Leaf,
+const EMOTION_ICONS: Record<JournalEmotion, HugeiconsIconProps['icon']> = {
+  confident: Shield01Icon,
+  anxious: Alert02Icon,
+  focused: Target01Icon,
+  energetic: ZapIcon,
+  calm: WaveIcon,
+  frustrated: FlameIcon,
+  optimistic: TrendingUpDownIcon,
+  pessimistic: TrendingUpDownIcon,
+  disciplined: RulerIcon,
+  impulsive: GaugeIcon,
+  happy: SmileIcon,
+  sad: FrownIcon,
+  neutral: CircleIcon,
+  tired: MoonIcon,
+  excited: SparklesIcon,
+  stressed: Activity01Icon,
+  relaxed: Leaf01Icon,
 }
 
 export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProps) {
@@ -236,7 +235,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
 
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading01Icon} className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : (
           <>
@@ -250,7 +249,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Logged emotion</span>
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-primary">
-                        <SelectedEmotionIcon className="h-3 w-3" aria-hidden="true" />
+                        <HugeiconsIcon icon={SelectedEmotionIcon} className="h-3 w-3" aria-hidden="true" />
                         {getJournalEmotionLabel(selectedEmotion)}
                       </span>
                     </div>
@@ -273,7 +272,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                           : "bg-muted/20 text-muted-foreground border-border/30 hover:bg-muted/40 hover:border-border/50"
                       )}
                     >
-                      <EmotionIcon className="h-3 w-3" aria-hidden="true" />
+                      <HugeiconsIcon icon={EmotionIcon} className="h-3 w-3" aria-hidden="true" />
                       {getJournalEmotionLabel(emotion)}
                     </button>
                   )
@@ -303,7 +302,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                     disabled={isDeleting || isSaving}
                     className="text-short hover:text-short hover:bg-short/10 text-xs font-bold gap-1.5"
                   >
-                    {isDeleting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                    {isDeleting ? <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" /> : <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" />}
                     Delete
                   </Button>
                 )}
@@ -313,7 +312,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                 disabled={isSaving || isDeleting}
                 className="gap-1.5 text-xs font-black uppercase tracking-wider"
               >
-                {isSaving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                {isSaving ? <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" /> : <HugeiconsIcon icon={SaveIcon} className="h-3.5 w-3.5" />}
                 {note ? 'Update Note' : 'Save Note'}
               </Button>
             </div>

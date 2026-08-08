@@ -13,23 +13,23 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  ArrowLeft,
-  RefreshCcw,
-  Plus,
-  Search,
-  Filter,
-  TrendingUp,
-  TrendingDown,
-  Calendar,
-  DollarSign,
-  BarChart3,
-  FileText,
-  Download,
-  Check,
-  Zap,
-  Clock
-} from "lucide-react"
+  ArrowLeft01Icon,
+  RefreshIcon,
+  Add01Icon,
+  Search01Icon,
+  FilterIcon,
+  TrendingUpDownIcon,
+  Calendar01Icon,
+  Dollar01Icon,
+  BarChartIcon,
+  File01Icon,
+  Download01Icon,
+  Tick01Icon,
+  ZapIcon,
+  Clock01Icon
+} from '@hugeicons/core-free-icons'
 import { cn } from "@/lib/utils"
 import { formatTradeData } from '@/lib/trading/trade-formatting'
 import { buildTradeEntryHref } from '@/app/dashboard/trades/new/trade-entry-draft'
@@ -164,11 +164,11 @@ export default function AccountTradesPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <ArrowLeft className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
               Go Back
             </Button>
           </div>
@@ -187,7 +187,7 @@ export default function AccountTradesPage() {
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
             Back
           </Button>
           <div>
@@ -204,14 +204,14 @@ export default function AccountTradesPage() {
             onClick={() => { void tradesQuery.refetch() }}
             disabled={isLoading}
           >
-            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />}
             Refresh
           </Button>
           <Button
             onClick={() => router.push(buildTradeEntryHref({ origin: 'prop-firm', propFirmAccountId: accountId, accountId: account.number, returnTo: `/dashboard/prop-firm/accounts/${accountId}/trades` }))}
             size="sm"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
             Add Trade
           </Button>
         </div>
@@ -241,7 +241,7 @@ export default function AccountTradesPage() {
                 >
                   Phase {phase.phaseNumber}
                   <Badge variant="secondary" className="ml-2">
-                    {phase.status === 'archived' ? <Check className="h-3 w-3" /> : phase.status === 'active' ? <Zap className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
+                    {phase.status === 'archived' ? <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" /> : phase.status === 'active' ? <HugeiconsIcon icon={ZapIcon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />}
                     {phase.tradeCount}
                   </Badge>
                 </Button>
@@ -280,7 +280,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Trades</CardTitle>
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalTrades}</div>
@@ -290,7 +290,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{winRate.toFixed(1)}%</div>
@@ -303,7 +303,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className={cn("text-2xl font-bold", totalPnl >= 0 ? "text-long" : "text-short")}>
@@ -315,7 +315,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Account Balance</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrencyAmount(account.currentBalance)}</div>
@@ -326,7 +326,7 @@ export default function AccountTradesPage() {
       {                       }
       <div className="flex items-center gap-4">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
           <Input
             placeholder="Search trades..."
             value={searchTerm}
@@ -335,11 +335,11 @@ export default function AccountTradesPage() {
           />
         </div>
         <Button variant="secondary" size="sm">
-          <Filter className="h-4 w-4 mr-2" />
+          <HugeiconsIcon icon={FilterIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
           Filter
         </Button>
         <Button variant="secondary" size="sm">
-          <Download className="h-4 w-4 mr-2" />
+          <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
           Export
         </Button>
       </div>
@@ -357,7 +357,7 @@ export default function AccountTradesPage() {
           {filteredTrades.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center h-64">
-                <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                <HugeiconsIcon icon={File01Icon} className="h-12 w-12 text-muted-foreground mb-4" strokeWidth={1.5} color="currentColor" />
                 <h3 className="text-lg font-semibold mb-2">
                   {searchTerm ? 'No trades found' : 'No trades yet'}
                 </h3>
@@ -366,7 +366,7 @@ export default function AccountTradesPage() {
                 </p>
                 {!searchTerm && (
                   <Button onClick={() => router.push(buildTradeEntryHref({ origin: 'prop-firm', propFirmAccountId: accountId, accountId: account.number, returnTo: `/dashboard/prop-firm/accounts/${accountId}/trades` }))}>
-                    <Plus className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
                     Add Trade
                   </Button>
                 )}
@@ -417,13 +417,13 @@ export default function AccountTradesPage() {
 
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
+                            <HugeiconsIcon icon={Calendar01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                             <span>Entry: {formatDateTime(trade.entryTime)}</span>
                           </div>
 
                           {trade.exitTime && (
                             <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
+                              <HugeiconsIcon icon={Calendar01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                               <span>Exit: {formatDateTime(trade.exitTime)}</span>
                             </div>
                           )}
@@ -461,7 +461,7 @@ export default function AccountTradesPage() {
             return openTrades.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center h-64">
-                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                  <HugeiconsIcon icon={File01Icon} className="h-12 w-12 text-muted-foreground mb-4" strokeWidth={1.5} color="currentColor" />
                   <h3 className="text-lg font-semibold mb-2">No open positions</h3>
                   <p className="text-muted-foreground">You don&apos;t have any open trades at the moment.</p>
                 </CardContent>
@@ -501,7 +501,7 @@ export default function AccountTradesPage() {
                           </div>
 
                           <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                            <Calendar className="h-3 w-3" />
+                            <HugeiconsIcon icon={Calendar01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                             <span>Entry: {formatDateTime(trade.entryTime)}</span>
                           </div>
                         </div>
@@ -538,7 +538,7 @@ export default function AccountTradesPage() {
             return closedTrades.length === 0 ? (
               <Card>
                 <CardContent className="flex flex-col items-center justify-center h-64">
-                  <FileText className="h-12 w-12 text-muted-foreground mb-4" />
+                  <HugeiconsIcon icon={File01Icon} className="h-12 w-12 text-muted-foreground mb-4" strokeWidth={1.5} color="currentColor" />
                   <h3 className="text-lg font-semibold mb-2">No closed trades</h3>
                   <p className="text-muted-foreground">You don&apos;t have any closed trades yet.</p>
                 </CardContent>
@@ -584,13 +584,13 @@ export default function AccountTradesPage() {
 
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <div className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
+                              <HugeiconsIcon icon={Calendar01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                               <span>Entry: {formatDateTime(trade.entryTime)}</span>
                             </div>
 
                             {trade.exitTime && (
                               <div className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
+                                <HugeiconsIcon icon={Calendar01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                                 <span>Exit: {formatDateTime(trade.exitTime)}</span>
                               </div>
                             )}

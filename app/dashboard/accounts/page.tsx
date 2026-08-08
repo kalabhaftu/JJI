@@ -24,35 +24,35 @@ import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
 import { Label } from "@/components/ui/label"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Plus,
-  Search,
-  RefreshCw as ArrowClockwise,
-  TrendingUp as TrendUp,
-  TrendingDown as TrendDown,
-  Building2 as Buildings,
-  User,
-  DollarSign,
-  Activity,
-  MoreHorizontal,
-  AlertCircle as AlertTriangle,
-  Eye,
-  Pencil as Edit,
-  Trash2 as Trash,
-  Archive,
-  RotateCcw as ArchiveRestore,
-  Target,
-  Trophy,
-  XCircle,
-  Wallet,
-  BarChart3,
-  Sparkles,
-  ChevronRight,
-  X,
-  Medal,
-  ArrowUp,
-  ArrowDown
-} from "lucide-react"
+  Add01Icon,
+  Search01Icon,
+  RefreshIcon,
+  TrendingUpDownIcon,
+  Building02Icon,
+  User02Icon,
+  Dollar01Icon,
+  ActivityIcon,
+  MoreHorizontalIcon,
+  Alert02Icon,
+  PencilEdit01Icon,
+  Delete02Icon,
+  ArchiveIcon,
+  Rotate01Icon,
+  Target01Icon,
+  Award01Icon,
+  CircleXIcon,
+  Wallet01Icon,
+  BarChartIcon,
+  SparklesIcon,
+  ChevronRightIcon,
+  Cancel01Icon,
+  Medal01Icon,
+  ArrowUp01Icon,
+  ArrowDown01Icon,
+  EyeIcon
+} from '@hugeicons/core-free-icons'
 import { CreateLiveAccountDialog } from "../components/accounts/create-live-account-dialog"
 import { isFundedPhaseForEvaluation } from '@/lib/prop-firm/reporting'
 import { CreatePropFirmDialog } from "../components/prop-firm/create-prop-firm-dialog"
@@ -388,7 +388,7 @@ export default function AccountsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                <Trash className="h-5 w-5 text-destructive" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-5 w-5 text-destructive" />
               </div>
               <span>Delete Account</span>
             </AlertDialogTitle>
@@ -472,7 +472,7 @@ export default function AccountsPage() {
                         disabled={isRefreshing}
                         className="h-9 w-9 text-muted-foreground hover:text-foreground"
                       >
-                        {isRefreshing ? <Spinner className="h-4 w-4" /> : <ArrowClockwise className="h-4 w-4" />}
+                        {isRefreshing ? <Spinner className="h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Refresh accounts</TooltipContent>
@@ -481,14 +481,14 @@ export default function AccountsPage() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button className="h-9 gap-2" data-tour="add-account-btn" onClick={() => emitTourEvent('account.create.started')}>
-                        <Plus className="h-4 w-4" />
+                        <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" />
                         <span className="hidden sm:inline">New Account</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onClick={() => { setCreateLiveDialogOpen(true); emitTourEvent('account.create.form.opened') }} className="gap-3 py-2.5" data-tour="create-live-item">
                         <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-                          <User  className="h-4 w-4 text-muted-foreground" />
+                          <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div>
                           <div className="font-medium">Live Account</div>
@@ -497,7 +497,7 @@ export default function AccountsPage() {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => { setCreatePropFirmDialogOpen(true); emitTourEvent('account.create.form.opened') }} className="gap-3 py-2.5" data-tour="create-prop-item">
                         <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-                          <Buildings className="h-4 w-4 text-muted-foreground"  />
+                          <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground"  />
                         </div>
                         <div>
                           <div className="font-medium">Prop Firm</div>
@@ -521,26 +521,26 @@ export default function AccountsPage() {
             <StatCard
               label="Total Equity"
               value={formatCompactCurrency(accountStats.totalEquity)}
-              icon={<Wallet  className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={Wallet01Icon} className="h-4 w-4" />}
               trend={accountStats.pnl >= 0 ? 'up' : 'down'}
               trendValue={`${accountStats.pnl >= 0 ? '+' : ''}${formatCompactCurrency(accountStats.pnl)}`}
             />
             <StatCard
               label="Accounts"
               value={accountStats.total}
-              icon={<Activity  className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={ActivityIcon} className="h-4 w-4" />}
               subtext={`${accountStats.live} live, ${accountStats.propFirm} prop`}
             />
             <StatCard
               label="Funded"
               value={accountStats.funded}
-              icon={<Trophy  className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={Award01Icon} className="h-4 w-4" />}
               highlight={accountStats.funded > 0}
             />
             <StatCard
               label="Total Trades"
               value={accountStats.totalTrades.toLocaleString()}
-              icon={<BarChart3  className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={BarChartIcon} className="h-4 w-4" />}
             />
           </motion.div>
 
@@ -553,7 +553,7 @@ export default function AccountsPage() {
           >
             {            }
             <div className="relative flex-1 max-w-md">
-              <Search  className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" strokeWidth={1.5} color="currentColor" />
               <Input
                 ref={searchInputRef}
                 placeholder="Search accounts..."
@@ -570,7 +570,7 @@ export default function AccountsPage() {
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                   onClick={() => setSearchQuery('')}
                 >
-                  <X  className="h-3 w-3" />
+                  <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" />
                 </Button>
               ) : (
                 <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
@@ -584,11 +584,11 @@ export default function AccountsPage() {
               <TabsList className="w-full sm:w-auto grid grid-cols-3">
                 <TabsTrigger value="all" className="text-xs px-3">All</TabsTrigger>
                 <TabsTrigger value="live" className="text-xs px-3 gap-1.5">
-                  <User  className="h-3 w-3" />
+                  <HugeiconsIcon icon={User02Icon} className="h-3 w-3" />
                   <span className="hidden sm:inline">Live</span>
                 </TabsTrigger>
                 <TabsTrigger value="prop-firm" className="text-xs px-3 gap-1.5">
-                  <Buildings  className="h-3 w-3" />
+                  <HugeiconsIcon icon={Building02Icon} className="h-3 w-3" />
                   <span className="hidden sm:inline">Prop</span>
                 </TabsTrigger>
               </TabsList>
@@ -613,7 +613,7 @@ export default function AccountsPage() {
                 showLeaderboard ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <Medal className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={Medal01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
               {showLeaderboard ? 'Hide' : 'Leaderboard'}
             </Button>
           </motion.div>
@@ -724,7 +724,7 @@ function StatCard({
               "flex items-center gap-1 text-[10px] font-bold",
               trend === 'up' ? "text-long" : "text-short"
             )}>
-              {trend === 'up' ? <TrendUp className="h-2.5 w-2.5"  /> : <TrendDown className="h-2.5 w-2.5"  />}
+              {trend === 'up' ? <HugeiconsIcon icon={TrendingUpDownIcon} className="h-2.5 w-2.5"  /> : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-2.5 w-2.5"  />}
               {trendValue}
             </div>
           ) : subtext ? (
@@ -732,7 +732,7 @@ function StatCard({
           ) : null}
         </div>
         {highlight && (
-          <Sparkles  className="absolute -right-1 -bottom-1 h-12 w-12 text-primary/5 pointer-events-none" />
+          <HugeiconsIcon icon={SparklesIcon} className="absolute -right-1 -bottom-1 h-12 w-12 text-primary/5 pointer-events-none" strokeWidth={1.5} color="currentColor" />
         )}
       </CardContent>
     </Card>
@@ -818,13 +818,13 @@ function AccountCard({
                   "bg-muted"
             )}>
               {isFailed ? (
-                <XCircle className="h-4 w-4 text-destructive" />
+                <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" />
               ) : isFunded ? (
-                <Trophy className="h-4 w-4 text-primary" />
+                <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" />
               ) : isPropFirm ? (
-                <Buildings className="h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground" />
               ) : (
-                <User className="h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -864,28 +864,28 @@ function AccountCard({
                 className="h-10 w-10 flex-shrink-0"
                 aria-label="Account options"
               >
-                <MoreHorizontal className="h-4 w-4" />
+                <HugeiconsIcon icon={MoreHorizontalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               </RevealAction>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView() }}>
-                <Eye className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" />
                 View Details
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit() }}>
-                <Edit className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onArchive() }}>
                 {isArchived ? (
                   <>
-                    <ArchiveRestore className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Rotate01Icon} className="h-4 w-4 mr-2" />
                     Restore
                   </>
                 ) : (
                   <>
-                    <Archive className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={ArchiveIcon} className="h-4 w-4 mr-2" />
                     Archive
                   </>
                 )}
@@ -894,7 +894,7 @@ function AccountCard({
                 onClick={(e) => { e.stopPropagation(); onDelete() }}
                 className="text-destructive focus:text-destructive"
               >
-                <Trash className="h-4 w-4 mr-2"  />
+                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2"  />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -913,7 +913,7 @@ function AccountCard({
                 "mt-1 flex items-center gap-1 text-xs font-medium",
                 pnl >= 0 ? "text-long" : "text-short"
               )}>
-                {pnl >= 0 ? <TrendUp className="h-3 w-3" /> : <TrendDown className="h-3 w-3" />}
+                {pnl >= 0 ? <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3" /> : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3" />}
                 <span>{pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}</span>
                 <span className="text-muted-foreground">({pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(1)}%)</span>
               </div>
@@ -944,7 +944,7 @@ function AccountCard({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <Target className="h-3 w-3" />
+                  <HugeiconsIcon icon={Target01Icon} className="h-3 w-3" />
                   Profit Target
                 </span>
                 <span className="font-medium">{account.profitTargetProgress.toFixed(1)}%</span>
@@ -968,7 +968,7 @@ function AccountCard({
           {                  }
           {isAtRisk && (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/18 bg-destructive/10 p-2 text-destructive">
-              <AlertTriangle className="h-3.5 w-3.5 flex-shrink-0" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} color="currentColor" />
               <span className="text-xs font-medium">Near drawdown limit</span>
             </div>
           )}
@@ -978,7 +978,7 @@ function AccountCard({
         <div className="mt-4 flex items-center justify-between border-t border-border/18 pt-3 text-xs text-muted-foreground">
           <span className="truncate">{isPropFirm ? (account.currentPhaseDetails?.evaluationType || 'Evaluation') : 'Live account'}</span>
           <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            View details <ChevronRight className="h-3 w-3" />
+            View details <HugeiconsIcon icon={ChevronRightIcon} className="h-3 w-3" />
           </span>
         </div>
       </CardContent>
@@ -998,7 +998,7 @@ function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Medal className="h-4 w-4 text-primary" />
+            <HugeiconsIcon icon={Medal01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Account Leaderboard</span>
           </div>
           <span className={cn(
@@ -1039,12 +1039,12 @@ function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
         {sorted.length >= 2 && (
           <div className="flex items-center gap-4 pt-2 border-t border-border/20">
             <div className="flex items-center gap-1.5 text-xs">
-              <ArrowUp className="h-3 w-3 text-long" />
+              <HugeiconsIcon icon={ArrowUp01Icon} className="h-3 w-3 text-long" />
               <span className="text-muted-foreground text-[10px]">Best:</span>
               <span className="font-semibold truncate max-w-[120px]">{best?.displayName || best?.name || best?.number}</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">
-              <ArrowDown className="h-3 w-3 text-short" />
+              <HugeiconsIcon icon={ArrowDown01Icon} className="h-3 w-3 text-short" />
               <span className="text-muted-foreground text-[10px]">Worst:</span>
               <span className="font-semibold truncate max-w-[120px]">{worst?.displayName || worst?.name || worst?.number}</span>
             </div>
@@ -1073,7 +1073,7 @@ function EmptyState({
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-16">
           <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
-            <Search className="h-6 w-6 text-muted-foreground" />
+            <HugeiconsIcon icon={Search01Icon} className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
           </div>
           <h3 className="font-semibold mb-1">No accounts found</h3>
           <p className="text-sm text-muted-foreground text-center max-w-sm">
@@ -1097,10 +1097,10 @@ function EmptyState({
       <CardContent className="flex flex-col items-center justify-center py-20">
         <div className="relative mb-6">
           <div className="h-20 w-20 rounded-2xl bg-muted flex items-center justify-center">
-            <Wallet className="h-10 w-10 text-muted-foreground" />
+            <HugeiconsIcon icon={Wallet01Icon} className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
           </div>
           <div className="absolute -right-2 -bottom-2 h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <Plus className="h-4 w-4 text-primary" />
+            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 text-primary" />
           </div>
         </div>
         <h3 className="text-xl font-semibold mb-2">Create your first account</h3>
@@ -1109,11 +1109,11 @@ function EmptyState({
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button onClick={onCreateLive} className="gap-2">
-            <User className="h-4 w-4" />
+            <HugeiconsIcon icon={User02Icon} className="h-4 w-4" />
             Live Account
           </Button>
           <Button onClick={onCreatePropFirm} variant="secondary" className="gap-2">
-            <Buildings className="h-4 w-4" />
+            <HugeiconsIcon icon={Building02Icon} className="h-4 w-4" />
             Prop Firm Account
           </Button>
         </div>

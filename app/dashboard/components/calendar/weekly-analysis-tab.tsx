@@ -2,7 +2,17 @@
 
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react'
 import { endOfWeek, startOfWeek } from 'date-fns'
-import { Activity, BarChart3, CheckCircle2, Compass, Target, TrendingDown, TrendingUp, XCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  Activity01Icon,
+  BarChartIcon,
+  CheckmarkCircle01Icon,
+  Compass01Icon,
+  Target01Icon,
+  ChartDecreaseIcon,
+  ChartIncreaseIcon,
+  CancelCircleIcon,
+} from '@hugeicons/core-free-icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -42,7 +52,7 @@ export function WeeklyAnalysisTab({
                   {}
                   <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <Compass className="h-4 w-4 text-primary" />
+                      <HugeiconsIcon icon={Compass01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                       <h3 className="text-sm font-medium">Weekly Expectation</h3>
                     </div>
                     <RadioGroup
@@ -132,14 +142,14 @@ export function WeeklyAnalysisTab({
                               ? "bg-long/20"
                               : "bg-long/10"
                           )}>
-                            <TrendingUp className="h-4 w-4 text-long" />
+                            <HugeiconsIcon icon={ChartIncreaseIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
                           </div>
                           <div className="flex-1">
                             <div className="font-medium">Bullish Expansion</div>
                             <div className="text-xs text-muted-foreground">Expecting upward price movement</div>
                           </div>
                           {reviewData?.expectation === 'BULLISH_EXPANSION' && (
-                            <CheckCircle2 className="h-5 w-5 text-long" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-long" strokeWidth={1.5} color="currentColor" />
                           )}
                         </label>
 
@@ -156,14 +166,14 @@ export function WeeklyAnalysisTab({
                               ? "bg-short/20"
                               : "bg-short/10"
                           )}>
-                            <TrendingDown className="h-4 w-4 text-short" />
+                            <HugeiconsIcon icon={ChartDecreaseIcon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />
                           </div>
                           <div className="flex-1">
                             <div className="font-medium">Bearish Expansion</div>
                             <div className="text-xs text-muted-foreground">Expecting downward price movement</div>
                           </div>
                           {reviewData?.expectation === 'BEARISH_EXPANSION' && (
-                            <CheckCircle2 className="h-5 w-5 text-short" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-short" strokeWidth={1.5} color="currentColor" />
                           )}
                         </label>
 
@@ -180,14 +190,14 @@ export function WeeklyAnalysisTab({
                               ? "bg-primary/20"
                               : "bg-primary/10"
                           )}>
-                            <Activity className="h-4 w-4 text-primary" />
+                            <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                           </div>
                           <div className="flex-1">
                             <div className="font-medium">Consolidation</div>
                             <div className="text-xs text-muted-foreground">Expecting range-bound movement</div>
                           </div>
                           {reviewData?.expectation === 'CONSOLIDATION' && (
-                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
                           )}
                         </label>
                       </RadioGroup>
@@ -196,7 +206,7 @@ export function WeeklyAnalysisTab({
                   {}
                   <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <Target className="h-4 w-4 text-primary" />
+                      <HugeiconsIcon icon={Target01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                       <h3 className="text-sm font-medium">Actual Outcome</h3>
                     </div>
                     <div className="space-y-4">
@@ -212,7 +222,7 @@ export function WeeklyAnalysisTab({
                             )}
                             onClick={() => setReviewData({ ...reviewData, isCorrect: true })}
                           >
-                            <CheckCircle2 className="mr-2 h-4 w-4" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                             Correct
                           </Button>
                           <Button
@@ -224,7 +234,7 @@ export function WeeklyAnalysisTab({
                             )}
                             onClick={() => setReviewData({ ...reviewData, isCorrect: false })}
                           >
-                            <XCircle className="mr-2 h-4 w-4" />
+                            <HugeiconsIcon icon={CancelCircleIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                             Incorrect
                           </Button>
                         </div>
@@ -244,19 +254,19 @@ export function WeeklyAnalysisTab({
                           <SelectContent className="rounded-xl border border-border/40">
                             <SelectItem value="BULLISH_EXPANSION">
                               <div className="flex items-center gap-2">
-                                <TrendingUp className="h-4 w-4 text-long" />
+                                <HugeiconsIcon icon={ChartIncreaseIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
                                 Bullish Expansion
                               </div>
                             </SelectItem>
                             <SelectItem value="BEARISH_EXPANSION">
                               <div className="flex items-center gap-2">
-                                <TrendingDown className="h-4 w-4 text-short" />
+                                <HugeiconsIcon icon={ChartDecreaseIcon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />
                                 Bearish Expansion
                               </div>
                             </SelectItem>
                             <SelectItem value="CONSOLIDATION">
                               <div className="flex items-center gap-2">
-                                <Activity className="h-4 w-4 text-primary" />
+                                <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                                 Consolidation
                               </div>
                             </SelectItem>
@@ -271,7 +281,7 @@ export function WeeklyAnalysisTab({
                 {stats && stats.pairStats.length > 0 && (
                   <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                     <div className="flex items-center gap-2 mb-4">
-                      <BarChart3 className="h-4 w-4 text-primary" />
+                      <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                       <h3 className="text-sm font-medium">Instrument Breakdown</h3>
                     </div>
                     <div className="space-y-2">

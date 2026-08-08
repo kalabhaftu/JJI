@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { CheckCircle2, Loader2, Clock } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CheckmarkCircle02Icon, Loading01Icon, Clock01Icon } from '@hugeicons/core-free-icons'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
@@ -106,7 +107,7 @@ export default function SubscribeSuccessPage() {
         {status === 'checking' && (
           <div className="space-y-4">
             <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 text-primary animate-spin" />
+              <HugeiconsIcon icon={Loading01Icon} className="h-8 w-8 text-primary animate-spin" strokeWidth={1.5} color="currentColor" />
             </div>
             <h1 className="text-xl font-semibold">Verifying Payment...</h1>
             <p className="text-sm text-muted-foreground">
@@ -118,7 +119,7 @@ export default function SubscribeSuccessPage() {
         {status === 'confirmed' && (
           <div className="space-y-4">
             <div className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 flex items-center justify-center">
-              <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+              <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-8 w-8 text-emerald-500" strokeWidth={1.5} color="currentColor" />
             </div>
             <h1 className="text-xl font-semibold">Payment Confirmed!</h1>
             <p className="text-sm text-muted-foreground">
@@ -136,7 +137,7 @@ export default function SubscribeSuccessPage() {
         {status === 'pending' && (
           <div className="space-y-4">
             <div className="mx-auto w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center">
-              <Clock className="h-8 w-8 text-amber-500" />
+              <HugeiconsIcon icon={Clock01Icon} className="h-8 w-8 text-amber-500" strokeWidth={1.5} color="currentColor" />
             </div>
             <h1 className="text-xl font-semibold">Payment Processing</h1>
             <p className="text-sm text-muted-foreground">

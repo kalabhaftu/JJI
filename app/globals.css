@@ -718,6 +718,8 @@
 
     --chart-profit: 123 27% 36%;
     --chart-loss: 25 70% 45%;
+    --chart-bullish: 123 27% 36%;
+    --chart-bearish: 25 70% 45%;
     --financial-profit: 123 27% 36%;
     --financial-loss: 25 70% 45%;
     --financial-long: 123 27% 36%;
@@ -737,6 +739,8 @@
 
     --chart-profit: 123 27% 62%;
     --chart-loss: 25 70% 50%;
+    --chart-bullish: 123 27% 62%;
+    --chart-bearish: 25 70% 50%;
     --financial-profit: 123 27% 62%;
     --financial-loss: 25 70% 50%;
     --financial-long: 123 27% 62%;
@@ -756,6 +760,8 @@
 
     --chart-profit: 255 85% 60%;
     --chart-loss: 329 80% 55%;
+    --chart-bullish: 255 85% 60%;
+    --chart-bearish: 329 80% 55%;
     --financial-profit: 255 85% 60%;
     --financial-loss: 329 80% 55%;
     --financial-long: 255 85% 60%;
@@ -775,6 +781,8 @@
 
     --chart-profit: 255 92% 76%;
     --chart-loss: 329 86% 70%;
+    --chart-bullish: 255 92% 76%;
+    --chart-bearish: 329 86% 70%;
     --financial-profit: 255 92% 76%;
     --financial-loss: 329 86% 70%;
     --financial-long: 255 92% 76%;
@@ -794,6 +802,8 @@
 
     --chart-profit: 215 25% 27%;
     --chart-loss: 215 16% 47%;
+    --chart-bullish: 215 25% 27%;
+    --chart-bearish: 215 16% 47%;
     --financial-profit: 215 25% 27%;
     --financial-loss: 215 16% 47%;
     --financial-long: 215 25% 27%;
@@ -813,6 +823,8 @@
 
     --chart-profit: 210 40% 98%;
     --chart-loss: 215 16% 47%;
+    --chart-bullish: 210 40% 98%;
+    --chart-bearish: 215 16% 47%;
     --financial-profit: 210 40% 98%;
     --financial-loss: 215 16% 47%;
     --financial-long: 210 40% 98%;

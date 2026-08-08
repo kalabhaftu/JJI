@@ -3,7 +3,8 @@
 import React, { useMemo } from 'react'
 import { format } from 'date-fns'
 import { enUS } from 'date-fns/locale'
-import { BarChart3, Clock3, TrendingDown, TrendingUp } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { BarChartIcon, Clock01Icon, ChartDecreaseIcon, ChartIncreaseIcon } from '@hugeicons/core-free-icons'
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { cn } from '@/lib/utils'
@@ -110,7 +111,7 @@ export function CalendarModal({
         <div className="border-b border-border/50 px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/8 text-primary">
-              <BarChart3 className="h-5 w-5" />
+              <HugeiconsIcon icon={BarChartIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
             </div>
             <div>
               <DialogTitle className="text-xl font-semibold tracking-tight">Trade Statistics</DialogTitle>
@@ -169,7 +170,7 @@ export function CalendarModal({
                     <p className="text-xs text-muted-foreground">Top contributors for the selected day</p>
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                    <Clock3 className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={Clock01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                     Day summary
                   </div>
                 </div>
@@ -187,9 +188,9 @@ export function CalendarModal({
                         </div>
                         <div className="flex items-center gap-2">
                           {isPositive ? (
-                            <TrendingUp className="h-4 w-4 text-long" />
+                            <HugeiconsIcon icon={ChartIncreaseIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
                           ) : (
-                            <TrendingDown className="h-4 w-4 text-short" />
+                            <HugeiconsIcon icon={ChartDecreaseIcon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />
                           )}
                           <span className={cn('text-sm font-semibold', isPositive ? 'text-long' : 'text-short')}>
                             {formatValue(item.pnl, { kind: 'money' })}

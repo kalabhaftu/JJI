@@ -1,6 +1,7 @@
 'use client'
 
-import { Moon, Sun } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Moon01Icon, Sun01Icon } from "@hugeicons/core-free-icons"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useEffect, useState } from "react"
@@ -90,9 +91,9 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
             onClick={() => toggleTheme()}
           >
             {theme === 'dark' ? (
-              <Sun className="h-3 w-3 mr-2" />
+              <HugeiconsIcon icon={Sun01Icon} className="h-3 w-3 mr-2" strokeWidth={1.5} color="currentColor" />
             ) : (
-              <Moon className="h-3 w-3 mr-2" />
+              <HugeiconsIcon icon={Moon01Icon} className="h-3 w-3 mr-2" strokeWidth={1.5} color="currentColor" />
             )}
             {theme === 'dark' ? 'Light' : 'Dark'}
           </Button>

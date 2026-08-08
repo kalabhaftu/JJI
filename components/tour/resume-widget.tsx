@@ -3,7 +3,8 @@
 import React from 'react'
 import { useTour } from '@/context/tour-context'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Play, X } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Cancel01Icon, PlayIcon } from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 
 export const ResumeWidget: React.FC = () => {
@@ -33,7 +34,7 @@ export const ResumeWidget: React.FC = () => {
             "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           )}
         >
-          <Play className="h-3 w-3 fill-current" />
+          <HugeiconsIcon icon={PlayIcon} className="h-3 w-3" color="currentColor" />
           Resume Tour
         </button>
         <button
@@ -45,7 +46,7 @@ export const ResumeWidget: React.FC = () => {
           )}
           aria-label="Close paused tour"
         >
-          <X className="h-4 w-4" />
+          <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" color="currentColor" />
         </button>
       </motion.div>
     </AnimatePresence>

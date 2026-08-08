@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from 'react'
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { BadgeCheck, Clock3, Tags } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { CheckmarkBadge01Icon, Clock01Icon, Tag01Icon } from '@hugeicons/core-free-icons'
 import { useWidgetData } from '@/hooks/use-widget-data'
 import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { useTags } from '@/context/tags-provider'
@@ -122,8 +123,8 @@ export function AccountCurveWidget({ initialMode = 'cumulative' }: { initialMode
   const summary = (data as AccountCurvePayload | null | undefined)?.summary || {}
 
   const isSharp = chartStyle === 'sharp'
-  const strokeColor = 'hsl(var(--chart-bullish))'
-  const gradientColor = 'hsl(var(--chart-bullish))'
+  const strokeColor = 'hsl(var(--primary))'
+  const gradientColor = 'hsl(var(--primary))'
   const curveType = isSharp ? 'linear' : 'monotone'
 
   return (
@@ -171,7 +172,7 @@ export function TagPerformanceWidget() {
   const { formatValue } = useDashboardDisplay()
   const rows = (data as TagPerformanceRow[]).slice(0, 8)
   return (
-    <WidgetCard title="Tag Performance" headerRight={<Tags className="h-4 w-4 text-muted-foreground" />}>
+    <WidgetCard title="Tag Performance" headerRight={<HugeiconsIcon icon={Tag01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}>
       {isLoading ? <EmptyWidget label="Loading tags..." /> : rows.length === 0 ? <EmptyWidget label="No tag data yet" /> : (
         <div className="space-y-2">
           {rows.map((item) => {
@@ -200,7 +201,7 @@ export function TimeOfDayPerformanceWidget() {
   const active = rows.filter((item) => Number(item.trades || 0) > 0)
   const maxAbs = Math.max(...active.map((item) => Math.abs(Number(item.pnl || 0))), 1)
   return (
-    <WidgetCard title="Time of Day" headerRight={<Clock3 className="h-4 w-4 text-muted-foreground" />}>
+    <WidgetCard title="Time of Day" headerRight={<HugeiconsIcon icon={Clock01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}>
       {isLoading ? <EmptyWidget label="Loading time of day..." /> : active.length === 0 ? <EmptyWidget label="No hourly data yet" /> : (
         <div>
           <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">New York time · 24h</div>
@@ -226,7 +227,7 @@ export function DisciplineAnalyticsWidget() {
   const { data, isLoading } = useWidgetData('disciplineAnalytics')
   const payload = data as DisciplinePayload | null | undefined
   return (
-    <WidgetCard title="Discipline" headerRight={<BadgeCheck className="h-4 w-4 text-muted-foreground" />}>
+    <WidgetCard title="Discipline" headerRight={<HugeiconsIcon icon={CheckmarkBadge01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}>
       {isLoading ? <EmptyWidget label="Loading discipline..." /> : !payload ? <EmptyWidget label="No discipline data yet" /> : (
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-3">

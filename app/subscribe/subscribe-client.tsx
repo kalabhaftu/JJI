@@ -3,7 +3,19 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CreditCard, Shield, Zap, BarChart3, ArrowRight, Tag, CheckCircle2, X, Loader2, LogOut } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import {
+  ArrowRight01Icon,
+  Cancel01Icon,
+  ChartColumnIcon,
+  CheckmarkCircle02Icon,
+  CreditCardIcon,
+  FlashIcon,
+  Loading01Icon,
+  Logout01Icon,
+  Shield01Icon,
+  Tag01Icon,
+} from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 
 import { Logo } from '@/components/logo'
@@ -21,11 +33,11 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
   const [isWhopLoading, setIsWhopLoading] = useState(false)
   const [promoValidation, setPromoValidation] = useState<{ valid: boolean; description?: string } | null>(null)
   const features = [
-    { icon: BarChart3, text: 'Advanced analytics & performance tracking' },
-    { icon: Zap, text: 'Real-time trade journaling with AI insights' },
-    { icon: Shield, text: 'Prop firm phase management & risk alerts' },
+    { icon: ChartColumnIcon, text: 'Advanced analytics & performance tracking' },
+    { icon: FlashIcon, text: 'Real-time trade journaling with AI insights' },
+    { icon: Shield01Icon, text: 'Prop firm phase management & risk alerts' },
     {
-      icon: CreditCard,
+      icon: CreditCardIcon,
       text: whopEnabled ? 'Card and cryptocurrency payment options' : 'Secure cryptocurrency payment',
     },
   ]
@@ -193,7 +205,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
           <div className="space-y-3 mb-6">
             {features.map((feature) => (
               <div key={feature.text} className="flex items-center gap-3 text-sm">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-emerald-500 shrink-0" strokeWidth={1.5} color="currentColor" />
                 <span className="text-muted-foreground">{feature.text}</span>
               </div>
             ))}
@@ -203,7 +215,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
           <div className="mb-4">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <Tag className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <HugeiconsIcon icon={Tag01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                 <Input
                   placeholder="Promo code"
                   value={promoCode}
@@ -217,13 +229,13 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             </div>
             {promoValidation?.valid && (
               <p className="text-xs text-emerald-500 mt-1.5 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" />
+                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                 {promoValidation.description}
               </p>
             )}
             {promoValidation && !promoValidation.valid && (
               <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
-                <X className="h-3 w-3" />
+                <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                 {promoValidation.description}
               </p>
             )}
@@ -239,12 +251,12 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
                 >
                   {isWhopLoading ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <HugeiconsIcon icon={Loading01Icon} className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
                       Creating checkout...
                     </>
                   ) : (
                     <>
-                      <CreditCard className="mr-2 h-4 w-4" />
+                      <HugeiconsIcon icon={CreditCardIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                       Pay with Card
                     </>
                   )}
@@ -265,13 +277,13 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <HugeiconsIcon icon={Loading01Icon} className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
                   Creating invoice...
                 </>
               ) : (
                 <>
                   Pay with Crypto
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="ml-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 </>
               )}
             </Button>
@@ -302,7 +314,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
               window.location.href = '/'
             }}
           >
-            <LogOut className="h-3.5 w-3.5" />
+            <HugeiconsIcon icon={Logout01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             Sign Out
           </Button>
         </div>

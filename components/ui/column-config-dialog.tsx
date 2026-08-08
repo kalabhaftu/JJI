@@ -20,7 +20,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { useTableConfigStore } from '@/store/table-config-store'
-import { RotateCcw as ArrowCounterClockwise, Settings as SettingsIcon } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Rotate01Icon, Settings01Icon } from '@hugeicons/core-free-icons'
 import React from 'react'
 import { toast } from "sonner"
 
@@ -53,7 +54,7 @@ export function ColumnConfigDialog({ tableId, trigger }: ColumnConfigDialogProps
 
   const defaultTrigger = (
     <Button variant="secondary" className="w-[180px] h-10 font-normal">
-      <SettingsIcon className="h-4 w-4 mr-2" />
+      <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
       Configuration
     </Button>
   )
@@ -95,7 +96,7 @@ export function ColumnConfigDialog({ tableId, trigger }: ColumnConfigDialogProps
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="secondary" className="w-[180px] h-10">
-                <ArrowCounterClockwise className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={Rotate01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                                                                    {"Reset to Default" as any}
               </Button>
             </AlertDialogTrigger>

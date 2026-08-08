@@ -12,7 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { CurrencyField } from '@/components/ui/domain-fields'
 import { parseNumericInput } from '@/lib/form-fields'
 import { toast } from 'sonner'
-import { Plus, Minus, DollarSign } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Add01Icon, Remove01Icon, Dollar01Icon } from '@hugeicons/core-free-icons'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -124,9 +125,9 @@ export function TransactionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {watchedType === 'DEPOSIT' ? (
-              <Plus className="w-5 h-5 text-long" />
+              <HugeiconsIcon icon={Add01Icon} className="w-5 h-5 text-long" strokeWidth={1.5} color="currentColor" />
             ) : (
-              <Minus className="w-5 h-5 text-short" />
+              <HugeiconsIcon icon={Remove01Icon} className="w-5 h-5 text-short" strokeWidth={1.5} color="currentColor" />
             )}
             {watchedType === 'DEPOSIT' ? 'Deposit Funds' : 'Withdraw Funds'}
           </DialogTitle>
@@ -145,13 +146,13 @@ export function TransactionDialog({
               <SelectContent>
                 <SelectItem value="DEPOSIT">
                   <div className="flex items-center gap-2">
-                    <Plus className="w-4 h-4 text-long" />
+                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 text-long" strokeWidth={1.5} color="currentColor" />
                     Deposit
                   </div>
                 </SelectItem>
                 <SelectItem value="WITHDRAWAL">
                   <div className="flex items-center gap-2">
-                    <Minus className="w-4 h-4 text-short" />
+                    <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4 text-short" strokeWidth={1.5} color="currentColor" />
                     Withdrawal
                   </div>
                 </SelectItem>
@@ -162,7 +163,7 @@ export function TransactionDialog({
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
             <div className="relative">
-              <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <HugeiconsIcon icon={Dollar01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" strokeWidth={1.5} color="currentColor" />
               <Controller
                 name="amount"
                 control={form.control}

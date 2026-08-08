@@ -14,7 +14,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { CurrencyField } from '@/components/ui/domain-fields'
 import { focusFirstInvalidField, parseNumericInput } from '@/lib/form-fields'
-import { ArrowLeft, DollarSign, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ArrowLeft01Icon, Dollar01Icon, AlertCircleIcon, CircleCheckIcon, Loading01Icon } from '@hugeicons/core-free-icons'
 import { cn } from "@/lib/utils"
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
@@ -178,7 +179,7 @@ export default function RequestPayoutPage() {
           size="sm"
           onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts`)}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" />
+          <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
           Back
         </Button>
         <div>
@@ -194,7 +195,7 @@ export default function RequestPayoutPage() {
         <Card className="border-warning">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-warning" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5 text-warning" strokeWidth={1.5} color="currentColor" />
               <CardTitle>Payout Not Available</CardTitle>
             </div>
           </CardHeader>
@@ -219,7 +220,7 @@ export default function RequestPayoutPage() {
         <Card className="border-long">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="h-5 w-5 text-long" />
+              <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-long" strokeWidth={1.5} color="currentColor" />
               <CardTitle>Eligible for Payout</CardTitle>
             </div>
           </CardHeader>
@@ -261,7 +262,7 @@ export default function RequestPayoutPage() {
             <div className="space-y-2">
               <Label htmlFor="amount">Amount ($)</Label>
               <div className="relative">
-                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Dollar01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                 <CurrencyField
                   id="amount"
                   aria-label="Payout amount"

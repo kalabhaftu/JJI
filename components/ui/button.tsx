@@ -3,7 +3,8 @@ import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
-import { LoaderCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Loading01Icon } from '@hugeicons/core-free-icons'
 
 const buttonVariants = cva(
   "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-[background-color,border-color,color,box-shadow,transform] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11",
@@ -79,7 +80,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-describedby={disabled && disabledReason ? reasonId : undefined}
         {...props}
       >
-        {loading && <LoaderCircle className="animate-spin" aria-hidden />}
+        {loading && <HugeiconsIcon icon={Loading01Icon} className="animate-spin" strokeWidth={1.5} color="currentColor" />}
         {loading ? <><span>{loadingText}</span><span className="sr-only">: {children}</span></> : children}
       </button>
       {disabled && disabledReason && <span id={reasonId} className="sr-only">{disabledReason}</span>}

@@ -1,5 +1,6 @@
 import { Column } from "@tanstack/react-table"
-import { ChevronDown, ChevronUp, ChevronsUpDown, EyeOff, Filter, X } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ChevronDownIcon, ChevronUpIcon, Sorting01Icon, EyeOffIcon, FilterIcon, Cancel01Icon } from "@hugeicons/core-free-icons"
 import { useState, useEffect } from "react"
 
 import { cn } from "@/lib/utils"
@@ -101,18 +102,18 @@ export function DataTableColumnHeader<TData, TValue>({
           >
             <span>{title}</span>
             {column.getIsSorted() === "desc" ? (
-              <ChevronDown className="ml-1 h-3.5 w-3.5" />
+              <HugeiconsIcon icon={ChevronDownIcon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             ) : column.getIsSorted() === "asc" ? (
-              <ChevronUp className="ml-1 h-3.5 w-3.5" />
+              <HugeiconsIcon icon={ChevronUpIcon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             ) : (
-              <ChevronsUpDown className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" />
+              <HugeiconsIcon icon={Sorting01Icon} className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
             )}
-              <Filter className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" />
+              <HugeiconsIcon icon={FilterIcon} className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-            <ChevronUp className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
-            <ChevronDown className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+            <HugeiconsIcon icon={ChevronUpIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ChevronDownIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
           {showToggle && (
             <>
               <DropdownMenuSeparator />
@@ -133,7 +134,7 @@ export function DataTableColumnHeader<TData, TValue>({
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <Filter className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+                  <HugeiconsIcon icon={FilterIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
                   Filter Options
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-80">
@@ -192,7 +193,7 @@ export function DataTableColumnHeader<TData, TValue>({
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleHideColumn}>
-            <EyeOff className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" />
+            <HugeiconsIcon icon={EyeOffIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
             Hide Column
           </DropdownMenuItem>
         </DropdownMenuContent>

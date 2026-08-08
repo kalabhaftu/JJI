@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { useState, useMemo, useEffect, useCallback } from "react"
-import { Search, ChevronDown, ChevronRight } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Search01Icon, ChevronDownIcon, ChevronRightIcon } from "@hugeicons/core-free-icons"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -349,7 +350,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         </div>
 
         <div className="relative">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
           <Input
             placeholder="Search accounts..."
             value={searchQuery}
@@ -430,9 +431,9 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
                         >
                           <div className="flex items-center gap-2">
                             {expandedAccounts.has(accountName) ? (
-                              <ChevronDown className="h-4 w-4" />
+                              <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                             ) : (
-                              <ChevronRight className="h-4 w-4" />
+                              <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                             )}
                             <div>
                               <div className="font-medium text-sm">{accountName}</div>

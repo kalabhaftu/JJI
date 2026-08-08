@@ -15,8 +15,9 @@ const AnyRadarChart = RadarChart as any
 import { WidgetCard, ChartTooltip as SharedChartTooltip } from '../widget-card'
 import { useWidgetData } from "@/hooks/use-widget-data"
 import { cn } from "@/lib/utils"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { ChartIncreaseIcon, ChartDecreaseIcon, Award01Icon } from "@hugeicons/core-free-icons"
 import { WidgetSize } from '@/app/dashboard/types/dashboard'
-import { TrendingUp, TrendingDown, Trophy, Info } from "lucide-react"
 
 import {
   Tooltip as UiTooltip,
@@ -66,9 +67,9 @@ function ScoreBadge({ score, hasData }: { score: number; hasData: boolean }) {
       getScoreColor(score)
     )}>
       {score >= 60 ? (
-        <TrendingUp className="h-3.5 w-3.5" />
+        <HugeiconsIcon icon={ChartIncreaseIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
       ) : (
-        <TrendingDown className="h-3.5 w-3.5" />
+        <HugeiconsIcon icon={ChartDecreaseIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
       )}
       <span className="text-sm font-bold">{score}</span>
     </div>
@@ -174,7 +175,7 @@ export default function PerformanceScore({ size = 'small-long' }: PerformanceSco
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-2">
-              <Trophy className="h-12 w-12 text-muted-foreground/30 mx-auto" />
+              <HugeiconsIcon icon={Award01Icon} className="h-12 w-12 text-muted-foreground/30 mx-auto" strokeWidth={1.5} color="currentColor" />
               <p className="text-sm font-medium text-foreground">
                 {scoreData?.reason === 'not_enough_data' ? "Not Enough Data" : "No trading data available"}
               </p>

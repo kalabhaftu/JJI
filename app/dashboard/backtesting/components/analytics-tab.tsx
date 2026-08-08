@@ -4,7 +4,8 @@ import React, { useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { BacktestTrade } from '@/types/backtesting-types'
-import { BarChart3, TrendingUp as TrendUp, CalendarDays as Calendar, Target } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { BarChartIcon, ArrowUp01Icon, CalendarDaysIcon, Target01Icon } from '@hugeicons/core-free-icons'
 
 interface AnalyticsTabProps {
   backtests: BacktestTrade[]
@@ -310,7 +311,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5" />
+            <HugeiconsIcon icon={BarChartIcon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Performance by Trading Model
           </CardTitle>
         </CardHeader>
@@ -355,7 +356,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <HugeiconsIcon icon={CalendarDaysIcon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Performance by Trading Session
           </CardTitle>
         </CardHeader>
@@ -401,7 +402,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <TrendUp className="w-5 h-5" />
+            <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Performance by Direction
           </CardTitle>
         </CardHeader>
@@ -445,7 +446,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Target className="w-5 h-5" />
+            <HugeiconsIcon icon={Target01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Performance by Pair/Instrument
           </CardTitle>
         </CardHeader>
@@ -504,7 +505,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
+            <HugeiconsIcon icon={CalendarDaysIcon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
             Performance by Day of Week
           </CardTitle>
         </CardHeader>

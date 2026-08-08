@@ -10,7 +10,8 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, X } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Search01Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
 import { WIDGET_REGISTRY } from '../config/widget-registry-lazy'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -131,7 +132,7 @@ export default function WidgetLibraryDialog({
 
         {}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
           <Input
             placeholder="Search widgets..."
             value={searchQuery}
@@ -145,7 +146,7 @@ export default function WidgetLibraryDialog({
               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
               onClick={() => setSearchQuery('')}
             >
-              <X className="h-3 w-3" />
+              <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
             </Button>
           )}
         </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import { Moon, Sun } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Moon01Icon, Sun01Icon } from '@hugeicons/core-free-icons'
 import { useTheme } from '@/context/theme-provider'
 import { Button } from '@/components/ui/button'
 import { emitTourEvent } from '@/lib/tours/events'
@@ -22,9 +23,9 @@ export function ThemeSwitcher() {
       data-tour="theme-switcher-btn"
     >
       {isDark ? (
-        <Moon aria-hidden />
+        <HugeiconsIcon icon={Moon01Icon} aria-hidden strokeWidth={1.5} color="currentColor" />
       ) : (
-        <Sun aria-hidden />
+        <HugeiconsIcon icon={Sun01Icon} aria-hidden strokeWidth={1.5} color="currentColor" />
       )}
     </Button>
   )

@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
-  const limited = await applyApiRoutePolicy(request, 'auth')
+  const limited = await applyApiRoutePolicy(request)
   if (limited) return limited
   try {
     const identity = await getResolvedUserIdentitySafe()

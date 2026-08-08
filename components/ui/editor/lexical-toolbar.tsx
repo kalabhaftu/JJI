@@ -8,7 +8,8 @@ import { $setBlocksType } from '@lexical/selection'
 import { INSERT_ORDERED_LIST_COMMAND, INSERT_UNORDERED_LIST_COMMAND, INSERT_CHECK_LIST_COMMAND, REMOVE_LIST_COMMAND } from '@lexical/list'
 import { mergeRegister } from '@lexical/utils'
 
-import { Bold, Italic, Underline, Strikethrough, AlignLeft, AlignCenter, AlignRight, AlignJustify, Undo, Redo, List, ListOrdered, ListTodo, Quote, Heading1, Heading2, Heading3 } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { UndoIcon, RedoIcon, Heading01Icon, Heading02Icon, Heading03Icon, TextBoldIcon, TextItalicIcon, TextUnderlineIcon, TextStrikethroughIcon, LeftToRightListBulletIcon, LeftToRightListNumberIcon, CheckListIcon, QuotesIcon, TextAlignLeftIcon, TextAlignCenterIcon, TextAlignRightIcon, TextAlignJustifyCenterIcon } from '@hugeicons/core-free-icons'
 import { Toggle } from '@/components/ui/toggle'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
@@ -111,67 +112,67 @@ export function LexicalToolbar() {
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 border-b bg-muted/20">
       <Button aria-label="Undo" title="Undo" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(UNDO_COMMAND, undefined)} type="button">
-        <Undo className="h-4 w-4" />
+        <HugeiconsIcon icon={UndoIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Button>
       <Button aria-label="Redo" title="Redo" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(REDO_COMMAND, undefined)} type="button">
-        <Redo className="h-4 w-4" />
+        <HugeiconsIcon icon={RedoIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Button>
       
       <Separator orientation="vertical" className="h-6 mx-1" />
       
       <Toggle aria-label="Heading 1" title="Heading 1" size="sm" pressed={blockType === 'h1'} onPressedChange={() => formatHeading('h1')}>
-        <Heading1 className="h-4 w-4" />
+        <HugeiconsIcon icon={Heading01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Heading 2" title="Heading 2" size="sm" pressed={blockType === 'h2'} onPressedChange={() => formatHeading('h2')}>
-        <Heading2 className="h-4 w-4" />
+        <HugeiconsIcon icon={Heading02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Heading 3" title="Heading 3" size="sm" pressed={blockType === 'h3'} onPressedChange={() => formatHeading('h3')}>
-        <Heading3 className="h-4 w-4" />
+        <HugeiconsIcon icon={Heading03Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
       <Toggle aria-label="Bold" title="Bold" size="sm" pressed={isBold} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'bold')}>
-        <Bold className="h-4 w-4" />
+        <HugeiconsIcon icon={TextBoldIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Italic" title="Italic" size="sm" pressed={isItalic} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'italic')}>
-        <Italic className="h-4 w-4" />
+        <HugeiconsIcon icon={TextItalicIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Underline" title="Underline" size="sm" pressed={isUnderline} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'underline')}>
-        <Underline className="h-4 w-4" />
+        <HugeiconsIcon icon={TextUnderlineIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Strikethrough" title="Strikethrough" size="sm" pressed={isStrikethrough} onPressedChange={() => editor.dispatchCommand(FORMAT_TEXT_COMMAND, 'strikethrough')}>
-        <Strikethrough className="h-4 w-4" />
+        <HugeiconsIcon icon={TextStrikethroughIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
       <Toggle aria-label="Bulleted list" title="Bulleted list" size="sm" pressed={blockType === 'ul'} onPressedChange={() => formatList('ul')}>
-        <List className="h-4 w-4" />
+        <HugeiconsIcon icon={LeftToRightListBulletIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Numbered list" title="Numbered list" size="sm" pressed={blockType === 'ol'} onPressedChange={() => formatList('ol')}>
-        <ListOrdered className="h-4 w-4" />
+        <HugeiconsIcon icon={LeftToRightListNumberIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Checklist" title="Checklist" size="sm" pressed={blockType === 'check'} onPressedChange={() => formatList('check')}>
-        <ListTodo className="h-4 w-4" />
+        <HugeiconsIcon icon={CheckListIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
       <Toggle aria-label="Quote" title="Quote" size="sm" pressed={blockType === 'quote'} onPressedChange={() => formatQuote()}>
-        <Quote className="h-4 w-4" />
+        <HugeiconsIcon icon={QuotesIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Toggle>
 
       <Separator orientation="vertical" className="h-6 mx-1" />
 
       <Button aria-label="Align left" title="Align left" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'left')} type="button">
-        <AlignLeft className="h-4 w-4" />
+        <HugeiconsIcon icon={TextAlignLeftIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Button>
       <Button aria-label="Align center" title="Align center" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'center')} type="button">
-        <AlignCenter className="h-4 w-4" />
+        <HugeiconsIcon icon={TextAlignCenterIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Button>
       <Button aria-label="Align right" title="Align right" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'right')} type="button">
-        <AlignRight className="h-4 w-4" />
+        <HugeiconsIcon icon={TextAlignRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Button>
       <Button aria-label="Justify" title="Justify" variant="tertiary" size="icon" className="h-8 w-8" onClick={() => editor.dispatchCommand(FORMAT_ELEMENT_COMMAND, 'justify')} type="button">
-        <AlignJustify className="h-4 w-4" />
+        <HugeiconsIcon icon={TextAlignJustifyCenterIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
       </Button>
     </div>
   )

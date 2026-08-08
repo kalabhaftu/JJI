@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { WifiOff } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { WifiOff01Icon } from '@hugeicons/core-free-icons'
 
 export function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false)
@@ -32,7 +33,7 @@ export function OfflineIndicator() {
       aria-live="polite"
       className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-sm font-medium text-warning shadow-lg animate-in fade-in slide-in-from-bottom-4"
     >
-      <WifiOff className="w-4 h-4" />
+      <HugeiconsIcon icon={WifiOff01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
       <span>Offline, showing the last loaded view</span>
       <button
         type="button"

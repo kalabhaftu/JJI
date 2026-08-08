@@ -8,7 +8,8 @@ import { apiRequestData } from '@/lib/api/client'
 import { apiStreamRequest } from '@/lib/api/stream-client'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Download, Database } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Download01Icon, DatabaseIcon } from '@hugeicons/core-free-icons'
 import { Checkbox } from "@/components/ui/checkbox"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CustomDateRangePicker, DateRange } from "@/components/ui/custom-date-range-picker"
@@ -183,7 +184,7 @@ export function AdvancedExportDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
-          <Database className="mr-2 h-4 w-4" /> System Backup
+          <HugeiconsIcon icon={DatabaseIcon} className="mr-2 h-4 w-4" /> System Backup
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -339,7 +340,7 @@ export function AdvancedExportDialog() {
                 </>
               ) : (
                 <>
-                  <Download className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={Download01Icon} className="mr-2 h-4 w-4" />
                   Download Backup
                 </>
               )}

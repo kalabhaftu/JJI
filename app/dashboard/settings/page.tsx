@@ -1,14 +1,15 @@
 'use client'
 
 import { motion } from 'framer-motion'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  BookMarked,
-  Link2 as LinkIcon,
-  Settings as SettingsIcon,
-  Shield,
-  User,
-  Webhook,
-} from 'lucide-react'
+  BookMarkedIcon,
+  Link02Icon,
+  Setting06Icon,
+  Shield01Icon,
+  User02Icon,
+  WebhookIcon,
+} from '@hugeicons/core-free-icons'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
@@ -573,12 +574,12 @@ export default function SettingsPage() {
   }, [searchParams])
 
   const categories = [
-    { id: 'profile' as const, label: 'Profile & Plan', icon: User },
-    { id: 'preferences' as const, label: 'Preferences', icon: SettingsIcon },
-    { id: 'integrations' as const, label: 'Integrations', icon: Webhook },
-    { id: 'connections' as const, label: 'Connections', icon: LinkIcon },
-    { id: 'security' as const, label: 'Security & Data', icon: Shield },
-    { id: 'help' as const, label: 'Help', icon: BookMarked },
+    { id: 'profile' as const, label: 'Profile & Plan', icon: User02Icon },
+    { id: 'preferences' as const, label: 'Preferences', icon: Setting06Icon },
+    { id: 'integrations' as const, label: 'Integrations', icon: WebhookIcon },
+    { id: 'connections' as const, label: 'Connections', icon: Link02Icon },
+    { id: 'security' as const, label: 'Security & Data', icon: Shield01Icon },
+    { id: 'help' as const, label: 'Help', icon: BookMarkedIcon },
   ]
 
   const { startTour } = useTour()

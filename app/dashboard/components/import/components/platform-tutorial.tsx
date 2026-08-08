@@ -1,6 +1,7 @@
 'use client'
 
-import { AlertCircle, ExternalLink } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { AlertCircleIcon, ExternalLinkIcon } from "@hugeicons/core-free-icons"
 import Image from "next/image"
 import { useEffect, useRef } from "react"
 import { cn } from "@/lib/utils"
@@ -61,7 +62,7 @@ export function PlatformTutorial({ selectedPlatform, setIsOpen }: PlatformTutori
             className="gap-2 text-xs h-8 border-border/50 hover:bg-muted"
             onClick={() => window.open(selectedPlatform.tutorialLink, '_blank')}
           >
-            <ExternalLink className="h-3.5 w-3.5" />
+            <HugeiconsIcon icon={ExternalLinkIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
             <span>Documentation</span>
           </Button>
         )}
@@ -96,7 +97,7 @@ export function PlatformTutorial({ selectedPlatform, setIsOpen }: PlatformTutori
 
       {selectedPlatform.details && (
         <div className="text-xs text-muted-foreground flex items-start gap-2.5 bg-muted/20 border border-border/30 p-4 rounded-xl transition-all duration-200 hover:bg-muted/30 animate-in slide-in-from-bottom-4">
-          <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0 text-warning opacity-90" />
+          <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4 mt-0.5 flex-shrink-0 text-warning opacity-90" strokeWidth={1.5} color="currentColor" />
           <p className="leading-relaxed">{selectedPlatform.details}</p>
         </div>
       )}

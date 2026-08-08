@@ -38,7 +38,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { reportClientError } from '@/lib/observability/report-error'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { User, CheckCircle2, Building2, DollarSign } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { UserIcon, CheckmarkCircle01Icon, Building01Icon, Dollar01Icon } from '@hugeicons/core-free-icons'
 import { toast } from "sonner"
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
@@ -207,7 +208,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
         <DialogContent className="w-full max-w-2xl" data-tour="create-account-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
+              <HugeiconsIcon icon={UserIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
               Create Live Account
             </DialogTitle>
             <DialogDescription>
@@ -270,7 +271,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
                           {POPULAR_BROKERS.map(broker => (
                             <SelectItem key={broker} value={broker}>
                               <div className="flex items-center gap-2">
-                                <Building2 className="h-4 w-4" />
+                                <HugeiconsIcon icon={Building01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                                 {broker}
                               </div>
                             </SelectItem>
@@ -301,7 +302,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
                 <div>
                   <Label htmlFor="startingBalance">Starting Balance ($) *</Label>
                   <div className="relative">
-                    <DollarSign className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <HugeiconsIcon icon={Dollar01Icon} className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                     <Controller
                       name="startingBalance"
                       control={control}
@@ -380,7 +381,7 @@ export function CreateLiveAccountDialog({ open, onOpenChange, onSuccess }: LiveA
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                     Create Account
                   </>
                 )}

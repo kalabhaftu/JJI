@@ -23,9 +23,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import {
-  User
-} from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { User02Icon } from '@hugeicons/core-free-icons'
 import { reportClientError } from '@/lib/observability/report-error'
 
 const editAccountSchema = z.object({
@@ -137,7 +136,7 @@ export function EditLiveAccountDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
+            <HugeiconsIcon icon={User02Icon} className="h-5 w-5" />
             Edit Account
           </DialogTitle>
           <DialogDescription>

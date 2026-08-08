@@ -6,7 +6,8 @@ import { useDashboardDisplay } from '@/hooks/use-dashboard-display'
 import { inferMetricKind } from '@/lib/dashboard/display-mode'
 import { useTheme } from '@/context/theme-provider'
 import { useIsMobile } from '@/hooks/use-is-mobile'
-import { Info } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { InformationCircleIcon } from '@hugeicons/core-free-icons'
 import type { WidgetSurfaceContract } from '@/app/dashboard/types/dashboard'
 import {
   Tooltip,
@@ -111,7 +112,7 @@ export function WidgetCard({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="cursor-help flex items-center justify-center shrink-0">
-                        <Info className="h-3 w-3 text-muted-foreground/60" />
+                        <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-muted-foreground/60" strokeWidth={1.5} color="currentColor" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" sideOffset={5} className="max-w-[240px] text-xs py-1.5 px-2.5 bg-popover border border-border/30 shadow-md">
@@ -173,7 +174,7 @@ export function WidgetCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="cursor-help flex items-center justify-center shrink-0">
-                      <Info className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground transition-colors" />
+                      <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground transition-colors" strokeWidth={1.5} color="currentColor" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" sideOffset={5} className="max-w-[240px] text-xs py-1.5 px-2.5 bg-popover/95 backdrop-blur-sm border border-border/30 shadow-md">

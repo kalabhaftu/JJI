@@ -1,4 +1,3 @@
-import { Bot, Brain, MessageSquare, Shield } from 'lucide-react'
 import { DocsCallout, DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function AiChatDocsPage() {

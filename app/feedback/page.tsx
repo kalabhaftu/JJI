@@ -1,4 +1,5 @@
-import { MessageSquare } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Comment01Icon } from '@hugeicons/core-free-icons'
 import { FeedbackFormClient } from './feedback-form-client'
 
 export const metadata = {
@@ -18,7 +19,7 @@ export default function FeedbackPage() {
           Product Feedback
         </p>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
-          <MessageSquare className="h-8 w-8 text-primary" />
+          <HugeiconsIcon icon={Comment01Icon} className="h-8 w-8 text-primary" strokeWidth={1.5} color="currentColor" />
           Send Feedback
         </h1>
         <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl">

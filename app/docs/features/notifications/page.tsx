@@ -1,4 +1,3 @@
-import { Bell, BellRing, Smartphone, Volume2 } from 'lucide-react'
 import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function NotificationsDocsPage() {

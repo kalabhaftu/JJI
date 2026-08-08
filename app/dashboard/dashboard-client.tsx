@@ -11,7 +11,8 @@ import { buildResponsiveDashboardLayouts } from '@/lib/dashboard/responsive-layo
 import { GettingStartedChecklist } from './components/getting-started-checklist'
 import { useData } from '@/context/data-provider'
 import type { DashboardDataQuality } from '@/lib/statistics/report-statistics'
-import { Info } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { InformationCircleIcon } from '@hugeicons/core-free-icons'
 
 const DATA_QUALITY_MESSAGES: Record<Exclude<DashboardDataQuality, 'current'>, string> = {
   partial: 'Some data could not be loaded. The calculations below are partial and may not cover the full account scope.',
@@ -108,7 +109,7 @@ export function DashboardClient() {
                 role="status"
                 className="mb-4 flex items-start gap-2 rounded-xl border border-amber-500/30 bg-amber-500/5 px-4 py-3 text-sm text-amber-600 dark:text-amber-400"
               >
-                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                <HugeiconsIcon icon={InformationCircleIcon} className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={1.5} color="currentColor" />
                 <span>{DATA_QUALITY_MESSAGES[dataQuality]}</span>
               </div>
             )}

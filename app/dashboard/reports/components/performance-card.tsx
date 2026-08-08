@@ -2,15 +2,15 @@
 
 import { useRef, useState, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-    Download,
-    Copy,
-    Check,
-    Flame,
-    Shield,
-    TrendingUp,
-    TrendingDown,
-} from 'lucide-react'
+  Download01Icon,
+  CopyIcon,
+  Tick01Icon,
+  FlameIcon,
+  Shield01Icon,
+  TrendingUpDownIcon,
+} from '@hugeicons/core-free-icons'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { Logo } from '@/components/logo'
@@ -163,7 +163,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
 
                     <div className="flex flex-col items-end gap-1 shrink-0">
                         <div className="flex items-center gap-1.5 bg-muted/60 border border-border px-2.5 py-1 rounded-full">
-                            <Shield className="h-2.5 w-2.5 text-primary" />
+                            <HugeiconsIcon icon={Shield01Icon} className="h-2.5 w-2.5 text-primary" />
                             <span className="text-[9px] font-black uppercase tracking-widest">Verified</span>
                         </div>
                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -185,8 +185,8 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                             {pnlFormatted}
                         </span>
                         {isProfit
-                            ? <Flame className="h-7 w-7 text-long opacity-80 animate-pulse" />
-                            : <TrendingDown className="h-7 w-7 text-short opacity-80" />
+                            ? <HugeiconsIcon icon={FlameIcon} className="h-7 w-7 text-long opacity-80 animate-pulse" />
+                            : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-7 w-7 text-short opacity-80" />
                         }
                     </div>
                 </div>
@@ -234,8 +234,8 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     className="flex-1 h-11 gap-2.5 font-black uppercase tracking-wider text-xs rounded-xl"
                 >
                     {isExporting
-                        ? <><TrendingUp className="h-4 w-4 animate-pulse" /> Generating...</>
-                        : <><Download className="h-4 w-4" /> Export Image</>
+                        ? <><HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 animate-pulse" /> Generating...</>
+                        : <><HugeiconsIcon icon={Download01Icon} className="h-4 w-4" /> Export Image</>
                     }
                 </Button>
                 <Button
@@ -244,8 +244,8 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     className="sm:w-auto h-11 gap-2.5 font-black uppercase tracking-wider text-xs rounded-xl"
                 >
                     {isCopied
-                        ? <><Check className="h-4 w-4 text-long" /> Copied!</>
-                        : <><Copy className="h-4 w-4" /> Copy Stats</>
+                        ? <><HugeiconsIcon icon={Tick01Icon} className="h-4 w-4 text-long" /> Copied!</>
+                        : <><HugeiconsIcon icon={CopyIcon} className="h-4 w-4" /> Copy Stats</>
                     }
                 </Button>
             </div>

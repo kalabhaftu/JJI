@@ -3,7 +3,8 @@
 import { Badge } from "@/components/ui/badge"
 import { CommandItem } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
-import { AlertTriangle } from "lucide-react"
+import { HugeiconsIcon } from "@hugeicons/react"
+import { Alert02Icon } from "@hugeicons/core-free-icons"
 import Image from "next/image"
 import { PlatformConfig } from "../config/platforms"
 interface PlatformItemProps {
@@ -73,7 +74,7 @@ export function PlatformItem({
             )}
             {!platform.isDisabled && platform.isRithmic && isWeekend && (
               <Badge variant="outline" className="px-1.5 py-0 text-[10px] border-warning/30 bg-warning/5 text-warning/90 gap-1">
-                <AlertTriangle className="h-2.5 w-2.5" />
+                <HugeiconsIcon icon={Alert02Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />
                 Weekend
               </Badge>
             )}

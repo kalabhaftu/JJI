@@ -8,7 +8,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Upload, X, CheckCircle2, AlertCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Upload01Icon, Cancel01Icon, CheckmarkCircle02Icon, AlertCircleIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { ApiClientError, apiRequestData } from '@/lib/api/client'
 import { reportClientError } from '@/lib/observability/report-error'
@@ -159,7 +160,7 @@ export function FeedbackFormClient() {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <div className="p-4 rounded-full bg-success/10 mb-6">
-          <CheckCircle2 className="h-12 w-12 text-success" />
+          <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-12 w-12 text-success" strokeWidth={1.5} color="currentColor" />
         </div>
         <h1 className="text-2xl font-bold mb-2">Thank You!</h1>
         <p className="text-muted-foreground max-w-md">
@@ -253,13 +254,13 @@ export function FeedbackFormClient() {
                     <span className="truncate max-w-32">{f.name}</span>
                     <span className="text-muted-foreground">({(f.size / 1024).toFixed(0)}KB)</span>
                     <Button type="button" variant="icon-only" size="icon" aria-label={`Remove ${f.name}`} onClick={() => removeFile(i)} className="ml-1 h-11 w-11 hover:text-destructive">
-                      <X className="h-3 w-3" />
+                      <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                     </Button>
                   </div>
                 ))}
                 {files.length < MAX_FILES && (
                   <Button type="button" variant="secondary" size="sm" className="text-xs" onClick={() => fileInputRef.current?.click()}>
-                    <Upload className="h-3 w-3 mr-1" />Attach File
+                    <HugeiconsIcon icon={Upload01Icon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />Attach File
                   </Button>
                 )}
               </div>
@@ -272,7 +273,7 @@ export function FeedbackFormClient() {
                 multiple
               />
               <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                <AlertCircle className="h-3 w-3" />
+                <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
                 Supported: images, PDF, CSV, TXT, DOC. No executables.
               </p>
             </div>

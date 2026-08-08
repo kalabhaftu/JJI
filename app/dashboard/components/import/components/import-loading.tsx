@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { TrendingUp, BarChart3, Activity, Zap, Target } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { ChartIncreaseIcon, BarChartIcon, Activity01Icon, FlashIcon, Target01Icon } from '@hugeicons/core-free-icons'
 import { Skeleton } from '@/components/ui/skeleton'
 
 const tradingQuotes = [
@@ -68,7 +69,7 @@ const tradingQuotes = [
   }
 ]
 
-const icons = [TrendingUp, BarChart3, TrendingUp, Activity, Zap, Target]
+const icons = [ChartIncreaseIcon, BarChartIcon, ChartIncreaseIcon, Activity01Icon, FlashIcon, Target01Icon]
 
 export function ImportLoading({ progress }: { progress?: number }) {
   const [currentQuoteIndex, setCurrentQuoteIndex] = useState(0)
@@ -85,7 +86,7 @@ export function ImportLoading({ progress }: { progress?: number }) {
   }, [])
 
   const currentQuote = (tradingQuotes[currentQuoteIndex] || tradingQuotes[0]) || { text: "Importing...", author: "System" }
-  const IconComponent = (icons[currentQuoteIndex % icons.length] || icons[0]) as React.ElementType
+  const IconComponent = (icons[currentQuoteIndex % icons.length] || icons[0])!
 
   return (
     <div className="flex flex-col items-center justify-center h-full w-full p-2 sm:p-4 lg:p-6 space-y-2 sm:space-y-3 lg:space-y-4 max-h-[80vh] overflow-hidden">
@@ -115,7 +116,7 @@ export function ImportLoading({ progress }: { progress?: number }) {
           }}
           className="relative z-10 w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-muted/20 border border-border flex items-center justify-center"
         >
-          <IconComponent className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-foreground" />
+          <HugeiconsIcon icon={IconComponent} className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-foreground" strokeWidth={1.5} color="currentColor" />
         </motion.div>
       </motion.div>
 

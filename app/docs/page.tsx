@@ -1,4 +1,5 @@
-import { BookOpenText, LayoutDashboard, Smartphone, Upload } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { BookOpen01Icon, DashboardSquare01Icon, SmartPhone01Icon, Upload01Icon } from '@hugeicons/core-free-icons'
 
 import {
   DocsCardGrid,
@@ -46,13 +47,13 @@ export default function DocsHome() {
       >
         <DocsCardGrid>
           <DocsInfoCard
-            icon={<LayoutDashboard />}
+            icon={<HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={1.5} color="currentColor" />}
             title="Web Dashboard"
             description="The full-featured web application built with Next.js. Access all analytics, journaling, prop-firm tracking, backtesting, AI chat, reports, and settings from any browser."
             items={['Desktop-first responsive design', 'PWA installable for offline support', 'Real-time updates via Supabase', 'All features available']}
           />
           <DocsInfoCard
-            icon={<Smartphone />}
+            icon={<HugeiconsIcon icon={SmartPhone01Icon} strokeWidth={1.5} color="currentColor" />}
             title="Mobile Companion"
             description="Companion app for on-the-go trade review. Syncs with your web account automatically."
             items={['Dashboard, trades, journal, and prop-firm views', 'Push notifications for alerts and reminders']}
@@ -66,19 +67,19 @@ export default function DocsHome() {
       >
         <DocsCardGrid className="lg:grid-cols-3">
           <DocsInfoCard
-            icon={<Upload />}
+            icon={<HugeiconsIcon icon={Upload01Icon} strokeWidth={1.5} color="currentColor" />}
             title="Trade Import"
             description="Import trades from broker exports, CSV files, TradingView webhooks, Thor, Match-Trader, Exness, and other supported CSV formats."
             items={['Supported file formats and webhook sources', 'Parsing review before saving', 'Direct broker sync marked under development']}
           />
           <DocsInfoCard
-            icon={<LayoutDashboard />}
+            icon={<HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={1.5} color="currentColor" />}
             title="Dashboard & Widgets"
             description="Customizable dashboard with KPI cards, charts, calendar views, and filter-aware widgets."
             items={['Widget grid layout', 'Dashboard templates', 'Filter scoping', 'Time vs Profit, Calendar, and Excursion (MAE/MFE) charts']}
           />
           <DocsInfoCard
-            icon={<BookOpenText />}
+            icon={<HugeiconsIcon icon={BookOpen01Icon} strokeWidth={1.5} color="currentColor" />}
             title="Journal & Trade Review"
             description="Daily journal entries, trade notes, screenshots, and chart replay flows."
             items={['Day-level journaling', 'Ghost Setups (Missed Trades)', 'Trade Replay with lightweight charts']}
@@ -127,7 +128,7 @@ export default function DocsHome() {
       >
         <DocsCardGrid>
           <DocsInfoCard
-            icon={<LayoutDashboard />}
+            icon={<HugeiconsIcon icon={DashboardSquare01Icon} strokeWidth={1.5} color="currentColor" />}
             title="Tech Stack & Architecture"
             description="Next.js, TypeScript, Supabase, PostgreSQL, and more. Learn how the platform is built."
           />

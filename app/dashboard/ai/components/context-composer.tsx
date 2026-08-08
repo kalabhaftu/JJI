@@ -1,4 +1,5 @@
-import { Brain, CalendarDays, Check, Database, SlidersHorizontal } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Brain01Icon, CalendarDaysIcon, Tick01Icon, DatabaseIcon, SlidersHorizontalIcon } from '@hugeicons/core-free-icons'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -48,7 +49,7 @@ export function ContextComposer({
       <div className="mx-auto flex w-full max-w-5xl flex-col px-4 py-8 sm:px-8 lg:py-12">
         <header className="max-w-2xl">
           <div className="mb-5 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-primary-foreground">
-            <Brain className="h-5 w-5" />
+            <HugeiconsIcon icon={Brain01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
           </div>
           <p className="text-xs font-semibold text-muted-foreground">JJI analysis</p>
           <h1 className="mt-2 text-balance text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">Turn your trading history into a focused next action.</h1>
@@ -61,7 +62,7 @@ export function ContextComposer({
             <AccountPicker accounts={accounts} selected={selectedAccounts} onToggle={onAccountToggle} onAll={onSelectAllAccounts} onClear={onClearAccounts} />
             <Select value={selectedDateRange} onValueChange={onDateRangeChange}>
               <SelectTrigger aria-label="Analysis period" className="h-10 w-auto min-w-40 rounded-xl bg-[hsl(var(--surface-raised))]">
-                <CalendarDays className="h-4 w-4" />
+                <HugeiconsIcon icon={CalendarDaysIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -101,7 +102,7 @@ export function ContextComposer({
                   onClick={() => onSubmit(template.prompt, template.dataSources)}
                   className="group flex min-h-28 items-start gap-4 bg-[hsl(var(--surface-raised))] p-5 text-left transition-colors hover:bg-[hsl(var(--surface-subtle))] disabled:opacity-50"
                 >
-                  <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground"><Icon className="h-4 w-4" /></span>
+                  <span className="mt-0.5 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-muted text-foreground"><HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /></span>
                   <span>
                     <span className="block text-sm font-semibold text-foreground">{template.title}</span>
                     <span className="mt-1 block text-xs leading-5 text-muted-foreground">{template.description}</span>
@@ -125,7 +126,7 @@ function AccountPicker({ accounts, selected, onToggle, onAll, onClear }: { accou
   const label = selected.length === 0 ? 'Choose accounts' : selected.length === accounts.length ? 'All accounts' : `${selected.length} account${selected.length === 1 ? '' : 's'}`
   return (
     <Popover>
-      <PopoverTrigger asChild><Button variant="secondary"><SlidersHorizontal /> {label}</Button></PopoverTrigger>
+      <PopoverTrigger asChild><Button variant="secondary"><HugeiconsIcon icon={SlidersHorizontalIcon} size={24} strokeWidth={1.5} color="currentColor" /> {label}</Button></PopoverTrigger>
       <PopoverContent className="w-80 p-2" align="start">
         <div className="flex items-center justify-between border-b border-border/70 px-2 pb-2">
           <p className="text-xs font-semibold">Accounts</p>
@@ -138,7 +139,7 @@ function AccountPicker({ accounts, selected, onToggle, onAll, onClear }: { accou
               <button key={account.id} type="button" onClick={() => onToggle(account.id)} className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left hover:bg-muted">
                 <Checkbox checked={checked} tabIndex={-1} aria-hidden />
                 <span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold">{account.displayName || account.name || account.number || 'Account'}</span><span className="block truncate text-[10px] text-muted-foreground">{account.propfirm || account.broker || 'Live broker'}</span></span>
-                {checked && <Check className="h-3.5 w-3.5" />}
+                {checked && <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />}
               </button>
             )
           })}
@@ -151,12 +152,12 @@ function AccountPicker({ accounts, selected, onToggle, onAll, onClear }: { accou
 function SourcePicker({ selected, onToggle }: { selected: string[]; onToggle: (id: string) => void }) {
   return (
     <Popover>
-      <PopoverTrigger asChild><Button variant="secondary"><Database /> {selected.length} data sources</Button></PopoverTrigger>
+      <PopoverTrigger asChild><Button variant="secondary"><HugeiconsIcon icon={DatabaseIcon} size={24} strokeWidth={1.5} color="currentColor" /> {selected.length} data sources</Button></PopoverTrigger>
       <PopoverContent className="w-64 p-2" align="start">
         <p className="px-2 pb-2 text-xs font-semibold">Evidence sources</p>
         {dataSourceOptions.map((source) => (
           <button key={source.id} type="button" onClick={() => onToggle(source.id)} className={cn('flex w-full items-center justify-between rounded-lg px-2 py-2 text-xs hover:bg-muted', selected.includes(source.id) && 'font-semibold')}>
-            {source.label}{selected.includes(source.id) && <Check className="h-3.5 w-3.5" />}
+            {source.label}{selected.includes(source.id) && <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />}
           </button>
         ))}
       </PopoverContent>

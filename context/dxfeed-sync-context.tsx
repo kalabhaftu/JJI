@@ -5,7 +5,10 @@ import { useData } from '@/context/data-provider'
 import { toast } from 'sonner'
 import { reportError } from '@/lib/observability/report-error'
 import { useUserStore } from '@/store/user-store'
-import { useDatabaseRealtime } from '@/lib/realtime/database-realtime'
+import { useDatabaseRealtime, type DatabaseChange } from '@/lib/realtime/database-realtime'
+import { apiRequest, apiRequestData } from '@/lib/api/client'
+import { ApiClientError } from '@/lib/api/errors'
+import { DIRECT_SYNC_STATUS, directSyncUnderDevelopmentMessage } from '@/lib/integrations/direct-sync-status'
 
 export interface DxFeedSyncAccount {
   id: string
@@ -67,43 +70,49 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
   )
 
   const loadAccounts = useCallback(async () => {
-    if (disabled) {
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) {
       setAccounts([])
       return
     }
 
     try {
-      const response = await fetch('/api/v1/dxfeed/synchronizations', {
+      const data = await apiRequestData<any[]>('/api/v1/dxfeed/synchronizations', {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
       })
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch DxFeed synchronizations')
-      }
-
-      const result = await response.json()
-      const data = Array.isArray(result.data) ? result.data : []
-      setAccounts(data.map(normalizeSynchronization))
+      const items = Array.isArray(data) ? data : []
+      setAccounts(items.map(normalizeSynchronization))
     } catch (error) {
+      if (error instanceof ApiClientError && error.status === 503) {
+        setAccounts([])
+        return
+      }
       reportError(error, { surface: 'client', operation: 'load-dxfeed-accounts', route: '/api/v1/dxfeed/accounts' })
     }
   }, [disabled, normalizeSynchronization])
 
   const deleteAccount = useCallback(async (accountId: string) => {
     setAccounts((prev) => prev.filter((acc) => acc.accountId !== accountId))
-    if (disabled) return
-    await fetch('/api/v1/dxfeed/synchronizations', {
-      method: 'DELETE',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ accountId }),
-    })
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) return
+    try {
+      await apiRequest('/api/v1/dxfeed/synchronizations', {
+        method: 'DELETE',
+        body: JSON.stringify({ accountId }),
+      })
+    } catch (error) {
+      if (error instanceof ApiClientError && error.status === 503) return
+      throw error
+    }
   }, [disabled])
 
   const performSyncForAccount = useCallback(
     async (accountId: string) => {
       if (disabled) {
         return { success: false, message: 'DxFeed sync is disabled in demo mode' }
+      }
+      if (DIRECT_SYNC_STATUS.isPaused) {
+        const message = directSyncUnderDevelopmentMessage('DxFeed')
+        toast.info(message)
+        return { success: false, message }
       }
 
       const account = accounts.find((acc) => acc.accountId === accountId)
@@ -117,25 +126,24 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
 
       try {
         const runSync = async () => {
-          const response = await fetch('/api/v1/dxfeed/sync', {
+          const payload = await apiRequestData<{
+            success?: boolean
+            savedCount?: number
+            tradesCount?: number
+            message?: string
+            error?: { message?: string }
+          }>('/api/v1/dxfeed/sync', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ accountId }),
           })
-
-          const payload = await response.json()
 
           const responseMessage = payload?.error?.message ?? payload?.message
           if (responseMessage === 'DUPLICATE_TRADES') {
             return "All trades from this account have already been imported"
           }
 
-          if (!response.ok || !payload?.success) {
-            throw new Error(responseMessage || `Sync error for account ${accountId}`)
-          }
-
-          const savedCount = payload.savedCount || 0
-          const tradesCount = payload.tradesCount || 0
+          const savedCount = payload?.savedCount || 0
+          const tradesCount = payload?.tradesCount || 0
 
           let successMessage: string
           if (savedCount > 0) {
@@ -161,6 +169,10 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
         const message: string = await promise
         return { success: true, message }
       } catch (error) {
+        if (error instanceof ApiClientError && error.status === 503) {
+          const message = directSyncUnderDevelopmentMessage('DxFeed')
+          return { success: false, message }
+        }
         const errorMsg = `Sync error for account ${accountId}: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
@@ -176,7 +188,7 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
   )
 
   const performSyncForAllAccounts = useCallback(async () => {
-    if (disabled) return
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) return
     if (isAutoSyncingRef.current) return
 
     isAutoSyncingRef.current = true
@@ -210,7 +222,7 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
 
   const scheduleNextSync = useCallback(() => {
     clearNextSyncTimer()
-    if (!enableAutoSync) return
+    if (!enableAutoSync || DIRECT_SYNC_STATUS.isPaused) return
 
     const dueAt = accounts
       .filter((account) => account.lastSyncedAt)
@@ -225,7 +237,7 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
   }, [accounts, enableAutoSync, syncInterval, clearNextSyncTimer])
 
   const checkAndPerformSyncs = useCallback(async () => {
-    if (disabled) return
+    if (disabled || DIRECT_SYNC_STATUS.isPaused) return
     if (document.visibilityState === 'hidden') return
     if (!enableAutoSync || isAutoSyncingRef.current) return
 
@@ -245,7 +257,7 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
           await performSyncForAccount(account.accountId)
         }
       }
-      } catch (error) {
+    } catch (error) {
       reportError(error, { surface: 'client', operation: 'check-dxfeed-auto-sync', route: '/dashboard' })
     } finally {
       isAutoSyncingRef.current = false
@@ -258,8 +270,8 @@ export function DxFeedSyncContextProvider({ children, disabled = false }: { chil
 
   useDatabaseRealtime({
     userId: user?.id,
-    enabled: enableAutoSync && !disabled,
-    onSynchronizationChange: (change) => {
+    enabled: enableAutoSync && !disabled && !DIRECT_SYNC_STATUS.isPaused,
+    onSynchronizationChange: (change: DatabaseChange) => {
       if (change.event === 'UPDATE') void checkAndPerformSyncsRef.current()
     },
   })

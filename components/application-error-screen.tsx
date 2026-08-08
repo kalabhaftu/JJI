@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { AlertCircle, Home, RefreshCw } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { AlertCircleIcon, Home01Icon, RefreshIcon } from '@hugeicons/core-free-icons'
 
 import { Button } from '@/components/ui/button'
 
@@ -24,7 +25,7 @@ export function ApplicationErrorScreen({
       className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"
     >
       <div className="w-full max-w-md space-y-6 text-center">
-        <AlertCircle aria-hidden="true" className="mx-auto size-12 text-destructive" />
+        <HugeiconsIcon icon={AlertCircleIcon} aria-hidden="true" className="mx-auto size-12 text-destructive" strokeWidth={1.5} color="currentColor" />
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Something went wrong</h1>
           <p className="text-muted-foreground">
@@ -43,12 +44,12 @@ export function ApplicationErrorScreen({
         ) : null}
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <Button onClick={onRetry} className="gap-2">
-            <RefreshCw aria-hidden="true" className="size-4" />
+            <HugeiconsIcon icon={RefreshIcon} aria-hidden="true" className="size-4" strokeWidth={1.5} color="currentColor" />
             Try again
           </Button>
           <Button asChild variant="secondary" className="gap-2">
             <Link href="/">
-              <Home aria-hidden="true" className="size-4" />
+              <HugeiconsIcon icon={Home01Icon} aria-hidden="true" className="size-4" strokeWidth={1.5} color="currentColor" />
               Return home
             </Link>
           </Button>

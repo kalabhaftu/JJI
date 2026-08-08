@@ -16,18 +16,19 @@ import {
 } from '@/lib/trading/trade-formatting'
 import { formatTradePrice } from '@/lib/trading/precision'
 import { useUserStore } from '@/store/user-store'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  ArrowLeft,
-  BarChart3,
-  Download,
-  Play,
-  Copy,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  PenLine,
-  Zap
-} from 'lucide-react'
+  ArrowLeft01Icon,
+  BarChartIcon,
+  Download01Icon,
+  PlayIcon,
+  Copy01Icon,
+  Tick01Icon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  PencilEdit01Icon,
+  FlashIcon,
+} from '@hugeicons/core-free-icons'
 import type { TradeType } from '@/lib/db/schema/trades';
 
 import Image from 'next/image'
@@ -194,7 +195,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <Button variant="tertiary" size="sm" onClick={() => { onClose(); emitTourEvent('trade.detail.closed') }} data-tour="close-trade-detail" className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
-                <ArrowLeft className="mr-1 h-3.5 w-3.5" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="h-4 w-px bg-border/40 shrink-0" />
@@ -223,7 +224,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
               )}
             </div>
             <Button variant="secondary" onClick={handleEdit} className="h-8 px-3 rounded-lg text-xs font-semibold shrink-0">
-              <PenLine className="h-3.5 w-3.5 mr-1.5" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5 mr-1.5" strokeWidth={1.5} color="currentColor" />
               Edit
             </Button>
           </div>
@@ -257,7 +258,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                           className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-accent rounded-md"
                           title={`Copy ${label}`}
                         >
-                          {copiedField === label ? <Check className="h-3 w-3 text-long" /> : <Copy className="h-3 w-3 text-muted-foreground" />}
+                          {copiedField === label ? <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3 text-long" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={Copy01Icon} className="h-3 w-3 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}
                         </button>
                       )}
                     </div>
@@ -278,7 +279,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                       onClick={() => copyToClipboard(formatTradePrice(tradeData.stopLoss, trade.instrument), 'Stop Loss')}
                       className="p-1 hover:bg-accent rounded-md"
                     >
-                      {copiedField === 'Stop Loss' ? <Check className="h-2.5 w-2.5 text-long" /> : <Copy className="h-2.5 w-2.5" />}
+                      {copiedField === 'Stop Loss' ? <HugeiconsIcon icon={Tick01Icon} className="h-2.5 w-2.5 text-long" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={Copy01Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
                     </button>
                   </span>
                 )}
@@ -294,7 +295,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                       onClick={() => copyToClipboard(formatTradePrice(tradeData.takeProfit, trade.instrument), 'Take Profit')}
                       className="p-1 hover:bg-accent rounded-md"
                     >
-                      {copiedField === 'Take Profit' ? <Check className="h-2.5 w-2.5 text-long" /> : <Copy className="h-2.5 w-2.5" />}
+                      {copiedField === 'Take Profit' ? <HugeiconsIcon icon={Tick01Icon} className="h-2.5 w-2.5 text-long" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={Copy01Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
                     </button>
                   </span>
                 )}
@@ -454,7 +455,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                       {chartLinks.map((link: string, index: number) => (
                         <a key={index} href={link} target="_blank" rel="noopener noreferrer"
                           className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg bg-muted/30 border border-border/50 hover:bg-muted/50 hover:border-border transition-all">
-                          <BarChart3 className="h-3.5 w-3.5 text-muted-foreground" />
+                          <HugeiconsIcon icon={BarChartIcon} className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
                           Chart {index + 1}
                         </a>
                       ))}
@@ -479,7 +480,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                           ))}
                           {tradeData.newsTraded && (
                             <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-warning/10 border border-warning/20 text-warning">
-                              <Zap className="h-3.5 w-3.5 fill-warning text-warning" />
+                              <HugeiconsIcon icon={FlashIcon} className="h-3.5 w-3.5 fill-warning text-warning" strokeWidth={1.5} color="currentColor" />
                               <span className="text-[10px] font-bold uppercase tracking-tight">Active News Trader</span>
                             </div>
                           )}
@@ -550,7 +551,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
         <div className="px-4 sm:px-6 py-3 border-t border-border/40 bg-muted/5 shrink-0 flex flex-col-reverse sm:flex-row items-center justify-between gap-2">
           <Link href={`/dashboard/table?view=replay&tradeId=${trade.id}&backUrl=${encodeURIComponent(typeof window !== 'undefined' ? window.location.pathname + window.location.search : basePath)}`} className="w-full sm:w-auto">
             <Button variant="primary" className="gap-2 h-9 px-5 rounded-xl shadow-lg shadow-primary/10 font-semibold w-full sm:w-auto text-xs">
-              <Play className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={PlayIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
               Trade Replay
             </Button>
           </Link>
@@ -596,7 +597,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                     onClick={goToPreviousImage}
                     aria-label="Previous screenshot"
                   >
-                    <ChevronLeft className="h-5 w-5" />
+                    <HugeiconsIcon icon={ChevronLeftIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
                   </Button>
                   <Button
                     variant="secondary"
@@ -605,7 +606,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                     onClick={goToNextImage}
                     aria-label="Next screenshot"
                   >
-                    <ChevronRight className="h-5 w-5" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
                   </Button>
                   <div className="absolute bottom-4 left-4 rounded-full bg-background/80 px-3 py-1 text-xs font-bold text-foreground">
                     {selectedImageNumber} / {images.length}
@@ -618,7 +619,7 @@ export function TradeDetailPanel({ trade, onClose, basePath, workspaceMode = 'ro
                 className="absolute bottom-4 right-4"
                 onClick={() => downloadImage(stripTradePreviewImageConfig(selectedImage) || selectedImage, trade, selectedImageNumber)}
               >
-                <Download className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                 Download
               </Button>
             </div>

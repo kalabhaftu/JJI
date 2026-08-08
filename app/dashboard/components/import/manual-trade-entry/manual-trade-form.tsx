@@ -22,22 +22,22 @@ import {
 } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { reportClientError } from '@/lib/observability/report-error'
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  Calculator,
-  TrendingUp,
-  TrendingDown,
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  Wallet,
-  BarChart3,
-  Clock,
-  Shield,
-  DollarSign,
-  Brain,
-  ShieldCheck
-} from 'lucide-react'
+  CalculatorIcon,
+  TrendingUpDownIcon,
+  ArrowLeft01Icon,
+  ArrowRight01Icon,
+  CircleCheckIcon,
+  Loading01Icon,
+  Wallet01Icon,
+  BarChartIcon,
+  Clock01Icon,
+  Shield01Icon,
+  Dollar01Icon,
+  Brain01Icon,
+  Shield02Icon
+} from '@hugeicons/core-free-icons'
 import type { TradeType } from '@/lib/db/schema/trades';
 
 import { generateTradeHash } from '@/lib/trading/trade-grouping'
@@ -176,11 +176,11 @@ type Step = 1 | 2 | 3 | 4 | 5
 const TOTAL_STEPS = 5
 
 const stepInfo = [
-  { step: 1, title: 'Account & Instrument', icon: Wallet },
-  { step: 2, title: 'Execution', icon: BarChart3 },
-  { step: 3, title: 'Timing', icon: Clock },
-  { step: 4, title: 'Risk & Cost', icon: Shield },
-  { step: 5, title: 'Review', icon: ShieldCheck },
+  { step: 1, title: 'Account & Instrument', icon: Wallet01Icon },
+  { step: 2, title: 'Execution', icon: BarChartIcon },
+  { step: 3, title: 'Timing', icon: Clock01Icon },
+  { step: 4, title: 'Risk & Cost', icon: Shield01Icon },
+  { step: 5, title: 'Review', icon: Shield02Icon },
 ]
 
 export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialValues, onValuesChange, onSuccess }: ManualTradeFormProps) {
@@ -471,7 +471,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                         className="w-full justify-between h-11 font-normal"
                       >
                         {field.value || "Select or type instrument"}
-                        <BarChart3 className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <HugeiconsIcon icon={BarChartIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[min(26rem,calc(100vw-1rem))] p-0" align="start" side="bottom">
@@ -514,7 +514,8 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                                   setInstrumentSearch('')
                                 }}
                               >
-                                <CheckCircle2
+                                <HugeiconsIcon
+                                  icon={CircleCheckIcon}
                                   className={cn(
                                     "mr-2 h-4 w-4",
                                     field.value === instr.value ? "opacity-100" : "opacity-0"
@@ -559,7 +560,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                       )}
                       onClick={() => field.onChange('LONG')}
                     >
-                      <TrendingUp className="h-4 w-4 mr-2" />
+                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 mr-2" />
                       Long
                     </Button>
                     <Button
@@ -571,7 +572,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                       )}
                       onClick={() => field.onChange('SHORT')}
                     >
-                      <TrendingDown className="h-4 w-4 mr-2" />
+                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 mr-2" />
                       Short
                     </Button>
                   </div>
@@ -897,7 +898,6 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
         {}
         <div className="flex items-center gap-1">
           {stepInfo.map((s, idx) => {
-            const StepIcon = s.icon
             return (
               <React.Fragment key={s.step}>
                 <div
@@ -911,9 +911,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                   )}
                 >
                   {currentStep > s.step ? (
-                    <CheckCircle2 className="h-3 w-3" />
+                    <HugeiconsIcon icon={CircleCheckIcon} className="h-3 w-3" />
                   ) : (
-                    <StepIcon className="h-3 w-3" />
+                    <HugeiconsIcon icon={s.icon} className="h-3 w-3" />
                   )}
                   <span className="hidden sm:inline">{s.title}</span>
                 </div>
@@ -946,7 +946,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
               onClick={onBack}
               className="gap-1.5"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5" />
               Back to Platforms
             </Button>
           ) : (
@@ -967,7 +967,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                 onClick={handleBack}
                 className="gap-2"
               >
-                <ArrowLeft className="h-4 w-4" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
                 Back
               </Button>
             )}
@@ -980,7 +980,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                 className="gap-2"
               >
                 Next
-                <ArrowRight className="h-4 w-4" />
+                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" />
               </Button>
             ) : (
               <Button
@@ -996,7 +996,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="h-4 w-4" />
+                    <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
                     Add Trade
                   </>
                 )}

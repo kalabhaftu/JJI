@@ -9,18 +9,19 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Spinner } from "@/components/ui/spinner"
+import { HugeiconsIcon } from '@hugeicons/react'
 import {
-  ArrowLeft,
-  RefreshCcw,
-  DollarSign,
-  Calendar,
-  CreditCard,
-  AlertCircle,
-  CheckCircle2,
-  Clock,
-  Pencil,
-  Trash2
-} from "lucide-react"
+  ArrowLeft01Icon,
+  RefreshIcon,
+  Dollar01Icon,
+  Calendar01Icon,
+  CreditCardIcon,
+  AlertCircleIcon,
+  CircleCheckIcon,
+  Clock01Icon,
+  PencilEdit01Icon,
+  Delete02Icon
+} from '@hugeicons/core-free-icons'
 import { cn } from "@/lib/utils"
 import { useQuery } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
@@ -153,11 +154,11 @@ export default function PayoutDetailPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <Clock className="h-4 w-4" />
-      case 'approved': return <CheckCircle2 className="h-4 w-4" />
-      case 'paid': return <CheckCircle2 className="h-4 w-4" />
-      case 'rejected': return <AlertCircle className="h-4 w-4" />
-      default: return <Clock className="h-4 w-4" />
+      case 'pending': return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
+      case 'approved': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
+      case 'paid': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
+      case 'rejected': return <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" />
+      default: return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
     }
   }
 
@@ -182,11 +183,11 @@ export default function PayoutDetailPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="text-lg font-semibold mb-2">Payout Not Found</h3>
             <p className="text-muted-foreground">The requested payout could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
-              <ArrowLeft className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
               Go Back
             </Button>
           </div>
@@ -218,7 +219,7 @@ export default function PayoutDetailPage() {
             size="sm"
             onClick={() => router.push('/dashboard/prop-firm/payouts')}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
             Back
           </Button>
           <div>
@@ -233,15 +234,15 @@ export default function PayoutDetailPage() {
             onClick={handleRefresh}
             disabled={isLoading}
           >
-            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" />}
             Refresh
           </Button>
           <Button variant="secondary" size="sm">
-            <Pencil className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" />
             Edit
           </Button>
           <Button variant="secondary" size="sm" className="text-short hover:text-short/80">
-            <Trash2 className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" />
             Delete
           </Button>
         </div>
@@ -252,7 +253,7 @@ export default function PayoutDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CreditCard className="h-5 w-5" />
+              <HugeiconsIcon icon={CreditCardIcon} className="h-5 w-5" />
               Payout Information
             </CardTitle>
           </CardHeader>
@@ -275,7 +276,7 @@ export default function PayoutDetailPage() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Requested Amount</span>
               <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{formatCurrency(payout.amountRequested)}</span>
               </div>
             </div>
@@ -283,7 +284,7 @@ export default function PayoutDetailPage() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Paid Amount</span>
               <div className="flex items-center gap-1">
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{formatCurrency(payout.amountPaid)}</span>
               </div>
             </div>
@@ -291,7 +292,7 @@ export default function PayoutDetailPage() {
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Requested Date</span>
               <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4 text-muted-foreground" />
                 <span className="font-medium">{formatDate(payout.requestedAt)}</span>
               </div>
             </div>
@@ -300,7 +301,7 @@ export default function PayoutDetailPage() {
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Paid Date</span>
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4 text-muted-foreground" />
                   <span className="font-medium">{formatDate(payout.paidAt)}</span>
                 </div>
               </div>

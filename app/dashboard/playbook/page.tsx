@@ -23,7 +23,8 @@ import { cn } from '@/lib/utils'
 import { formatNoteContent } from '@/lib/content/cleaning'
 import { formatCurrency } from '@/lib/trading/trade-formatting'
 import { motion } from 'framer-motion'
-import { Eye, FileText, MoreVertical, Pencil, Plus, Trash2 as Trash, Calendar } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { EyeIcon, File01Icon, MoreVerticalIcon, PencilEdit01Icon, Add01Icon, Delete02Icon, Calendar01Icon } from '@hugeicons/core-free-icons'
 import { useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import { apiRequest } from '@/lib/api/client'
@@ -108,19 +109,19 @@ function StrategyBlock({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="icon-only" size="icon" className="h-11 w-11 -mr-2" aria-label="Strategy options">
-              <MoreVertical className="h-4 w-4" />
+              <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-background border-border/40">
             <DropdownMenuItem onClick={() => onView(model)} className="text-xs font-bold uppercase">
-              <Eye className="mr-2 h-3.5 w-3.5" /> View Strategy
+              <HugeiconsIcon icon={EyeIcon} className="mr-2 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" /> View Strategy
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onEdit(model)} className="text-xs font-bold uppercase">
-              <Pencil className="mr-2 h-3.5 w-3.5" /> Modify Rules
+              <HugeiconsIcon icon={PencilEdit01Icon} className="mr-2 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" /> Modify Rules
             </DropdownMenuItem>
             <DropdownMenuSeparator className="opacity-40" />
             <DropdownMenuItem onClick={() => onDelete(model.id)} className="text-xs font-bold uppercase text-short focus:text-short">
-              <Trash className="mr-2 h-3.5 w-3.5" /> Remove Model
+              <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" /> Remove Model
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -290,7 +291,7 @@ export default function PlaybookPage() {
           className="mb-6"
           actions={
             <Button onClick={handleAddModel} className="h-10 gap-2 px-6 text-xs font-black uppercase tracking-tighter">
-              <Plus className="h-4 w-4" />
+              <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
               Develop New Strategy
             </Button>
           }
@@ -341,7 +342,7 @@ export default function PlaybookPage() {
             <Popover>
               <PopoverTrigger asChild>
                 <Button variant="secondary" className="h-9 justify-start gap-2 text-xs font-bold">
-                  <Calendar className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
                   {dateRangeLabel}
                 </Button>
               </PopoverTrigger>
@@ -375,10 +376,10 @@ export default function PlaybookPage() {
           <PlaybookCardsSkeleton />
         ) : models.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border/40 bg-card/30 py-24">
-            <FileText className="h-12 w-12 text-muted-foreground/20 mb-6" />
+            <HugeiconsIcon icon={File01Icon} className="h-12 w-12 text-muted-foreground/20 mb-6" strokeWidth={1.5} color="currentColor" />
             <h3 className="text-sm font-black uppercase tracking-[0.2em] text-muted-foreground/50 mb-6">No strategies defined</h3>
             <Button onClick={handleAddModel} variant="secondary" className="gap-2 font-black uppercase tracking-tighter text-xs h-9">
-              <Plus className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
               Initialize First Model
             </Button>
           </div>

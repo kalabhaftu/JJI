@@ -27,8 +27,8 @@ interface DiverseChartsProps {
 }
 
 const COLORS = {
-    bullish: 'hsl(var(--chart-bullish))',
-    bearish: 'hsl(var(--chart-bearish))',
+    bullish: 'hsl(var(--chart-profit))',
+    bearish: 'hsl(var(--chart-loss))',
     muted: 'hsl(220, 15%, 55%)'
 }
 

@@ -1,4 +1,4 @@
-import type { LucideIcon } from 'lucide-react'
+import type { HugeiconsIconProps } from '@hugeicons/react'
 
 export type WorkspaceTab = 'chats' | 'insights' | 'history'
 
@@ -52,7 +52,7 @@ export interface WeeklyReview {
 export interface AnalysisTemplate {
   id: string
   title: string
-  icon: LucideIcon
+  icon: HugeiconsIconProps['icon']
   description: string
   prompt: string
   dataSources: string[]

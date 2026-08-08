@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { X, Smartphone } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Cancel01Icon, SmartPhone01Icon } from '@hugeicons/core-free-icons'
 import { Button } from './ui/button'
 
 export function AppBanner() {
@@ -36,7 +37,7 @@ export function AppBanner() {
       >
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <Smartphone className="w-5 h-5 text-primary" />
+            <HugeiconsIcon icon={SmartPhone01Icon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />
           </div>
           <div>
             <h4 className="text-sm font-semibold text-foreground">Open in JJI App</h4>
@@ -52,7 +53,7 @@ export function AppBanner() {
             className="p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
             aria-label="Dismiss app banner"
           >
-            <X className="w-4 h-4" />
+            <HugeiconsIcon icon={Cancel01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
           </button>
         </div>
       </aside>

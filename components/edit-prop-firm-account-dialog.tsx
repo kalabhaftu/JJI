@@ -26,7 +26,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { Building2 as Building } from "lucide-react"
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Building01Icon } from '@hugeicons/core-free-icons'
 import { reportClientError } from '@/lib/observability/report-error'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { apiRequestData } from '@/lib/api/client'
@@ -215,7 +216,7 @@ export function EditPropFirmAccountDialog({
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <Building className="h-5 w-5" />
+              <HugeiconsIcon icon={Building01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
               Edit Prop Firm Account
             </DialogTitle>
             <DialogDescription>

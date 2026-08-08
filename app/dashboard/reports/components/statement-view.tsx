@@ -6,7 +6,8 @@ import { formatCurrency } from '@/lib/trading/trade-formatting'
 import { getTradeNetPnl } from '@/lib/metrics/pnl'
 import { format } from 'date-fns'
 import { Button } from '@/components/ui/button'
-import { Download } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Download01Icon } from '@hugeicons/core-free-icons'
 
 interface StatementViewProps {
   trades: any[]
@@ -221,7 +222,7 @@ export function StatementView({ trades, dateRange }: StatementViewProps) {
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-[10px] uppercase font-black tracking-[0.2em] text-muted-foreground">Statement View</h3>
         <Button variant="secondary" size="sm" onClick={handleExportPdf} className="gap-1.5 text-xs font-bold">
-          <Download className="h-3.5 w-3.5" />
+          <HugeiconsIcon icon={Download01Icon} className="h-3.5 w-3.5" />
           Export PDF
         </Button>
       </div>

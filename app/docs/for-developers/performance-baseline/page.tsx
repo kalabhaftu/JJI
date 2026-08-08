@@ -1,4 +1,3 @@
-import { Activity, BarChart3, Timer } from 'lucide-react'
 import { DocsCardGrid, DocsInfoCard, DocsPage, DocsSection } from '@/components/docs/docs-page'
 
 export default function PerformanceBaselineDocsPage() {

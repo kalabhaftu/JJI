@@ -1,7 +1,8 @@
 import PublicLayout from '@/components/layouts/public-layout'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
-import { Rocket, Sparkles, Bug, Wrench } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { RocketIcon, SparklesIcon, Bug01Icon, Wrench01Icon } from '@hugeicons/core-free-icons'
 
 const changelog = [
   {
@@ -42,7 +43,7 @@ const changelog = [
   },
 ]
 
-const typeIcon = { feature: Sparkles, improvement: Wrench, fix: Bug }
+const typeIcon = { feature: SparklesIcon, improvement: Wrench01Icon, fix: Bug01Icon }
 const typeColor = { feature: 'text-green-500', improvement: 'text-blue-500', fix: 'text-orange-500' }
 
 export default function ChangelogPage() {
@@ -51,7 +52,7 @@ export default function ChangelogPage() {
       <div className="space-y-8">
         <div className="space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <Rocket className="h-8 w-8 text-primary" />
+            <HugeiconsIcon icon={RocketIcon} className="h-8 w-8 text-primary" strokeWidth={1.5} color="currentColor" />
             Changelog
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">Track what's new, improved, and fixed in JJI.</p>
@@ -67,11 +68,11 @@ export default function ChangelogPage() {
                 </div>
                 <ul className="space-y-2">
                   {release.highlights.map((item, i) => {
-                    const Icon = typeIcon[item.type as keyof typeof typeIcon] || Sparkles
+                    const icon = typeIcon[item.type as keyof typeof typeIcon] || SparklesIcon
                     const color = typeColor[item.type as keyof typeof typeColor] || ''
                     return (
                       <li key={i} className="flex items-start gap-2">
-                        <Icon className={`h-4 w-4 mt-0.5 shrink-0 ${color}`} />
+                        <HugeiconsIcon icon={icon} className={`h-4 w-4 mt-0.5 shrink-0 ${color}`} strokeWidth={1.5} color="currentColor" />
                         <span className="text-sm">{item.text}</span>
                       </li>
                     )

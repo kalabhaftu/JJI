@@ -1,7 +1,8 @@
 'use client'
 
 import type { Dispatch, SetStateAction } from 'react'
-import { Image as ImageIcon, Trash2, Upload, XCircle } from 'lucide-react'
+import { HugeiconsIcon } from '@hugeicons/react'
+import { Image01Icon, Delete02Icon, Upload01Icon, CancelCircleIcon } from '@hugeicons/core-free-icons'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -34,7 +35,7 @@ export function WeeklyCalendarTab({
                 <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                   <div className="flex items-center justify-between gap-4 mb-4">
                     <div className="flex items-center gap-2">
-                      <ImageIcon className="h-4 w-4 text-primary" />
+                      <HugeiconsIcon icon={Image01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
                       <h3 className="text-sm font-medium">Economic Calendar Screenshot</h3>
                     </div>
                     <div className="flex items-center gap-2">
@@ -47,7 +48,7 @@ export function WeeklyCalendarTab({
                             onClick={handleRemoveImage}
                             aria-label="Remove screenshot"
                           >
-                            <Trash2 className="h-4 w-4" />
+                            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
                           </Button>
                           <Button
                             variant="tertiary"
@@ -55,7 +56,7 @@ export function WeeklyCalendarTab({
                             className="h-8 px-3 rounded-lg border border-border/30 hover:bg-muted/35"
                             onClick={handleReplaceImage}
                           >
-                            <Upload className="h-4 w-4 mr-1.5" />
+                            <HugeiconsIcon icon={Upload01Icon} className="h-4 w-4 mr-1.5" strokeWidth={1.5} color="currentColor" />
                             Replace
                           </Button>
                         </>
@@ -86,7 +87,7 @@ export function WeeklyCalendarTab({
                       </div>
                     ) : imageLoadError ? (
                       <div className="flex flex-col items-center justify-center text-muted-foreground py-12">
-                        <XCircle className="h-12 w-12 text-destructive mb-4" />
+                        <HugeiconsIcon icon={CancelCircleIcon} className="h-12 w-12 text-destructive mb-4" strokeWidth={1.5} color="currentColor" />
                         <p className="text-sm font-medium mb-2">Failed to load saved image</p>
                         <Button
                           variant="secondary"
@@ -98,7 +99,7 @@ export function WeeklyCalendarTab({
                             document.getElementById('weekly-calendar-upload')?.click()
                           }}
                         >
-                          <Upload className="h-4 w-4 mr-2" />
+                          <HugeiconsIcon icon={Upload01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
                           Upload New Image
                         </Button>
                       </div>
@@ -108,7 +109,7 @@ export function WeeklyCalendarTab({
                         className="flex flex-col items-center justify-center text-muted-foreground py-16 cursor-pointer hover:bg-muted/30 transition-colors w-full h-full"
                       >
                         <div className="p-4 rounded-xl border border-border/40 bg-muted/20 mb-4">
-                          <ImageIcon className="h-8 w-8 opacity-50" />
+                          <HugeiconsIcon icon={Image01Icon} className="h-8 w-8 opacity-50" strokeWidth={1.5} color="currentColor" />
                         </div>
                         <span className="text-sm font-medium mb-1">Upload weekly calendar screenshot</span>
                         <span className="text-xs opacity-70">Click to browse or drag and drop</span>

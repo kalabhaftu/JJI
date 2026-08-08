@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
 
 import { getSafeRedirectPath } from '@/lib/security/redirects'
+import { resolveAuthOrigin } from '@/lib/security/auth-origin'
 
 function isLocalDevelopment() {
   const isVercel = process.env.VERCEL === '1'
@@ -31,6 +32,10 @@ export async function getWebsiteURL() {
   if (isLocalDevelopment() && requestOrigin) {
     return requestOrigin.endsWith('/') ? requestOrigin : `${requestOrigin}/`
   }
+
+  // Never let a production auth callback follow a drifted preview env value.
+  const hostedAuthOrigin = resolveAuthOrigin({ requestOrigin })
+  if (hostedAuthOrigin) return `${hostedAuthOrigin}/`
 
   const configuredUrl = getConfiguredAppUrl()
 

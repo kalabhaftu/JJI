@@ -36,6 +36,7 @@ describe('authentication flow contracts', () => {
     const client = source('server/auth/client.ts')
 
     expect(client).toContain("new URL('api/auth/callback', websiteURL)")
+    expect(client).toContain('resolveAuthOrigin({ requestOrigin })')
     expect(providers).toContain('emailRedirectTo')
     expect(providers).toContain('redirectTo: await getAuthCallbackUrl(next)')
   })

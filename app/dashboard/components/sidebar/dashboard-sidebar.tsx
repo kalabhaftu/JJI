@@ -69,7 +69,7 @@ const navigationIcons: Record<NavigationId, HugeiconsIconProps['icon']> = {
 function NavIcon({ icon, spin = false }: { icon: HugeiconsIconProps['icon']; spin?: boolean }) {
   return (
     <span className="flex size-5 shrink-0 items-center justify-center [&>svg]:size-5">
-      <HugeiconsIcon icon={icon} className={spin ? 'animate-spin' : undefined} strokeWidth={1.5} color="currentColor" aria-hidden />
+      <HugeiconsIcon icon={icon} className={spin ? 'animate-spin' : undefined} strokeWidth={2} color="currentColor" aria-hidden />
     </span>
   )
 }

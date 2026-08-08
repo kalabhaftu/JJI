@@ -66,6 +66,14 @@ const navigationIcons: Record<NavigationId, HugeiconsIconProps['icon']> = {
   feedback: Comment01Icon, donate: FavouriteIcon, more: DashboardSquare01Icon,
 }
 
+function NavIcon({ icon, spin = false }: { icon: HugeiconsIconProps['icon']; spin?: boolean }) {
+  return (
+    <span className="flex size-5 shrink-0 items-center justify-center [&>svg]:size-5">
+      <HugeiconsIcon icon={icon} className={spin ? 'animate-spin' : undefined} strokeWidth={1.5} color="currentColor" aria-hidden />
+    </span>
+  )
+}
+
 export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSettingsPayload }) {
   const pathname = usePathname()
   const { refreshTrades, isDemoMode } = useData()
@@ -244,12 +252,12 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                         isActive={activeId === item.id}
                         asChild
                         className={cn(
-                          isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
+                          isOverlay && 'h-11 rounded-2xl px-4 text-[15px]',
                           !isOverlay && !isCollapsed && 'px-3'
                         )}
                       >
                          <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
-                           <HugeiconsIcon icon={ItemIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
+                           <NavIcon icon={ItemIcon} />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -275,12 +283,12 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                         isActive={activeId === item.id}
                         asChild
                         className={cn(
-                          isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
+                          isOverlay && 'h-11 rounded-2xl px-4 text-[15px]',
                           !isOverlay && !isCollapsed && 'px-3'
                         )}
                       >
                          <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose}>
-                           <HugeiconsIcon icon={ItemIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
+                           <NavIcon icon={ItemIcon} />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -303,12 +311,12 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                        isActive={activeId === 'assistant'}
                       asChild
                       className={cn(
-                        isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
+                        isOverlay && 'h-11 rounded-2xl px-4 text-[15px]',
                         !isOverlay && !isCollapsed && 'px-3'
                       )}
                     >
                        <Link href={resolveNavigationPath('assistant', navigationContext)} onClick={handleMobileClose}>
-                        <HugeiconsIcon icon={Brain01Icon} className="size-4" strokeWidth={1.5} color="currentColor" />
+                        <NavIcon icon={Brain01Icon} />
                         <span>Assistant</span>
                       </Link>
                     </SidebarMenuButton>
@@ -327,7 +335,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                       variant={isCollapsed ? 'icon' : 'default'}
                       tooltip={isSyncing ? "Syncing data..." : "Sync & Refresh Data"}
                       className={cn(
-                        isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
+                        isOverlay && 'h-11 rounded-2xl px-4 text-[15px]',
                         !isOverlay && !isCollapsed && 'px-3'
                       )}
                       onClick={() => {
@@ -336,7 +344,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                       }}
                       disabled={isSyncing}
                     >
-                      <HugeiconsIcon icon={RefreshIcon} className={cn("size-4", isSyncing && "animate-spin")} strokeWidth={1.5} color="currentColor" />
+                      <NavIcon icon={RefreshIcon} spin={isSyncing} />
                       <span>{isSyncing ? "Syncing..." : "Sync Data"}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -352,12 +360,12 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                         isActive={activeId === item.id}
                         asChild
                         className={cn(
-                          isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
+                          isOverlay && 'h-11 rounded-2xl px-4 text-[15px]',
                           !isOverlay && !isCollapsed && 'px-3'
                         )}
                       >
                          <Link href={resolveNavigationPath(item, navigationContext)} onClick={handleMobileClose} data-tour={`sidebar-${item.id}`}>
-                           <HugeiconsIcon icon={ItemIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
+                           <NavIcon icon={ItemIcon} />
                           <span>{item.label}</span>
                         </Link>
                       </SidebarMenuButton>
@@ -390,11 +398,11 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                   tooltip="Exit Demo"
                   className={cn(
                     'w-full text-destructive hover:text-destructive hover:bg-destructive/10 transition-colors font-semibold',
-                    isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
+                    isOverlay && 'h-11 rounded-2xl px-4 text-[15px]',
                     !isOverlay && !isCollapsed && 'justify-start px-3'
                   )}
                 >
-                  <HugeiconsIcon icon={Logout01Icon} className="h-4 w-4 shrink-0" strokeWidth={1.5} color="currentColor" />
+                  <NavIcon icon={Logout01Icon} />
                   {(!isCollapsed || isOverlay) && <span>Exit Demo</span>}
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -407,11 +415,11 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
                 tooltip={collapseLabel}
                 className={cn(
                   'w-full text-muted-foreground hover:text-foreground',
-                  isOverlay && 'h-11 rounded-2xl px-4 text-[15px] [&>svg]:size-[17px]',
+                  isOverlay && 'h-11 rounded-2xl px-4 text-[15px]',
                   !isOverlay && !isCollapsed && 'justify-start px-3'
                 )}
               >
-                <HugeiconsIcon icon={CollapseIcon} className="size-4" strokeWidth={1.5} color="currentColor" />
+                <NavIcon icon={CollapseIcon} />
                 {(!isCollapsed || isOverlay) && <span>{collapseLabel}</span>}
               </SidebarMenuButton>
             </SidebarMenuItem>

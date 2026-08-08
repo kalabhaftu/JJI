@@ -4,7 +4,11 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { DEMO_HOST, DOCS_HOST, normalizeHostname } from '@/lib/public-surface-routing'
 import { REQUEST_ID_HEADER, resolveRequestId } from '@/lib/observability/request-id'
 
-export async function middleware(request: NextRequest) {
+type AuthClaims = {
+  sub?: string
+}
+
+export async function proxy(request: NextRequest) {
   const requestId = resolveRequestId(request.headers)
   const nonce = btoa(crypto.randomUUID())
   const isDevelopment = process.env.NODE_ENV === 'development'
@@ -24,7 +28,6 @@ export async function middleware(request: NextRequest) {
   ].join('; ')
   const requestHeaders = new Headers(request.headers)
 
-
   requestHeaders.delete('x-user-id')
   requestHeaders.delete('x-user-authenticated')
   requestHeaders.delete('x-auth-error')
@@ -32,14 +35,17 @@ export async function middleware(request: NextRequest) {
   requestHeaders.set('x-nonce', nonce)
   requestHeaders.set('Content-Security-Policy', csp)
 
-  const host = normalizeHostname(request.headers.get('host'))
-
-
-  if (request.nextUrl.pathname === '/sw.js') {
-    const response = NextResponse.next({ request: { headers: requestHeaders } })
+  const applySecurityHeaders = (response: NextResponse) => {
     response.headers.set('Content-Security-Policy', csp)
     response.headers.set(REQUEST_ID_HEADER, requestId)
     return response
+  }
+
+  const host = normalizeHostname(request.headers.get('host'))
+  const pathname = request.nextUrl.pathname
+
+  if (pathname === '/sw.js') {
+    return applySecurityHeaders(NextResponse.next({ request: { headers: requestHeaders } }))
   }
 
   if (host === DOCS_HOST) {
@@ -47,10 +53,7 @@ export async function middleware(request: NextRequest) {
     if (!url.pathname.startsWith('/docs')) {
       url.pathname = url.pathname === '/' ? '/docs' : `/docs${url.pathname}`
     }
-    const rewriteResponse = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
-    rewriteResponse.headers.set('Content-Security-Policy', csp)
-    rewriteResponse.headers.set(REQUEST_ID_HEADER, requestId)
-    return rewriteResponse
+    return applySecurityHeaders(NextResponse.rewrite(url, { request: { headers: requestHeaders } }))
   }
 
   if (host === DEMO_HOST) {
@@ -58,33 +61,22 @@ export async function middleware(request: NextRequest) {
     if (!url.pathname.startsWith('/demo')) {
       url.pathname = url.pathname === '/' ? '/demo' : `/demo${url.pathname}`
     }
-    const rewriteResponse = NextResponse.rewrite(url, { request: { headers: requestHeaders } })
-    rewriteResponse.headers.set('Content-Security-Policy', csp)
-    rewriteResponse.headers.set(REQUEST_ID_HEADER, requestId)
-    return rewriteResponse
+    return applySecurityHeaders(NextResponse.rewrite(url, { request: { headers: requestHeaders } }))
   }
 
-  let supabaseResponse = NextResponse.next({
-    request: { headers: requestHeaders },
-  })
-  supabaseResponse.headers.set('Content-Security-Policy', csp)
-  supabaseResponse.headers.set(REQUEST_ID_HEADER, requestId)
-
-  if (request.nextUrl.pathname.startsWith('/api/')) {
-    return supabaseResponse
-  }
-
-  const { pathname } = request.nextUrl
+  let supabaseResponse = applySecurityHeaders(
+    NextResponse.next({ request: { headers: requestHeaders } }),
+  )
+  const isApiRoute = pathname.startsWith('/api/')
   const isProtectedRoute = pathname.startsWith('/dashboard')
 
-
-  if (!isProtectedRoute) {
+  if (!isApiRoute && !isProtectedRoute) {
     return supabaseResponse
   }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
@@ -92,55 +84,59 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet: any[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
-          supabaseResponse.headers.set('Content-Security-Policy', csp)
-          supabaseResponse.headers.set(REQUEST_ID_HEADER, requestId)
+          requestHeaders.set('cookie', request.cookies.toString())
+          supabaseResponse = applySecurityHeaders(
+            NextResponse.next({ request: { headers: requestHeaders } }),
+          )
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options)
+            supabaseResponse.cookies.set(name, value, options),
           )
         },
       },
-    }
+    },
   )
 
+  let claims: AuthClaims | null = null
+  try {
+    const result = await supabase.auth.getClaims()
+    claims = (result.data?.claims as AuthClaims | null | undefined) ?? null
+  } catch {
+    claims = null
+  }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const userId = typeof claims?.sub === 'string' ? claims.sub : null
+  if (userId) {
+    requestHeaders.set('x-user-id', userId)
+    requestHeaders.set('x-user-authenticated', 'authenticated')
+  }
 
-  if (!user) {
+  const createForwardResponse = () => {
+    const response = applySecurityHeaders(
+      NextResponse.next({ request: { headers: requestHeaders } }),
+    )
+    supabaseResponse.cookies.getAll().forEach((cookie) => response.cookies.set(cookie))
+    return response
+  }
+
+  if (isApiRoute) {
+    return createForwardResponse()
+  }
+
+  if (!userId) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
 
-
     const redirectResponse = NextResponse.redirect(url)
-    supabaseResponse.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie.name, cookie.value)
-    })
+    supabaseResponse.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie))
     redirectResponse.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
-    redirectResponse.headers.set('Content-Security-Policy', csp)
-    redirectResponse.headers.set(REQUEST_ID_HEADER, requestId)
-    return redirectResponse
+    return applySecurityHeaders(redirectResponse)
   }
 
-  requestHeaders.set('x-user-id', user.id)
-  requestHeaders.set('x-user-authenticated', 'authenticated')
-  const authenticatedResponse = NextResponse.next({
-    request: { headers: requestHeaders },
-  })
-  authenticatedResponse.headers.set('Content-Security-Policy', csp)
-  authenticatedResponse.headers.set(REQUEST_ID_HEADER, requestId)
-
-  supabaseResponse.cookies.getAll().forEach((cookie) => {
-    authenticatedResponse.cookies.set(cookie)
-  })
-  return authenticatedResponse
+  return createForwardResponse()
 }
 
 export const config = {
   matcher: [
-
-
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

@@ -1,9 +1,4 @@
-import { FlatCompat } from '@eslint/eslintrc'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
-
-const baseDirectory = path.dirname(fileURLToPath(import.meta.url))
-const compat = new FlatCompat({ baseDirectory })
+import nextConfig from 'eslint-config-next/core-web-vitals'
 
 const config = [
   {
@@ -19,7 +14,7 @@ const config = [
       'test-results/**',
     ],
   },
-  ...compat.extends('next/core-web-vitals'),
+  ...nextConfig,
   {
     rules: {
       'react-hooks/set-state-in-effect': 'off',
@@ -29,6 +24,8 @@ const config = [
       'react-hooks/purity': 'off',
       'react-hooks/immutability': 'off',
       'react/no-unescaped-entities': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/use-memo': 'off',
     },
   },
 ]

@@ -59,7 +59,7 @@ export default function Navbar() {
   const storeUser = useUserStore(state => state.supabaseUser)
   const { user: authUser } = useAuth()
   const user = storeUser ?? authUser
-  const avatarUrl = getUserAvatarUrl(user)
+  const avatarUrl = getUserAvatarUrl(storeUser, authUser)
   const displayName = getUserDisplayName(user) || user?.email?.split('@')[0] || 'User'
   const [filtersPopoverOpen, setFiltersPopoverOpen] = useState(false)
   const [accountPopoverOpen, setAccountPopoverOpen] = useState(false)

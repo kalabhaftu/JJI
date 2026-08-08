@@ -82,9 +82,9 @@ export async function POST(request: NextRequest) {
       }, tx as never)
     })
 
-    revalidateTag(`notifications-${identity.internalUserId}`)
-    revalidateTag(`accounts-${identity.internalUserId}`)
-    revalidateTag(`user-data-${identity.internalUserId}`)
+    revalidateTag(`notifications-${identity.internalUserId}`, 'max')
+    revalidateTag(`accounts-${identity.internalUserId}`, 'max')
+    revalidateTag(`user-data-${identity.internalUserId}`, 'max')
 
     return createSuccessResponse(
       { cancelled: true },

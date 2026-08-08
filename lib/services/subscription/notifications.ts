@@ -10,9 +10,9 @@ import {
 import { revalidatePath, revalidateTag } from 'next/cache'
 
 export function revalidateSubscriptionAccess(userId: string) {
-  revalidateTag(`notifications-${userId}`)
-  revalidateTag(`accounts-${userId}`)
-  revalidateTag(`user-data-${userId}`)
+  revalidateTag(`notifications-${userId}`, 'max')
+  revalidateTag(`accounts-${userId}`, 'max')
+  revalidateTag(`user-data-${userId}`, 'max')
   revalidatePath('/dashboard')
   revalidatePath('/dashboard/settings')
   revalidatePath('/subscribe')

@@ -9,7 +9,7 @@ export default defineConfig({
     testTimeout: 15_000,
     setupFiles: ['./tests/setup.ts'],
     include: ['**/*.test.{ts,tsx}'],
-    exclude: ['node_modules', '.agent', '.agents', '.kilo', '.claude', '.next', 'out', 'dist', 'build', 'tests/e2e/**'],
+    exclude: ['node_modules', '.agent', '.agents', '.kilo', '.claude', '.next', '.next-dev', '.next-analyze', 'out', 'dist', 'build', 'tests/e2e/**'],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
@@ -20,6 +20,8 @@ export default defineConfig({
         '**/*.config.{js,ts}',
         '**/*.test.{ts,tsx}',
         '.next/',
+        '.next-dev/',
+        '.next-analyze/',
       ],
     },
   },

@@ -121,7 +121,7 @@ export default function SettingsPage() {
     firstName: '',
     lastName: '',
   })
-  const avatarUrl = getUserAvatarUrl(user)
+  const avatarUrl = getUserAvatarUrl(storeUser, authUser)
 
   const [privacyMode, setPrivacyMode] = useState(() => {
     if (typeof window !== 'undefined') {

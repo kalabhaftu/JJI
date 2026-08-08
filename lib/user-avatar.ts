@@ -39,29 +39,31 @@ function firstImageCandidate(record: UnknownRecord | null): string | undefined {
   )
 }
 
-export function getUserAvatarUrl(user: unknown): string | undefined {
-  const root = asRecord(user)
-  const metadata = asRecord(root?.user_metadata)
-  const appMetadata = asRecord(root?.app_metadata)
+export function getUserAvatarUrl(...users: unknown[]): string | undefined {
+  for (const user of users) {
+    const root = asRecord(user)
+    const metadata = asRecord(root?.user_metadata)
+    const appMetadata = asRecord(root?.app_metadata)
 
-  const directCandidates = [
-    firstImageCandidate(root),
-    firstImageCandidate(metadata),
-    firstImageCandidate(appMetadata),
-  ]
+    const directCandidates = [
+      firstImageCandidate(root),
+      firstImageCandidate(metadata),
+      firstImageCandidate(appMetadata),
+    ]
 
-  for (const candidate of directCandidates) {
-    if (candidate) return candidate
-  }
+    for (const candidate of directCandidates) {
+      if (candidate) return candidate
+    }
 
-  const identities = Array.isArray(root?.identities) ? root.identities : []
-  for (const identity of identities) {
-    const identityRecord = asRecord(identity)
-    const identityData = asRecord(identityRecord?.identity_data)
-    const providerIdentityData = asRecord(identityRecord?.provider_identity_data)
-    const candidate = firstImageCandidate(identityData) ?? firstImageCandidate(providerIdentityData)
+    const identities = Array.isArray(root?.identities) ? root.identities : []
+    for (const identity of identities) {
+      const identityRecord = asRecord(identity)
+      const identityData = asRecord(identityRecord?.identity_data)
+      const providerIdentityData = asRecord(identityRecord?.provider_identity_data)
+      const candidate = firstImageCandidate(identityData) ?? firstImageCandidate(providerIdentityData)
 
-    if (candidate) return candidate
+      if (candidate) return candidate
+    }
   }
 
   return undefined

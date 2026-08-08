@@ -16,6 +16,6 @@ Analytics is unavailable in this workspace, so retained routes requiring externa
 | Obsolete modal trade entry | `internal-only` | `/dashboard/trades/new` (route replaces overlay) | No `createTradeWorkspace`/`trade-entry-modal` remnants in `app`/`components` | `unavailable` | Not required (internal) | Modal entry removed after canonical route shutdown |
 | `[...not-found]` catch-all | `internal-only` (404 surface) | Retain (default next) | `app/[...not-found]/page.tsx` only | `unavailable` | N/A (retain) | `notFound()` invoked; scanner reports the unreachable markup after `notFound()` as removable |
 
-`hostRewriteCallers`: none — `next.config.js`, `vercel.json` and `middleware.ts` define no rewrites or legacy hosts for these routes.
+`hostRewriteCallers`: none — `next.config.js`, `vercel.json` and `proxy.ts` define no rewrites or legacy hosts for these routes.
 
 See the [August 2026 release notes](2026-08-ui-ux-refactor.md) for behavior changes and rollout guidance.

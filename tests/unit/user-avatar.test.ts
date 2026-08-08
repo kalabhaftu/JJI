@@ -37,6 +37,13 @@ describe('user avatar helpers', () => {
     })).toBe('https://lh3.googleusercontent.com/a/provider=s96-c')
   })
 
+  it('falls back to the authenticated user when the store user has no avatar', () => {
+    expect(getUserAvatarUrl(
+      { email: 'user@test.com' },
+      { user_metadata: { picture: 'https://lh3.googleusercontent.com/a/session=s96-c' } },
+    )).toBe('https://lh3.googleusercontent.com/a/session=s96-c')
+  })
+
   it('keeps Google display names from OAuth metadata', () => {
     expect(getUserDisplayName({
       user_metadata: {

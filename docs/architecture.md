@@ -8,7 +8,7 @@ JJI is a Next.js App Router application deployed on Vercel. Routes render server
 
 ```text
 Browser
-  -> Next.js middleware and route guards
+  -> Next.js proxy and route guards
   -> App Router page or /api/v1 handler
   -> Supabase session validation
   -> internal JJI user resolution

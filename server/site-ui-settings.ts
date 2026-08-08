@@ -68,7 +68,7 @@ async function updateSiteUiSettings(
     settings = created
   }
 
-  revalidateTag(SITE_UI_SETTINGS_CACHE_TAG)
+  revalidateTag(SITE_UI_SETTINGS_CACHE_TAG, 'max')
   revalidatePath('/', 'layout')
   revalidatePath('/docs', 'layout')
   revalidatePath('/dashboard', 'layout')

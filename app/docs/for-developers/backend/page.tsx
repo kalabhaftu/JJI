@@ -12,7 +12,7 @@ export default function BackendDocsPage() {
           <li><strong>Route handlers:</strong> Next.js App Router route handlers in <code>app/api/</code></li>
           <li><strong>API versioning:</strong> v1 API under <code>app/api/v1/</code></li>
           <li><strong>Server utilities:</strong> Shared server logic in <code>server/</code> directory</li>
-          <li><strong>Authentication:</strong> Edge middleware in <code>proxy.ts</code> for auth checks</li>
+          <li><strong>Authentication:</strong> Next.js proxy in <code>proxy.ts</code> for auth checks</li>
         </ul>
       </DocsSection>
 

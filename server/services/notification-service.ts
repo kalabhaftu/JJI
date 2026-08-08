@@ -39,7 +39,7 @@ export class NotificationService {
                     updatedAt: new Date(),
                     data: { ...(existing.data as object || {}), ...data, referenceId },
                 }).where(eq(schema.Notification.id, existing.id)).returning().then(r => r[0]);
-                revalidateTag(`notifications-${userId}`)
+                revalidateTag(`notifications-${userId}`, 'max')
                 return updated
             }
         }
@@ -55,7 +55,7 @@ export class NotificationService {
             data: { ...data, referenceId }
         }).returning().then(r => r[0]);
 
-        revalidateTag(`notifications-${userId}`)
+        revalidateTag(`notifications-${userId}`, 'max')
         return notification
     }
 
@@ -65,6 +65,6 @@ export class NotificationService {
             eq(schema.Notification.type, type),
             eq(schema.Notification.isRead, false)
         ));
-        revalidateTag(`notifications-${userId}`)
+        revalidateTag(`notifications-${userId}`, 'max')
     }
 }

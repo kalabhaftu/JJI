@@ -1,12 +1,4 @@
 
-
-let withBundleAnalyzer = (config) => config
-try {
-  withBundleAnalyzer = require('@next/bundle-analyzer')({
-    enabled: process.env.ANALYZE === 'true',
-  })
-} catch (_) {}
-
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   typedRoutes: false,
@@ -137,7 +129,7 @@ if (typeof process !== 'undefined') {
 
 const { withSentryConfig } = require('@sentry/nextjs')
 
-module.exports = withSentryConfig(withBundleAnalyzer(nextConfig), {
+module.exports = withSentryConfig(nextConfig, {
   org: process.env.SENTRY_ORG,
   project: process.env.SENTRY_PROJECT,
   silent: !process.env.CI,

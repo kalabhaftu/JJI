@@ -66,7 +66,7 @@ export async function createOrUpdateNotification(userId: string, notification: N
                     .where(eq(schema.Notification.id, existing.id))
                     .returning()
 
-                revalidateTag(`notifications-${userId}`)
+                revalidateTag(`notifications-${userId}`, 'max')
                 return { success: true, data: updated, action: 'updated' as const }
             }
         }
@@ -84,7 +84,7 @@ export async function createOrUpdateNotification(userId: string, notification: N
             updatedAt: new Date()
         }).returning()
 
-        revalidateTag(`notifications-${userId}`)
+        revalidateTag(`notifications-${userId}`, 'max')
         return { success: true, data: created, action: 'created' as const }
 
     } catch (error) {
@@ -275,7 +275,7 @@ export async function dismissNotificationsByType(userId: string, type: Notificat
                 )
             )
 
-        revalidateTag(`notifications-${userId}`)
+        revalidateTag(`notifications-${userId}`, 'max')
         return { success: true }
     } catch (error) {
         return { success: false, error: 'Failed to dismiss notifications' }
@@ -317,4 +317,3 @@ export async function getNotificationStats(userId: string) {
         }
     }
 }
-

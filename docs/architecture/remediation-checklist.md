@@ -62,7 +62,7 @@ Legend:
 ## 3. Request correlation
 
 - [x] Validate safe incoming request IDs and generate replacements for invalid values.
-- [x] Attach `x-request-id` at the middleware boundary.
+- [x] Attach `x-request-id` at the proxy boundary.
 - [x] Return request IDs from standardized JSON helpers.
 - [x] Preserve request IDs on redirects, rewrites, streams, files, auth, webhooks, and cron responses without changing protocol bodies.
 - [x] Propagate request IDs through logger/Sentry context.
@@ -72,7 +72,7 @@ Legend:
 - [x] Bind job, phase, cleanup, and anchor payloads to shared Inngest event schemas.
 - [x] Add route and operation tags without private request payloads.
 - [x] Verify a deployed Preview redirect and standardized API error both return valid `x-request-id` correlation.
-- [x] Reject spoofed inbound identity headers at the middleware boundary and replace them only after Supabase verification.
+- [x] Reject spoofed inbound identity headers at the proxy boundary and replace them only after Supabase verification.
 - [ ] Verify one deployed response through logs, Sentry, and its durable audit row.
 
 ## 4. Phase evaluation engine

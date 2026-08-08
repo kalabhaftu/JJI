@@ -59,9 +59,9 @@ export async function DELETE(request: NextRequest) {
     }
 
 
-    revalidateTag(`trades-${internalUserId}`)
-    revalidateTag(`accounts-${internalUserId}`)
-    revalidateTag(`user-data-${internalUserId}`)
+    revalidateTag(`trades-${internalUserId}`, 'max')
+    revalidateTag(`accounts-${internalUserId}`, 'max')
+    revalidateTag(`user-data-${internalUserId}`, 'max')
 
     return createSuccessResponse(
       { storageCleanup },

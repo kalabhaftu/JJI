@@ -29,7 +29,7 @@ export async function invalidateUserAccountCaches(
       `prop-firm-accounts-${userId}`,
       `prop-firm-phases-${userId}`,
     ]) {
-      revalidateTag(tag)
+      revalidateTag(tag, 'max')
     }
   } catch (error) {
     reportError(error, {

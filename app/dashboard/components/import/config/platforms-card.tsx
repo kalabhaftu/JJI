@@ -129,7 +129,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Perfect for manual journal entries with all trade context and analysis',
     logo: {
-      component: () => <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />,
+      component: () => <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />,
     },
     customCardComponent: ManualTradeFormCard,
     steps: [
@@ -157,7 +157,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: '',
     logo: {
-      component: () => <HugeiconsIcon icon={SparklesIcon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />,
+      component: () => <HugeiconsIcon icon={SparklesIcon} className="w-4 h-4" strokeWidth={2} color="currentColor" />,
     },
     requiresAccountSelection: true,
     processFile: processStandardCsv,

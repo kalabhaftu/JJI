@@ -84,7 +84,7 @@ export async function PublicHeader({
 
           <details className="relative sm:hidden">
             <summary className="flex h-9 w-9 cursor-pointer list-none items-center justify-center rounded-xl border border-border/70 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
-              <HugeiconsIcon icon={Menu01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Menu01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               <span className="sr-only">Open navigation</span>
             </summary>
             <div className="absolute right-0 top-11 z-50 min-w-44 rounded-2xl border border-border/80 bg-popover p-2 shadow-xl">

@@ -21,7 +21,7 @@ export function ResponsiveWorkflowShell({ title, description, backHref, dirty, o
   return (
     <form onSubmit={onSubmit} className="flex h-full min-h-0 flex-col">
       <header className="flex shrink-0 items-center gap-3 border-b px-4 py-3 sm:px-6">
-        {backHref && <Button asChild variant="tertiary" size="sm"><Link href={backHref}><HugeiconsIcon icon={ArrowLeft01Icon} data-icon="inline-start" strokeWidth={1.5} color="currentColor" />Back</Link></Button>}
+        {backHref && <Button asChild variant="tertiary" size="sm"><Link href={backHref}><HugeiconsIcon icon={ArrowLeft01Icon} data-icon="inline-start" strokeWidth={2} color="currentColor" />Back</Link></Button>}
         <div className="min-w-0">
           <h1 className="truncate text-lg font-semibold">{title}</h1>
           {description && <p className="text-sm text-muted-foreground">{description}</p>}

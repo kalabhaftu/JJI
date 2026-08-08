@@ -215,7 +215,7 @@ export function EditBacktestDialog({
         <DialogContent className="w-full max-w-[95vw] sm:max-w-5xl h-[90vh] max-h-[90vh] overflow-y-auto z-[10000] p-4 sm:p-6 bg-background border-border shadow-lg duration-200 flex flex-col gap-0">
           <DialogHeader>
             <DialogTitle className="flex items-center text-base sm:text-lg">
-              <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4 sm:w-5 sm:h-5 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4 sm:w-5 sm:h-5 mr-2" strokeWidth={2} color="currentColor" />
               Edit Backtest - {backtest.pair} {backtest.direction}
             </DialogTitle>
             <DialogDescription>
@@ -274,7 +274,7 @@ export function EditBacktestDialog({
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center">
-                  <HugeiconsIcon icon={Target01Icon} className="w-5 h-5 mr-2" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Target01Icon} className="w-5 h-5 mr-2" strokeWidth={2} color="currentColor" />
                   Trading Model
                 </CardTitle>
               </CardHeader>
@@ -366,7 +366,7 @@ export function EditBacktestDialog({
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center">
-                  <HugeiconsIcon icon={CameraIcon} className="w-5 h-5 mr-2" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={CameraIcon} className="w-5 h-5 mr-2" strokeWidth={2} color="currentColor" />
                   Screenshots & Images
                 </CardTitle>
               </CardHeader>
@@ -392,7 +392,7 @@ export function EditBacktestDialog({
                             onClick={() => setCardPreview('')}
                             className="mr-2"
                           >
-                            <HugeiconsIcon icon={Cancel01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={Cancel01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
                           </Button>
                           <Button
                             type="button"
@@ -419,7 +419,7 @@ export function EditBacktestDialog({
                           }}
                         />
                         <div className="text-center">
-                          <HugeiconsIcon icon={CameraIcon} className="w-8 h-8 mx-auto mb-2 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                          <HugeiconsIcon icon={CameraIcon} className="w-8 h-8 mx-auto mb-2 text-muted-foreground" strokeWidth={2} color="currentColor" />
                           <p className="text-sm text-muted-foreground">Upload Card Preview</p>
                         </div>
                       </label>
@@ -455,7 +455,7 @@ export function EditBacktestDialog({
                                   onClick={() => removeImage(idx)}
                                   className="mr-1"
                                 >
-                                  <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" strokeWidth={1.5} color="currentColor" />
+                                  <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" strokeWidth={2} color="currentColor" />
                                 </Button>
                                 <Button
                                   type="button"
@@ -482,7 +482,7 @@ export function EditBacktestDialog({
                                 }}
                               />
                               <div className="text-center">
-                                <HugeiconsIcon icon={CameraIcon} className="w-6 h-6 mx-auto mb-1 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                                <HugeiconsIcon icon={CameraIcon} className="w-6 h-6 mx-auto mb-1 text-muted-foreground" strokeWidth={2} color="currentColor" />
                                 <span className="text-xs text-muted-foreground">Upload</span>
                               </div>
                             </label>
@@ -539,7 +539,7 @@ export function EditBacktestDialog({
               }}
               title="Download image"
             >
-              <HugeiconsIcon icon={Download01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Download01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
             </Button>
             <Button
               variant="destructive"
@@ -550,7 +550,7 @@ export function EditBacktestDialog({
               }}
               title="Close"
             >
-              <HugeiconsIcon icon={Cancel01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Cancel01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
             </Button>
           </div>
         </div>

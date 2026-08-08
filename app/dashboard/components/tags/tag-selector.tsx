@@ -61,7 +61,7 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
               onClick={() => handleRemoveTag(tag.id)}
               className="ml-1 hover:bg-black/20 rounded-full p-0.5"
             >
-              <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
             </button>
           </Badge>
         ))}
@@ -69,7 +69,7 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
         <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
           <PopoverTrigger asChild>
             <Button variant="secondary" size="sm" className="h-7 gap-1">
-              <HugeiconsIcon icon={Add01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Add01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
               <span className="text-xs">Add Tag</span>
             </Button>
           </PopoverTrigger>
@@ -77,7 +77,7 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-semibold flex items-center gap-1">
-                  <HugeiconsIcon icon={Tag01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Tag01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                   Select Tags
                 </h4>
                 <Button
@@ -89,7 +89,7 @@ export function TagSelector({ selectedTagIds, onChange, className }: TagSelector
                     setIsPopoverOpen(false)
                   }}
                 >
-                  <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Settings01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                   Manage
                 </Button>
               </div>

@@ -72,7 +72,7 @@ export function SettingsProfileSection({
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6" data-tour="settings-card-profile">
           <div className="flex items-start justify-between gap-4">
             <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-              <HugeiconsIcon icon={User02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={User02Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                Personal Info
             </h3>
             <Button
@@ -82,7 +82,7 @@ export function SettingsProfileSection({
               onClick={() => setIsEditingProfile(true)}
               disabled={isLoadingProfile || isEditingProfile}
             >
-                <HugeiconsIcon icon={PencilEdit01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                 Edit
             </Button>
           </div>
@@ -166,7 +166,7 @@ export function SettingsProfileSection({
         {                               }
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
           <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-            <HugeiconsIcon icon={CreditCardIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={CreditCardIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
             Subscription Plan
           </h3>
 
@@ -268,7 +268,7 @@ export function SettingsProfileSection({
               {!subscriptionData.hasAccess && (
                 <Link href="/subscribe">
                   <Button size="sm" className="gap-2 w-full mt-2 h-9 text-xs">
-                    <HugeiconsIcon icon={CreditCardIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={CreditCardIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                     Subscribe to Premium
                   </Button>
                 </Link>

@@ -360,7 +360,7 @@ export function WeeklyModal({
             <div className="flex items-start justify-between gap-4">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/50 bg-muted/25 text-muted-foreground">
-                  <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
                 </div>
                 <div className="min-w-0">
                   <h2 className="truncate text-lg font-semibold tracking-tight sm:text-xl">{dateRange}</h2>

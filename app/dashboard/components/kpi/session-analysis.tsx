@@ -54,7 +54,7 @@ export default function SessionAnalysis({ size: _size }: SessionAnalysisProps) {
               )}
             >
               <div className="flex items-center gap-3">
-                <HugeiconsIcon icon={session.icon} className={cn('h-5 w-5', session.color)} strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={session.icon} className={cn('h-5 w-5', session.color)} strokeWidth={2} color="currentColor" />
                 <div>
                   <p className="font-bold text-sm">{session.name}</p>
                   <p className="text-[10px] text-muted-foreground/50 font-medium">

@@ -57,7 +57,7 @@ export function WorkspaceSidebar({
           <p className="text-xs text-muted-foreground">Conversations and saved work</p>
         </div>
         <Button variant="tertiary" size="icon" onClick={onCollapse} aria-label="Collapse workspace library">
-          <HugeiconsIcon icon={PanelLeftCloseIcon} size={24} strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={PanelLeftCloseIcon} size={24} strokeWidth={2} color="currentColor" />
         </Button>
       </div>
 
@@ -90,7 +90,7 @@ export function WorkspaceSidebar({
         {activeTab === 'chats' && (
           <div className="space-y-2">
             <Button variant="secondary" className="w-full justify-start border-dashed" onClick={onNewChat}>
-              <HugeiconsIcon icon={Add01Icon} size={24} strokeWidth={1.5} color="currentColor" /> New conversation
+              <HugeiconsIcon icon={Add01Icon} size={24} strokeWidth={2} color="currentColor" /> New conversation
             </Button>
             {isLoading ? (
               <div className="flex justify-center py-8"><Spinner size="sm" /></div>
@@ -106,13 +106,13 @@ export function WorkspaceSidebar({
                       className="flex min-w-0 flex-1 items-center gap-2 rounded-xl px-3 py-2 text-left"
                       aria-current={selectedChatId === chat.id ? 'true' : undefined}
                     >
-                      {chat.isPinned ? <HugeiconsIcon icon={PinIcon} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={HistoryIcon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}
+                      {chat.isPinned ? <HugeiconsIcon icon={PinIcon} className="h-3.5 w-3.5 shrink-0" strokeWidth={2} color="currentColor" /> : <HugeiconsIcon icon={HistoryIcon} className="h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={2} color="currentColor" />}
                       <span className="truncate text-xs font-medium">{chat.title}</span>
                     </button>
                     <div className="flex pr-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100">
-                      <IconAction label={chat.isPinned ? 'Unpin conversation' : 'Pin conversation'} onClick={() => onTogglePin(chat)}><HugeiconsIcon icon={PinIcon} strokeWidth={1.5} color="currentColor" /></IconAction>
-                      <IconAction label="Archive conversation" onClick={() => onToggleArchive(chat)}><HugeiconsIcon icon={ArchiveIcon} strokeWidth={1.5} color="currentColor" /></IconAction>
-                      <IconAction label="Delete conversation" destructive onClick={() => onDeleteChat(chat.id)}><HugeiconsIcon icon={Delete02Icon} strokeWidth={1.5} color="currentColor" /></IconAction>
+                      <IconAction label={chat.isPinned ? 'Unpin conversation' : 'Pin conversation'} onClick={() => onTogglePin(chat)}><HugeiconsIcon icon={PinIcon} strokeWidth={2} color="currentColor" /></IconAction>
+                      <IconAction label="Archive conversation" onClick={() => onToggleArchive(chat)}><HugeiconsIcon icon={ArchiveIcon} strokeWidth={2} color="currentColor" /></IconAction>
+                      <IconAction label="Delete conversation" destructive onClick={() => onDeleteChat(chat.id)}><HugeiconsIcon icon={Delete02Icon} strokeWidth={2} color="currentColor" /></IconAction>
                     </div>
                   </div>
                 ))}
@@ -127,7 +127,7 @@ export function WorkspaceSidebar({
               <article key={insight.id} className="group py-3 first:pt-0">
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="text-xs font-semibold text-foreground">{insight.title}</h3>
-                  <IconAction label="Delete insight" destructive onClick={() => onDeleteInsight(insight.id)}><HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} color="currentColor" /></IconAction>
+                  <IconAction label="Delete insight" destructive onClick={() => onDeleteInsight(insight.id)}><HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} color="currentColor" /></IconAction>
                 </div>
                 <p className="mt-1 line-clamp-4 text-xs leading-5 text-muted-foreground">{insight.content}</p>
                 <time className="mt-2 block text-[10px] text-muted-foreground" dateTime={insight.createdAt}>{format(new Date(insight.createdAt), 'MMM d, yyyy')}</time>
@@ -145,7 +145,7 @@ export function WorkspaceSidebar({
                   <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-semibold">{review.grade || review.riskGrade || '—'}</span>
                 </div>
                 <p className="mt-1 line-clamp-3 text-xs leading-5 text-muted-foreground">{review.summary || 'Open the review for details.'}</p>
-                <span className="mt-2 flex items-center gap-1 text-xs font-semibold text-foreground"><HugeiconsIcon icon={EyeIcon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" /> View review</span>
+                <span className="mt-2 flex items-center gap-1 text-xs font-semibold text-foreground"><HugeiconsIcon icon={EyeIcon} className="h-3 w-3" strokeWidth={2} color="currentColor" /> View review</span>
               </button>
             ))}
           </div>

@@ -21,7 +21,7 @@ export function EmptyTradeState({ variant = 'no-account' }: { variant?: 'no-acco
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
       <div className="mb-5 flex items-center justify-center rounded-full bg-muted p-4">
-        <HugeiconsIcon icon={WalletCardsIcon} className="h-8 w-8 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={WalletCardsIcon} className="h-8 w-8 text-muted-foreground" strokeWidth={2} color="currentColor" />
       </div>
       <h3 className="mb-2 text-xl font-semibold tracking-tight">
         {isNoAccount ? 'Create a trading account first' : isFiltered ? 'No trades in this account scope' : 'Your workspace has no trades yet'}

@@ -34,7 +34,7 @@ export function SegmentError({
       aria-live="assertive"
       className="mx-auto my-12 flex max-w-lg flex-col items-center gap-4 p-6 text-center"
     >
-      <HugeiconsIcon icon={Alert02Icon} aria-hidden="true" className="size-9 text-destructive" strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={Alert02Icon} aria-hidden="true" className="size-9 text-destructive" strokeWidth={2} color="currentColor" />
       <div>
         <h1 className="text-xl font-semibold">This section could not load</h1>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -52,7 +52,7 @@ export function SegmentError({
         </pre>
       ) : null}
       <Button onClick={reset} variant="secondary" className="gap-2">
-        <HugeiconsIcon icon={RefreshIcon} aria-hidden="true" className="size-4" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={RefreshIcon} aria-hidden="true" className="size-4" strokeWidth={2} color="currentColor" />
         Try again
       </Button>
     </section>

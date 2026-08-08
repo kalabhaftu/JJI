@@ -36,7 +36,7 @@ function ObjectiveCard({
       <div className="mb-3 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className={cn('rounded-lg p-2', tone === 'long' ? 'bg-long/10 text-long' : 'bg-short/10 text-short')}>
-            <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
           </span>
           <p className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">{title}</p>
         </div>
@@ -74,7 +74,7 @@ function StatTile({
     <div className="rounded-xl border border-border/25 bg-muted/10 p-3">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
-        <HugeiconsIcon icon={Icon} className={cn('h-4 w-4', tone === 'positive' && 'text-long', tone === 'negative' && 'text-short', tone === 'neutral' && 'text-muted-foreground')} strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Icon} className={cn('h-4 w-4', tone === 'positive' && 'text-long', tone === 'negative' && 'text-short', tone === 'neutral' && 'text-muted-foreground')} strokeWidth={2} color="currentColor" />
       </div>
       <p className="font-mono text-lg font-black tracking-tight">{value}</p>
     </div>

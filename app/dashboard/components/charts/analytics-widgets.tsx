@@ -172,7 +172,7 @@ export function TagPerformanceWidget() {
   const { formatValue } = useDashboardDisplay()
   const rows = (data as TagPerformanceRow[]).slice(0, 8)
   return (
-    <WidgetCard title="Tag Performance" headerRight={<HugeiconsIcon icon={Tag01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}>
+    <WidgetCard title="Tag Performance" headerRight={<HugeiconsIcon icon={Tag01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />}>
       {isLoading ? <EmptyWidget label="Loading tags..." /> : rows.length === 0 ? <EmptyWidget label="No tag data yet" /> : (
         <div className="space-y-2">
           {rows.map((item) => {
@@ -201,7 +201,7 @@ export function TimeOfDayPerformanceWidget() {
   const active = rows.filter((item) => Number(item.trades || 0) > 0)
   const maxAbs = Math.max(...active.map((item) => Math.abs(Number(item.pnl || 0))), 1)
   return (
-    <WidgetCard title="Time of Day" headerRight={<HugeiconsIcon icon={Clock01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}>
+    <WidgetCard title="Time of Day" headerRight={<HugeiconsIcon icon={Clock01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />}>
       {isLoading ? <EmptyWidget label="Loading time of day..." /> : active.length === 0 ? <EmptyWidget label="No hourly data yet" /> : (
         <div>
           <div className="mb-2 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">New York time · 24h</div>
@@ -227,7 +227,7 @@ export function DisciplineAnalyticsWidget() {
   const { data, isLoading } = useWidgetData('disciplineAnalytics')
   const payload = data as DisciplinePayload | null | undefined
   return (
-    <WidgetCard title="Discipline" headerRight={<HugeiconsIcon icon={CheckmarkBadge01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />}>
+    <WidgetCard title="Discipline" headerRight={<HugeiconsIcon icon={CheckmarkBadge01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />}>
       {isLoading ? <EmptyWidget label="Loading discipline..." /> : !payload ? <EmptyWidget label="No discipline data yet" /> : (
         <div className="flex flex-col gap-4">
           <div className="grid grid-cols-3 gap-3">

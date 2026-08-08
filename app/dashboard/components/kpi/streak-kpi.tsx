@@ -56,7 +56,7 @@ const StreakKpi = React.memo(function StreakKpi({ size }: StreakKpiProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="cursor-help w-4 h-4 rounded-full border border-border/60 flex items-center justify-center shrink-0">
-                    <HugeiconsIcon icon={InformationCircleIcon} className="h-2.5 w-2.5 text-muted-foreground/60" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={InformationCircleIcon} className="h-2.5 w-2.5 text-muted-foreground/60" strokeWidth={2} color="currentColor" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={5} className="max-w-[220px]">
@@ -74,12 +74,12 @@ const StreakKpi = React.memo(function StreakKpi({ size }: StreakKpiProps) {
                 : "bg-muted/10"
           )}>
             {streakInfo.currentStreak >= 3 && streakInfo.isWinning ? (
-              <HugeiconsIcon icon={FireIcon} className="h-4 w-4 min-[1440px]:h-5 min-[1440px]:w-5 text-long/60" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={FireIcon} className="h-4 w-4 min-[1440px]:h-5 min-[1440px]:w-5 text-long/60" strokeWidth={2} color="currentColor" />
             ) : (
               <HugeiconsIcon icon={streakIcon} className={cn(
                 "h-4 w-4 min-[1440px]:h-5 min-[1440px]:w-5",
                 streakInfo.isWinning ? "text-long/60" : "text-short/60"
-              )} strokeWidth={1.5} color="currentColor" />
+              )} strokeWidth={2} color="currentColor" />
             )}
           </div>
         </div>

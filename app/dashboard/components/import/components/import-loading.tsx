@@ -116,7 +116,7 @@ export function ImportLoading({ progress }: { progress?: number }) {
           }}
           className="relative z-10 w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full bg-muted/20 border border-border flex items-center justify-center"
         >
-          <HugeiconsIcon icon={IconComponent} className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-foreground" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={IconComponent} className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 text-foreground" strokeWidth={2} color="currentColor" />
         </motion.div>
       </motion.div>
 

@@ -112,7 +112,7 @@ export function WidgetCard({
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <div className="cursor-help flex items-center justify-center shrink-0">
-                        <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-muted-foreground/60" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-muted-foreground/60" strokeWidth={2} color="currentColor" />
                       </div>
                     </TooltipTrigger>
                     <TooltipContent side="top" sideOffset={5} className="max-w-[240px] text-xs py-1.5 px-2.5 bg-popover border border-border/30 shadow-md">
@@ -174,7 +174,7 @@ export function WidgetCard({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="cursor-help flex items-center justify-center shrink-0">
-                      <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground transition-colors" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-muted-foreground/60 hover:text-muted-foreground transition-colors" strokeWidth={2} color="currentColor" />
                     </div>
                   </TooltipTrigger>
                   <TooltipContent side="top" sideOffset={5} className="max-w-[240px] text-xs py-1.5 px-2.5 bg-popover/95 backdrop-blur-sm border border-border/30 shadow-md">

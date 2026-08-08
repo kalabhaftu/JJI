@@ -272,7 +272,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Layers01Icon} className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Layers01Icon} className="h-3.5 w-3.5 text-muted-foreground/50" strokeWidth={2} color="currentColor" />
                   <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/70">Trade Setups</Label>
                 </div>
               </div>
@@ -364,7 +364,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
-              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-warning" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-warning" strokeWidth={2} color="currentColor" />
               Unsaved Changes
             </AlertDialogTitle>
             <AlertDialogDescription>

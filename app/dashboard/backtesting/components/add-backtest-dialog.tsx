@@ -79,7 +79,7 @@ export function AddBacktestDialog({ isOpen, onClose, onAdd }: AddBacktestDialogP
         <DialogContent className="w-full max-w-[95vw] sm:max-w-xl h-[90vh] max-h-[90vh] p-0 flex flex-col gap-0 border-border bg-background shadow-lg duration-200">
           <DialogHeader className="flex-shrink-0 bg-background border-b px-6 py-4">
             <DialogTitle className="flex items-center text-base sm:text-lg">
-              <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 sm:w-5 sm:h-5 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 sm:w-5 sm:h-5 mr-2" strokeWidth={2} color="currentColor" />
               Add New Backtest
             </DialogTitle>
             <DialogDescription>

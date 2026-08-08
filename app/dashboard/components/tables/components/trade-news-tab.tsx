@@ -67,7 +67,7 @@ export function TradeNewsTab({
                 {isNewsDay && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="relative">
-                            <HugeiconsIcon icon={Search01Icon} className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={Search01Icon} className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
                             <Input
                                 type="text"
                                 placeholder="Search news events..."

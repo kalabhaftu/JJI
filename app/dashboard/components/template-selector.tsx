@@ -186,7 +186,7 @@ export function TemplateSelector() {
             title={activeTemplate?.name || 'Templates'}
             aria-label={activeTemplate?.name ? `Template: ${activeTemplate.name}` : 'Templates'}
           >
-            <HugeiconsIcon icon={LayoutGridIcon} aria-hidden strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={LayoutGridIcon} aria-hidden strokeWidth={2} color="currentColor" />
             <span className="sr-only">{activeTemplate?.name || 'Templates'}</span>
           </Button>
         </DropdownMenuTrigger>
@@ -200,12 +200,12 @@ export function TemplateSelector() {
             >
               <div className="flex items-center gap-2 flex-1 min-w-0">
                 {t.isActive ? (
-                  <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-foreground shrink-0" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-foreground shrink-0" strokeWidth={2} color="currentColor" />
                 ) : (
                   <div className="w-3.5" />
                 )}
                 <span className="truncate">{t.name}</span>
-                {t.isDefault && <HugeiconsIcon icon={LockKeyIcon} className="h-3 w-3 text-muted-foreground shrink-0" strokeWidth={1.5} color="currentColor" />}
+                {t.isDefault && <HugeiconsIcon icon={LockKeyIcon} className="h-3 w-3 text-muted-foreground shrink-0" strokeWidth={2} color="currentColor" />}
               </div>
               {!t.isDefault && (
                 <RevealAction
@@ -217,7 +217,7 @@ export function TemplateSelector() {
                     handleDeleteClick(t.id, t.name)
                   }}
                 >
-                  <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                 </RevealAction>
               )}
             </DropdownMenuItem>
@@ -228,7 +228,7 @@ export function TemplateSelector() {
           {}
           {!isEditMode && activeTemplate && !activeTemplate.isDefault && (
             <DropdownMenuItem onClick={handleEdit} className="cursor-pointer">
-              <HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={2} color="currentColor" />
               Edit Layout
             </DropdownMenuItem>
           )}
@@ -236,14 +236,14 @@ export function TemplateSelector() {
           {}
           {activeTemplate?.isDefault && (
             <DropdownMenuItem onClick={openCloneDialog} className="cursor-pointer">
-              <HugeiconsIcon icon={Copy01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Copy01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={2} color="currentColor" />
               Clone & Edit
             </DropdownMenuItem>
           )}
 
           {}
           <DropdownMenuItem onClick={openCreateDialog} className="cursor-pointer">
-            <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5 mr-2" strokeWidth={2} color="currentColor" />
             New Template
           </DropdownMenuItem>
         </DropdownMenuContent>

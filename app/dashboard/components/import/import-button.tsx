@@ -85,12 +85,12 @@ interface TradeImportJobMeta {
 }
 
 const stepIcons: Record<string, React.ReactNode> = {
-  'select-import-type': <HugeiconsIcon icon={FileSpreadsheetIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />,
-  'upload-file': <HugeiconsIcon icon={Upload01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />,
-  'select-headers': <HugeiconsIcon icon={Location01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />,
-  'map-columns': <HugeiconsIcon icon={Location01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />,
-  'select-account': <HugeiconsIcon icon={Wallet01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />,
-  'preview-trades': <HugeiconsIcon icon={ViewIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />,
+  'select-import-type': <HugeiconsIcon icon={FileSpreadsheetIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />,
+  'upload-file': <HugeiconsIcon icon={Upload01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />,
+  'select-headers': <HugeiconsIcon icon={Location01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />,
+  'map-columns': <HugeiconsIcon icon={Location01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />,
+  'select-account': <HugeiconsIcon icon={Wallet01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />,
+  'preview-trades': <HugeiconsIcon icon={ViewIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />,
 }
 
 export default function ImportButton() {
@@ -290,13 +290,13 @@ export default function ImportButton() {
           toast.success("Evaluation Complete!", {
             description: "Your account has passed. Check notifications to confirm approval.",
             duration: 10000,
-            icon: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+            icon: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
           })
         } else if ((evalData.status === 'passed' || evalData.status === 'ready_for_transition') && result.isPropFirm && result.masterAccountId && result.phaseAccountId) {
           toast.success("Profit Target Reached!", {
             description: evalData.message || 'Ready to advance to next phase',
             duration: 10000,
-            icon: <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
+            icon: <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />
           })
 
           const dialogData = {
@@ -629,7 +629,7 @@ export default function ImportButton() {
         title="Import trades"
         aria-label="Import trades"
       >
-        <HugeiconsIcon icon={Upload01Icon} aria-hidden strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Upload01Icon} aria-hidden strokeWidth={2} color="currentColor" />
       </Button>
 
       <Dialog
@@ -666,7 +666,7 @@ export default function ImportButton() {
           {isOffline && (
             <div className="flex-none px-5 py-2 bg-amber-500/10 border-b border-amber-500/30">
               <p role="alert" className="flex items-center gap-2 text-xs font-medium text-amber-700 dark:text-amber-300">
-                <HugeiconsIcon icon={WifiOff01Icon} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={WifiOff01Icon} className="h-3.5 w-3.5 shrink-0" strokeWidth={2} color="currentColor" />
                 You're offline — importing trades is unavailable until you reconnect.
               </p>
             </div>
@@ -677,7 +677,7 @@ export default function ImportButton() {
               <div className="flex items-start justify-between gap-3">
                 <div className="space-y-0.5 min-w-0">
                   <p className="flex items-center gap-1.5 text-xs font-bold text-destructive">
-                    <HugeiconsIcon icon={AlertCircleIcon} className="h-3.5 w-3.5 shrink-0" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={AlertCircleIcon} className="h-3.5 w-3.5 shrink-0" strokeWidth={2} color="currentColor" />
                     {saveError.title}
                   </p>
                   <p className="text-xs text-destructive/90 break-words">{saveError.message}</p>
@@ -688,7 +688,7 @@ export default function ImportButton() {
                   className="shrink-0 text-xs h-8 border-destructive/40 text-destructive hover:bg-destructive/10"
                   onClick={() => handleSave()}
                 >
-                  <HugeiconsIcon icon={RefreshIcon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={RefreshIcon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
                   Retry
                 </Button>
               </div>
@@ -728,7 +728,7 @@ export default function ImportButton() {
                           )}
                         >
                           {isCompleted ? (
-                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3.5 w-3.5 text-primary" strokeWidth={2} color="currentColor" />
                           ) : (
                             <div className={cn(
                               "flex items-center justify-center h-4 w-4 rounded-full text-[10px] font-bold",
@@ -792,7 +792,7 @@ export default function ImportButton() {
                       disabled={isSaving}
                       className="gap-1.5 text-xs h-9 border-border/50 hover:bg-muted"
                     >
-                      <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                       Back
                     </Button>
                   )}
@@ -812,13 +812,13 @@ export default function ImportButton() {
                       </>
                     ) : currentStep?.isLastStep ? (
                       <>
-                        <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                         Save Trades
                       </>
                     ) : (
                       <>
                         Next
-                        <HugeiconsIcon icon={ArrowRight01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={ArrowRight01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                       </>
                     )}
                   </Button>

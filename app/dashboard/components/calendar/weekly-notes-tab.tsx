@@ -19,7 +19,7 @@ export function WeeklyNotesTab({ reviewData, setReviewData }: WeeklyNotesTabProp
               <TabsContent value="notes" className="m-0 px-4 py-5 sm:px-6 lg:px-8">
                 <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <HugeiconsIcon icon={File01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={File01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                     <h3 className="text-sm font-medium">Weekly Review Notes</h3>
                   </div>
                   <div className="space-y-3">

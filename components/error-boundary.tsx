@@ -79,7 +79,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         <Card role="alert" aria-live="assertive" className={`border-destructive/50 ${className}`}>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
               Something went wrong
             </CardTitle>
           </CardHeader>
@@ -104,7 +104,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                   onClick={this.handleRetry}
                   className="gap-2"
                 >
-                  <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                   Try Again
                 </Button>
                 {isChunkError && (
@@ -114,7 +114,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
                     onClick={() => window.location.reload()}
                     className="gap-2"
                   >
-                    <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                     Refresh Page
                   </Button>
                 )}
@@ -174,7 +174,7 @@ export function DataError({ error, onRetry, className = '' }: DataErrorProps): R
 
   return (
     <div className={`flex items-center gap-3 p-4 bg-destructive/10 border border-destructive/20 rounded-lg ${className}`}>
-      <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-destructive shrink-0" strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5 text-destructive shrink-0" strokeWidth={2} color="currentColor" />
       <p className="text-sm text-destructive flex-1">{error}</p>
       {onRetry && (
         <Button
@@ -184,7 +184,7 @@ export function DataError({ error, onRetry, className = '' }: DataErrorProps): R
           className="shrink-0"
           aria-label="Retry loading data"
         >
-          <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
         </Button>
       )}
     </div>

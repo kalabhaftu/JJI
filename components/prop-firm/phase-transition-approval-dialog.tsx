@@ -179,9 +179,9 @@ export function PhaseTransitionApprovalDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {isTransitioningToFunded ? (
-              <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
             ) : (
-              <HugeiconsIcon icon={ChevronRightIcon} className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ChevronRightIcon} className="h-5 w-5 text-muted-foreground" strokeWidth={2} color="currentColor" />
             )}
             {isTransitioningToFunded ? 'Ready for Funded Account!' : `Advance to ${nextPhaseName}`}
           </DialogTitle>
@@ -195,7 +195,7 @@ export function PhaseTransitionApprovalDialog({
 
         <div className="space-y-4">
           <Alert className={isTransitioningToFunded ? "border-primary/50 bg-primary/10" : "border-muted"}>
-            <HugeiconsIcon icon={SparklesIcon} className={`h-4 w-4 ${isTransitioningToFunded ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={SparklesIcon} className={`h-4 w-4 ${isTransitioningToFunded ? 'text-primary' : 'text-muted-foreground'}`} strokeWidth={2} color="currentColor" />
             <AlertDescription>
               {isTransitioningToFunded
                 ? "You've completed the evaluation! Enter your funded account ID."
@@ -245,7 +245,7 @@ export function PhaseTransitionApprovalDialog({
               ) : (
                 <>
                   Activate {nextPhaseName}
-                  <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4 ml-2" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4 ml-2" strokeWidth={2} color="currentColor" />
                 </>
               )}
             </Button>

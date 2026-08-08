@@ -80,7 +80,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         aria-describedby={disabled && disabledReason ? reasonId : undefined}
         {...props}
       >
-        {loading && <HugeiconsIcon icon={Loading01Icon} className="animate-spin" strokeWidth={1.5} color="currentColor" />}
+        {loading && <HugeiconsIcon icon={Loading01Icon} className="animate-spin" strokeWidth={2} color="currentColor" />}
         {loading ? <><span>{loadingText}</span><span className="sr-only">: {children}</span></> : children}
       </button>
       {disabled && disabledReason && <span id={reasonId} className="sr-only">{disabledReason}</span>}

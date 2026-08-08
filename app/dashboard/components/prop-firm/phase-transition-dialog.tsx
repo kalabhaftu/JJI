@@ -110,7 +110,7 @@ export function PhaseTransitionDialog({
 
       toast.success("Phase Transition Successful", {
         description: `You've successfully advanced to ${getPhaseDisplayName(nextPhaseNumber)}! Importing trades to the new phase...`,
-        icon: <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+        icon: <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
       })
 
 
@@ -128,7 +128,7 @@ export function PhaseTransitionDialog({
       reportClientError(error, { operation: 'transition-prop-firm-phase', route: '/api/v1/prop-firm/accounts' })
       toast.error("Transition Failed", {
         description: error instanceof Error ? error.message : 'Failed to transition to next phase',
-        icon: <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+        icon: <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
       })
     } finally {
       setIsTransitioning(false)
@@ -137,9 +137,9 @@ export function PhaseTransitionDialog({
 
   const getTransitionIcon = () => {
     if (isFundedPhase(nextPhaseNumber)) {
-      return <HugeiconsIcon icon={Award01Icon} className="h-10 w-10" strokeWidth={1.5} color="currentColor" />
+      return <HugeiconsIcon icon={Award01Icon} className="h-10 w-10" strokeWidth={2} color="currentColor" />
     }
-    return <HugeiconsIcon icon={SparklesIcon} className="h-10 w-10" strokeWidth={1.5} color="currentColor" />
+    return <HugeiconsIcon icon={SparklesIcon} className="h-10 w-10" strokeWidth={2} color="currentColor" />
   }
 
   const getTransitionTitle = () => {
@@ -201,7 +201,7 @@ export function PhaseTransitionDialog({
                   <span className="text-sm text-muted-foreground">Profit Target</span>
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium">{formatPercent(currentPhase.profitTargetPercent)}</span>
-                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />
                   </div>
                 </div>
               )}
@@ -222,18 +222,18 @@ export function PhaseTransitionDialog({
           <div className="relative flex items-center justify-center gap-4 py-2">
             <div className="text-center">
               <div className="relative w-14 h-14 bg-long/10 rounded-xl flex items-center justify-center mb-2 transition-all hover:scale-105">
-                <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-6 w-6 text-long" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-6 w-6 text-long" strokeWidth={2} color="currentColor" />
               </div>
               <span className="text-sm font-medium">{getPhaseDisplayName(currentPhase.phaseNumber)}</span>
               <div className="text-xs text-muted-foreground">Completed</div>
             </div>
 
-            <HugeiconsIcon icon={ArrowRight01Icon} className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ArrowRight01Icon} className="h-6 w-6 text-muted-foreground" strokeWidth={2} color="currentColor" />
 
             <div className="text-center">
               <div className="relative w-14 h-14 bg-muted/30 rounded-xl flex items-center justify-center mb-2 transition-all hover:scale-105">
                 <Skeleton className="absolute inset-0 rounded-xl bg-muted/40" />
-                <HugeiconsIcon icon={RocketIcon} className="h-6 w-6 text-foreground relative z-10" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={RocketIcon} className="h-6 w-6 text-foreground relative z-10" strokeWidth={2} color="currentColor" />
               </div>
               <span className="text-sm font-medium">{getPhaseDisplayName(nextPhaseNumber)}</span>
               <div className="text-xs text-muted-foreground">Ready</div>
@@ -244,7 +244,7 @@ export function PhaseTransitionDialog({
           <div className="space-y-4">
             <div className="flex items-center gap-3 p-3 bg-muted/50 border border-border rounded-lg">
               <div className="p-2 bg-muted rounded-lg">
-                <HugeiconsIcon icon={Key01Icon} className="h-5 w-5 text-foreground" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Key01Icon} className="h-5 w-5 text-foreground" strokeWidth={2} color="currentColor" />
               </div>
               <div className="flex-1">
                 <div className="text-sm font-medium">
@@ -298,7 +298,7 @@ export function PhaseTransitionDialog({
               ) : (
                 <>
                   Start {getPhaseDisplayName(nextPhaseNumber)}
-                  <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 ml-2" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 ml-2" strokeWidth={2} color="currentColor" />
                 </>
               )}
             </Button>

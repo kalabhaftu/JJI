@@ -58,7 +58,7 @@ export function CommandPalette() {
                     }}
                     className="flex items-center gap-3 rounded-lg px-3 py-3"
                   >
-                    <HugeiconsIcon icon={Icon} className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Icon} className="h-4 w-4 shrink-0 text-muted-foreground" strokeWidth={2} color="currentColor" />
                     <div className="min-w-0 flex-1">
                       <div className="truncate font-medium">{item.title}</div>
                       <div className="truncate text-xs text-muted-foreground">{item.description}</div>

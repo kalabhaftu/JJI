@@ -65,7 +65,7 @@ const InputOTPSeparator = React.forwardRef<
   React.ComponentPropsWithoutRef<"div">
 >(({ ...props }, ref) => (
   <div ref={ref} role="separator" {...props}>
-    <HugeiconsIcon icon={DotIcon} strokeWidth={1.5} color="currentColor" />
+    <HugeiconsIcon icon={DotIcon} strokeWidth={2} color="currentColor" />
   </div>
 ))
 InputOTPSeparator.displayName = "InputOTPSeparator"

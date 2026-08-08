@@ -49,7 +49,7 @@ export function DashboardDisplayModeSelector({
           title={allModes[mode].label}
           aria-label={allModes[mode].label}
         >
-          <HugeiconsIcon icon={ActiveIcon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
+          <HugeiconsIcon icon={ActiveIcon} className="size-4" strokeWidth={2} color="currentColor" aria-hidden />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" sideOffset={8} className="w-56">
@@ -69,12 +69,12 @@ export function DashboardDisplayModeSelector({
                   isActive ? 'border-primary/30 bg-primary/10 text-primary' : 'border-border/50 bg-muted/30 text-muted-foreground'
                 )}
               >
-                <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold">{allModes[value].label}</span>
-                  {isActive && <HugeiconsIcon icon={ScanEyeIcon} className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} color="currentColor" />}
+                  {isActive && <HugeiconsIcon icon={ScanEyeIcon} className="h-3.5 w-3.5 text-primary" strokeWidth={2} color="currentColor" />}
                 </div>
                 <p className="text-xs text-muted-foreground">{allModes[value].description}</p>
               </div>

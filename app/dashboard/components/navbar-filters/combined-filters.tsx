@@ -260,7 +260,7 @@ export function CombinedFilters({
           onClick={() => setCurrentView('instrument')}
         >
           <div className="flex items-center gap-3 w-full">
-            <HugeiconsIcon icon={FilterIcon} className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={FilterIcon} className="h-5 w-5 text-muted-foreground" strokeWidth={2} color="currentColor" />
             <div className="flex-1 text-left">
               <div className="font-medium text-sm">Instrument Filter</div>
               <div className="text-xs text-muted-foreground">
@@ -278,7 +278,7 @@ export function CombinedFilters({
           onClick={() => setCurrentView('date')}
         >
           <div className="flex items-center gap-3 w-full">
-            <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5 text-muted-foreground" strokeWidth={2} color="currentColor" />
             <div className="flex-1 text-left">
               <div className="font-medium text-sm">Date Range Filter</div>
               <div className="text-xs text-muted-foreground">
@@ -304,7 +304,7 @@ export function CombinedFilters({
           className="h-8 w-8 p-0"
           onClick={() => setCurrentView('menu')}
         >
-          <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
         </Button>
         <div className="flex-1">
           <h4 className="font-semibold text-sm sm:text-base">Instrument Filter</h4>
@@ -316,7 +316,7 @@ export function CombinedFilters({
 
       {}
       <div className="relative">
-        <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
         <Input
           placeholder="Search instruments..."
           value={searchQuery}
@@ -353,7 +353,7 @@ export function CombinedFilters({
       <ScrollArea className="h-48 sm:h-72 pr-3">
         {totalInstruments === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-center">
-            <HugeiconsIcon icon={FilterIcon} className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground/30 mb-2 sm:mb-3" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={FilterIcon} className="h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground/30 mb-2 sm:mb-3" strokeWidth={2} color="currentColor" />
             <p className="text-xs sm:text-sm text-muted-foreground">No instruments available</p>
             <p className="text-xs text-muted-foreground mt-1">Import trades to see instruments</p>
           </div>
@@ -441,7 +441,7 @@ export function CombinedFilters({
           className="h-8 w-8 p-0"
           onClick={() => setCurrentView('menu')}
         >
-          <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
         </Button>
         <div className="flex-1">
           <h4 className="font-semibold text-sm sm:text-base">Date Range Filter</h4>
@@ -523,7 +523,7 @@ export function CombinedFilters({
           title="Filters"
           aria-label="Filters"
         >
-          <HugeiconsIcon icon={FilterIcon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
+          <HugeiconsIcon icon={FilterIcon} className="size-4" strokeWidth={2} color="currentColor" aria-hidden />
           {(instruments.length > 0 || (dateRange?.from && dateRange?.to)) && (
             <Badge variant="secondary" className="absolute -right-1 -top-1 h-4 min-w-4 px-1 text-[10px] leading-none">
               {instruments.length > 0

@@ -71,7 +71,7 @@ export function DonateCardsClient() {
     return (
       <Card>
         <CardContent className="py-12 text-center">
-          <HugeiconsIcon icon={HeartIcon} className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={HeartIcon} className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" strokeWidth={2} color="currentColor" />
           <p className="text-muted-foreground">No donation addresses are configured yet.</p>
         </CardContent>
       </Card>
@@ -129,9 +129,9 @@ export function DonateCardsClient() {
                       onClick={() => copyToClipboard(addr.address, index)}
                     >
                       {isCopied ? (
-                        <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-green-500" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-green-500" strokeWidth={2} color="currentColor" />
                       ) : (
-                        <HugeiconsIcon icon={CopyIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={CopyIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                       )}
                     </Button>
                   </div>

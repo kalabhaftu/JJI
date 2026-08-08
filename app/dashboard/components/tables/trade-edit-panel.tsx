@@ -330,7 +330,7 @@ export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route'
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <TradeWorkspaceCloseButton variant="tertiary" size="sm" disabled={isSubmitting} className="h-8 px-2 text-xs hover:bg-accent/50 shrink-0">
-                <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1 h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                 <span className="hidden sm:inline">Back</span>
               </TradeWorkspaceCloseButton>
               <div className="h-4 w-px bg-border/40 shrink-0" />
@@ -357,15 +357,15 @@ export function TradeEditPanel({ trade, onClose, onSave, workspaceMode = 'route'
           <div className="px-4 sm:px-6 pt-3 shrink-0">
             <TabsList className="w-full sm:w-auto justify-start h-auto p-1 gap-1 bg-muted/50">
               <TabsTrigger value="details" className="text-xs px-3 py-1.5 h-auto gap-1.5">
-                <HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                 Notes & Images
               </TabsTrigger>
               <TabsTrigger value="strategy" className="text-xs px-3 py-1.5 h-auto gap-1.5">
-                <HugeiconsIcon icon={Route01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Route01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                 Strategy
               </TabsTrigger>
               <TabsTrigger value="news" className="text-xs px-3 py-1.5 h-auto gap-1.5">
-                <HugeiconsIcon icon={News01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={News01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                 News
               </TabsTrigger>
             </TabsList>

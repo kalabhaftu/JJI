@@ -59,7 +59,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
         <DialogContent className="w-full max-w-[95vw] sm:max-w-5xl h-[90vh] max-h-[90vh] overflow-y-auto p-4 sm:p-6 bg-background border-border shadow-lg duration-200 flex flex-col gap-0">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
-              <HugeiconsIcon icon={EyeIcon} className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={EyeIcon} className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2} color="currentColor" />
               Backtest Details - {backtest.pair} {backtest.direction}
             </DialogTitle>
             <DialogDescription className="text-xs sm:text-sm">
@@ -74,7 +74,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
                     Execution Summary
                   </CardTitle>
                 </CardHeader>
@@ -123,7 +123,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <HugeiconsIcon icon={Target01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Target01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
                     Risk Management
                   </CardTitle>
                 </CardHeader>
@@ -153,7 +153,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <HugeiconsIcon icon={Clock01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Clock01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
                     Strategy & Session Details
                   </CardTitle>
                 </CardHeader>
@@ -238,7 +238,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                                 className="object-cover"
                               />
                               <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <HugeiconsIcon icon={EyeIcon} className="w-8 h-8 text-white" strokeWidth={1.5} color="currentColor" />
+                                <HugeiconsIcon icon={EyeIcon} className="w-8 h-8 text-white" strokeWidth={2} color="currentColor" />
                               </div>
                             </button>
                             <p className="text-xs text-muted-foreground mt-1 text-center">
@@ -256,7 +256,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
                     Key Metrics
                   </CardTitle>
                 </CardHeader>
@@ -330,7 +330,7 @@ export function ViewBacktestDialog({ isOpen, onClose, backtest }: ViewBacktestDi
                   link.click()
                 }}
               >
-                <HugeiconsIcon icon={Download01Icon} className="w-4 h-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Download01Icon} className="w-4 h-4 mr-2" strokeWidth={2} color="currentColor" />
                 Download
               </Button>
             </DialogHeader>

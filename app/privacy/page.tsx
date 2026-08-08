@@ -31,7 +31,7 @@ export default function PrivacyPage() {
   const sections = [
     {
       id: "introduction",
-      icon: <HugeiconsIcon icon={Shield01Icon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={Shield01Icon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "1. Summary",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -46,7 +46,7 @@ export default function PrivacyPage() {
     },
     {
       id: "data-collection",
-      icon: <HugeiconsIcon icon={DatabaseIcon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={DatabaseIcon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "2. The Data We Collect",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -61,7 +61,7 @@ export default function PrivacyPage() {
     },
     {
       id: "how-we-use",
-      icon: <HugeiconsIcon icon={LockIcon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={LockIcon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "3. How We Use Your Data",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -77,7 +77,7 @@ export default function PrivacyPage() {
     },
     {
       id: "third-parties",
-      icon: <HugeiconsIcon icon={Globe02Icon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={Globe02Icon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "4. Third-Party Integrations",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
     },
     {
       id: "cookies",
-      icon: <HugeiconsIcon icon={EyeIcon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={EyeIcon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "5. Cookies & Tracking",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -101,7 +101,7 @@ export default function PrivacyPage() {
           </p>
           <div className="mt-4">
             <Button variant="secondary" size="sm" onClick={openCookiePreferences} className="gap-2">
-              <HugeiconsIcon icon={Settings02Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Settings02Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
               View Storage Notice
             </Button>
           </div>
@@ -110,7 +110,7 @@ export default function PrivacyPage() {
     },
     {
       id: "security",
-      icon: <HugeiconsIcon icon={Alert02Icon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={Alert02Icon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "6. Data Security",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -122,7 +122,7 @@ export default function PrivacyPage() {
     },
     {
       id: "user-rights",
-      icon: <HugeiconsIcon icon={UserCheck01Icon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={UserCheck01Icon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "7. Your Rights",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -136,7 +136,7 @@ export default function PrivacyPage() {
     },
     {
       id: "retention",
-      icon: <HugeiconsIcon icon={DatabaseIcon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={DatabaseIcon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "8. Retention & Deletion",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -148,7 +148,7 @@ export default function PrivacyPage() {
     },
     {
       id: "contact",
-      icon: <HugeiconsIcon icon={Mail01Icon} className="w-5 h-5 text-primary" strokeWidth={1.5} color="currentColor" />,
+      icon: <HugeiconsIcon icon={Mail01Icon} className="w-5 h-5 text-primary" strokeWidth={2} color="currentColor" />,
       title: "9. Contact",
       content: (
         <div className="space-y-3 text-sm text-muted-foreground leading-relaxed">
@@ -172,7 +172,7 @@ export default function PrivacyPage() {
           </div>
           <Button variant="tertiary" size="sm" asChild className="text-muted-foreground hover:text-foreground transition-colors gap-2">
             <Link href="/">
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               Back
             </Link>
           </Button>

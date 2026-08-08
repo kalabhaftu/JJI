@@ -42,9 +42,9 @@ export function ConversationView({
                   <div className="max-w-[88%] rounded-2xl rounded-br-md bg-muted px-4 py-3 text-sm leading-6 text-foreground sm:max-w-[75%]">{message.content}</div>
                 ) : (
                   <div className="group flex w-full items-start gap-3 border-b border-border/50 pb-7 last:border-0">
-                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"><HugeiconsIcon icon={Brain01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /></span>
+                    <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"><HugeiconsIcon icon={Brain01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" /></span>
                     <div className="min-w-0 flex-1"><MessageContent content={message.content} /></div>
-                    <button type="button" aria-label="Save response as insight" title="Save insight" onClick={() => onSaveInsight(message)} className="touch-target-compact inline-flex items-center justify-center rounded-lg text-muted-foreground opacity-100 hover:bg-muted hover:text-foreground lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100"><HugeiconsIcon icon={Bookmark01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /></button>
+                    <button type="button" aria-label="Save response as insight" title="Save insight" onClick={() => onSaveInsight(message)} className="touch-target-compact inline-flex items-center justify-center rounded-lg text-muted-foreground opacity-100 hover:bg-muted hover:text-foreground lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100"><HugeiconsIcon icon={Bookmark01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" /></button>
                   </div>
                 )}
               </article>
@@ -52,7 +52,7 @@ export function ConversationView({
 
             {streamingText && (
               <article className="flex items-start gap-3 border-b border-border/50 pb-7">
-                <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"><HugeiconsIcon icon={Brain01Icon} className="h-4 w-4 animate-pulse" strokeWidth={1.5} color="currentColor" /></span>
+                <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground"><HugeiconsIcon icon={Brain01Icon} className="h-4 w-4 animate-pulse" strokeWidth={2} color="currentColor" /></span>
                 <div className="min-w-0 flex-1"><MessageContent content={streamingText} /></div>
               </article>
             )}

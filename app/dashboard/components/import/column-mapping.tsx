@@ -120,7 +120,7 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative z-10">
               <div className="flex items-start gap-3">
                 <div className="relative mt-0.5">
-                  <HugeiconsIcon icon={SparklesIcon} className="h-5 w-5 text-warning" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={SparklesIcon} className="h-5 w-5 text-warning" strokeWidth={2} color="currentColor" />
                 </div>
                 <div>
                   <p className="font-semibold text-foreground text-sm">Unmapped Fields Remaining</p>
@@ -133,7 +133,7 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
                 onClick={() => submit({ fieldColumns: headers, firstRows: csvData.slice(1, 6) })}
                 className="flex items-center gap-2 bg-warning/10 hover:bg-warning/20 text-warning border-warning/20 transition-all duration-200"
               >
-                {isLoading ? <Spinner className="h-3.5 w-3.5" /> : <HugeiconsIcon icon={RefreshIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />}
+                {isLoading ? <Spinner className="h-3.5 w-3.5" /> : <HugeiconsIcon icon={RefreshIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />}
                 <span>Auto-Map with AI</span>
               </Button>
             </div>
@@ -176,9 +176,9 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
                     <TooltipTrigger asChild>
                       <span className="cursor-help ml-1 opacity-70 hover:opacity-100">
                         {columnConfig[field]?.required ? (
-                          <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 text-destructive inline-block align-middle" strokeWidth={1.5} color="currentColor" />
+                          <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3 text-destructive inline-block align-middle" strokeWidth={2} color="currentColor" />
                         ) : (
-                          <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-warning inline-block align-middle" strokeWidth={1.5} color="currentColor" />
+                          <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 text-warning inline-block align-middle" strokeWidth={2} color="currentColor" />
                         )}
                       </span>
                     </TooltipTrigger>
@@ -263,7 +263,7 @@ export default function ColumnMapping({ headers, csvData, mappings, setMappings,
                       onClick={() => handleRemoveMapping(header)}
                       className="hover:bg-destructive/10 hover:text-destructive text-muted-foreground h-8 w-8 rounded-lg transition-all"
                     >
-                      <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                     </Button>
                   )}
                 </TableCell>

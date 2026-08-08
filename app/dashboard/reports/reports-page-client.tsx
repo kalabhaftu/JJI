@@ -304,7 +304,7 @@ export default function ReportsPageClient({
                       <div className="no-export flex items-center gap-2">
                         {                       }
                         <Button variant="secondary" size="sm" onClick={handleExportCSV} disabled={isExporting} className="h-8 gap-1.5 rounded-lg border-border/30 text-xs font-semibold hover:bg-muted-foreground/10">
-                            <HugeiconsIcon icon={Download01Icon} className="h-3.5 w-3.5 opacity-60" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={Download01Icon} className="h-3.5 w-3.5 opacity-60" strokeWidth={2} color="currentColor" />
                             Export CSV
                         </Button>
 
@@ -312,7 +312,7 @@ export default function ReportsPageClient({
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="secondary" size="sm" className="h-8 text-[11px] font-bold uppercase tracking-wider border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 rounded-xl gap-1.5">
-                                    <HugeiconsIcon icon={Share01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                                    <HugeiconsIcon icon={Share01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                                     Share
                                 </Button>
                             </DropdownMenuTrigger>
@@ -320,7 +320,7 @@ export default function ReportsPageClient({
                                 <Dialog>
                                     <DialogTrigger asChild>
                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2 text-xs font-medium cursor-pointer">
-                                            <HugeiconsIcon icon={DashboardSquare01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                                            <HugeiconsIcon icon={DashboardSquare01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                                             Performance Card
                                         </DropdownMenuItem>
                                     </DialogTrigger>
@@ -354,18 +354,18 @@ export default function ReportsPageClient({
                                     </DialogContent>
                                 </Dialog>
                                 <DropdownMenuItem onClick={handlePageSnapshot} disabled={isExporting} className="gap-2 text-xs font-medium">
-                                    <HugeiconsIcon icon={Image01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                                    <HugeiconsIcon icon={Image01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                                     Page Snapshot
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={handleGenerateLink} disabled={isExporting} className="gap-2 text-xs font-medium">
-                                    <HugeiconsIcon icon={Link01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                                    <HugeiconsIcon icon={Link01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                                     Create public link
                                 </DropdownMenuItem>
                                 <Dialog>
                                     <DialogTrigger asChild>
                                         <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="gap-2 text-xs font-medium cursor-pointer">
-                                            <HugeiconsIcon icon={Setting06Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                                            <HugeiconsIcon icon={Setting06Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                                             Manage Shared Links
                                         </DropdownMenuItem>
                                     </DialogTrigger>
@@ -402,7 +402,7 @@ export default function ReportsPageClient({
                     <ReportsContentSkeleton />
                 ) : !tradingActivity || !psychMetrics || filteredTrades.length === 0 ? (
                     <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border/50 bg-card/30 py-24">
-                        <HugeiconsIcon icon={ZapIcon} className="h-10 w-10 text-muted-foreground/30 mb-4" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={ZapIcon} className="h-10 w-10 text-muted-foreground/30 mb-4" strokeWidth={2} color="currentColor" />
                         <h3 className="mb-4 text-sm font-semibold text-muted-foreground">Journal is empty for this period</h3>
                         <Button
                             variant="secondary"
@@ -428,7 +428,7 @@ export default function ReportsPageClient({
                                     <div className="grid gap-0 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
                                         <div className="border-b border-border/15 p-5 lg:border-b-0 lg:border-r">
                                             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-<HugeiconsIcon icon={DashboardSquare01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+<HugeiconsIcon icon={DashboardSquare01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                                                 Report summary
                                             </div>
                                             <p className={cn("mt-5 font-mono text-4xl font-black tracking-tighter sm:text-5xl", psychMetrics.totalNetPnL >= 0 ? "text-long" : "text-short")}>
@@ -484,7 +484,7 @@ export default function ReportsPageClient({
                                     {                            }
                                     <div className="lg:col-span-7 space-y-6">
                                         <div className="flex items-center gap-2">
-                                            <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                                            <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                                             <h2 className="text-sm font-semibold text-muted-foreground">Performance detail</h2>
                                         </div>
                                         <div className="h-full border-y border-border/20">
@@ -556,7 +556,7 @@ export default function ReportsPageClient({
                                             <Tooltip>
                                                 <TooltipTrigger asChild>
                                                     <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-                                                        <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3 text-amber-500" strokeWidth={1.5} color="currentColor" />
+                                                        <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3 text-amber-500" strokeWidth={2} color="currentColor" />
                                                         <span className="text-[9px] font-bold text-amber-500">{rMultipleDataQuality.percentageComplete}% data</span>
                                                     </div>
                                                 </TooltipTrigger>

@@ -407,7 +407,7 @@ export function NotificationCenter() {
             className="relative text-muted-foreground"
             aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ''}`}
           >
-            <HugeiconsIcon icon={BellIcon} aria-hidden strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={BellIcon} aria-hidden strokeWidth={2} color="currentColor" />
             {unreadCount > 0 && (
               <Badge
                 variant="default"
@@ -427,7 +427,7 @@ export function NotificationCenter() {
         >
           <div className="flex justify-between items-center border-b px-4 py-2">
             <h2 className="text-sm font-medium flex items-center gap-2">
-              <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /> Notifications
+              <HugeiconsIcon icon={FilterIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" /> Notifications
             </h2>
             <div className="flex items-center gap-1">
               {unreadCount > 0 && (
@@ -437,7 +437,7 @@ export function NotificationCenter() {
                   className="h-7 text-xs px-2"
                   onClick={handleMarkAllAsRead}
                 >
-                  <HugeiconsIcon icon={CheckCheckIcon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={CheckCheckIcon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
                   Read all
                 </Button>
               )}
@@ -448,7 +448,7 @@ export function NotificationCenter() {
                   className="h-7 text-xs px-2 text-muted-foreground hover:text-destructive"
                   onClick={handleClearAll}
                 >
-                  <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
                   Clear
                 </Button>
               )}
@@ -476,7 +476,7 @@ export function NotificationCenter() {
               </div>
             ) : filteredNotifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <HugeiconsIcon icon={BellIcon} className="h-10 w-10 text-muted-foreground/50 mb-3" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={BellIcon} className="h-10 w-10 text-muted-foreground/50 mb-3" strokeWidth={2} color="currentColor" />
                 <p className="text-sm text-muted-foreground">
                   {selectedFilter === 'all'
                     ? 'All caught up!'

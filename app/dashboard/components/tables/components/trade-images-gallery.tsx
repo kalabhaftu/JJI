@@ -54,12 +54,12 @@ export function TradeImagesGallery({
                                         />
                                     ) : (
                                         <div className="absolute inset-0 flex items-center justify-center">
-                                            <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 text-destructive/40" strokeWidth={1.5} color="currentColor" />
+                                            <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 text-destructive/40" strokeWidth={2} color="currentColor" />
                                         </div>
                                     )}
                                     <div className="absolute inset-0 bg-background/90 opacity-0 group-hover:opacity-100 transition-all duration-200 flex items-center justify-center gap-2">
                                         <InputButton
-                                            icon={<HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />}
+                                            icon={<HugeiconsIcon icon={PencilEdit01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />}
                                             onClick={(file) => onUpload(field, file)}
                                             className="bg-secondary border-border hover:bg-accent"
                                             title="Edit"
@@ -72,7 +72,7 @@ export function TradeImagesGallery({
                                             title="Delete"
                                             onClick={() => onRemove(field)}
                                         >
-                                            <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                                            <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                                         </Button>
                                     </div>
                                 </>
@@ -85,7 +85,7 @@ export function TradeImagesGallery({
                                     }}
                                     accept={{ 'image/*': ['.png', '.jpg', '.jpeg', '.gif', '.webp'] }}
                                     className="h-full w-full bg-muted/30 hover:bg-muted/50 border-dashed"
-                                    icon={<HugeiconsIcon icon={Upload01Icon} className="h-4 w-4 text-muted-foreground/40 mb-1" strokeWidth={1.5} color="currentColor" />}
+                                    icon={<HugeiconsIcon icon={Upload01Icon} className="h-4 w-4 text-muted-foreground/40 mb-1" strokeWidth={2} color="currentColor" />}
                                     description="Drag or Click"
                                     disabled={uploadingField === field}
                                 />

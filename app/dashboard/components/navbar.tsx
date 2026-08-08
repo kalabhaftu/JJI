@@ -115,7 +115,7 @@ export default function Navbar() {
             aria-label="Select accounts"
             data-tour="navbar-accounts-btn"
           >
-            <HugeiconsIcon icon={Wallet01Icon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
+            <HugeiconsIcon icon={Wallet01Icon} className="size-4" strokeWidth={2} color="currentColor" aria-hidden />
           </Button>
           <Button
             variant="tertiary"
@@ -124,7 +124,7 @@ export default function Navbar() {
             onClick={() => setMobileFiltersOpen(true)}
             aria-label="Open filters"
           >
-            <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
+            <HugeiconsIcon icon={SlidersHorizontalIcon} className="size-4" strokeWidth={2} color="currentColor" aria-hidden />
           </Button>
 
           {}
@@ -134,7 +134,7 @@ export default function Navbar() {
           }}>
             <PopoverTrigger asChild>
               <Button variant="tertiary" size="navIcon" data-tour="navbar-accounts-btn" className="hidden sm:flex text-muted-foreground" aria-label="Trading accounts">
-                <HugeiconsIcon icon={Wallet01Icon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
+                <HugeiconsIcon icon={Wallet01Icon} className="size-4" strokeWidth={2} color="currentColor" aria-hidden />
               </Button>
             </PopoverTrigger>
             <PopoverContent
@@ -176,7 +176,7 @@ export default function Navbar() {
             title="Quick Add Trade"
             aria-label="Quick add trade"
           >
-            <HugeiconsIcon icon={Add01Icon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
+            <HugeiconsIcon icon={Add01Icon} className="size-4" strokeWidth={2} color="currentColor" aria-hidden />
           </Button>
 
           {}
@@ -234,7 +234,7 @@ export default function Navbar() {
                   className="cursor-pointer"
                   onClick={() => setProfileMenuOpen(false)}
                 >
-                  <HugeiconsIcon icon={Settings02Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Settings02Icon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />
                   Settings
                 </Link>
               </DropdownMenuItem>
@@ -252,7 +252,7 @@ export default function Navbar() {
                 onClick={handleLogout}
                 className="text-destructive focus:text-destructive cursor-pointer"
               >
-                <HugeiconsIcon icon={Logout01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Logout01Icon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />
                 Log Out
               </DropdownMenuItem>
             </DropdownMenuContent>

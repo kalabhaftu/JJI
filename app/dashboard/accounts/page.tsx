@@ -553,7 +553,7 @@ export default function AccountsPage() {
           >
             {            }
             <div className="relative flex-1 max-w-md">
-              <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" strokeWidth={2} color="currentColor" />
               <Input
                 ref={searchInputRef}
                 placeholder="Search accounts..."
@@ -613,7 +613,7 @@ export default function AccountsPage() {
                 showLeaderboard ? "text-primary" : "text-muted-foreground"
               )}
             >
-              <HugeiconsIcon icon={Medal01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Medal01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
               {showLeaderboard ? 'Hide' : 'Leaderboard'}
             </Button>
           </motion.div>
@@ -732,7 +732,7 @@ function StatCard({
           ) : null}
         </div>
         {highlight && (
-          <HugeiconsIcon icon={SparklesIcon} className="absolute -right-1 -bottom-1 h-12 w-12 text-primary/5 pointer-events-none" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={SparklesIcon} className="absolute -right-1 -bottom-1 h-12 w-12 text-primary/5 pointer-events-none" strokeWidth={2} color="currentColor" />
         )}
       </CardContent>
     </Card>
@@ -864,7 +864,7 @@ function AccountCard({
                 className="h-10 w-10 flex-shrink-0"
                 aria-label="Account options"
               >
-                <HugeiconsIcon icon={MoreHorizontalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={MoreHorizontalIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               </RevealAction>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
@@ -968,7 +968,7 @@ function AccountCard({
           {                  }
           {isAtRisk && (
             <div className="flex items-center gap-2 rounded-lg border border-destructive/18 bg-destructive/10 p-2 text-destructive">
-              <HugeiconsIcon icon={Alert02Icon} className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={2} color="currentColor" />
               <span className="text-xs font-medium">Near drawdown limit</span>
             </div>
           )}
@@ -998,7 +998,7 @@ function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
       <CardContent className="p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <HugeiconsIcon icon={Medal01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Medal01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
             <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Account Leaderboard</span>
           </div>
           <span className={cn(
@@ -1073,7 +1073,7 @@ function EmptyState({
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-center justify-center py-16">
           <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center mb-4">
-            <HugeiconsIcon icon={Search01Icon} className="h-6 w-6 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Search01Icon} className="h-6 w-6 text-muted-foreground" strokeWidth={2} color="currentColor" />
           </div>
           <h3 className="font-semibold mb-1">No accounts found</h3>
           <p className="text-sm text-muted-foreground text-center max-w-sm">
@@ -1097,7 +1097,7 @@ function EmptyState({
       <CardContent className="flex flex-col items-center justify-center py-20">
         <div className="relative mb-6">
           <div className="h-20 w-20 rounded-2xl bg-muted flex items-center justify-center">
-            <HugeiconsIcon icon={Wallet01Icon} className="h-10 w-10 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Wallet01Icon} className="h-10 w-10 text-muted-foreground" strokeWidth={2} color="currentColor" />
           </div>
           <div className="absolute -right-2 -bottom-2 h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 text-primary" />

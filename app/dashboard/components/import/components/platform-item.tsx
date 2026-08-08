@@ -74,7 +74,7 @@ export function PlatformItem({
             )}
             {!platform.isDisabled && platform.isRithmic && isWeekend && (
               <Badge variant="outline" className="px-1.5 py-0 text-[10px] border-warning/30 bg-warning/5 text-warning/90 gap-1">
-                <HugeiconsIcon icon={Alert02Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Alert02Icon} className="h-2.5 w-2.5" strokeWidth={2} color="currentColor" />
                 Weekend
               </Badge>
             )}

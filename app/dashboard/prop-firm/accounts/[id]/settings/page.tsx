@@ -236,7 +236,7 @@ export default function AccountSettingsPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={2} color="currentColor" />
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
@@ -441,7 +441,7 @@ export default function AccountSettingsPage() {
             <CardContent>
               {phases.length === 0 ? (
                 <div className="text-center py-8">
-                  <HugeiconsIcon icon={Target01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Target01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={2} color="currentColor" />
                   <h3 className="text-lg font-semibold mb-2">No phases found</h3>
                   <p className="text-muted-foreground">This account doesn&apos;t have any phases yet.</p>
                 </div>

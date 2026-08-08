@@ -114,11 +114,11 @@ export const TourTooltip: React.FC = () => {
           <div className="space-y-4 p-5">
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-2">
-                <HugeiconsIcon icon={Icon} className="h-4 w-4 shrink-0 text-primary" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Icon} className="h-4 w-4 shrink-0 text-primary" strokeWidth={2} color="currentColor" />
                 <h2 className="text-base font-semibold text-heading-text">{currentStep.title}</h2>
               </div>
               <button type="button" onClick={() => void skipTour()} className="rounded-md p-1 text-muted-foreground hover:bg-muted hover:text-foreground" aria-label="Skip tour">
-                <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               </button>
             </div>
             <p className="text-sm leading-6 text-muted-foreground">{currentStep.content}</p>
@@ -133,14 +133,14 @@ export const TourTooltip: React.FC = () => {
             <div className="flex items-center justify-between border-t border-border pt-4">
               <span className="text-xs font-medium text-muted-foreground">Step {stepIndex + 1} of {totalSteps}</span>
               <div className="flex items-center gap-2">
-                {stepIndex > 0 && <Button variant="tertiary" size="sm" onClick={prevStep}><HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />Back</Button>}
+                {stepIndex > 0 && <Button variant="tertiary" size="sm" onClick={prevStep}><HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1 h-3.5 w-3.5" strokeWidth={2} color="currentColor" />Back</Button>}
                 {targetMissing ? (
                   <>
-                    <Button variant="secondary" size="sm" onClick={retryTarget}><HugeiconsIcon icon={RefreshIcon} className="mr-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />Retry</Button>
-                    <Button size="sm" onClick={nextStep}>Skip <HugeiconsIcon icon={ArrowRight01Icon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" /></Button>
+                    <Button variant="secondary" size="sm" onClick={retryTarget}><HugeiconsIcon icon={RefreshIcon} className="mr-1 h-3.5 w-3.5" strokeWidth={2} color="currentColor" />Retry</Button>
+                    <Button size="sm" onClick={nextStep}>Skip <HugeiconsIcon icon={ArrowRight01Icon} className="ml-1 h-3.5 w-3.5" strokeWidth={2} color="currentColor" /></Button>
                   </>
                 ) : (currentStep.desktopOnly && isNarrowViewport) || !currentStep.completion || currentStep.completion.type === 'route' ? (
-                  <Button size="sm" onClick={nextStep}>Next <HugeiconsIcon icon={ArrowRight01Icon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" /></Button>
+                  <Button size="sm" onClick={nextStep}>Next <HugeiconsIcon icon={ArrowRight01Icon} className="ml-1 h-3.5 w-3.5" strokeWidth={2} color="currentColor" /></Button>
                 ) : (
                   <>
                     <span className="text-xs font-medium text-primary">Complete the highlighted action</span>

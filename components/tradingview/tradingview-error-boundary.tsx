@@ -52,7 +52,7 @@ export class TradingViewErrorBoundary extends React.Component<
         <Card className="w-full">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
               Chart Loading Error
             </CardTitle>
             <CardDescription>
@@ -65,7 +65,7 @@ export class TradingViewErrorBoundary extends React.Component<
             </div>
             <div className="flex gap-2">
               <Button onClick={this.handleRetry} size="sm">
-                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                 Retry
               </Button>
             </div>

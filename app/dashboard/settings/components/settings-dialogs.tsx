@@ -64,7 +64,7 @@ export function SettingsDialogs({
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
-              <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
               Delete Account
             </DialogTitle>
             <DialogDescription asChild>
@@ -81,7 +81,7 @@ export function SettingsDialogs({
                 </ul>
                 <div className="p-3 bg-destructive/10 rounded-lg border border-destructive/20">
                   <p className="text-sm font-medium text-destructive flex items-center gap-2">
-                    <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                     This data cannot be recovered.
                   </p>
                 </div>
@@ -121,7 +121,7 @@ export function SettingsDialogs({
               loading={isDeleting}
               loadingText="Deleting..."
             >
-              <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />
               Delete Account
             </Button>
           </DialogFooter>

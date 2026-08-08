@@ -54,7 +54,7 @@ export function ColumnConfigDialog({ tableId, trigger }: ColumnConfigDialogProps
 
   const defaultTrigger = (
     <Button variant="secondary" className="w-[180px] h-10 font-normal">
-      <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={Settings01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
       Configuration
     </Button>
   )
@@ -96,7 +96,7 @@ export function ColumnConfigDialog({ tableId, trigger }: ColumnConfigDialogProps
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="secondary" className="w-[180px] h-10">
-                <HugeiconsIcon icon={Rotate01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Rotate01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                                                                    {"Reset to Default" as any}
               </Button>
             </AlertDialogTrigger>

@@ -293,7 +293,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
         <DialogContent className="w-full max-w-3xl max-h-[90vh] overflow-y-auto" data-tour="create-account-dialog">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <HugeiconsIcon icon={Building01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Building01Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
               Create Prop Firm Account
             </DialogTitle>
             <DialogDescription>
@@ -436,9 +436,9 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                   className="h-8 w-8 p-0"
                 >
                   {isEditingRules ? (
-                    <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4 text-profit" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4 text-profit" strokeWidth={2} color="currentColor" />
                   ) : (
-                    <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                   )}
                 </Button>
               </CardHeader>
@@ -781,7 +781,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                 {isEditingRules && (
                   <div className="pt-3 border-t">
                     <p className="text-xs text-muted-foreground flex items-center gap-2">
-                      <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                       Changes will be saved when you create the account
                     </p>
                   </div>
@@ -814,7 +814,7 @@ export function CreatePropFirmDialog({ open, onOpenChange, onSuccess }: PropFirm
                   </>
                 ) : (
                   <>
-                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                     Create Account
                   </>
                 )}

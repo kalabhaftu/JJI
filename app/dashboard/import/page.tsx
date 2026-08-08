@@ -203,12 +203,12 @@ export default function ImportCallbackPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             {status === "loading" && (
-              <HugeiconsIcon icon={Loading01Icon} className="h-5 w-5 animate-spin" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Loading01Icon} className="h-5 w-5 animate-spin" strokeWidth={2} color="currentColor" />
             )}
             {status === "success" && (
-              <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-success" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-success" strokeWidth={2} color="currentColor" />
             )}
-            {status === "error" && <HugeiconsIcon icon={CircleXIcon} className="h-5 w-5 text-destructive" strokeWidth={1.5} color="currentColor" />}
+            {status === "error" && <HugeiconsIcon icon={CircleXIcon} className="h-5 w-5 text-destructive" strokeWidth={2} color="currentColor" />}
             Tradovate Sync Integration
           </CardTitle>
           <CardDescription>
@@ -220,7 +220,7 @@ export default function ImportCallbackPage() {
         <CardContent className="space-y-4">
           {status === "loading" && (
             <div className="flex flex-col items-center space-y-2">
-              <HugeiconsIcon icon={Loading01Icon} className="h-8 w-8 animate-spin text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Loading01Icon} className="h-8 w-8 animate-spin text-muted-foreground" strokeWidth={2} color="currentColor" />
               <p className="text-sm text-muted-foreground">
                 Exchanging authorization code...
               </p>
@@ -229,7 +229,7 @@ export default function ImportCallbackPage() {
 
           {status === "success" && (
             <div className="text-center space-y-2">
-              <HugeiconsIcon icon={CircleCheckIcon} className="h-12 w-12 text-success mx-auto" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={CircleCheckIcon} className="h-12 w-12 text-success mx-auto" strokeWidth={2} color="currentColor" />
               <p className="text-sm text-muted-foreground">
                 Redirecting back to dashboard...
               </p>
@@ -239,7 +239,7 @@ export default function ImportCallbackPage() {
           {status === "error" && (
             <div className="space-y-4">
               <Alert variant="destructive">
-                <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
 

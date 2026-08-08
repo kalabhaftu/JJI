@@ -25,7 +25,7 @@ export function ApplicationErrorScreen({
       className="flex min-h-screen items-center justify-center bg-background p-6 text-foreground"
     >
       <div className="w-full max-w-md space-y-6 text-center">
-        <HugeiconsIcon icon={AlertCircleIcon} aria-hidden="true" className="mx-auto size-12 text-destructive" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={AlertCircleIcon} aria-hidden="true" className="mx-auto size-12 text-destructive" strokeWidth={2} color="currentColor" />
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Something went wrong</h1>
           <p className="text-muted-foreground">
@@ -44,12 +44,12 @@ export function ApplicationErrorScreen({
         ) : null}
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <Button onClick={onRetry} className="gap-2">
-            <HugeiconsIcon icon={RefreshIcon} aria-hidden="true" className="size-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={RefreshIcon} aria-hidden="true" className="size-4" strokeWidth={2} color="currentColor" />
             Try again
           </Button>
           <Button asChild variant="secondary" className="gap-2">
             <Link href="/">
-              <HugeiconsIcon icon={Home01Icon} aria-hidden="true" className="size-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Home01Icon} aria-hidden="true" className="size-4" strokeWidth={2} color="currentColor" />
               Return home
             </Link>
           </Button>

@@ -120,7 +120,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2.5">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-            <HugeiconsIcon icon={metricIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={metricIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
           </span>
           <div>
             <p className="text-sm font-bold leading-tight">{goal.title}</p>
@@ -130,7 +130,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {goal.isCompleted && <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />}
+          {goal.isCompleted && <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />}
           <Badge variant="outline" className="text-[9px] font-black uppercase tracking-wider border-border/20">
             {goal.period}
           </Badge>
@@ -143,7 +143,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
                className="h-11 w-11 text-muted-foreground"
               onClick={(e) => { e.stopPropagation(); onEdit(goal) }}
             >
-              <HugeiconsIcon icon={PencilEdit01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
             </Button>
           )}
           <Button
@@ -154,7 +154,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
              className="h-11 w-11 text-muted-foreground hover:text-short"
             onClick={(e) => { e.stopPropagation(); onDelete(goal.id) }}
           >
-            <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Delete02Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
           </Button>
         </div>
       </div>
@@ -182,7 +182,7 @@ function GoalCard({ goal, onDelete, onEdit }: { goal: Goal; onDelete: (id: strin
 function EmptyGoals() {
   return (
     <div className="flex flex-col items-center justify-center rounded-[28px] border border-dashed border-border/30 bg-card/20 py-24 gap-4">
-      <HugeiconsIcon icon={Award01Icon} className="h-12 w-12 text-muted-foreground/20" strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={Award01Icon} className="h-12 w-12 text-muted-foreground/20" strokeWidth={2} color="currentColor" />
       <div className="text-center">
         <p className="text-sm font-bold text-muted-foreground/50 uppercase tracking-widest">No goals yet</p>
         <p className="text-xs text-muted-foreground/30 mt-1">Create your first trading goal to get started</p>
@@ -427,7 +427,7 @@ export function GoalsPageClient() {
         meta="Track progress towards your trading objectives"
         actions={
           <Button size="sm" onClick={() => setIsCreateOpen(true)} className="gap-1.5">
-            <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Add01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
             New Goal
           </Button>
         }
@@ -440,7 +440,7 @@ export function GoalsPageClient() {
           {active.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                 Active ({active.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -453,7 +453,7 @@ export function GoalsPageClient() {
           {completed.length > 0 && (
             <div className="space-y-4">
               <h2 className="text-[11px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
-                <HugeiconsIcon icon={CircleCheckIcon} className="h-3.5 w-3.5 text-long" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={CircleCheckIcon} className="h-3.5 w-3.5 text-long" strokeWidth={2} color="currentColor" />
                 Completed ({completed.length})
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -470,7 +470,7 @@ export function GoalsPageClient() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
-              <HugeiconsIcon icon={Target01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Target01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
               Create New Goal
             </DialogTitle>
           </DialogHeader>
@@ -503,7 +503,7 @@ export function GoalsPageClient() {
                       return (
                         <SelectItem key={k} value={k}>
                           <span className="flex items-center gap-1.5">
-                            <HugeiconsIcon icon={itemIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={itemIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                             {v}
                           </span>
                         </SelectItem>
@@ -568,7 +568,7 @@ export function GoalsPageClient() {
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-sm font-black uppercase tracking-wider flex items-center gap-2">
-              <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
               Edit Goal
             </DialogTitle>
           </DialogHeader>
@@ -601,7 +601,7 @@ export function GoalsPageClient() {
                       return (
                         <SelectItem key={k} value={k}>
                           <span className="flex items-center gap-1.5">
-                            <HugeiconsIcon icon={itemIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={itemIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                             {v}
                           </span>
                         </SelectItem>

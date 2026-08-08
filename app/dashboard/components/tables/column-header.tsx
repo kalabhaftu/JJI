@@ -102,18 +102,18 @@ export function DataTableColumnHeader<TData, TValue>({
           >
             <span>{title}</span>
             {column.getIsSorted() === "desc" ? (
-              <HugeiconsIcon icon={ChevronDownIcon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ChevronDownIcon} className="ml-1 h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
             ) : column.getIsSorted() === "asc" ? (
-              <HugeiconsIcon icon={ChevronUpIcon} className="ml-1 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ChevronUpIcon} className="ml-1 h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
             ) : (
-              <HugeiconsIcon icon={Sorting01Icon} className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Sorting01Icon} className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={2} color="currentColor" />
             )}
-              <HugeiconsIcon icon={FilterIcon} className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={FilterIcon} className="ml-1 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={2} color="currentColor" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" className="w-56">
-            <HugeiconsIcon icon={ChevronUpIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
-            <HugeiconsIcon icon={ChevronDownIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ChevronUpIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={2} color="currentColor" />
+            <HugeiconsIcon icon={ChevronDownIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={2} color="currentColor" />
           {showToggle && (
             <>
               <DropdownMenuSeparator />
@@ -134,7 +134,7 @@ export function DataTableColumnHeader<TData, TValue>({
               <DropdownMenuSeparator />
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <HugeiconsIcon icon={FilterIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={FilterIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={2} color="currentColor" />
                   Filter Options
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent className="w-80">
@@ -193,7 +193,7 @@ export function DataTableColumnHeader<TData, TValue>({
           )}
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleHideColumn}>
-            <HugeiconsIcon icon={EyeOffIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={EyeOffIcon} className="mr-2 h-3.5 w-3.5 text-muted-foreground/70" strokeWidth={2} color="currentColor" />
             Hide Column
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -249,7 +249,7 @@ const useTradeTableColumns = ({
         if ((row.original.trades?.length || 0) <= 1) return null
         return (
           <Button variant="tertiary" size="sm" onClick={row.getToggleExpandedHandler()} className="hover:bg-transparent">
-            {row.getIsExpanded() ? <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /> : <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />}
+            {row.getIsExpanded() ? <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" /> : <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />}
           </Button>
         )
       },
@@ -757,7 +757,7 @@ export function TradeTableReview() {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors cursor-help" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4 text-muted-foreground hover:text-foreground transition-colors cursor-help" strokeWidth={2} color="currentColor" />
                 </TooltipTrigger>
                 <TooltipContent side="top">
                   <p>Review every execution, grouping, and adjustment in one view.</p>
@@ -782,7 +782,7 @@ export function TradeTableReview() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="sm" className="text-xs sm:text-sm gap-1.5">
-                  <HugeiconsIcon icon={Tag01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Tag01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                   Tag ({selectedTrades.length})
                 </Button>
               </DropdownMenuTrigger>
@@ -933,7 +933,7 @@ export function TradeTableReview() {
             {activeTab === 'live' && !hasConnectedAutomation ? (
               <>
                 <div className="rounded-full bg-muted/30 p-4 shadow-sm">
-                  <HugeiconsIcon icon={CableIcon} className="h-8 w-8 opacity-60 text-primary" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={CableIcon} className="h-8 w-8 opacity-60 text-primary" strokeWidth={2} color="currentColor" />
                 </div>
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-foreground">No Automated Sync Connected</p>
@@ -957,7 +957,7 @@ export function TradeTableReview() {
             ) : (
               <>
                 <div className="rounded-full bg-muted/30 p-4 shadow-sm">
-                  <HugeiconsIcon icon={BarChartIcon} className="h-8 w-8 opacity-40" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={BarChartIcon} className="h-8 w-8 opacity-40" strokeWidth={2} color="currentColor" />
                 </div>
                 <div className="space-y-1">
                   <p className="text-base font-semibold text-foreground">
@@ -1016,7 +1016,7 @@ export function TradeTableReview() {
               disabled={!table.getCanPreviousPage()}
               className="h-7 px-2 sm:px-3 text-xs"
             >
-              <HugeiconsIcon icon={ChevronLeftIcon} className="h-3.5 w-3.5 sm:mr-1" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ChevronLeftIcon} className="h-3.5 w-3.5 sm:mr-1" strokeWidth={2} color="currentColor" />
               <span className="hidden sm:inline">Previous</span>
             </Button>
             <span className="text-xs sm:text-sm px-1 sm:px-2 whitespace-nowrap">
@@ -1030,7 +1030,7 @@ export function TradeTableReview() {
               className="h-7 px-2 sm:px-3 text-xs"
             >
               <span className="hidden sm:inline">Next</span>
-              <HugeiconsIcon icon={ArrowRight01Icon} className="h-3.5 w-3.5 sm:ml-1" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ArrowRight01Icon} className="h-3.5 w-3.5 sm:ml-1" strokeWidth={2} color="currentColor" />
             </Button>
           </div>
         </div>

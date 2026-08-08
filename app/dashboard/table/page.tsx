@@ -71,7 +71,7 @@ function TableView() {
                 }}
                 className="h-8 px-2 text-xs hover:bg-accent/50"
               >
-                <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-1.5 h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                 <span className="hidden sm:inline">Back</span>
               </Button>
               <div className="hidden h-4 w-px bg-border/60 sm:block" />

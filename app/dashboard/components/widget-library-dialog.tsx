@@ -132,7 +132,7 @@ export default function WidgetLibraryDialog({
 
         {}
         <div className="relative">
-          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
           <Input
             placeholder="Search widgets..."
             value={searchQuery}
@@ -146,7 +146,7 @@ export default function WidgetLibraryDialog({
               className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
               onClick={() => setSearchQuery('')}
             >
-              <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
             </Button>
           )}
         </div>

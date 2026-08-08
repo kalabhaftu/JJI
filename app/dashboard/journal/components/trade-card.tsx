@@ -215,7 +215,7 @@ export function TradeCard({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <RevealAction size="icon" className="h-10 w-10" aria-label="Trade options">
-                  <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                 </RevealAction>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
@@ -276,9 +276,9 @@ export function TradeCard({
               {(trade as any).isMissedTrade ? (
                 <div className="h-3 w-3 rounded-full border border-purple-500 flex-shrink-0" />
               ) : isWin ? (
-                <HugeiconsIcon icon={ArrowUpRight01Icon} className="h-3 w-3 text-long flex-shrink-0" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={ArrowUpRight01Icon} className="h-3 w-3 text-long flex-shrink-0" strokeWidth={2} color="currentColor" />
               ) : isLoss ? (
-                <HugeiconsIcon icon={ArrowDownRight01Icon} className="h-3 w-3 text-short flex-shrink-0" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={ArrowDownRight01Icon} className="h-3 w-3 text-short flex-shrink-0" strokeWidth={2} color="currentColor" />
               ) : (
                 <div className="h-3 w-3 rounded-full border border-muted-foreground flex-shrink-0" />
               )}
@@ -333,7 +333,7 @@ export function TradeCard({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3 text-muted-foreground flex-shrink-0" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={AlertCircleIcon} className="h-3 w-3 text-muted-foreground flex-shrink-0" strokeWidth={2} color="currentColor" />
                     </TooltipTrigger>
                     <TooltipContent>
                       <p className="text-xs">Trade has incomplete SL or TP data</p>

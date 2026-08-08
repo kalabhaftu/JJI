@@ -53,13 +53,13 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
           <Card className="max-w-md w-full">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-destructive">
-                <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
                 Something went wrong
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <Alert variant="destructive">
-                <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                 <AlertDescription>
                   An unexpected error occurred while loading the account data.
                 </AlertDescription>
@@ -67,7 +67,7 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
 
               <div className="flex gap-2">
                 <Button onClick={this.handleReset} className="flex-1">
-                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                   Try Again
                 </Button>
                 <Button
@@ -75,7 +75,7 @@ class PropFirmErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryS
                   onClick={() => window.history.back()}
                   className="flex-1"
                 >
-<HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+<HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                   Go Back
                 </Button>
               </div>
@@ -103,13 +103,13 @@ export function AccountNotFoundError({
       <Card className="max-w-md w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-destructive">
-            <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
             Account Not Found
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert variant="destructive">
-            <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
             <AlertDescription>
               Account {accountId} could not be found. It may have been deleted or you may not have permission to view it.
             </AlertDescription>
@@ -118,7 +118,7 @@ export function AccountNotFoundError({
           <div className="flex gap-2">
             {onRetry && (
               <Button onClick={onRetry} variant="secondary" className="flex-1">
-                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                 Retry
               </Button>
             )}
@@ -126,7 +126,7 @@ export function AccountNotFoundError({
               onClick={onGoBack || (() => window.history.back())}
               className="flex-1"
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
               Back to Accounts
             </Button>
           </div>
@@ -145,12 +145,12 @@ export function ConnectionError({
 }) {
   return (
     <Alert variant="destructive">
-      <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
       <AlertDescription className="flex items-center justify-between">
         <span>Connection Error: {error}</span>
         {onRetry && (
           <Button variant="secondary" size="sm" onClick={onRetry}>
-            <HugeiconsIcon icon={RefreshIcon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={RefreshIcon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
             Retry
           </Button>
         )}

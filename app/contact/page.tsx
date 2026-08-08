@@ -21,7 +21,7 @@ export default async function ContactPage() {
       <div className="max-w-2xl mx-auto space-y-8">
         <div className="text-center space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center justify-center gap-3">
-            <HugeiconsIcon icon={Mail01Icon} className="h-8 w-8 text-primary" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Mail01Icon} className="h-8 w-8 text-primary" strokeWidth={2} color="currentColor" />
             Contact
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">Get in touch with us</p>
@@ -33,7 +33,7 @@ export default async function ContactPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-xl bg-primary/10 shrink-0">
-                    <HugeiconsIcon icon={Comment01Icon} className="h-6 w-6 text-primary" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Comment01Icon} className="h-6 w-6 text-primary" strokeWidth={2} color="currentColor" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold tracking-tight text-foreground mb-2">Feedback & Bug Reports</h3>
@@ -53,7 +53,7 @@ export default async function ContactPage() {
             <CardContent className="pt-6">
               <div className="flex items-start gap-4">
                 <div className="p-3 rounded-xl bg-primary/10 shrink-0">
-                  <HugeiconsIcon icon={BookOpen01Icon} className="h-6 w-6 text-primary" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={BookOpen01Icon} className="h-6 w-6 text-primary" strokeWidth={2} color="currentColor" />
                 </div>
                 <div>
                   <h3 className="text-xl font-semibold tracking-tight text-foreground mb-2">Documentation & Help</h3>
@@ -73,7 +73,7 @@ export default async function ContactPage() {
               <CardContent className="pt-6">
                 <div className="flex items-start gap-4">
                   <div className="p-3 rounded-xl bg-primary/10 shrink-0">
-                    <HugeiconsIcon icon={HeartIcon} className="h-6 w-6 text-primary" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={HeartIcon} className="h-6 w-6 text-primary" strokeWidth={2} color="currentColor" />
                   </div>
                   <div>
                     <h3 className="text-xl font-semibold tracking-tight text-foreground mb-2">Support the Project</h3>

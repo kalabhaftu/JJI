@@ -178,7 +178,7 @@ export function SettingsPreferencesSection({
                       </span>
                       {accentPack === 'reports' ? 'Forest' : accentPack === 'violet' ? 'Orchid' : accentPack === 'slate' ? 'Graphite' : 'Classic'}
                     </span>
-                    <HugeiconsIcon icon={ChevronDownIcon} className="h-3 w-3 opacity-50 shrink-0" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={ChevronDownIcon} className="h-3 w-3 opacity-50 shrink-0" strokeWidth={2} color="currentColor" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -441,7 +441,7 @@ export function SettingsPreferencesSection({
         {                    }
         <div className="rounded-xl border border-border/40 bg-card/45 p-6 space-y-6">
           <h3 className="text-sm font-semibold text-heading-text flex items-center gap-2">
-            <HugeiconsIcon icon={BotIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={BotIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
             AI Preferences
           </h3>
 

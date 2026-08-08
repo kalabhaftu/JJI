@@ -28,7 +28,7 @@ export function RemovableFilterChip({
         aria-label={`Remove ${label}: ${accessibleValue} filter`}
         className="flex size-7 items-center justify-center rounded-full text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11"
       >
-        <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" aria-hidden strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Cancel01Icon} className="size-3.5" aria-hidden strokeWidth={2} color="currentColor" />
       </button>
     </span>
   )

@@ -20,7 +20,7 @@ export default function SubscribeCancelledPage() {
 
         <div className="space-y-4">
           <div className="mx-auto w-16 h-16 rounded-full bg-destructive/10 flex items-center justify-center">
-            <HugeiconsIcon icon={CancelCircleIcon} className="h-8 w-8 text-destructive" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={CancelCircleIcon} className="h-8 w-8 text-destructive" strokeWidth={2} color="currentColor" />
           </div>
           <h1 className="text-xl font-semibold">Payment Cancelled</h1>
           <p className="text-sm text-muted-foreground">
@@ -28,11 +28,11 @@ export default function SubscribeCancelledPage() {
           </p>
           <div className="flex flex-col gap-2 mt-6">
             <Button onClick={() => router.push('/subscribe')} className="w-full">
-              <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />
               Try Again
             </Button>
             <Button variant="tertiary" onClick={() => router.push('/')} className="w-full">
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />
               Back to Home
             </Button>
           </div>

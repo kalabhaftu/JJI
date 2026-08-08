@@ -46,7 +46,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Transaction History
           </CardTitle>
         </CardHeader>
@@ -75,7 +75,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Transaction History
           </CardTitle>
         </CardHeader>
@@ -100,13 +100,13 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Transaction History
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8">
-            <HugeiconsIcon icon={Calendar01Icon} className="w-12 h-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Calendar01Icon} className="w-12 h-12 text-muted-foreground mx-auto mb-4" strokeWidth={2} color="currentColor" />
             <p className="text-muted-foreground">No transactions yet</p>
             <p className="text-sm text-muted-foreground">
               Deposits and withdrawals will appear here
@@ -121,7 +121,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={Calendar01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
           Transaction History
         </CardTitle>
       </CardHeader>
@@ -138,9 +138,9 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
                   : 'bg-short/10 text-short'
                   }`}>
                   {transaction.type === 'DEPOSIT' ? (
-                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
                   ) : (
-                    <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
                   )}
                 </div>
                 <div>
@@ -153,7 +153,7 @@ export function TransactionHistory({ accountId }: TransactionHistoryProps) {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <HugeiconsIcon icon={Calendar01Icon} className="w-3 h-3" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Calendar01Icon} className="w-3 h-3" strokeWidth={2} color="currentColor" />
                     {format(new Date(transaction.createdAt), 'MMM dd, yyyy HH:mm')}
                   </div>
                   {transaction.description && (

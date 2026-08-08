@@ -110,7 +110,7 @@ export default function AccountPayoutsPage() {
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={2} color="currentColor" />
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
@@ -243,7 +243,7 @@ export default function AccountPayoutsPage() {
             <CardTitle>Payout History</CardTitle>
             <div className="flex items-center gap-2">
               <div className="relative">
-                <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
                 <Input
                   placeholder="Search payouts..."
                   value={searchTerm}
@@ -259,7 +259,7 @@ export default function AccountPayoutsPage() {
             <AccountPayoutHistorySkeleton />
           ) : payouts.length === 0 ? (
             <div className="text-center py-8">
-              <HugeiconsIcon icon={Dollar01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Dollar01Icon} className="h-12 w-12 text-muted-foreground mx-auto mb-4" strokeWidth={2} color="currentColor" />
               <h3 className="text-lg font-semibold mb-2">No Payouts Yet</h3>
               <p className="text-muted-foreground mb-4">
                 This account hasn&apos;t had any payout requests yet.

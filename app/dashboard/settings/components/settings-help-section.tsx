@@ -27,7 +27,7 @@ export function SettingsHelpSection({ startTour }: { startTour: (tourId: TourId)
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {TOUR_CARDS.map(({ id, title, description, icon: Icon }) => (
           <div key={id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4">
-            <HugeiconsIcon icon={Icon} className="h-5 w-5 shrink-0 text-primary" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Icon} className="h-5 w-5 shrink-0 text-primary" strokeWidth={2} color="currentColor" />
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-semibold">{title}</h3>
               <p className="mt-1 text-sm leading-5 text-muted-foreground">{description}</p>

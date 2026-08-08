@@ -30,7 +30,7 @@ export default async function AboutPage() {
             <Card key={i}>
               <CardContent className="pt-6 text-center">
                 <div className="inline-flex p-3 rounded-xl bg-primary/10 mb-4">
-                  <HugeiconsIcon icon={item.icon} className="h-6 w-6 text-primary" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={item.icon} className="h-6 w-6 text-primary" strokeWidth={2} color="currentColor" />
                 </div>
                 <h3 className="font-bold mb-2">{item.title}</h3>
                 <p className="text-sm text-muted-foreground">{item.desc}</p>
@@ -64,7 +64,7 @@ export default async function AboutPage() {
           {siteUiSettings.showDonateButton && (
             <Button asChild size="lg">
               <Link href="/donate">
-                <HugeiconsIcon icon={HeartIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={HeartIcon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                 Support the Project
               </Link>
             </Button>
@@ -72,14 +72,14 @@ export default async function AboutPage() {
           {siteUiSettings.showFeedbackButton && (
             <Button asChild variant="secondary" size="lg">
               <Link href="/feedback">
-                <HugeiconsIcon icon={Mail01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Mail01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                 Send Feedback
               </Link>
             </Button>
           )}
           <Button asChild variant="secondary" size="lg">
             <Link href={DOCS_ORIGIN}>
-              <HugeiconsIcon icon={FlashIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={FlashIcon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
               Read the Docs
             </Link>
           </Button>

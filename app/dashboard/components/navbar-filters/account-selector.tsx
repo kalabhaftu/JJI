@@ -350,7 +350,7 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
         </div>
 
         <div className="relative">
-          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={Search01Icon} className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
           <Input
             placeholder="Search accounts..."
             value={searchQuery}
@@ -431,9 +431,9 @@ export function AccountSelector({ onSave }: AccountSelectorProps) {
                         >
                           <div className="flex items-center gap-2">
                             {expandedAccounts.has(accountName) ? (
-                              <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                              <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                             ) : (
-                              <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                              <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                             )}
                             <div>
                               <div className="font-medium text-sm">{accountName}</div>

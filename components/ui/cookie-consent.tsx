@@ -35,9 +35,9 @@ export function CookieConsent() {
   return (
     <aside aria-labelledby="storage-notice-title" className="fixed inset-x-0 bottom-0 z-[9999] p-3 sm:p-5 md:right-auto md:max-w-[430px]">
       <div className="relative rounded-2xl border border-border/80 bg-background/95 p-5 shadow-xl backdrop-blur-xl">
-        <Button variant="tertiary" size="icon" className="absolute right-2 top-2" onClick={() => choose(false)} aria-label="Use essential storage only"><HugeiconsIcon icon={Cancel01Icon} strokeWidth={1.5} color="currentColor" /></Button>
+        <Button variant="tertiary" size="icon" className="absolute right-2 top-2" onClick={() => choose(false)} aria-label="Use essential storage only"><HugeiconsIcon icon={Cancel01Icon} strokeWidth={2} color="currentColor" /></Button>
         <div className="flex items-start gap-3 pr-8">
-          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted"><HugeiconsIcon icon={CookieIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /></span>
+          <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted"><HugeiconsIcon icon={CookieIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" /></span>
           <div>
             <h2 id="storage-notice-title" className="text-base font-semibold">Storage and operational telemetry</h2>
             <p className="mt-1 text-sm leading-6 text-muted-foreground">Essential session and preference storage is always enabled. Optional telemetry sends only crash reports and sampled performance diagnostics. No ads, session replay, or behavioral tracking.</p>

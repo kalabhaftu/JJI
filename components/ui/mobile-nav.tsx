@@ -96,7 +96,7 @@ export function MobileBottomNav() {
                 )}
               >
                 <div className={cn("flex h-7 w-10 items-center justify-center rounded-full transition-colors", isActive && "bg-primary/15")}>
-                  <HugeiconsIcon icon={item.icon} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={item.icon} className="h-[18px] w-[18px] shrink-0" strokeWidth={2} color="currentColor" />
                 </div>
                 <span className={cn("mt-0.5 text-xs font-semibold", isActive ? "text-primary" : "text-muted-foreground")}>
                   {item.label}
@@ -121,7 +121,7 @@ export function MobileBottomNav() {
                 "flex h-7 w-10 items-center justify-center rounded-full transition-colors",
                 isActive && "bg-primary/15"
               )}>
-                <HugeiconsIcon icon={item.icon} className="h-[18px] w-[18px] shrink-0" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={item.icon} className="h-[18px] w-[18px] shrink-0" strokeWidth={2} color="currentColor" />
               </div>
               <span className={cn("mt-0.5 text-xs font-semibold", isActive ? "text-primary" : "text-muted-foreground/80")}>
                 {item.label}
@@ -145,7 +145,7 @@ export function MobileBottomNav() {
                     href={resolveNavigationPath(item, navigationContext) as any}
                    onClick={() => setMoreOpen(false)}
                  >
-                   <HugeiconsIcon icon={moreIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                   <HugeiconsIcon icon={moreIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                     {item.label}
                   </Link>
                 </Button>

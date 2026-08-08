@@ -135,7 +135,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <div className="flex items-center gap-2">
-            <HugeiconsIcon icon={Tag01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Tag01Icon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
             <DialogTitle>Manage Tags</DialogTitle>
           </div>
           <DialogDescription>
@@ -165,7 +165,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                 {isCreating ? (
                   <Spinner className="h-6 w-6 text-muted-foreground" />
                 ) : (
-                  <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                 )}
               </Button>
             </div>
@@ -245,7 +245,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                             className="h-8 px-2"
                             aria-label="Confirm edit"
                           >
-                            <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4 text-profit" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4 text-profit" strokeWidth={2} color="currentColor" />
                           </Button>
                           <Button
                             onClick={handleCancelEdit}
@@ -254,7 +254,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                             className="h-8 px-2"
                             aria-label="Cancel edit"
                           >
-                            <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
                           </Button>
                         </>
                       ) : (
@@ -275,7 +275,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                             variant="tertiary"
                             className="h-8 px-2"
                           >
-                            <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
                           </Button>
                           <Button
                             onClick={() => handleDeleteTag(tag.id)}
@@ -283,7 +283,7 @@ export function TagManager({ isOpen, onClose, onRefresh }: TagManagerProps) {
                             variant="tertiary"
                             className="h-8 px-2"
                           >
-                            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />
                           </Button>
                         </>
                       )}

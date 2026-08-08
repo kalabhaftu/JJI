@@ -35,7 +35,7 @@ function IconStat({ label, value, sublabel, icon: Icon, tone = 'neutral' }: Icon
           {sublabel ? <p className="mt-1 text-[10px] text-muted-foreground/70">{sublabel}</p> : null}
         </div>
         <span className={cn('rounded-lg p-2', tone === 'positive' && 'bg-long/10 text-long', tone === 'negative' && 'bg-short/10 text-short', tone === 'neutral' && 'bg-primary/10 text-primary')}>
-          <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
         </span>
       </div>
       <p className="font-mono text-xl font-black tracking-tight">{value}</p>

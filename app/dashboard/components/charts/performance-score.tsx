@@ -67,9 +67,9 @@ function ScoreBadge({ score, hasData }: { score: number; hasData: boolean }) {
       getScoreColor(score)
     )}>
       {score >= 60 ? (
-        <HugeiconsIcon icon={ChartIncreaseIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={ChartIncreaseIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
       ) : (
-        <HugeiconsIcon icon={ChartDecreaseIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={ChartDecreaseIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
       )}
       <span className="text-sm font-bold">{score}</span>
     </div>
@@ -175,7 +175,7 @@ export default function PerformanceScore({ size = 'small-long' }: PerformanceSco
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center space-y-2">
-              <HugeiconsIcon icon={Award01Icon} className="h-12 w-12 text-muted-foreground/30 mx-auto" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Award01Icon} className="h-12 w-12 text-muted-foreground/30 mx-auto" strokeWidth={2} color="currentColor" />
               <p className="text-sm font-medium text-foreground">
                 {scoreData?.reason === 'not_enough_data' ? "Not Enough Data" : "No trading data available"}
               </p>

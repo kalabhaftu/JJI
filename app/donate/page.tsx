@@ -13,7 +13,7 @@ export default function DonatePage() {
       {          }
       <div className="text-center space-y-3 mb-10">
         <div className="inline-flex items-center justify-center p-4 rounded-full bg-primary/10 mb-2">
-          <HugeiconsIcon icon={HeartIcon} className="h-10 w-10 text-primary" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={HeartIcon} className="h-10 w-10 text-primary" strokeWidth={2} color="currentColor" />
         </div>
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground">Support JJI</h1>
         <p className="text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto">

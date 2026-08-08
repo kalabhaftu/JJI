@@ -243,7 +243,7 @@ export default function UniversalProcessor({
         {aiProcessingState === 'processing' ? (
           <>
             <div className="p-3 rounded-full bg-primary/10">
-              <HugeiconsIcon icon={MagicWand01Icon} className="h-8 w-8 text-primary" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={MagicWand01Icon} className="h-8 w-8 text-primary" strokeWidth={2} color="currentColor" />
             </div>
             <div className="text-center">
               <p className="font-semibold">AI Processing Your Trades</p>
@@ -263,9 +263,9 @@ export default function UniversalProcessor({
         <div className="space-y-1">
           <div className="flex items-center gap-2">
             {isUsingAI ? (
-              <HugeiconsIcon icon={MagicWand01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={MagicWand01Icon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
             ) : (
-              <HugeiconsIcon icon={SparklesIcon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={SparklesIcon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
             )}
             <CardTitle className="text-base">
               {isUsingAI ? 'AI CSV Processor' : 'Universal CSV Processor'}
@@ -284,12 +284,12 @@ export default function UniversalProcessor({
         <div className="flex items-center gap-2">
           {processingResult.success ? (
             <Badge variant="default" className="bg-long/20 text-long border border-long/30">
-              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
               {processingResult.stats.processedRows} trades processed
             </Badge>
           ) : (
             <Badge variant="destructive">
-              <HugeiconsIcon icon={CancelCircleIcon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={CancelCircleIcon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
               Processing failed
             </Badge>
           )}
@@ -304,13 +304,13 @@ export default function UniversalProcessor({
             <div className="p-4 space-y-2 border-b">
               {processingResult.errors.map((error, idx) => (
                 <div key={`error-${idx}`} className="flex items-start gap-2 text-sm text-destructive bg-destructive/10 p-2 rounded">
-                  <HugeiconsIcon icon={CancelCircleIcon} className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={CancelCircleIcon} className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={2} color="currentColor" />
                   <span>{error.message}</span>
                 </div>
               ))}
               {processingResult.warnings.slice(0, 3).map((warning, idx) => (
                 <div key={`warning-${idx}`} className="flex items-start gap-2 text-sm text-amber-600 bg-amber-500/10 p-2 rounded">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={2} color="currentColor" />
                   <span>{warning.message}</span>
                 </div>
               ))}
@@ -326,7 +326,7 @@ export default function UniversalProcessor({
           <Collapsible open={showFieldMapping} onOpenChange={setShowFieldMapping}>
             <CollapsibleTrigger asChild>
               <Button variant="tertiary" size="sm" className="w-full justify-start gap-2 px-4 py-2 rounded-none border-b">
-                <HugeiconsIcon icon={FileSpreadsheetIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={FileSpreadsheetIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                 <span className="text-xs">Field Mapping</span>
                 <Badge variant="outline" className="ml-auto text-xs">
                   {Object.values(processingResult.mappedFields).filter(Boolean).length} / {Object.keys(processingResult.mappedFields).length}
@@ -339,7 +339,7 @@ export default function UniversalProcessor({
                   {Object.entries(processingResult.mappedFields).map(([field, header]) => (
                     <div key={field} className="flex items-center gap-1.5">
                       {header ? (
-                        <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-long shrink-0" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-long shrink-0" strokeWidth={2} color="currentColor" />
                       ) : (
                         <div className="h-3 w-3 rounded-full border border-muted-foreground/30 shrink-0" />
                       )}
@@ -357,13 +357,13 @@ export default function UniversalProcessor({
           {}
           {processedTrades.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
-              <HugeiconsIcon icon={Alert02Icon} className="h-10 w-10 text-amber-500 mb-3" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-10 w-10 text-amber-500 mb-3" strokeWidth={2} color="currentColor" />
               <h3 className="font-semibold text-lg mb-1">No valid trades found</h3>
               <p className="text-sm text-muted-foreground max-w-md">
                 We could not validate a trade in this file. Check that it includes Symbol or Instrument and Entry Date, then retry the check.
               </p>
               <Button className="mt-4" variant="secondary" size="sm" onClick={() => void processWithAI()} disabled={isUsingAI}>
-                {isUsingAI ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />}
+                {isUsingAI ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />}
                 Retry trade check
               </Button>
             </div>
@@ -491,7 +491,7 @@ function UniversalProcessorInfo() {
     <div className="p-4 space-y-4">
       <div className="flex items-start gap-3">
         <div className="p-2 rounded-lg bg-primary/10">
-          <HugeiconsIcon icon={SparklesIcon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={SparklesIcon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
         </div>
         <div>
           <h3 className="font-semibold text-sm">Universal CSV Import</h3>
@@ -520,11 +520,11 @@ function UniversalProcessorInfo() {
         </h4>
         <ul className="text-xs text-muted-foreground space-y-1">
           <li className="flex items-center gap-1.5">
-            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-long" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-long" strokeWidth={2} color="currentColor" />
             Symbol/Instrument (asset name)
           </li>
           <li className="flex items-center gap-1.5">
-            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-long" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-3 w-3 text-long" strokeWidth={2} color="currentColor" />
             Entry Date/Time (trade open timestamp)
           </li>
         </ul>
@@ -539,7 +539,7 @@ function UniversalProcessorInfo() {
       
       <div className="pt-2 border-t">
         <p className="text-xs text-muted-foreground">
-          <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 inline mr-1" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={InformationCircleIcon} className="h-3 w-3 inline mr-1" strokeWidth={2} color="currentColor" />
           The processor automatically maps column headers to fields. If your CSV uses non-standard headers, 
           use the CSV-AI option for manual column mapping.
         </p>

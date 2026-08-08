@@ -94,9 +94,9 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <Button variant="tertiary" size="icon" className="h-9 w-9" onClick={toggleTheme} aria-label="Toggle theme">
               {theme === 'dark' ? (
-                <HugeiconsIcon icon={Sun01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Sun01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               ) : (
-                <HugeiconsIcon icon={Moon01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Moon01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               )}
             </Button>
             <Button asChild size="sm" className="rounded-xl px-4">
@@ -120,7 +120,7 @@ export default function HomePage() {
                 <Button asChild size="lg" className="h-12 rounded-xl px-6">
                   <Link href={primaryHref}>
                     Open your workspace
-                    <HugeiconsIcon icon={ArrowRight01Icon} className="ml-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={ArrowRight01Icon} className="ml-2 h-4 w-4" strokeWidth={2} color="currentColor" />
                   </Link>
                 </Button>
                 <Button asChild variant="secondary" size="lg" className="h-12 rounded-xl px-6">
@@ -135,7 +135,7 @@ export default function HomePage() {
                   <div className="flex items-center justify-between pb-4">
                     <div className="flex items-center gap-3">
                       <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-border text-foreground">
-                        <HugeiconsIcon icon={ChartLineData01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={ChartLineData01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                       </div>
                       <div><p className="text-sm font-semibold">Trading overview</p><p className="text-[11px] text-muted-foreground">This week, all accounts</p></div>
                     </div>
@@ -165,14 +165,14 @@ export default function HomePage() {
                   <div className="mt-3 grid gap-3 sm:grid-cols-[1.1fr_0.9fr]">
                     <div className="rounded-xl border border-border bg-card p-4">
                       <div className="flex items-center gap-2 text-xs font-semibold">
-                        <HugeiconsIcon icon={CalendarDaysIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /> Review rhythm
+                        <HugeiconsIcon icon={CalendarDaysIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" /> Review rhythm
                       </div>
                       <p className="mt-3 text-sm text-muted-foreground">3 sessions reviewed this week</p>
                       <div className="mt-3 h-1.5 rounded-full bg-muted"><div className="h-full w-3/4 rounded-full bg-foreground" /></div>
                     </div>
                     <div className="rounded-xl border border-border bg-card p-4">
                       <div className="flex items-center gap-2 text-xs font-semibold">
-                        <HugeiconsIcon icon={BookOpen01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" /> Journal streak
+                        <HugeiconsIcon icon={BookOpen01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" /> Journal streak
                       </div>
                       <p className="mt-3 text-2xl font-semibold">12 days</p>
                       <p className="text-[11px] text-muted-foreground">Keep the process visible.</p>
@@ -190,7 +190,7 @@ export default function HomePage() {
             <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {features.map(({ icon, title, description }) => (
                 <div key={title} className="rounded-2xl border border-border bg-card p-6 sm:p-7">
-                  <HugeiconsIcon icon={icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
                   <h3 className="mt-6 text-base font-semibold">{title}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{description}</p>
                 </div>
@@ -206,7 +206,7 @@ export default function HomePage() {
             <p className="mt-5 max-w-lg leading-relaxed text-muted-foreground">Build a review habit that connects your execution to the outcomes. Keep the process simple enough to use after every session.</p>
             <Button asChild variant="secondary" className="mt-7 rounded-xl">
               <Link href={docsHref('/docs/getting-started')}>
-                Read the quick start <HugeiconsIcon icon={ArrowUpRight01Icon} className="ml-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                Read the quick start <HugeiconsIcon icon={ArrowUpRight01Icon} className="ml-2 h-4 w-4" strokeWidth={2} color="currentColor" />
               </Link>
             </Button>
           </div>
@@ -218,19 +218,19 @@ export default function HomePage() {
                   <h3 className="font-semibold">{title}</h3>
                   <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{description}</p>
                 </div>
-                <HugeiconsIcon icon={ChevronRightIcon} className="ml-auto mt-1 hidden h-4 w-4 text-muted-foreground sm:block" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={ChevronRightIcon} className="ml-auto mt-1 hidden h-4 w-4 text-muted-foreground sm:block" strokeWidth={2} color="currentColor" />
               </div>
             ))}
           </div>
         </section>
 
         <section className="mx-auto flex w-full max-w-7xl flex-col items-center px-4 py-20 text-center sm:px-6 lg:px-8 lg:py-28">
-          <HugeiconsIcon icon={File01Icon} className="h-6 w-6 text-primary" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={File01Icon} className="h-6 w-6 text-primary" strokeWidth={2} color="currentColor" />
           <h2 className="mt-5 text-3xl font-semibold tracking-[-0.04em] sm:text-5xl">Make the next session easier to review.</h2>
           <p className="mt-4 max-w-xl text-muted-foreground">Start with the web workspace, then keep your journal close with the JJI mobile app.</p>
           <Button asChild size="lg" className="mt-8 h-12 rounded-xl px-7">
             <Link href={primaryHref}>
-              Open JJI <HugeiconsIcon icon={ArrowRight01Icon} className="ml-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              Open JJI <HugeiconsIcon icon={ArrowRight01Icon} className="ml-2 h-4 w-4" strokeWidth={2} color="currentColor" />
             </Link>
           </Button>
         </section>

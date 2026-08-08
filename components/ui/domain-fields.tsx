@@ -174,7 +174,7 @@ export function SymbolCombobox({
           className={cn("w-full justify-between font-normal", className)}
         >
           <span className="truncate">{selected?.label ?? placeholder}</span>
-          <HugeiconsIcon icon={ArrowUpDownIcon} className="h-4 w-4 opacity-50" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={ArrowUpDownIcon} className="h-4 w-4 opacity-50" strokeWidth={2} color="currentColor" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
@@ -193,7 +193,7 @@ export function SymbolCombobox({
                     setOpen(false)
                   }}
                 >
-                  <HugeiconsIcon icon={Tick01Icon} className={cn("opacity-0", option.value === value && "opacity-100")} strokeWidth={1.5} color="currentColor" aria-hidden />
+                  <HugeiconsIcon icon={Tick01Icon} className={cn("opacity-0", option.value === value && "opacity-100")} strokeWidth={2} color="currentColor" aria-hidden />
                   {option.label}
                 </CommandItem>
               ))}
@@ -240,7 +240,7 @@ export function TagMultiSelect({
                 className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={() => toggle(option.value)}
               >
-                <HugeiconsIcon icon={Cancel01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" aria-hidden />
+                <HugeiconsIcon icon={Cancel01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" aria-hidden />
               </button>
             </Badge>
           ))}
@@ -250,7 +250,7 @@ export function TagMultiSelect({
         <PopoverTrigger asChild>
           <Button type="button" variant="secondary" className="w-full justify-between font-normal">
             {placeholder}
-            <HugeiconsIcon icon={ArrowUpDownIcon} className="h-4 w-4 opacity-50" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ArrowUpDownIcon} className="h-4 w-4 opacity-50" strokeWidth={2} color="currentColor" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
@@ -261,7 +261,7 @@ export function TagMultiSelect({
               <CommandGroup>
                 {options.map((option) => (
                   <CommandItem key={option.value} value={`${option.value} ${option.label}`} {...(option.disabled === undefined ? {} : { disabled: option.disabled })} onSelect={() => toggle(option.value)}>
-                    <HugeiconsIcon icon={Tick01Icon} className={cn("opacity-0", value.includes(option.value) && "opacity-100")} strokeWidth={1.5} color="currentColor" aria-hidden />
+                    <HugeiconsIcon icon={Tick01Icon} className={cn("opacity-0", value.includes(option.value) && "opacity-100")} strokeWidth={2} color="currentColor" aria-hidden />
                     {option.label}
                   </CommandItem>
                 ))}

@@ -126,7 +126,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
       </div>
 
       <Alert className="border-border/40 bg-muted/15">
-        <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={InformationCircleIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
         <AlertDescription>
           The app automatically clears stale caches when detecting version changes.
           Only use manual clearing if you&apos;re experiencing issues with outdated data.
@@ -135,7 +135,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
 
       {lastCleared && (
         <div className="flex items-center gap-2 text-sm text-profit">
-          <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
           <span>
             Cache cleared at {formatTimeInZone(lastCleared, 'HH:mm')} NY
           </span>
@@ -159,7 +159,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
             {isClearing ? (
               <Spinner className="h-4 w-4" />
             ) : (
-              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
             )}
             <span className="ml-2">Clear</span>
           </Button>
@@ -181,7 +181,7 @@ export function CacheManagement({ plain = false }: { plain?: boolean }) {
             {isClearing ? (
               <Spinner className="h-4 w-4" />
             ) : (
-              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
             )}
             <span className="ml-2">Clear All</span>
           </Button>

@@ -79,7 +79,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
   }
 
   const getPhaseIcon = (status: string, phaseNumber: number) => {
-    if (isFundedPhase(phaseNumber) && status === 'active') return <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+    if (isFundedPhase(phaseNumber) && status === 'active') return <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
 
     switch (status) {
       case 'active': return <HugeiconsIcon icon={Clock01Icon} className="h-5 w-5 text-primary" />
@@ -120,7 +120,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Target01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Target01Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
             Account Journey
           </CardTitle>
         </CardHeader>
@@ -202,7 +202,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               Overall Performance
             </CardTitle>
           </CardHeader>
@@ -232,7 +232,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <HugeiconsIcon icon={Medal01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Medal01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               Milestones & Records
             </CardTitle>
           </CardHeader>
@@ -241,7 +241,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
             {bestPhase && bestPhase.totalPnL > 0 && (
               <div className="flex items-start gap-3 p-3 bg-long/5 border border-long/20 rounded-lg">
                 <div className="p-1.5 bg-long/10 rounded">
-                  <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Best Phase Performance</p>
@@ -256,7 +256,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
             {worstDrawdown < 0 && (
               <div className="flex items-start gap-3 p-3 bg-destructive/5 border border-destructive/20 rounded-lg">
                 <div className="p-1.5 bg-destructive/10 rounded">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Highest Drawdown</p>
@@ -271,7 +271,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
             {completedPhases.length > 0 && (
               <div className="flex items-start gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
                 <div className="p-1.5 bg-primary/10 rounded">
-                  <HugeiconsIcon icon={ZapIcon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ZapIcon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium">Achievement</p>
@@ -289,7 +289,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
             Phase Timeline
           </CardTitle>
         </CardHeader>
@@ -334,7 +334,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                             </h3>
                             {isFundedPhase(phase.phaseNumber) && (
                               <Badge variant="outline" className="bg-primary/10 border-primary/30">
-                                <HugeiconsIcon icon={Award01Icon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+                                <HugeiconsIcon icon={Award01Icon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
                                 Funded
                               </Badge>
                             )}
@@ -403,7 +403,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                               {phase.bestTrade && (
                                 <div className="flex items-center gap-2 p-2 bg-long/5 rounded-lg border border-long/20">
                                   <div className="p-1.5 bg-long/10 rounded">
-                                    <HugeiconsIcon icon={ArrowUpRight01Icon} className="h-3.5 w-3.5 text-long" strokeWidth={1.5} color="currentColor" />
+                                    <HugeiconsIcon icon={ArrowUpRight01Icon} className="h-3.5 w-3.5 text-long" strokeWidth={2} color="currentColor" />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-xs text-muted-foreground">Best Trade</p>
@@ -416,7 +416,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                               {phase.worstTrade && (
                                 <div className="flex items-center gap-2 p-2 bg-destructive/5 rounded-lg border border-destructive/20">
                                   <div className="p-1.5 bg-destructive/10 rounded">
-                                    <HugeiconsIcon icon={ArrowDownRight01Icon} className="h-3.5 w-3.5 text-destructive" strokeWidth={1.5} color="currentColor" />
+                                    <HugeiconsIcon icon={ArrowDownRight01Icon} className="h-3.5 w-3.5 text-destructive" strokeWidth={2} color="currentColor" />
                                   </div>
                                   <div className="flex-1 min-w-0">
                                     <p className="text-xs text-muted-foreground">Worst Trade</p>
@@ -450,7 +450,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-destructive">
-              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
               Breach History
             </CardTitle>
           </CardHeader>

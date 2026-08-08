@@ -27,7 +27,7 @@ export default function NotFound() {
         <div className="flex flex-col justify-center gap-3 sm:flex-row">
           <Button asChild size="lg" className="gap-2">
             <Link href={isAuthenticated ? "/dashboard" : "/"}>
-              <HugeiconsIcon icon={Home01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Home01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
               {isAuthenticated ? "Back to Dashboard" : "Back home"}
             </Link>
           </Button>
@@ -37,7 +37,7 @@ export default function NotFound() {
             onClick={() => router.back()}
             className="gap-2"
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="w-4 h-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="w-4 h-4" strokeWidth={2} color="currentColor" />
             Go back
           </Button>
         </div>

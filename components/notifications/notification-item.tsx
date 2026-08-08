@@ -33,37 +33,37 @@ interface NotificationItemProps {
 }
 
 const notificationIcons: Record<NotificationType, React.ReactNode> = {
-  FUNDED_PENDING_APPROVAL: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
-  FUNDED_APPROVED: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
-  FUNDED_DECLINED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />,
-  PHASE_TRANSITION_PENDING: <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
-  PAYOUT_APPROVED: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
-  PAYOUT_REJECTED: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />,
-  SYSTEM: <HugeiconsIcon icon={BellIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />,
-  RISK_ALERT: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
-  RISK_BREACH: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
-  IMPORT_STATUS: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
-  WEEKLY_PERFORMANCE: <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
-  STRATEGY_DEVIATION: <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
-  SYSTEM_ANNOUNCEMENT: <HugeiconsIcon icon={Megaphone01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />,
-  TRADE_STATUS: <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />,
-  RISK_DAILY_LOSS_80: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
-  RISK_DAILY_LOSS_95: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
-  RISK_MAX_DRAWDOWN_80: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
-  RISK_MAX_DRAWDOWN_95: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
-  IMPORT_PROCESSING: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-primary animate-pulse" strokeWidth={1.5} color="currentColor" />,
-  IMPORT_COMPLETE: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
-  STRATEGY_SESSION_VIOLATION: <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
-  FEEDBACK_REPLY: <HugeiconsIcon icon={BellIcon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />,
-  PAYMENT_DUE_SOON: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
-  PAYMENT_DUE_TODAY: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />,
-  PAYMENT_OVERDUE: <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
-  SUBSCRIPTION_EXPIRED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
-  PAYMENT_RECEIVED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
-  PAYMENT_FAILED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" strokeWidth={1.5} color="currentColor" />,
-  ACCESS_RESTORED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
-  ADMIN_FREE_ACCESS_GRANTED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />,
-  ADMIN_FREE_ACCESS_REVOKED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-warning" strokeWidth={1.5} color="currentColor" />
+  FUNDED_PENDING_APPROVAL: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />,
+  FUNDED_APPROVED: <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />,
+  FUNDED_DECLINED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-short" strokeWidth={2} color="currentColor" />,
+  PHASE_TRANSITION_PENDING: <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />,
+  PAYOUT_APPROVED: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />,
+  PAYOUT_REJECTED: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-short" strokeWidth={2} color="currentColor" />,
+  SYSTEM: <HugeiconsIcon icon={BellIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />,
+  RISK_ALERT: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />,
+  RISK_BREACH: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />,
+  IMPORT_STATUS: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />,
+  WEEKLY_PERFORMANCE: <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />,
+  STRATEGY_DEVIATION: <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-warning" strokeWidth={2} color="currentColor" />,
+  SYSTEM_ANNOUNCEMENT: <HugeiconsIcon icon={Megaphone01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />,
+  TRADE_STATUS: <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />,
+  RISK_DAILY_LOSS_80: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-warning" strokeWidth={2} color="currentColor" />,
+  RISK_DAILY_LOSS_95: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />,
+  RISK_MAX_DRAWDOWN_80: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-warning" strokeWidth={2} color="currentColor" />,
+  RISK_MAX_DRAWDOWN_95: <HugeiconsIcon icon={Shield01Icon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />,
+  IMPORT_PROCESSING: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-primary animate-pulse" strokeWidth={2} color="currentColor" />,
+  IMPORT_COMPLETE: <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />,
+  STRATEGY_SESSION_VIOLATION: <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-warning" strokeWidth={2} color="currentColor" />,
+  FEEDBACK_REPLY: <HugeiconsIcon icon={BellIcon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />,
+  PAYMENT_DUE_SOON: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-warning" strokeWidth={2} color="currentColor" />,
+  PAYMENT_DUE_TODAY: <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-warning" strokeWidth={2} color="currentColor" />,
+  PAYMENT_OVERDUE: <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />,
+  SUBSCRIPTION_EXPIRED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />,
+  PAYMENT_RECEIVED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />,
+  PAYMENT_FAILED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" strokeWidth={2} color="currentColor" />,
+  ACCESS_RESTORED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />,
+  ADMIN_FREE_ACCESS_GRANTED: <HugeiconsIcon icon={CheckIcon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />,
+  ADMIN_FREE_ACCESS_REVOKED: <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-warning" strokeWidth={2} color="currentColor" />
 }
 
 const notificationColors: Record<NotificationType, string> = {
@@ -138,7 +138,7 @@ export function NotificationItem({
         aria-label="Delete notification"
         title="Delete notification"
       >
-        <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
       </Button>
 
       <div className="flex items-start gap-3 pr-6">
@@ -182,7 +182,7 @@ export function NotificationItem({
                   }}
                 >
                   {actionLabel}
-                  <HugeiconsIcon icon={ChevronRightIcon} className="h-3 w-3 ml-1" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="h-3 w-3 ml-1" strokeWidth={2} color="currentColor" />
                 </Button>
               )}
               {!notification.isRead && (
@@ -195,7 +195,7 @@ export function NotificationItem({
                     onMarkAsRead(notification.id)
                   }}
                 >
-                  <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3 mr-1" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3 mr-1" strokeWidth={2} color="currentColor" />
                   Mark read
                 </Button>
               )}
@@ -205,7 +205,7 @@ export function NotificationItem({
           {notification.type === 'FUNDED_DECLINED' && !!notification.data && (
             <div className="mt-2 p-2 bg-destructive/10 rounded text-xs">
               <div className="flex items-center gap-1 text-destructive">
-                <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                 <span className="font-medium">Decline reason:</span>
               </div>
               <p className="mt-1 text-muted-foreground">

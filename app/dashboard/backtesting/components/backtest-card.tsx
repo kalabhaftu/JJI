@@ -70,21 +70,21 @@ export function BacktestCard({ backtest, onView, onEdit, onDelete }: BacktestCar
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <RevealAction size="icon" className="h-10 w-10" aria-label="Backtest options">
-                <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               </RevealAction>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={onView}>
-                <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                 View Details
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onEdit}>
-                <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                 Edit Backtest
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                 Delete Backtest
               </DropdownMenuItem>
             </DropdownMenuContent>

@@ -181,7 +181,7 @@ export default function AccountSelection({
       {accounts.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-4">
           <Card className="p-8 text-center max-w-md bg-card border border-border rounded-2xl shadow-sm">
-            <HugeiconsIcon icon={AlertCircleIcon} className="h-10 w-10 mx-auto text-muted-foreground mb-3" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={AlertCircleIcon} className="h-10 w-10 mx-auto text-muted-foreground mb-3" strokeWidth={2} color="currentColor" />
             <h3 className="text-base font-semibold mb-1">
               {hasError ? "Failed to Fetch Accounts" : "No Accounts Found"}
             </h3>
@@ -198,7 +198,7 @@ export default function AccountSelection({
                 size="sm"
                 className="gap-2"
               >
-                {isLoading ? <Spinner className="h-3.5 w-3.5" /> : <HugeiconsIcon icon={RefreshIcon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />}
+                {isLoading ? <Spinner className="h-3.5 w-3.5" /> : <HugeiconsIcon icon={RefreshIcon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />}
                 <span>Retry</span>
               </Button>
             ) : (
@@ -238,9 +238,9 @@ export default function AccountSelection({
                             isSelected ? "bg-background/80 border-primary/20 text-primary" : "bg-muted/40 border-border/40 text-muted-foreground"
                           )}>
                             {account.accountType === 'prop-firm' ? (
-                              <HugeiconsIcon icon={Building01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                              <HugeiconsIcon icon={Building01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                             ) : (
-                              <HugeiconsIcon icon={UserIcon} className="h-3.5 w-3.5 text-long" strokeWidth={1.5} color="currentColor" />
+                              <HugeiconsIcon icon={UserIcon} className="h-3.5 w-3.5 text-long" strokeWidth={2} color="currentColor" />
                             )}
                           </div>
                           <p className="font-semibold text-sm text-foreground/90 truncate">{account.displayName}</p>
@@ -258,7 +258,7 @@ export default function AccountSelection({
                       <div className="relative shrink-0">
                         {isSelected ? (
                           <div className="relative">
-                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-primary relative z-10" strokeWidth={1.5} color="currentColor" />
+                            <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-5 w-5 text-primary relative z-10" strokeWidth={2} color="currentColor" />
                           </div>
                         ) : (
                           <div className="h-5 w-5 rounded-full border border-border/40 group-hover:border-primary/30 transition-colors" />
@@ -285,9 +285,9 @@ export default function AccountSelection({
                                 'border-destructive/30 bg-destructive/5 text-destructive-foreground'
                               )}
                             >
-                              {(phaseStatus === 'active' || phaseStatus === 'funded') && <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
-                              {phaseStatus === 'passed' && <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
-                              {phaseStatus === 'failed' && <HugeiconsIcon icon={Alert02Icon} className="h-2.5 w-2.5" strokeWidth={1.5} color="currentColor" />}
+                              {(phaseStatus === 'active' || phaseStatus === 'funded') && <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-2.5 w-2.5" strokeWidth={2} color="currentColor" />}
+                              {phaseStatus === 'passed' && <HugeiconsIcon icon={CheckmarkCircle01Icon} className="h-2.5 w-2.5" strokeWidth={2} color="currentColor" />}
+                              {phaseStatus === 'failed' && <HugeiconsIcon icon={Alert02Icon} className="h-2.5 w-2.5" strokeWidth={2} color="currentColor" />}
                               <span>{getPhaseLabel(evaluationType, phaseNumber)}</span>
                               {phaseId && (
                                 <span className="text-[9px] font-mono opacity-80">

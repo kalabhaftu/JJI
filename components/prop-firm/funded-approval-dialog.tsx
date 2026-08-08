@@ -219,7 +219,7 @@ export function FundedApprovalDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
             Firm Approval Status
           </DialogTitle>
           <DialogDescription>
@@ -233,7 +233,7 @@ export function FundedApprovalDialog({
         {!action ? (
           <div className="space-y-4">
             <Alert>
-              <HugeiconsIcon icon={PartyIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={PartyIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               <AlertDescription>
                 Your account met the profit target! What was the firm's decision?
               </AlertDescription>
@@ -245,7 +245,7 @@ export function FundedApprovalDialog({
                 className="h-24 flex-col gap-2 border-long/50 hover:border-long hover:bg-long/10"
                 onClick={() => setAction('approved')}
               >
-                <HugeiconsIcon icon={CircleCheckIcon} className="h-8 w-8 text-long" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={CircleCheckIcon} className="h-8 w-8 text-long" strokeWidth={2} color="currentColor" />
                 <span className="text-sm font-medium">Firm Approved</span>
               </Button>
 
@@ -254,7 +254,7 @@ export function FundedApprovalDialog({
                 className="h-24 flex-col gap-2 border-destructive/50 hover:border-destructive hover:bg-destructive/10"
                 onClick={() => setAction('declined')}
               >
-                <HugeiconsIcon icon={CircleXIcon} className="h-8 w-8 text-destructive" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={CircleXIcon} className="h-8 w-8 text-destructive" strokeWidth={2} color="currentColor" />
                 <span className="text-sm font-medium">Firm Declined</span>
               </Button>
             </div>
@@ -262,7 +262,7 @@ export function FundedApprovalDialog({
         ) : action === 'approved' ? (
           <div className="space-y-4">
             <Alert className="border-long/50 bg-long/10">
-              <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />
               <AlertDescription>
                 Great news! Enter your funded account ID to activate.
               </AlertDescription>
@@ -310,7 +310,7 @@ export function FundedApprovalDialog({
         ) : (
           <div className="space-y-4">
             <Alert variant="destructive">
-              <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               <AlertDescription>
                 We're sorry to hear that. Please select the reason for decline.
               </AlertDescription>

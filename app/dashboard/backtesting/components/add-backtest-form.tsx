@@ -420,7 +420,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Backtest Setup
           </CardTitle>
         </CardHeader>
@@ -569,7 +569,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="secondary" size="sm" type="button">
-                  <HugeiconsIcon icon={Setting06Icon} className="w-4 h-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Setting06Icon} className="w-4 h-4 mr-2" strokeWidth={2} color="currentColor" />
                   {inputMode === 'manual' ? 'Full Manual' : 'Simple R:R'}
                 </Button>
               </DropdownMenuTrigger>
@@ -787,7 +787,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <HugeiconsIcon icon={Camera01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Camera01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Screenshots & Images
           </CardTitle>
         </CardHeader>
@@ -810,7 +810,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
                     className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                     onClick={() => setCardPreview('')}
                   >
-                    <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" strokeWidth={2} color="currentColor" />
                   </Button>
                   <div className="absolute bottom-2 left-2 bg-primary text-primary-foreground px-2 py-1 rounded text-xs font-medium">
                     Preview
@@ -828,7 +828,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
                     }}
                   />
                   <div className="text-center">
-                    <HugeiconsIcon icon={Camera01Icon} className="w-8 h-8 mx-auto mb-2 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Camera01Icon} className="w-8 h-8 mx-auto mb-2 text-muted-foreground" strokeWidth={2} color="currentColor" />
                     <p className="text-xs text-muted-foreground">Upload</p>
                   </div>
                 </label>
@@ -856,7 +856,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
                         className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => removeImage(idx)}
                       >
-                        <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Cancel01Icon} className="w-3 h-3" strokeWidth={2} color="currentColor" />
                       </Button>
                       <div className="absolute bottom-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs">
                         #{idx + 1}
@@ -874,7 +874,7 @@ export function AddBacktestForm({ onAdd, onDirtyChange }: AddBacktestFormProps) 
                         }}
                       />
                       <div className="text-center">
-                        <HugeiconsIcon icon={Camera01Icon} className="w-6 h-6 mx-auto mb-1 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Camera01Icon} className="w-6 h-6 mx-auto mb-1 text-muted-foreground" strokeWidth={2} color="currentColor" />
                         <p className="text-xs text-muted-foreground">#{idx + 1}</p>
                       </div>
                     </label>

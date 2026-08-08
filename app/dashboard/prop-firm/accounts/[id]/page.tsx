@@ -315,7 +315,7 @@ export default function AccountDetailPage() {
 
         {(realtimeError || dataError) && (
           <Alert>
-            <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
             <AlertDescription>{realtimeError || dataError}</AlertDescription>
           </Alert>
         )}
@@ -405,7 +405,7 @@ export default function AccountDetailPage() {
               exit={{ opacity: 0, height: 0 }}
             >
               <Alert variant="destructive">
-                <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                 <AlertDescription>
                   Account breached {drawdown.breachType === 'daily_drawdown' ? 'daily' : 'max'} drawdown limit.
                 </AlertDescription>
@@ -440,7 +440,7 @@ export default function AccountDetailPage() {
             label="Max Drawdown"
             value={formatCurrency(drawdown.maxDrawdownRemaining)}
             subtext={`Limit: ${account.maxDrawdownPercent}%`}
-            icon={<HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />}
+            icon={<HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />}
             trend={drawdown.maxDrawdownRemaining < 1000 ? 'negative' : 'positive'}
             warning={drawdown.maxDrawdownRemaining < 1000}
           />
@@ -656,7 +656,7 @@ export default function AccountDetailPage() {
                     </div>
                   ) : tradesData.length === 0 ? (
                     <div className="text-center py-12">
-                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-12 w-12 mx-auto text-muted-foreground mb-4" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-12 w-12 mx-auto text-muted-foreground mb-4" strokeWidth={2} color="currentColor" />
                       <p className="text-muted-foreground">No trades yet</p>
                     </div>
                   ) : (
@@ -719,7 +719,7 @@ export default function AccountDetailPage() {
                             <p className="text-sm text-muted-foreground">Blockers:</p>
                             {payoutEligibility.blockers.map((blocker: string, i: number) => (
                               <p key={i} className="text-sm text-destructive flex items-center gap-1">
-                                <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                                <HugeiconsIcon icon={Alert02Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                                 {blocker}
                               </p>
                             ))}

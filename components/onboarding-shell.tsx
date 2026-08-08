@@ -165,7 +165,7 @@ export function OnboardingShell() {
                   ['Improve', 'Turn patterns into decisions.', RefreshIcon],
                 ] as Array<[string, string, HugeiconsIconProps['icon']]>).map(([title, copy, Icon]) => (
                   <div key={String(title)} className="rounded-lg border border-border bg-muted/20 p-3">
-                    <HugeiconsIcon icon={Icon} className="mb-3 h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Icon} className="mb-3 h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                     <p className="text-sm font-medium">{title}</p>
                     <p className="mt-1 text-xs leading-5 text-muted-foreground">{copy}</p>
                   </div>

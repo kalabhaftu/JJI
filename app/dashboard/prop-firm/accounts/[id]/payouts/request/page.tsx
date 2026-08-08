@@ -195,7 +195,7 @@ export default function RequestPayoutPage() {
         <Card className="border-warning">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5 text-warning" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={AlertCircleIcon} className="h-5 w-5 text-warning" strokeWidth={2} color="currentColor" />
               <CardTitle>Payout Not Available</CardTitle>
             </div>
           </CardHeader>
@@ -220,7 +220,7 @@ export default function RequestPayoutPage() {
         <Card className="border-long">
           <CardHeader>
             <div className="flex items-center gap-2">
-              <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-long" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-long" strokeWidth={2} color="currentColor" />
               <CardTitle>Eligible for Payout</CardTitle>
             </div>
           </CardHeader>
@@ -262,7 +262,7 @@ export default function RequestPayoutPage() {
             <div className="space-y-2">
               <Label htmlFor="amount">Amount ($)</Label>
               <div className="relative">
-                <HugeiconsIcon icon={Dollar01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Dollar01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
                 <CurrencyField
                   id="amount"
                   aria-label="Payout amount"

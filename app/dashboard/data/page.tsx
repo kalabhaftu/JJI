@@ -64,7 +64,7 @@ function DashboardContent() {
                     transition={{ type: "spring", stiffness: 380, damping: 30 }}
                   />
                 )}
-                <HugeiconsIcon icon={Icon} className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Icon} className={cn("h-4 w-4 shrink-0", isActive ? "text-primary" : "text-muted-foreground")} strokeWidth={2} color="currentColor" />
                 <span className="truncate">{cat.label}</span>
               </button>
             )

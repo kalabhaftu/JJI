@@ -28,7 +28,7 @@ export function CalendarSettings() {
                     title="Display Stats Settings"
                     aria-label="Display Stats Settings"
                 >
-                    <HugeiconsIcon icon={Settings02Icon} className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground transition-colors" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Settings02Icon} className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground transition-colors" strokeWidth={2} color="currentColor" />
                 </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[210px] rounded-xl border border-border/40 bg-popover p-3 shadow-xl animate-in fade-in-50 zoom-in-95 duration-100" align="end">

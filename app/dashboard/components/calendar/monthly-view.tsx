@@ -114,7 +114,7 @@ const DayCell = memo(function DayCell({
                 ? "text-short/70 dark:text-white/70" 
                 : "text-muted-foreground/85"
             : "text-muted-foreground/60"
-        )} strokeWidth={1.5} color="currentColor" />
+        )} strokeWidth={2} color="currentColor" />
       )}
 
 
@@ -359,7 +359,7 @@ const MobileDayRow = memo(function MobileDayRow({
         <span className="min-w-0">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
             {format(date, 'EEE')}
-            {hasJournal && <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5 text-primary" strokeWidth={1.5} color="currentColor" aria-label="Journal entry" />}
+            {hasJournal && <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5 text-primary" strokeWidth={2} color="currentColor" aria-label="Journal entry" />}
           </span>
           <span className="text-[11px] text-muted-foreground">
             {hasTrades ? `${dayData?.tradeNumber} trade${dayData?.tradeNumber === 1 ? '' : 's'}` : 'No trades'}

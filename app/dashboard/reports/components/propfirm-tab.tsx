@@ -51,7 +51,7 @@ function SummaryMetric({
   return (
     <div className="flex items-center justify-between gap-4 border-b border-border/12 py-3 last:border-b-0">
       <div className="flex items-center gap-2.5">
-        <HugeiconsIcon icon={Icon} className={cn('h-4 w-4 shrink-0', color)} strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Icon} className={cn('h-4 w-4 shrink-0', color)} strokeWidth={2} color="currentColor" />
         <span className="text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground/70">{label}</span>
       </div>
       <span className={cn('font-mono text-xl font-black', color)}>{value}</span>

@@ -131,7 +131,7 @@ export function TradePreviewCropEditor({
         />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-background/85 via-background/35 to-transparent px-3 py-2">
           <div className="flex items-center gap-1.5 rounded-full border border-border/50 bg-background/80 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-            <HugeiconsIcon icon={Move01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Move01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
             Drag to frame
           </div>
           <div className="rounded-full border border-border/50 bg-background/80 px-2 py-1 text-[10px] font-semibold text-foreground">
@@ -151,7 +151,7 @@ export function TradePreviewCropEditor({
           onClick={() => updateTransform({ zoom: clampTradePreviewZoom(transform.zoom - 0.15) })}
           disabled={disabled}
         >
-          <HugeiconsIcon icon={SearchMinusIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={SearchMinusIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
         </Button>
 
         <div className="min-w-[160px] flex-1 px-1">
@@ -176,7 +176,7 @@ export function TradePreviewCropEditor({
           onClick={() => updateTransform({ zoom: clampTradePreviewZoom(transform.zoom + 0.15) })}
           disabled={disabled}
         >
-          <HugeiconsIcon icon={SearchAddIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={SearchAddIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
         </Button>
 
         <Button
@@ -187,7 +187,7 @@ export function TradePreviewCropEditor({
           onClick={() => onChange({ ...DEFAULT_TRADE_PREVIEW_TRANSFORM })}
           disabled={disabled}
         >
-          <HugeiconsIcon icon={RotateLeft01Icon} className="mr-1.5 h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={RotateLeft01Icon} className="mr-1.5 h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
           Reset
         </Button>
       </div>

@@ -125,9 +125,9 @@ export function TransactionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {watchedType === 'DEPOSIT' ? (
-              <HugeiconsIcon icon={Add01Icon} className="w-5 h-5 text-long" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Add01Icon} className="w-5 h-5 text-long" strokeWidth={2} color="currentColor" />
             ) : (
-              <HugeiconsIcon icon={Remove01Icon} className="w-5 h-5 text-short" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Remove01Icon} className="w-5 h-5 text-short" strokeWidth={2} color="currentColor" />
             )}
             {watchedType === 'DEPOSIT' ? 'Deposit Funds' : 'Withdraw Funds'}
           </DialogTitle>
@@ -146,13 +146,13 @@ export function TransactionDialog({
               <SelectContent>
                 <SelectItem value="DEPOSIT">
                   <div className="flex items-center gap-2">
-                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 text-long" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 text-long" strokeWidth={2} color="currentColor" />
                     Deposit
                   </div>
                 </SelectItem>
                 <SelectItem value="WITHDRAWAL">
                   <div className="flex items-center gap-2">
-                    <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4 text-short" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4 text-short" strokeWidth={2} color="currentColor" />
                     Withdrawal
                   </div>
                 </SelectItem>
@@ -163,7 +163,7 @@ export function TransactionDialog({
           <div className="space-y-2">
             <Label htmlFor="amount">Amount</Label>
             <div className="relative">
-              <HugeiconsIcon icon={Dollar01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Dollar01Icon} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" strokeWidth={2} color="currentColor" />
               <Controller
                 name="amount"
                 control={form.control}

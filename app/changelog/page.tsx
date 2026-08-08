@@ -52,7 +52,7 @@ export default function ChangelogPage() {
       <div className="space-y-8">
         <div className="space-y-3 mb-10">
           <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground flex items-center gap-3">
-            <HugeiconsIcon icon={RocketIcon} className="h-8 w-8 text-primary" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={RocketIcon} className="h-8 w-8 text-primary" strokeWidth={2} color="currentColor" />
             Changelog
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed">Track what's new, improved, and fixed in JJI.</p>
@@ -72,7 +72,7 @@ export default function ChangelogPage() {
                     const color = typeColor[item.type as keyof typeof typeColor] || ''
                     return (
                       <li key={i} className="flex items-start gap-2">
-                        <HugeiconsIcon icon={icon} className={`h-4 w-4 mt-0.5 shrink-0 ${color}`} strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={icon} className={`h-4 w-4 mt-0.5 shrink-0 ${color}`} strokeWidth={2} color="currentColor" />
                         <span className="text-sm">{item.text}</span>
                       </li>
                     )

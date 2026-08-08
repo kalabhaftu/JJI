@@ -144,7 +144,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
       <AlertDialogContent className="max-w-lg">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-            <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Alert02Icon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
             Delete All Data
           </AlertDialogTitle>
         </AlertDialogHeader>
@@ -154,7 +154,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
             <AlertDialogDescription asChild>
               <div className="space-y-4">
                 <Alert variant="destructive">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                   <AlertTitle>This action cannot be undone</AlertTitle>
                   <AlertDescription>
                     All your trading data will be permanently deleted. Your user account will remain active.
@@ -188,12 +188,12 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
                       </>
                     ) : backupDownloaded ? (
                       <>
-                        <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 mr-2 text-profit" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 mr-2 text-profit" strokeWidth={2} color="currentColor" />
                         Backup downloaded
                       </>
                     ) : (
                       <>
-                        <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                         Download Backup
                       </>
                     )}
@@ -236,13 +236,13 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
                   />
                   {confirmText && confirmText !== 'DELETE ALL DATA' && (
                     <p className="text-xs text-destructive flex items-center gap-1">
-                      <HugeiconsIcon icon={CircleXIcon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={CircleXIcon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                       Text does not match
                     </p>
                   )}
                   {confirmText === 'DELETE ALL DATA' && (
                     <p className="text-xs text-profit flex items-center gap-1">
-                      <HugeiconsIcon icon={CircleCheckIcon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={CircleCheckIcon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                       Confirmation matches
                     </p>
                   )}
@@ -270,7 +270,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
             <AlertDialogDescription asChild>
               <div className="space-y-4">
                 <Alert variant="destructive">
-                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
                   <AlertTitle>Final Warning</AlertTitle>
                   <AlertDescription>
                     You are about to permanently delete all your data. This action is irreversible.
@@ -310,7 +310,7 @@ export function DeleteAllDataDialog({ open, onOpenChange }: DeleteAllDataDialogP
                   </>
                 ) : (
                   <>
-                    <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={2} color="currentColor" />
                     Delete All My Data
                   </>
                 )}

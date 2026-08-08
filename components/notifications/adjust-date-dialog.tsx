@@ -73,7 +73,7 @@ export function AdjustDateDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5 text-primary" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Calendar01Icon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
             Adjust Account Creation Date
           </DialogTitle>
           <DialogDescription>
@@ -83,7 +83,7 @@ export function AdjustDateDialog({
 
         <div className="py-4">
           <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50 border border-border/50">
-            <HugeiconsIcon icon={InformationCircleIcon} className="h-5 w-5 text-primary mt-0.5 shrink-0" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={InformationCircleIcon} className="h-5 w-5 text-primary mt-0.5 shrink-0" strokeWidth={2} color="currentColor" />
             <div className="space-y-1">
               <p className="text-sm font-medium">Recommended Adjustment</p>
               <p className="text-xs text-muted-foreground leading-relaxed">

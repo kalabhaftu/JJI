@@ -299,7 +299,7 @@ const SidebarTrigger = React.forwardRef<
       }}
       {...props}
     >
-      <HugeiconsIcon icon={PanelLeftIcon} aria-hidden strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={PanelLeftIcon} aria-hidden strokeWidth={2} color="currentColor" />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

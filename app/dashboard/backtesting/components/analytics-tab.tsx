@@ -311,7 +311,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={BarChartIcon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={BarChartIcon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Performance by Trading Model
           </CardTitle>
         </CardHeader>
@@ -356,7 +356,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={CalendarDaysIcon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={CalendarDaysIcon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Performance by Trading Session
           </CardTitle>
         </CardHeader>
@@ -402,7 +402,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={ArrowUp01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Performance by Direction
           </CardTitle>
         </CardHeader>
@@ -446,7 +446,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={Target01Icon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Target01Icon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Performance by Pair/Instrument
           </CardTitle>
         </CardHeader>
@@ -505,7 +505,7 @@ export function AnalyticsTab({ backtests }: AnalyticsTabProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={CalendarDaysIcon} className="w-5 h-5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={CalendarDaysIcon} className="w-5 h-5" strokeWidth={2} color="currentColor" />
             Performance by Day of Week
           </CardTitle>
         </CardHeader>

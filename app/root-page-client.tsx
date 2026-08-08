@@ -91,9 +91,9 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
             onClick={() => toggleTheme()}
           >
             {theme === 'dark' ? (
-              <HugeiconsIcon icon={Sun01Icon} className="h-3 w-3 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Sun01Icon} className="h-3 w-3 mr-2" strokeWidth={2} color="currentColor" />
             ) : (
-              <HugeiconsIcon icon={Moon01Icon} className="h-3 w-3 mr-2" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Moon01Icon} className="h-3 w-3 mr-2" strokeWidth={2} color="currentColor" />
             )}
             {theme === 'dark' ? 'Light' : 'Dark'}
           </Button>

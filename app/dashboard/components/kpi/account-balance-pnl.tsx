@@ -108,7 +108,7 @@ const AccountBalancePnl = React.memo(function AccountBalancePnl({ size }: Accoun
               <Tooltip>
                 <TooltipTrigger asChild>
                   <div className="cursor-help w-4 h-4 rounded-full border border-border/60 flex items-center justify-center shrink-0">
-                    <HugeiconsIcon icon={InformationCircleIcon} className="h-2.5 w-2.5 text-muted-foreground/60" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={InformationCircleIcon} className="h-2.5 w-2.5 text-muted-foreground/60" strokeWidth={2} color="currentColor" />
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={5} className="max-w-[200px]">
@@ -168,7 +168,7 @@ const AccountBalancePnl = React.memo(function AccountBalancePnl({ size }: Accoun
 
           {}
           <div className="rounded-lg bg-primary/10 p-1.5 min-[1440px]:p-2">
-            <HugeiconsIcon icon={Wallet01Icon} className="h-4 w-4 min-[1440px]:h-5 min-[1440px]:w-5 text-primary/60" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Wallet01Icon} className="h-4 w-4 min-[1440px]:h-5 min-[1440px]:w-5 text-primary/60" strokeWidth={2} color="currentColor" />
           </div>
         </div>
       </div>

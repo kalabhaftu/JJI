@@ -23,9 +23,9 @@ export function ThemeSwitcher() {
       data-tour="theme-switcher-btn"
     >
       {isDark ? (
-        <HugeiconsIcon icon={Moon01Icon} aria-hidden strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Moon01Icon} aria-hidden strokeWidth={2} color="currentColor" />
       ) : (
-        <HugeiconsIcon icon={Sun01Icon} aria-hidden strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Sun01Icon} aria-hidden strokeWidth={2} color="currentColor" />
       )}
     </Button>
   )

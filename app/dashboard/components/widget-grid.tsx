@@ -292,7 +292,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                     {isEditMode && (
                       <>
                         <div className="absolute top-2 left-2 cursor-move z-10 bg-background/80 backdrop-blur-sm rounded p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <HugeiconsIcon icon={GripVerticalIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                          <HugeiconsIcon icon={GripVerticalIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
                         </div>
                         <Button
                           variant="destructive"
@@ -301,7 +301,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                           className="absolute top-2 right-2 h-6 w-6 rounded-full p-0 shadow-md z-10 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={() => handleRemoveWidget(widget.i)}
                         >
-                          <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                          <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                         </Button>
                       </>
                     )}
@@ -315,7 +315,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                       onClick={() => handleAddWidget({ slotIndex: index })}
                     >
                       <div className="h-full flex flex-col items-center justify-center p-4">
-                        <HugeiconsIcon icon={Add01Icon} className="h-5 w-5 text-muted-foreground mb-1.5" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Add01Icon} className="h-5 w-5 text-muted-foreground mb-1.5" strokeWidth={2} color="currentColor" />
                         <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">
                           Add KPI
                         </span>
@@ -359,7 +359,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                       className="absolute top-2 right-2 h-6 w-6 rounded-full p-0 shadow-md z-10"
                       onClick={() => handleRemoveWidget(widget.i)}
                     >
-                      <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                     </Button>
                   )}
                   <LazyMobileWidget
@@ -400,7 +400,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                   {isEditMode && (
                     <>
                       <div className="widget-drag-handle absolute top-2 left-2 cursor-grab active:cursor-grabbing z-10 bg-background/80 backdrop-blur-sm rounded-md p-1.5 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm border border-border/50">
-                        <HugeiconsIcon icon={GripVerticalIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={GripVerticalIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} color="currentColor" />
                       </div>
                       <Button
                         variant="destructive"
@@ -409,7 +409,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
                         className="absolute top-2 right-2 h-6 w-6 rounded-full p-0 shadow-md z-10 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => handleRemoveWidget(widget.i)}
                       >
-                        <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                       </Button>
                       {}
                       <div className="absolute bottom-2 right-2 z-10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
@@ -446,7 +446,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
             onClick={() => handleAddWidget()}
           >
             <div className="h-full flex flex-col items-center justify-center p-4">
-              <HugeiconsIcon icon={Add01Icon} className="h-6 w-6 text-muted-foreground mb-1.5" strokeWidth={1.5} color="currentColor" />
+              <HugeiconsIcon icon={Add01Icon} className="h-6 w-6 text-muted-foreground mb-1.5" strokeWidth={2} color="currentColor" />
               <span className="text-xs font-bold text-muted-foreground">
                 Add Widget
               </span>

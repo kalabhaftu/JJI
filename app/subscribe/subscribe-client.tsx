@@ -205,7 +205,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
           <div className="space-y-3 mb-6">
             {features.map((feature) => (
               <div key={feature.text} className="flex items-center gap-3 text-sm">
-                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-emerald-500 shrink-0" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-4 w-4 text-emerald-500 shrink-0" strokeWidth={2} color="currentColor" />
                 <span className="text-muted-foreground">{feature.text}</span>
               </div>
             ))}
@@ -215,7 +215,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
           <div className="mb-4">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <HugeiconsIcon icon={Tag01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Tag01Icon} className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" strokeWidth={2} color="currentColor" />
                 <Input
                   placeholder="Promo code"
                   value={promoCode}
@@ -229,13 +229,13 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             </div>
             {promoValidation?.valid && (
               <p className="text-xs text-emerald-500 mt-1.5 flex items-center gap-1">
-                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={CheckmarkCircle02Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                 {promoValidation.description}
               </p>
             )}
             {promoValidation && !promoValidation.valid && (
               <p className="text-xs text-destructive mt-1.5 flex items-center gap-1">
-                <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                 {promoValidation.description}
               </p>
             )}
@@ -251,12 +251,12 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
                 >
                   {isWhopLoading ? (
                     <>
-                      <HugeiconsIcon icon={Loading01Icon} className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={Loading01Icon} className="mr-2 h-4 w-4 animate-spin" strokeWidth={2} color="currentColor" />
                       Creating checkout...
                     </>
                   ) : (
                     <>
-                      <HugeiconsIcon icon={CreditCardIcon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={CreditCardIcon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />
                       Pay with Card
                     </>
                   )}
@@ -277,13 +277,13 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             >
               {isLoading ? (
                 <>
-                  <HugeiconsIcon icon={Loading01Icon} className="mr-2 h-4 w-4 animate-spin" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Loading01Icon} className="mr-2 h-4 w-4 animate-spin" strokeWidth={2} color="currentColor" />
                   Creating invoice...
                 </>
               ) : (
                 <>
                   Pay with Crypto
-                  <HugeiconsIcon icon={ArrowRight01Icon} className="ml-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ArrowRight01Icon} className="ml-2 h-4 w-4" strokeWidth={2} color="currentColor" />
                 </>
               )}
             </Button>
@@ -314,7 +314,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
               window.location.href = '/'
             }}
           >
-            <HugeiconsIcon icon={Logout01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={Logout01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
             Sign Out
           </Button>
         </div>

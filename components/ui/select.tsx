@@ -27,7 +27,7 @@ const SelectTrigger = React.forwardRef<
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4 opacity-50" strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4 opacity-50" strokeWidth={2} color="currentColor" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ))
@@ -45,7 +45,7 @@ const SelectScrollUpButton = React.forwardRef<
     )}
     {...props}
   >
-    <HugeiconsIcon icon={ChevronUpIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+    <HugeiconsIcon icon={ChevronUpIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
   </SelectPrimitive.ScrollUpButton>
 ))
 SelectScrollUpButton.displayName = SelectPrimitive.ScrollUpButton.displayName
@@ -62,7 +62,7 @@ const SelectScrollDownButton = React.forwardRef<
     )}
     {...props}
   >
-    <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+    <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
   </SelectPrimitive.ScrollDownButton>
 ))
 SelectScrollDownButton.displayName =
@@ -129,7 +129,7 @@ const SelectItem = React.forwardRef<
   >
     <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
       <SelectPrimitive.ItemIndicator>
-        <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+        <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
       </SelectPrimitive.ItemIndicator>
     </span>
 

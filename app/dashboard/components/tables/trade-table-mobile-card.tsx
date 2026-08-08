@@ -83,9 +83,9 @@ export function TradeTableMobileCard({
               className="h-6 w-6 p-0"
             >
               {isExpanded ? (
-                <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               ) : (
-                <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={2} color="currentColor" />
               )}
             </Button>
           )}
@@ -173,7 +173,7 @@ export function TradeTableMobileCard({
           onClick={onViewDetails}
           className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
         >
-          <HugeiconsIcon icon={ViewIcon} className="h-4 w-4 mr-1.5" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={ViewIcon} className="h-4 w-4 mr-1.5" strokeWidth={2} color="currentColor" />
           View
         </Button>
         <Button
@@ -182,7 +182,7 @@ export function TradeTableMobileCard({
           onClick={onEdit}
           className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
         >
-          <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-1.5" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-1.5" strokeWidth={2} color="currentColor" />
           Edit
         </Button>
         {(trade as any).imageOne && (
@@ -192,7 +192,7 @@ export function TradeTableMobileCard({
             onClick={onViewChart}
             className="flex-1 h-10 sm:h-9 text-xs sm:text-sm touch-manipulation"
           >
-            <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 mr-1.5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 mr-1.5" strokeWidth={2} color="currentColor" />
             Chart
           </Button>
         )}

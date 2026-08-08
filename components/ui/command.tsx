@@ -47,7 +47,7 @@ const CommandInput = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof CommandPrimitive.Input>
 >(({ className, ...props }, ref) => (
   <div className="flex items-center px-3" cmdk-input-wrapper="">
-    <HugeiconsIcon icon={Search01Icon} className="mr-2 h-4 w-4 shrink-0 opacity-50" strokeWidth={1.5} color="currentColor" />
+    <HugeiconsIcon icon={Search01Icon} className="mr-2 h-4 w-4 shrink-0 opacity-50" strokeWidth={2} color="currentColor" />
     <CommandPrimitive.Input
       ref={ref}
       className={cn(

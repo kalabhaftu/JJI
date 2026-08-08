@@ -146,7 +146,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
           </div>
         ) : !review ? (
           <div className="flex flex-col items-center justify-center p-16 text-muted-foreground">
-            <HugeiconsIcon icon={BarChartIcon} className="mb-3 h-10 w-10 opacity-50" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={BarChartIcon} className="mb-3 h-10 w-10 opacity-50" strokeWidth={2} color="currentColor" />
             <p className="text-sm">No weekly reviews yet.</p>
             <p className="mt-1 text-xs">Reviews are generated automatically each weekend.</p>
           </div>
@@ -156,7 +156,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
               <DialogHeader>
                 <div className="flex items-center justify-between gap-4">
                   <DialogTitle className="flex items-center gap-2 text-lg">
-                    <HugeiconsIcon icon={BarChartIcon} className="h-5 w-5" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={BarChartIcon} className="h-5 w-5" strokeWidth={2} color="currentColor" />
                     Weekly Performance Review
                   </DialogTitle>
                   {review.grade && (
@@ -172,7 +172,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                   )}
                 </div>
                 <DialogDescription className="mt-1 flex items-center gap-1.5">
-                  <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Calendar01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
                   {format(new Date(review.weekStart), 'MMM d')} - {format(new Date(review.weekEnd), 'MMM d, yyyy')}
                 </DialogDescription>
               </DialogHeader>
@@ -219,13 +219,13 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                 {review.highlights.length > 0 && (
                   <div>
                     <h4 className="mb-2.5 flex items-center gap-2 text-sm font-medium">
-                      <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={ChartUpIcon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />
                       What Went Well
                     </h4>
                     <ul className="space-y-2">
                       {review.highlights.map((highlight, index) => (
                         <li key={index} className="flex items-start gap-2 text-sm text-foreground/80">
-                          <HugeiconsIcon icon={Award01Icon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-long" strokeWidth={1.5} color="currentColor" />
+                          <HugeiconsIcon icon={Award01Icon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-long" strokeWidth={2} color="currentColor" />
                           {highlight}
                         </li>
                       ))}
@@ -236,13 +236,13 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                 {review.lowlights.length > 0 && (
                   <div>
                     <h4 className="mb-2.5 flex items-center gap-2 text-sm font-medium">
-                      <HugeiconsIcon icon={ChartDownIcon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />
+                      <HugeiconsIcon icon={ChartDownIcon} className="h-4 w-4 text-short" strokeWidth={2} color="currentColor" />
                       What Needs Work
                     </h4>
                     <ul className="space-y-2">
                       {review.lowlights.map((lowlight, index) => (
                         <li key={index} className="flex items-start gap-2 text-sm text-foreground/80">
-                          <HugeiconsIcon icon={Alert02Icon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-short" strokeWidth={1.5} color="currentColor" />
+                          <HugeiconsIcon icon={Alert02Icon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-short" strokeWidth={2} color="currentColor" />
                           {lowlight}
                         </li>
                       ))}
@@ -255,7 +255,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                     <Separator />
                     <div className="rounded-lg border border-primary/20 bg-primary/5 p-4">
                       <h4 className="mb-2 flex items-center gap-2 text-sm font-medium">
-                        <HugeiconsIcon icon={Target01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Target01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                         Focus Next Week
                       </h4>
                       <p className="text-sm text-foreground/80">{review.focusNextWeek}</p>
@@ -301,7 +301,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                   onClick={() => setCurrentIndex((index) => index + 1)}
                   disabled={!canGoNext}
                 >
-                  <HugeiconsIcon icon={ChevronLeftIcon} className="mr-1 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ChevronLeftIcon} className="mr-1 h-4 w-4" strokeWidth={2} color="currentColor" />
                   Older
                 </Button>
                 <span className="text-xs text-muted-foreground">
@@ -314,7 +314,7 @@ export function WeeklyReviewDialog({ open, onOpenChange, reviewId }: WeeklyRevie
                   disabled={!canGoPrev}
                 >
                   Newer
-                  <HugeiconsIcon icon={ChevronRightIcon} className="ml-1 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="ml-1 h-4 w-4" strokeWidth={2} color="currentColor" />
                 </Button>
               </div>
             )}

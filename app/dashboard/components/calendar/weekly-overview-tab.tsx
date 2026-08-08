@@ -53,7 +53,7 @@ function MetricCard({
           isLoss && "bg-loss/10 text-loss",
           !isWin && !isLoss && "bg-muted/30 text-muted-foreground"
         )}>
-          <HugeiconsIcon icon={Icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+          <HugeiconsIcon icon={Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
         </span>
       </div>
       <div>
@@ -121,7 +121,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
                 {}
                 <div className="rounded-xl border border-border/30 bg-muted/5 p-5">
                   <div className="flex items-center gap-2 mb-4">
-                    <HugeiconsIcon icon={ChartAreaIcon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                    <HugeiconsIcon icon={ChartAreaIcon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                     <h3 className="text-sm font-medium">Cumulative P&L</h3>
                   </div>
                   <div className="h-[200px]">
@@ -189,7 +189,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border/25 border border-border/30 bg-card/45 rounded-xl overflow-hidden">
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <HugeiconsIcon icon={Sun01Icon} className="h-4 w-4 text-long" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Sun01Icon} className="h-4 w-4 text-long" strokeWidth={2} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Best Day</span>
                       </div>
                       <div>
@@ -204,7 +204,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
 
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <HugeiconsIcon icon={Moon01Icon} className="h-4 w-4 text-short" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Moon01Icon} className="h-4 w-4 text-short" strokeWidth={2} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Worst Day</span>
                       </div>
                       <div>
@@ -219,7 +219,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
 
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <HugeiconsIcon icon={Package01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Package01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Top Instrument</span>
                       </div>
                       <div>
@@ -234,7 +234,7 @@ export function WeeklyOverviewTab({ weeklyData, stats, chartData, chartStyle }: 
 
                     <div className="p-4.5 bg-card/35 flex flex-col justify-between min-h-[96px]">
                       <div className="flex items-center gap-2 mb-2">
-                        <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4 text-primary" strokeWidth={1.5} color="currentColor" />
+                        <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4 text-primary" strokeWidth={2} color="currentColor" />
                         <span className="text-xs font-semibold text-muted-foreground/80">Best Session</span>
                       </div>
                       <div>

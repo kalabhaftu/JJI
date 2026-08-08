@@ -48,9 +48,9 @@ export function DateRangeFilter({
     <Popover>
       <PopoverTrigger asChild>
         <Button variant="secondary" aria-label={`Date range: ${label}`} className={cn('min-h-11 justify-start gap-2', className)}>
-          <HugeiconsIcon icon={CalendarDaysIcon} className="size-4" strokeWidth={1.5} color="currentColor" aria-hidden />
+          <HugeiconsIcon icon={CalendarDaysIcon} className="size-4" strokeWidth={2} color="currentColor" aria-hidden />
           <span className="truncate">{label}</span>
-          <HugeiconsIcon icon={ChevronDownIcon} className="ml-auto size-4 opacity-60" strokeWidth={1.5} color="currentColor" aria-hidden />
+          <HugeiconsIcon icon={ChevronDownIcon} className="ml-auto size-4 opacity-60" strokeWidth={2} color="currentColor" aria-hidden />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto max-w-[calc(100vw-1rem)] p-3" align="start">

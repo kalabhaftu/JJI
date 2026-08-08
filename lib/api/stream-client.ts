@@ -32,14 +32,28 @@ export async function apiStreamRequest(
   } catch (error) {
     const timedOut = composed.didTimeout()
     composed.cleanup()
-    if (error instanceof Error && error.name === 'AbortError') {
+    const isCancellation = Boolean(
+      (requestInit.signal?.aborted && !timedOut)
+      || (!timedOut && error instanceof Error && (
+        error.name === 'AbortError'
+        || error.name === 'CanceledError'
+        || error.message.includes('aborted')
+        || error.message.includes('AbortError')
+        || error.message.includes('signal is aborted')
+      ))
+    )
+    if (isCancellation || timedOut) {
       throw new ApiClientError({
         message: timedOut ? 'Request timed out' : 'Request cancelled',
         status: 0,
         kind: timedOut ? 'timeout' : 'cancelled',
-        isCancellation: !timedOut,
+        isCancellation,
         isTimeout: timedOut,
       })
+    }
+    const isOffline = typeof navigator !== 'undefined' && navigator.onLine === false
+    if (isOffline) {
+      throw new ApiClientError({ message: 'Network offline', status: 0, kind: 'offline' })
     }
     reportClientError(error, { operation: operation ?? 'api-network-request', route: input })
     throw new ApiClientError({

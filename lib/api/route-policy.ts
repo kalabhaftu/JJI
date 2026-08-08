@@ -74,6 +74,9 @@ export function classifyApiRoute(
   }
   if (pathname.startsWith('/api/admin/')) return 'admin'
   if (pathname === '/api/v1/user/delete' && normalizedMethod === 'DELETE') return 'account-delete'
+  if (pathname === '/api/auth/profile') {
+    return normalizedMethod === 'GET' ? 'authenticated-read' : 'sensitive'
+  }
   if (pathname.startsWith('/api/auth/')) return 'auth'
   if (pathname.startsWith('/api/v1/ai/')) return 'ai'
   if (
@@ -146,8 +149,9 @@ export async function applyApiRoutePolicy(
   request: NextRequest,
   explicitPolicy?: ApiRoutePolicy,
 ): Promise<NextResponse | null> {
+  const pathname = request.nextUrl?.pathname ?? (request.url ? new URL(request.url).pathname : '/')
   const policy = explicitPolicy ?? classifyApiRoute(
-    request.nextUrl.pathname,
+    pathname,
     request.method,
   )
   const limiter = limiterForPolicy(policy)

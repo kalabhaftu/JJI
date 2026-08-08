@@ -37,7 +37,7 @@ export function isExpectedError(
   }
 
   if (error instanceof ApiClientError) {
-    if (error.isCancellation || error.kind === 'cancelled' || error.kind === 'offline') return true
+    if (error.isCancellation || error.kind === 'cancelled' || error.kind === 'offline' || (error.status >= 400 && error.status < 500)) return true
   }
 
   const message = error instanceof Error ? error.message : String(error ?? '')

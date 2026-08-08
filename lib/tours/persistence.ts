@@ -1,3 +1,4 @@
+import { apiRequestData } from '@/lib/api/client'
 import type { OnboardingStatus, TourId, TourProgress, TourProgressState } from '@/lib/tours/types'
 
 const TOUR_MIRRORS: Partial<Record<TourId, keyof OnboardingStatus>> = {
@@ -93,14 +94,9 @@ export function updateTourProgress(
 }
 
 export async function persistOnboardingStatus(status: OnboardingStatus) {
-  const response = await fetch('/api/auth/profile', {
+  const data = await apiRequestData<any>('/api/auth/profile', {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ onboardingStatus: status }),
   })
-  const result = await response.json()
-  if (!response.ok || !result.success) {
-    throw new Error('Failed to save onboarding status')
-  }
-  return result.data ?? null
+  return data ?? null
 }

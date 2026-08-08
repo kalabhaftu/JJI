@@ -5,6 +5,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { WidgetCard } from '../widget-card'
 import { PropFirmWidgetAccountSelector, PropFirmWidgetTimezoneSelector } from './prop-firm-widget-account-selector'
 import { usePropFirmDashboardWidgetData } from '@/hooks/use-prop-firm-dashboard-widget-data'
+import { useData } from '@/context/data-provider'
 
 type Props = {
   title: string
@@ -12,7 +13,8 @@ type Props = {
 }
 
 export function PropFirmWidgetShell({ title, children }: Props) {
-  const state = usePropFirmDashboardWidgetData()
+  const { isAccountSelectionReady } = useData()
+  const state = usePropFirmDashboardWidgetData(isAccountSelectionReady)
   const { accounts, selectedMasterAccountId, setSelectedMasterAccountId, resetTimezone, setResetTimezone, isLoading, error, data } = state
 
   return (

@@ -7,8 +7,9 @@ import { redirect } from "next/navigation";
 import { SidebarLayout } from "./components/sidebar-layout";
 import { MobileBottomNav } from "@/components/ui/mobile-nav";
 import { QuickAddFAB } from "@/components/quick-add-fab";
-import { getInitBootstrapData } from "@/server/init-bootstrap";
+import { DashboardBootstrapUnavailableError, getDashboardAccess, getDashboardBootstrapData, type DashboardAccessResult } from "@/server/init-bootstrap";
 import { getSiteUiSettings } from "@/server/site-ui-settings";
+import { DashboardLoadingSkeleton } from "@/components/ui/dashboard-skeleton";
 
 import { SyncContextWrapper } from "./components/sync-context-wrapper";
 import { TourWrapper } from "./components/tour-wrapper";
@@ -28,49 +29,66 @@ export const metadata: Metadata = {
     follow: false,
   },
 }
-export default async function RootLayout({ children }: { children: ReactNode }) {
-  const [initialBootstrapData, siteUiSettings] = await Promise.all([
-    getInitBootstrapData(),
-    getSiteUiSettings(),
+async function DashboardLayoutContent({
+  children,
+  access,
+  siteUiSettings,
+}: {
+  children: ReactNode
+  access: Extract<DashboardAccessResult, { status: 'ready' }>
+  siteUiSettings: ReturnType<typeof getSiteUiSettings>
+}) {
+  const [initialBootstrapData, resolvedSiteUiSettings] = await Promise.all([
+    getDashboardBootstrapData(access),
+    siteUiSettings,
   ])
 
-  if (initialBootstrapData.isAuthenticated && initialBootstrapData.user?.id) {
-    const access = initialBootstrapData.subscriptionAccess
-    if (!access) redirect('/login')
-    if (!access.hasAccess && access.redirectTo) {
-      redirect(access.redirectTo as any)
-    }
+  return (
+    <DataProvider initialBootstrapData={initialBootstrapData}>
+      <SyncContextWrapper>
+        <TourWrapper>
+          <TagsProvider>
+            <TemplateProvider initialActiveTemplate={initialBootstrapData.activeTemplateShell}>
+              <div className="min-h-screen flex flex-col">
+                <SidebarLayout siteUiSettings={resolvedSiteUiSettings}>
+                  {children}
+                </SidebarLayout>
+                <Modals />
+                <MobileBottomNav />
+                <QuickAddFAB />
+                <ClientDynamicComponents />
+                <DeploymentMonitor />
+                <AppBanner />
+                <OfflineIndicator />
+              </div>
+            </TemplateProvider>
+          </TagsProvider>
+        </TourWrapper>
+      </SyncContextWrapper>
+    </DataProvider>
+  )
+}
 
-  } else if (!initialBootstrapData.isAuthenticated) {
-    redirect("/login")
+export default async function RootLayout({ children }: { children: ReactNode }) {
+  const access = await getDashboardAccess()
+
+  if (access.status === 'unauthenticated') {
+    redirect('/login?next=/dashboard')
+  }
+  if (access.status === 'unavailable') {
+    throw new DashboardBootstrapUnavailableError()
+  }
+  if (!access.subscriptionAccess.hasAccess && access.subscriptionAccess.redirectTo) {
+    redirect(access.subscriptionAccess.redirectTo as any)
   }
 
   return (
     <AuthenticatedProviders>
-      <DataProvider initialBootstrapData={initialBootstrapData}>
-        <SyncContextWrapper>
-          <TourWrapper>
-                <TagsProvider>
-                  <TemplateProvider initialActiveTemplate={initialBootstrapData.activeTemplateShell}>
-                      <div className="min-h-screen flex flex-col">
-                        <Suspense fallback={<div className="flex flex-1" />}>
-                          <SidebarLayout siteUiSettings={siteUiSettings}>
-                            {children}
-                          </SidebarLayout>
-                        </Suspense>
-                        <Modals />
-                        <MobileBottomNav />
-                        <QuickAddFAB />
-                        <ClientDynamicComponents />
-                        <DeploymentMonitor />
-                        <AppBanner />
-                        <OfflineIndicator />
-                      </div>
-                  </TemplateProvider>
-                </TagsProvider>
-              </TourWrapper>
-        </SyncContextWrapper>
-      </DataProvider>
+      <Suspense fallback={<DashboardLoadingSkeleton />}>
+        <DashboardLayoutContent access={access} siteUiSettings={getSiteUiSettings()}>
+          {children}
+        </DashboardLayoutContent>
+      </Suspense>
     </AuthenticatedProviders>
-  );
+  )
 }

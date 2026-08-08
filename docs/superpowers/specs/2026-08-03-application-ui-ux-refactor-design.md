@@ -64,7 +64,7 @@ The work will:
 
 ### 4.1 Runtime and framework
 
-- Next.js 15 App Router.
+- Next.js 16 App Router.
 - React 19 and TypeScript.
 - Tailwind CSS 4.
 - shadcn-style source components backed by Radix UI.
@@ -126,11 +126,12 @@ Primary inventory issue: `/privacy` bypasses the shared public shell and therefo
 ### 5.2 Authentication and access surfaces
 
 - `/login`
-- `/app-launch`
 - `/subscribe`
 - `/subscribe/status`
 - `/subscribe/success`
 - `/subscribe/cancelled`
+
+Authentication enters through `/login`; protected-route redirects preserve a local `next` path. The former visible `/app-launch` session bridge is retired in favor of the SSR cookie session flow, with `/api/auth/restore` retained only for silent recovery.
 
 Primary components:
 
@@ -296,7 +297,7 @@ Every route and route boundary is assigned to one of the following implementatio
 | Route group | Exact route or boundary set | Owning phase/task | Required verification |
 |---|---|---|---|
 | Public | `/`, `/about`, `/contact`, `/feedback`, `/donate`, `/changelog`, `/privacy`, `/terms`, `/cookies` | Phase 5 public/support task | shell consistency, metadata, keyboard, mobile, empty/error form states |
-| Authentication | `/login`, `/app-launch` | Phase 3 authentication task | keyboard, OTP errors, loading, recovery, mobile |
+| Authentication | `/login` | Phase 3 authentication task | keyboard, OTP errors, loading, recovery, mobile; protected-route `next` preservation |
 | Subscription | `/subscribe`, `/subscribe/status`, `/subscribe/success`, `/subscribe/cancelled`, `/subscribe/loading`, `/subscribe/error` | Phase 3 subscription task | payment verification, timeout, retry, cancellation, loading/error |
 | Dashboard | `/dashboard`, `/dashboard/loading` when added, `/dashboard/error` | Phase 1.6 and Phase 5.1 | page skeleton, granular widgets, partial failure, refresh preservation |
 | Journal | `/dashboard/journal`, `/dashboard/journal/loading` | Phase 5.4 | notes, trade cards, autosave, offline, mobile, keyboard |
@@ -1576,7 +1577,7 @@ Each workflow below is a separate task with the listed owner and acceptance evid
 
 #### Task 5.13: Authentication and subscription
 
-- Routes: `/login`, `/app-launch`, `/subscribe`, `/subscribe/status`, `/subscribe/success`, `/subscribe/cancelled`, and their boundaries.
+- Routes: `/login`, `/subscribe`, `/subscribe/status`, `/subscribe/success`, `/subscribe/cancelled`, and their boundaries. Protected redirects preserve a local `next` path; the former visible `/app-launch` session bridge is retired.
 - Dependencies: Phase 1 API/cancellation; Phase 2 fields and async state.
 - Acceptance: OTP recovery, resend behavior, payment verification timeout/retry/cancel, loading/error, mobile and keyboard checks.
 

@@ -10,13 +10,17 @@ import { Button } from '@/components/ui/button'
 import { SUBSCRIPTION_CONFIRMATION_POLL_MS } from '@/lib/constants/intervals'
 import { apiRequest } from '@/lib/api/client'
 import { reportError } from '@/lib/observability/report-error'
+import { useAuth } from '@/context/auth-provider'
 
 export default function SubscribeSuccessPage() {
   const router = useRouter()
+  const { isLoading: isAuthLoading, ensureServerSession } = useAuth()
   const [status, setStatus] = useState<'checking' | 'confirmed' | 'pending'>('checking')
   const [provider, setProvider] = useState<'whop' | 'crypto' | 'unknown'>('unknown')
 
   useEffect(() => {
+    if (isAuthLoading) return
+
     const paymentId = sessionStorage.getItem('pendingPaymentId')
     const whopReferenceId = sessionStorage.getItem('whopReferenceId')
     const selectedProvider = new URLSearchParams(window.location.search).get('provider') === 'whop'
@@ -29,11 +33,15 @@ export default function SubscribeSuccessPage() {
       return
     }
 
+    let cancelled = false
+    let interval: ReturnType<typeof setInterval> | null = null
     let attempts = 0
     let reportedFailure = false
     const maxAttempts = selectedProvider === 'whop' ? 15 : 10
 
     async function checkStatus() {
+      if (cancelled) return false
+
       try {
         const endpoint = selectedProvider === 'whop'
           ? '/api/v1/billing/status'
@@ -82,19 +90,34 @@ export default function SubscribeSuccessPage() {
       return false
     }
 
-    const interval = setInterval(async () => {
-      attempts++
-      const done = await checkStatus()
-      if (done || attempts >= maxAttempts) {
-        clearInterval(interval)
-        if (attempts >= maxAttempts) setStatus('pending')
+    async function startPolling() {
+      if (!(await ensureServerSession()) || cancelled) {
+        setStatus('pending')
+        return
       }
-    }, SUBSCRIPTION_CONFIRMATION_POLL_MS)
 
-    checkStatus()
+      const poll = async () => {
+        attempts++
+        const done = await checkStatus()
+        if (done || attempts >= maxAttempts) {
+          if (interval) clearInterval(interval)
+          if (attempts >= maxAttempts && !cancelled) setStatus('pending')
+        }
+      }
 
-    return () => clearInterval(interval)
-  }, [router])
+      interval = setInterval(() => {
+        void poll()
+      }, SUBSCRIPTION_CONFIRMATION_POLL_MS)
+      void poll()
+    }
+
+    void startPolling()
+
+    return () => {
+      cancelled = true
+      if (interval) clearInterval(interval)
+    }
+  }, [ensureServerSession, isAuthLoading, router])
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">

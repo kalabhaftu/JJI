@@ -11,9 +11,8 @@ import { useQueryClient } from '@tanstack/react-query';
 
 import type { DashboardTemplateType as DashboardLayoutType } from '@/lib/db/schema';
 
-import { apiRequest, apiRequestData } from '@/lib/api/client';
+import { apiRequest } from '@/lib/api/client';
 import { createClient } from '@/lib/supabase';
-import { signOut } from '@/server/auth/providers';
 import { useUserStore } from '@/store/user-store';
 import { useAccountFilterSettings } from '@/hooks/use-account-filter-settings';
 import { useFilteredTrades } from '@/hooks/use-filtered-trades';
@@ -104,7 +103,13 @@ export const DataProvider: React.FC<{
   const setIsLoading = useUserStore(state => state.setIsLoading)
 
 
-  const { settings: accountFilterSettings, isLoading: isLoadingAccountFilterSettings, updateSettings: updateAccountFilterSettings } = useAccountFilterSettings()
+  const {
+    settings: accountFilterSettings,
+    isLoading: isLoadingAccountFilterSettings,
+    isFetching: isFetchingAccountFilterSettings,
+    error: accountFilterSettingsError,
+    updateSettings: updateAccountFilterSettings,
+  } = useAccountFilterSettings()
 
   const {
     instruments,
@@ -126,6 +131,8 @@ export const DataProvider: React.FC<{
 
   const [isFirstConnection, setIsFirstConnection] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isSelectionReady, setIsSelectionReady] = useState(isDemoMode)
+  const [isDashboardBootstrapReady, setIsDashboardBootstrapReady] = useState(isDemoMode)
 
 
   const selectionInitializedRef = React.useRef(false)
@@ -133,68 +140,35 @@ export const DataProvider: React.FC<{
 
 
   useEffect(() => {
-    if (!accounts || accounts.length === 0) {
-      return
-    }
+    if (isDemoMode || !isDashboardBootstrapReady || isLoadingAccountFilterSettings || isFetchingAccountFilterSettings) return
 
-
-    const savedSelection = accountFilterSettings?.selectedPhaseAccountIds || []
+    const validAccountIds = new Set((accounts || []).map((account) => account.id))
+    const savedSelection = (accountFilterSettings?.selectedPhaseAccountIds || [])
+      .filter((id) => validAccountIds.has(id))
     const savedSignature = JSON.stringify(normalizeSelection(savedSelection))
 
     if (!selectionInitializedRef.current) {
-      if (savedSelection.length > 0) {
-        setAccountNumbers(savedSelection)
-        selectionInitializedRef.current = true
-        lastSyncedSelectionRef.current = savedSignature
-
-        try {
-          localStorage.setItem(
-            'settings-cache',
-            JSON.stringify({
-              selectedPhaseAccountIds: savedSelection,
-            })
-          )
-        } catch (error) {
-
-        }
-        return
-      }
-
-
-      let cachedSelection: string[] | null = null
-      try {
-        const cached = localStorage.getItem('settings-cache')
-        if (cached) {
-          const settings = JSON.parse(cached)
-          cachedSelection = settings.selectedPhaseAccountIds || null
-        }
-      } catch (error) {
-
-      }
-
-      if (cachedSelection && cachedSelection.length > 0) {
-        setAccountNumbers(cachedSelection)
-        selectionInitializedRef.current = true
-        lastSyncedSelectionRef.current = JSON.stringify(normalizeSelection(cachedSelection))
-        return
-      }
-
-
+      setAccountNumbers(savedSelection)
       selectionInitializedRef.current = true
-      lastSyncedSelectionRef.current = ''
+      lastSyncedSelectionRef.current = savedSignature
+      setIsSelectionReady(true)
       return
     }
 
-
     if (
-      savedSelection.length > 0 &&
       savedSignature !== lastSyncedSelectionRef.current &&
       !selectionsMatch(savedSelection, accountNumbers)
     ) {
       setAccountNumbers(savedSelection)
       lastSyncedSelectionRef.current = savedSignature
     }
-  }, [accounts, accountFilterSettings, accountNumbers, setAccountNumbers])
+  }, [accounts, accountFilterSettings, accountNumbers, isDashboardBootstrapReady, isDemoMode, isFetchingAccountFilterSettings, isLoadingAccountFilterSettings, setAccountNumbers])
+
+  useEffect(() => {
+    if (accountFilterSettingsError) {
+      setError('Failed to load account filters. Please refresh the page.')
+    }
+  }, [accountFilterSettingsError])
 
 
   const activeLoadPromiseRef = React.useRef<Promise<void> | null>(null)
@@ -236,7 +210,8 @@ export const DataProvider: React.FC<{
       }
     }
 
-    setIsLoading(false)
+    setIsLoading(true)
+    setIsDashboardBootstrapReady(true)
   }, [initialBootstrapData, setAccounts, setIsLoading, setUser, isDemoMode])
 
   const loadData = useCallback(async () => {
@@ -292,19 +267,11 @@ export const DataProvider: React.FC<{
         }
 
 
-        const initData = initialBootstrapData?.isAuthenticated
-          ? initialBootstrapData
-          : await apiRequestData<any>('/api/v1/init', {
-              cache: 'no-store',
-              headers: { 'Cache-Control': 'no-cache' },
-            })
-        
-        if (!initData.isAuthenticated) {
-          await signOut().catch(() => undefined)
-          setIsLoading(false)
-          hasLoadedDataRef.current = false
-          return;
+        if (!initialBootstrapData?.isAuthenticated) {
+          throw new Error('Dashboard bootstrap unavailable')
         }
+
+        const initData = initialBootstrapData
 
         const { user: userData, accounts: rawAccounts } = initData
 
@@ -349,7 +316,6 @@ export const DataProvider: React.FC<{
           error.message.includes('User not found') ||
           error.message.includes('Unauthorized')
         )) {
-          await signOut().catch(() => undefined)
           return;
         }
         hasLoadedDataRef.current = false;
@@ -445,13 +411,15 @@ export const DataProvider: React.FC<{
       metricsOnly: true,
     }
   }, [tradeFilters])
-  const queryEnabled = isDemoMode ? true : !!supabaseUser?.id
+  const queryEnabled = isDemoMode ? true : Boolean(user?.id) && isSelectionReady
   const queryScope = useMemo(
     () => (isDemoMode ? { surface: 'demo' as const } : { surface: 'authenticated' as const, ...(user?.id ? { userId: user.id } : {}) }),
     [isDemoMode, user?.id],
   )
-  const { data: serverTradeData } = useFilteredTrades(queryScope, tableTradeFilters, queryEnabled, isDemoMode)
-  const { data: serverMetricsData } = useFilteredTrades(queryScope, metricsTradeFilters, queryEnabled, isDemoMode)
+  const tableTradesQuery = useFilteredTrades(queryScope, tableTradeFilters, queryEnabled, isDemoMode)
+  const metricsQuery = useFilteredTrades(queryScope, metricsTradeFilters, queryEnabled, isDemoMode)
+  const { data: serverTradeData } = tableTradesQuery
+  const { data: serverMetricsData } = metricsQuery
 
   const dashboardAggregateFilters: DashboardAggregateFilters = useMemo(() => ({
     accountIds: accountNumbers,
@@ -463,6 +431,39 @@ export const DataProvider: React.FC<{
   const dashboardAggregateQuery = useDashboardAggregates(dashboardAggregateFilters, queryEnabled, isDemoMode)
   const aggregates: DashboardAggregates | null = dashboardAggregateQuery.aggregates
   const dataQuality: DashboardDataQuality = dashboardAggregateQuery.dataQuality
+
+  useEffect(() => {
+    if (isDemoMode) {
+      setIsLoading(false)
+      return
+    }
+
+    setIsLoading(
+      !queryEnabled ||
+      !isDashboardBootstrapReady ||
+      isLoadingAccountFilterSettings ||
+      isFetchingAccountFilterSettings ||
+      tableTradesQuery.isLoading ||
+      metricsQuery.isLoading ||
+      dashboardAggregateQuery.isLoading,
+    )
+  }, [
+    dashboardAggregateQuery.isLoading,
+    isDemoMode,
+    isDashboardBootstrapReady,
+    isFetchingAccountFilterSettings,
+    isLoadingAccountFilterSettings,
+    metricsQuery.isLoading,
+    queryEnabled,
+    setIsLoading,
+    tableTradesQuery.isLoading,
+  ])
+
+  useEffect(() => {
+    if (tableTradesQuery.error || metricsQuery.error || dashboardAggregateQuery.error) {
+      setError('Failed to load dashboard data. Please retry.')
+    }
+  }, [dashboardAggregateQuery.error, metricsQuery.error, tableTradesQuery.error])
 
   const freshness = useDataProviderRealtime({
     userId: user?.id,
@@ -610,6 +611,8 @@ export const DataProvider: React.FC<{
     isPlusUser,
     entitlement,
     isLoading,
+    isDashboardBootstrapReady,
+    isAccountSelectionReady: isSelectionReady,
     isLoadingAccountFilterSettings,
     accountFilterSettings,
     updateAccountFilterSettings,

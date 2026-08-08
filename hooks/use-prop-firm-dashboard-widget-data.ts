@@ -117,7 +117,7 @@ export type PropFirmWidgetData = {
   tradingDays: number
 }
 
-export function usePropFirmDashboardWidgetData() {
+export function usePropFirmDashboardWidgetData(enabled = true) {
   const selection = useDashboardPropFirmAccount()
   const id = selection.selectedMasterAccountId
   const resetTimezone = selection.resetTimezone || 'UTC'
@@ -133,7 +133,7 @@ export function usePropFirmDashboardWidgetData() {
           operation: 'load-prop-firm-account-widget-data',
         }
       ),
-    enabled: isScopeReady(scope) && Boolean(id),
+    enabled: enabled && isScopeReady(scope) && Boolean(id),
     staleTime: 30_000,
   })
 

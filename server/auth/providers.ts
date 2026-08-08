@@ -44,7 +44,7 @@ export async function signOut() {
     })
     if (internalUser) logActivity({ userId: internalUser.id, action: 'USER_LOGOUT', entity: 'Auth' })
   }
-  await supabase.auth.signOut()
+  await supabase.auth.signOut({ scope: 'local' })
   redirect('/?logout=true')
 }
 

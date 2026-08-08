@@ -21,9 +21,7 @@ import { formatBreakevenBand } from '@/lib/metrics/outcome'
 import { normalizePnlDisplayMode } from '@/lib/metrics/pnl'
 import { reportClientError, reportError } from '@/lib/observability/report-error'
 import { ApiClientError, apiRequest } from '@/lib/api/client'
-import { createClient } from '@/lib/supabase'
 import { getUserAvatarUrl } from '@/lib/user-avatar'
-import { signOut } from '@/server/auth/providers'
 import { useUserStore } from '@/store/user-store'
 import { SettingsDialogs } from './components/settings-dialogs'
 import { defaultAiSettings } from './components/settings-config'
@@ -90,7 +88,7 @@ export default function SettingsPage() {
   const storeUser = useUserStore(state => state.supabaseUser)
   const dbUser = useUserStore(state => state.user)
   const setDbUser = useUserStore(state => state.setUser)
-  const { user: authUser } = useAuth()
+  const { user: authUser, logout, logoutAfterDeletion, logoutAll } = useAuth()
   const user = storeUser ?? authUser
   const timezone = useUserStore(state => state.timezone)
   const setTimezone = useUserStore(state => state.setTimezone)
@@ -101,6 +99,7 @@ export default function SettingsPage() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
   const [isSignOutDialogOpen, setIsSignOutDialogOpen] = useState(false)
+  const [isSignOutAllDialogOpen, setIsSignOutAllDialogOpen] = useState(false)
 
   const [profileData, setProfileData] = useState<SettingsProfileData>({
     firstName: '',
@@ -536,13 +535,9 @@ export default function SettingsPage() {
         duration: 3000
       })
 
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      localStorage.clear()
-      sessionStorage.clear()
       setIsDeleteModalOpen(false)
       setDeleteConfirmText('')
-      window.location.href = '/?deleted=true'
+      await logoutAfterDeletion()
 
     } catch (error) {
       reportSettingsMutationError(error, 'delete-account')
@@ -651,7 +646,7 @@ export default function SettingsPage() {
             )}
             {activeTab === 'integrations' && <SettingsIntegrations token={webhookToken} loading={isLoadingWebhook} copied={webhookCopied} regenerating={isRegeneratingWebhook} onCopyUrl={copyWebhookUrl} onRegenerate={() => setIsRegenerateWebhookDialogOpen(true)} />}
             {activeTab === 'connections' && <SettingsConnections />}
-            {activeTab === 'security' && <SettingsSecurity editingProfile={isEditingProfile} onSignOutPrompt={() => { if (isEditingProfile) setIsSignOutDialogOpen(true); else { localStorage.removeItem('jji_user_data'); void signOut() } }} onDelete={() => setIsDeleteModalOpen(true)} />}
+            {activeTab === 'security' && <SettingsSecurity editingProfile={isEditingProfile} onSignOutPrompt={() => { if (isEditingProfile) setIsSignOutDialogOpen(true); else { void logout() } }} onSignOutAll={() => setIsSignOutAllDialogOpen(true)} onDelete={() => setIsDeleteModalOpen(true)} />}
             {activeTab === 'help' && <SettingsHelpSection startTour={startTour} />}
           </motion.div>
         </div>
@@ -672,8 +667,12 @@ export default function SettingsPage() {
         signOutOpen={isSignOutDialogOpen}
         onSignOutOpenChange={setIsSignOutDialogOpen}
         onSignOut={() => {
-          localStorage.removeItem('jji_user_data')
-          void signOut()
+          void logout()
+        }}
+        signOutAllOpen={isSignOutAllDialogOpen}
+        onSignOutAllOpenChange={setIsSignOutAllDialogOpen}
+        onSignOutAll={() => {
+          void logoutAll()
         }}
       />
     </SettingsShell>

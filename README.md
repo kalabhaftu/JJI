@@ -25,7 +25,7 @@ Production trading journal, performance analytics, prop-firm tracking, and conse
 
 | Area | Implementation |
 |---|---|
-| Web | Next.js 15 App Router, React 19, TypeScript |
+| Web | Next.js 16 App Router, React 19, TypeScript |
 | UI | Tailwind CSS, shadcn/ui primitives, Radix UI |
 | Database | Supabase Postgres 17 |
 | Data access | Drizzle ORM with PostgreSQL.js |

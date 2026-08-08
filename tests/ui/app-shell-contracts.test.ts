@@ -22,7 +22,6 @@ describe('app shell navigation contracts', () => {
       '/demo',
       '/demo/reports',
       '/login',
-      '/app-launch',
       '/reports/shared/example',
     ]) {
       expect(isAppShellPath(pathname), pathname).toBe(true)

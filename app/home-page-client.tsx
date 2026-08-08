@@ -67,8 +67,8 @@ const workflow = [
 
 export default function HomePage() {
   const { theme, toggleTheme } = useTheme()
-  const { docsHref, demoHref, mainAppHref, mainAppLaunchHref } = usePublicSurfaceRouting()
-  const primaryHref = mainAppLaunchHref('/dashboard')
+  const { docsHref, demoHref, mainAppHref } = usePublicSurfaceRouting()
+  const primaryHref = mainAppHref('/login?next=/dashboard')
 
   return (
     <div className="min-h-screen bg-background selection:bg-primary/30">

@@ -39,6 +39,7 @@ async function saveAccountFilterSettings(settings: AccountFilterSettings): Promi
 export interface UseAccountFilterSettingsResult {
   settings: AccountFilterSettings
   isLoading: boolean
+  isFetching: boolean
   isSaving: boolean
   error: string | null
   refetch: () => void
@@ -51,7 +52,7 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
   const user = useUserStore(state => state.user)
   const isDemo = typeof window !== 'undefined' && isDemoSurface(window.location.hostname, window.location.pathname)
 
-  const { data: settings = DEFAULT_FILTER_SETTINGS, isLoading, error, refetch } = useQuery({
+  const { data: settings = DEFAULT_FILTER_SETTINGS, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: [...QUERY_KEY, isDemo],
     queryFn: async () => {
       if (isDemo) {
@@ -70,6 +71,7 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
     },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
+    enabled: isDemo || Boolean(user?.id),
 
 
     initialData: () => {
@@ -140,6 +142,7 @@ export function useAccountFilterSettings(): UseAccountFilterSettingsResult {
   return {
     settings,
     isLoading,
+    isFetching,
     isSaving: mutation.isPending,
     error: error instanceof Error ? error.message : mutation.error instanceof Error ? mutation.error.message : null,
     refetch,

@@ -6,7 +6,7 @@
 
 **Architecture:** The approved August 3 plan remains the authoritative source for exact interfaces, file paths, acceptance criteria, and validation commands. This addendum defines the dependency order established by the August 4 repository audit: correctness and shared contracts first, domain ownership and routes second, browser evidence third, and release gates last. Each domain ends with one TanStack Query owner, scoped key factory, mutation owner, and targeted invalidation path; obsolete SWR, module-cache, route, and compatibility paths are removed rather than wrapped.
 
-**Tech Stack:** Next.js 15 App Router, React 19, TypeScript, Tailwind CSS 4, Radix/shadcn, TanStack Query, Supabase Auth/Realtime, Drizzle, Vitest, Playwright, Sentry.
+**Tech Stack:** Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, Radix/shadcn, TanStack Query, Supabase Auth/Realtime, Drizzle, Vitest, Playwright, Sentry.
 
 ## Global Constraints
 

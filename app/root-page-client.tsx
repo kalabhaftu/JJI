@@ -14,13 +14,14 @@ import { UserAuthForm } from "@/components/user-auth-form"
 import { useAuth } from "@/context/auth-provider"
 import { useTheme } from "@/context/theme-provider"
 import { usePublicSurfaceRouting } from "@/hooks/use-public-surface-routing"
+import { getSafeRedirectPath } from "@/lib/security/redirects"
 
 interface RootPageClientProps {
   nextUrl: string | null
 }
 
 export function RootPageClient({ nextUrl }: RootPageClientProps) {
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading, ensureServerSession, forceClearAuth } = useAuth()
   const router = useRouter()
   const [isProcessingLogout, setIsProcessingLogout] = useState(false)
   const [isClient, setIsClient] = useState(false)
@@ -31,9 +32,27 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
 
   useEffect(() => {
     if (!isClient || isLoading || isProcessingLogout || !isAuthenticated) return
-    const destination = nextUrl || '/dashboard'
-    router.replace(`/app-launch?next=${encodeURIComponent(destination)}`)
-  }, [isAuthenticated, isClient, isLoading, isProcessingLogout, nextUrl, router])
+    let cancelled = false
+    const destination = getSafeRedirectPath(nextUrl)
+
+    const openWorkspace = async () => {
+      const serverSessionReady = await ensureServerSession()
+      if (cancelled) return
+
+      if (!serverSessionReady) {
+        forceClearAuth()
+        return
+      }
+
+      router.replace(destination)
+    }
+
+    void openWorkspace()
+
+    return () => {
+      cancelled = true
+    }
+  }, [ensureServerSession, forceClearAuth, isAuthenticated, isClient, isLoading, isProcessingLogout, nextUrl, router])
 
   useEffect(() => {
     if (!isClient) return
@@ -61,7 +80,7 @@ export function RootPageClient({ nextUrl }: RootPageClientProps) {
           aria-live="polite"
         >
           <Spinner className="h-8 w-8 text-primary" />
-          <p className="text-muted-foreground">Restoring your session...</p>
+          <p className="text-muted-foreground">Opening your workspace...</p>
         </div>
       </main>
     )

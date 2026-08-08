@@ -91,10 +91,6 @@ export function getMainAppHref(href = '/', hostname?: string | null) {
   return cleanHref
 }
 
-export function getMainAppLaunchHref(nextPath = '/dashboard', hostname?: string | null) {
-  return getMainAppHref(`/app-launch?next=${encodeURIComponent(nextPath)}`, hostname)
-}
-
 export function getDemoRouteHref(href: string, isDemoMode: boolean, hostname?: string | null) {
   if (!isDemoMode) return href
   return getDemoHref(href, hostname)

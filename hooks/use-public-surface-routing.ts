@@ -8,7 +8,6 @@ import {
   getDemoRouteHref,
   getDocsHref,
   getMainAppHref,
-  getMainAppLaunchHref,
   isDemoHost,
   isDemoSurface,
 } from '@/lib/public-surface-routing'
@@ -34,7 +33,6 @@ export function usePublicSurfaceRouting() {
       docsHref: (href?: string) => getDocsHref(href, hostname) as any,
       demoHref: (href?: string) => getDemoHref(href, hostname) as any,
       mainAppHref: (href?: string) => getMainAppHref(href, hostname) as any,
-      mainAppLaunchHref: (nextPath?: string) => getMainAppLaunchHref(nextPath, hostname) as any,
       demoRouteHref: (href: string, isDemoMode: boolean) => getDemoRouteHref(href, isDemoMode, hostname) as any,
       demoAwarePathname: (pathname: string, isDemoMode: boolean) =>
         getDemoAwarePathname(pathname, isDemoMode, hostname),

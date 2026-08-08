@@ -4,7 +4,6 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createContext, useContext, useEffect, useState, useCallback, useRef, startTransition } from 'react'
 import { toast } from 'sonner'
 import { Session } from '@supabase/supabase-js'
-import { signOut } from '@/server/auth/providers'
 import { createClient } from '@/lib/supabase'
 import { useUserStore } from '@/store/user-store'
 import { useAutoCacheCleanup } from '@/hooks/use-auto-cache-cleanup'
@@ -15,25 +14,63 @@ import { reportClientError } from '@/lib/observability/report-error'
 
 interface AuthContextType {
   isLoading: boolean
+  isSigningOut: boolean
   isAuthenticated: boolean
   session: Session | null
   user: any | null
   checkAuth: () => Promise<boolean>
+  ensureServerSession: () => Promise<boolean>
+  logout: () => Promise<void>
+  logoutAll: () => Promise<void>
+  logoutAfterDeletion: () => Promise<void>
   forceClearAuth: () => void
+}
+
+function readLegacyBrowserSession(): Session | null {
+  if (typeof window === 'undefined') return null
+
+  const storageKey = Object.keys(window.localStorage).find(
+    (key) => key.startsWith('sb-') && key.endsWith('-auth-token'),
+  )
+  if (!storageKey) return null
+
+  try {
+    const storedValue = window.localStorage.getItem(storageKey)
+    if (!storedValue) return null
+
+    const parsed = JSON.parse(storedValue) as Partial<Session> & {
+      currentSession?: Partial<Session>
+    }
+    const candidate = parsed.currentSession ?? parsed
+
+    if (!candidate.access_token || !candidate.refresh_token || !candidate.user?.id) {
+      return null
+    }
+
+    return candidate as Session
+  } catch {
+    return null
+  }
 }
 
 const AuthContext = createContext<AuthContextType>({
   isLoading: true,
+  isSigningOut: false,
   isAuthenticated: false,
   session: null,
   user: null,
   checkAuth: async () => false,
+  ensureServerSession: async () => false,
+  logout: async () => {},
+  logoutAll: async () => {},
+  logoutAfterDeletion: async () => {},
   forceClearAuth: () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient()
   const [isLoading, setIsLoading] = useState(true)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
   const router = useRouter()
   const pathname = usePathname()
@@ -99,11 +136,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     )
   }, [])
 
-  const shouldSyncSessionForPath = useCallback((path: string | null) => {
-    if (!path) return false
-    return path === '/dashboard' || path.startsWith('/dashboard/') || path === '/admin' || path.startsWith('/admin/')
-  }, [])
-
   const syncSessionToServer = useCallback(async (nextSession: Session | null) => {
     if (!nextSession?.access_token || !nextSession.refresh_token || !nextSession.user?.id) {
       lastSyncedSessionRef.current = null
@@ -161,6 +193,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     syncInFlightRef.current.set(sessionKey, syncPromise)
     return syncPromise
   }, [])
+
+  const ensureServerSession = useCallback(async () => {
+    try {
+      const response = await fetch('/api/auth/check', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' },
+      })
+      const data = await response.json().catch(() => null)
+
+      if (response.ok && data?.authenticated === true) {
+        setAuthCheckCache({
+          timestamp: Date.now(),
+          isAuthenticated: true,
+        })
+        return true
+      }
+    } catch {
+    }
+
+    return syncSessionToServer(session)
+  }, [session, syncSessionToServer])
 
   const isAuthCheckValid = () => {
     if (!authCheckCache) return false
@@ -223,6 +276,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cacheCoordinator, clearBrowserAuthStorage, resetUser, setSupabaseUser])
 
+  const completeLogout = useCallback(async (endpoint: string, reason: 'logout' | 'deleted') => {
+    setIsSigningOut(true)
+
+    try {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Cache-Control': 'no-store' },
+      })
+
+      if (!response.ok) throw new Error(`Logout failed with status ${response.status}`)
+    } catch (error) {
+      reportClientError(error, { operation: 'logout', route: endpoint })
+      try {
+        await createClient().auth.signOut({ scope: 'local' })
+      } catch (fallbackError) {
+        reportClientError(fallbackError, { operation: 'logout-local-fallback', route: endpoint })
+      }
+    }
+
+    forceClearAuth()
+    window.location.replace(reason === 'deleted' ? '/?deleted=true' : '/?logout=true')
+  }, [forceClearAuth])
+
+  const logout = useCallback(() => completeLogout('/api/auth/logout', 'logout'), [completeLogout])
+  const logoutAll = useCallback(() => completeLogout('/api/auth/logout-all', 'logout'), [completeLogout])
+  const logoutAfterDeletion = useCallback(() => completeLogout('/api/auth/logout', 'deleted'), [completeLogout])
+
   const refreshOnceForAuthEvent = useCallback((event: string, nextSession: Session | null) => {
     if (event !== 'SIGNED_IN' && event !== 'SIGNED_OUT') {
       return
@@ -257,8 +338,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        const { data: { session: cookieSession }, error } = await supabase.auth.getSession()
         if (error) throw error
+
+        let session = cookieSession
+        if (!session) {
+          const legacySession = readLegacyBrowserSession()
+          if (legacySession && await syncSessionToServer(legacySession)) {
+            const { data: migrated, error: migrationError } = await supabase.auth.setSession({
+              access_token: legacySession.access_token,
+              refresh_token: legacySession.refresh_token,
+            })
+
+            if (!migrationError && migrated.session) {
+              session = migrated.session
+            } else {
+              session = legacySession
+            }
+
+            clearBrowserAuthStorage()
+          }
+        }
+
         setSession(session)
 
         await handleIdentityTransition(session?.user?.id ?? null)
@@ -266,11 +367,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           setSupabaseUser(session.user)
-          if (shouldSyncSessionForPath(pathname)) {
-            await syncSessionToServer(session)
-          }
-
-
         } else {
           setSupabaseUser(null)
           setUser(null)
@@ -292,7 +388,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           toast.error('Session Error', {
             description: 'Failed to check authentication status',
           })
-          await signOut()
+          await supabase.auth.signOut({ scope: 'local' })
         }
       } finally {
         setIsLoading(false)
@@ -309,11 +405,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           setSupabaseUser(session.user)
-          if (shouldSyncSessionForPath(pathname)) {
-            void syncSessionToServer(session)
-          }
-
-
         } else {
           setSupabaseUser(null)
           setUser(null)
@@ -327,20 +418,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       subscription.unsubscribe()
     }
-  }, [router, pathname, forceClearAuth, setSupabaseUser, setUser, clearBrowserAuthStorage, isRecoverableSessionError, syncSessionToServer, shouldSyncSessionForPath, refreshOnceForAuthEvent, handleIdentityTransition])
+  }, [router, pathname, forceClearAuth, setSupabaseUser, setUser, clearBrowserAuthStorage, isRecoverableSessionError, syncSessionToServer, refreshOnceForAuthEvent, handleIdentityTransition])
 
   return (
     <AuthContext.Provider
       value={{
         isLoading,
+        isSigningOut,
         isAuthenticated: !!session,
         session,
         user: session?.user || null,
         checkAuth: performAuthCheck,
+        ensureServerSession,
+        logout,
+        logoutAll,
+        logoutAfterDeletion,
         forceClearAuth,
       }}
     >
-      {children}
+      {isSigningOut ? (
+        <main className="flex min-h-screen items-center justify-center bg-background" role="status" aria-live="polite">
+          <p className="text-sm text-muted-foreground">Signing out…</p>
+        </main>
+      ) : children}
     </AuthContext.Provider>
   )
 }
@@ -353,6 +453,10 @@ export const useAuth = () => {
   return {
     ...context,
     checkAuth: context.checkAuth,
+    ensureServerSession: context.ensureServerSession,
+    logout: context.logout,
+    logoutAll: context.logoutAll,
+    logoutAfterDeletion: context.logoutAfterDeletion,
     forceClearAuth: context.forceClearAuth,
   }
 } 

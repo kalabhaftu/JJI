@@ -16,7 +16,6 @@ import { useUserStore } from '@/store/user-store'
 import { ThemeSwitcher } from '@/components/theme-switcher'
 import { TemplateSelector } from './template-selector'
 import { DashboardDisplayModeSelector } from './navbar-display-mode'
-import { signOut } from '@/server/auth/providers'
 import { HugeiconsIcon } from '@hugeicons/react'
 import {
   Settings02Icon,
@@ -68,7 +67,7 @@ export default function Navbar() {
   const [profileMenuOpen, setProfileMenuOpen] = useState(false)
 
   const { isMobile, isDemoMode } = useData()
-  const { forceClearAuth } = useAuth()
+  const { logout } = useAuth()
   const { demoRouteHref, hostname } = usePublicSurfaceRouting()
 
   useKeyboardShortcuts()
@@ -86,10 +85,7 @@ export default function Navbar() {
   }, [isMobile])
 
   const handleLogout = async () => {
-    localStorage.clear()
-    sessionStorage.clear()
-    forceClearAuth()
-    await signOut()
+    await logout()
   }
 
   return (

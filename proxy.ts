@@ -125,6 +125,8 @@ export async function proxy(request: NextRequest) {
   if (!userId) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
+    url.search = ''
+    url.searchParams.set('next', `${pathname}${request.nextUrl.search}`)
 
     const redirectResponse = NextResponse.redirect(url)
     supabaseResponse.cookies.getAll().forEach((cookie) => redirectResponse.cookies.set(cookie))

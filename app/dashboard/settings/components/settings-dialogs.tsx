@@ -39,6 +39,9 @@ type SettingsDialogsProps = {
   signOutOpen: boolean
   onSignOutOpenChange: (open: boolean) => void
   onSignOut: () => void
+  signOutAllOpen: boolean
+  onSignOutAllOpenChange: (open: boolean) => void
+  onSignOutAll: () => void
 }
 
 export function SettingsDialogs({
@@ -56,6 +59,9 @@ export function SettingsDialogs({
   signOutOpen: isSignOutDialogOpen,
   onSignOutOpenChange: setIsSignOutDialogOpen,
   onSignOut,
+  signOutAllOpen: isSignOutAllDialogOpen,
+  onSignOutAllOpenChange: setIsSignOutAllDialogOpen,
+  onSignOutAll,
 }: SettingsDialogsProps) {
   return (
     <>
@@ -166,6 +172,21 @@ export function SettingsDialogs({
             >
               Discard and sign out
             </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isSignOutAllDialogOpen} onOpenChange={setIsSignOutAllDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign out all devices?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will end all active sessions. Devices with already-issued access tokens may remain active until those tokens expire.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={onSignOutAll}>Sign out all devices</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

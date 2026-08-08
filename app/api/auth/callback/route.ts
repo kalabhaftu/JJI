@@ -1,5 +1,5 @@
 'use server'
-import { createClient } from '@/server/auth/client'
+import { createClient, getWebsiteURL } from '@/server/auth/client'
 import { ensureUserInDatabase } from '@/server/auth/user-provisioning'
 import { NextResponse } from 'next/server'
 import { logActivity } from '@/lib/activity-logger'
@@ -25,13 +25,17 @@ export async function GET(request: Request) {
   const error_code = searchParams.get('error_code')
   const next = searchParams.get('next')
   const action = searchParams.get('action')
-  const baseUrl = new URL(request.url).origin
+  const baseUrl = new URL(await getWebsiteURL()).origin
+
+  const authenticationFailure = () => {
+    const loginUrl = new URL('/login', baseUrl)
+    loginUrl.searchParams.set('error', 'auth_failed')
+    if (next) loginUrl.searchParams.set('next', getSafeRedirectPath(next))
+    return NextResponse.redirect(loginUrl)
+  }
 
   if (error_code) {
-    if (error_code === 'bad_oauth_state') {
-      return NextResponse.redirect(new URL('/', baseUrl))
-    }
-    return NextResponse.redirect(new URL('/dashboard', baseUrl))
+    return authenticationFailure()
   }
 
   if (code) {
@@ -83,7 +87,7 @@ export async function GET(request: Request) {
         return NextResponse.redirect(new URL(getSafeRedirectPath(next), baseUrl))
       }
 
-      return NextResponse.redirect(new URL('/', baseUrl))
+      return authenticationFailure()
      } catch (error) {
        reportError(error, {
          surface: 'api',
@@ -91,9 +95,9 @@ export async function GET(request: Request) {
          route: '/api/auth/callback',
          requestId,
        })
-       return NextResponse.redirect(new URL('/', baseUrl))
+       return authenticationFailure()
      }
   }
 
-  return NextResponse.redirect(new URL('/', baseUrl))
+  return authenticationFailure()
 }

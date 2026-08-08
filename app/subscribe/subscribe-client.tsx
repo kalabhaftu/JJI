@@ -26,7 +26,7 @@ import { useAuth } from '@/context/auth-provider'
 import { reportClientError, reportError } from '@/lib/observability/report-error'
 
 export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
-  const { isAuthenticated, isLoading: isAuthLoading } = useAuth()
+  const { isAuthenticated, isLoading: isAuthLoading, logout } = useAuth()
   const router = useRouter()
   const [promoCode, setPromoCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -305,14 +305,7 @@ export function SubscribeClient({ whopEnabled }: { whopEnabled: boolean }) {
             variant="tertiary"
             size="sm"
             className="text-xs text-muted-foreground gap-2"
-            onClick={async () => {
-              const { createClient } = await import('@/lib/supabase')
-              const supabase = createClient()
-              await supabase.auth.signOut()
-              localStorage.clear()
-              sessionStorage.clear()
-              window.location.href = '/'
-            }}
+            onClick={() => { void logout() }}
           >
             <HugeiconsIcon icon={Logout01Icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
             Sign Out

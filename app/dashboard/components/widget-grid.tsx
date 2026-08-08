@@ -51,7 +51,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   const isMobile = useIsMobile()
   const { isEditMode, currentLayout, updateLayout } = useTemplateEditStore()
   const { activeTemplate, isLoading } = useTemplates()
-  const { accountNumbers, formattedTrades, isLoadingAccountFilterSettings, accountFilterSettings, accounts: contextAccounts } = useData()
+  const { accountNumbers, formattedTrades, isDashboardBootstrapReady, isAccountSelectionReady, isLoadingAccountFilterSettings, accountFilterSettings, accounts: contextAccounts, error } = useData()
   const [showWidgetLibrary, setShowWidgetLibrary] = useState(false)
   const [showKpiSelector, setShowKpiSelector] = useState(false)
   const { width: containerWidth, containerRef: gridContainerRef, mounted: gridMounted } = useGridContainerWidth(isMobile)
@@ -67,7 +67,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   }, [layout])
 
 
-  const propFirmAccount = usePropFirmDashboardWidgetData()
+  const propFirmAccount = usePropFirmDashboardWidgetData(isAccountSelectionReady)
   const activePropFirmId = propFirmAccount.selectedMasterAccountId
 
   const isPropFirmLoading = (hasPropFirmWidget && activePropFirmId)
@@ -222,9 +222,9 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
   const hasSelectedScope = accountNumbers.length > 0
     || (accountFilterSettings?.selectedPhaseAccountIds?.length ?? 0) > 0
 
-  const showEmptyTradeState = !isEditMode && !isLoading && !hasAccounts
-  const showNoTradesState = !isEditMode && !isLoading && settingsReady && hasAccounts && formattedTrades.length === 0
-  const showEmptyAccountState = !isEditMode && !isLoading && settingsReady && hasAccounts && !hasSelectedScope && formattedTrades.length > 0 && !showEmptyTradeState
+  const showEmptyTradeState = isDashboardBootstrapReady && isAccountSelectionReady && !isEditMode && !isLoading && !error && !hasAccounts
+  const showNoTradesState = isDashboardBootstrapReady && isAccountSelectionReady && !isEditMode && !isLoading && !error && settingsReady && hasAccounts && formattedTrades.length === 0
+  const showEmptyAccountState = isDashboardBootstrapReady && isAccountSelectionReady && !isEditMode && !isLoading && !error && settingsReady && hasAccounts && !hasSelectedScope && formattedTrades.length > 0 && !showEmptyTradeState
 
   if (showEmptyTradeState) {
     return <EmptyTradeState variant="no-account" />
@@ -240,7 +240,7 @@ export default function WidgetGrid({ className }: WidgetGridProps) {
 
 
   const gridReady = isMobile ? true : (gridMounted && containerWidth > 0)
-  const shouldShowTemplateSkeleton = !hasMountedOnce && (isLoading || !activeTemplate || !gridReady || isPropFirmLoading)
+  const shouldShowTemplateSkeleton = !hasMountedOnce && (!isDashboardBootstrapReady || !isAccountSelectionReady || isLoading || !activeTemplate || !gridReady || isPropFirmLoading)
   const skeletonLayout = layout.length > 0
     ? layout
     : ((activeTemplate?.layout?.length ? activeTemplate.layout : cloneDefaultTemplateLayout()) as WidgetLayout[])

@@ -25,9 +25,10 @@ export async function getUserId(): Promise<string> {
               setAll: () => {},
             },
           })
-          const { data: { user }, error } = await supabase.auth.getUser(token)
-          if (!error && user) {
-            return user.id
+          const { data, error } = await supabase.auth.getClaims(token)
+          const userId = typeof data?.claims?.sub === 'string' ? data.claims.sub : null
+          if (!error && userId) {
+            return userId
           }
         }
       }
@@ -54,12 +55,12 @@ export async function getUserId(): Promise<string> {
     const supabase = await createClient()
 
 
-    const authPromise = supabase.auth.getUser()
+    const authPromise = supabase.auth.getClaims()
     const timeoutPromise = new Promise((_, reject) =>
       setTimeout(() => reject(new Error("Auth timeout")), 10000)
     )
 
-    const { data: { user }, error } = await Promise.race([authPromise, timeoutPromise]) as any
+    const { data, error } = await Promise.race([authPromise, timeoutPromise]) as any
 
     if (error) {
       if (error.message?.includes("timeout")) {
@@ -69,11 +70,12 @@ export async function getUserId(): Promise<string> {
       throw new Error("User not authenticated")
     }
 
-    if (!user) {
+    const userId = typeof data?.claims?.sub === 'string' ? data.claims.sub : null
+    if (!userId) {
       throw new Error("User not authenticated")
     }
 
-    return user.id
+    return userId
   } catch (authError) {
     if (authError instanceof Error) {
       if (authError.message === "Auth timeout") {

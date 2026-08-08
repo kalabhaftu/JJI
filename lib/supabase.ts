@@ -96,13 +96,7 @@ export function createClient() {
       } as any
   }
 
-  return createBrowserClient(supabaseUrl, supabaseKey, {
-    auth: {
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      autoRefreshToken: true,
-      persistSession: true,
-      detectSessionInUrl: true
-    }
-  })
+  // @supabase/ssr stores the browser session in cookies by default. Keep the
+  // browser client aligned with the server client and proxy session flow.
+  return createBrowserClient(supabaseUrl, supabaseKey)
 }
-

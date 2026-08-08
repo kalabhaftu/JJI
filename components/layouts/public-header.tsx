@@ -5,7 +5,7 @@ import { Menu01Icon } from '@hugeicons/core-free-icons'
 
 import { Logo } from '@/components/logo'
 import { Button } from '@/components/ui/button'
-import { getDocsHref, getMainAppHref, getMainAppLaunchHref } from '@/lib/public-surface-routing'
+import { getDocsHref, getMainAppHref } from '@/lib/public-surface-routing'
 import { cn } from '@/lib/utils'
 
 type PublicHeaderNavItem = {
@@ -34,7 +34,7 @@ export async function PublicHeader({
   const isSignedIn = hasSupabaseSessionCookie(cookieStore.getAll().map((cookie) => cookie.name))
   const mainHref = getMainAppHref('/', hostname)
   const appHref = getMainAppHref('/dashboard', hostname)
-  const signInHref = getMainAppLaunchHref('/dashboard', hostname)
+  const signInHref = getMainAppHref('/login?next=/dashboard', hostname)
   const getNavHref = (href: string) => {
     if (href.startsWith('/docs')) return getDocsHref(href, hostname)
     if (href.startsWith('/')) return getMainAppHref(href, hostname)

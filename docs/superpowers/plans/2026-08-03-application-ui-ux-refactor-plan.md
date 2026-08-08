@@ -6,7 +6,7 @@
 
 **Architecture:** Use a correctness-first layered refactor. Phase 1 fixes entitlement, credential persistence, API cancellation/error handling, fail-closed trade validation, and session-safe realtime. Each page migration owns the minimum TanStack Query/cache work required by that domain before or alongside its UI migration; Phase 7 completes cross-domain consolidation and shared invalidation rather than reopening already-migrated pages. Phase 1.6 establishes the reusable route/dialog/sheet trade-workspace foundation consumed by later phases.
 
-**Tech Stack:** Next.js 15 App Router, React 19, TypeScript, Tailwind CSS 4, Radix/shadcn source components, TanStack Query, SWR during migration only, Zustand for local UI state, Supabase Auth/Realtime, Drizzle, Vitest, Playwright, Sentry.
+**Tech Stack:** Next.js 16 App Router, React 19, TypeScript, Tailwind CSS 4, Radix/shadcn source components, TanStack Query, SWR during migration only, Zustand for local UI state, Supabase Auth/Realtime, Drizzle, Vitest, Playwright, Sentry.
 
 ## Global Constraints
 
@@ -1284,11 +1284,11 @@ For each task:
 
 ### Task 5.13: Authentication and subscription
 
-**Files:** login/app-launch/subscribe route clients and boundaries, auth form.
+**Files:** login/subscribe route clients and boundaries, auth form; the former visible app-launch route is retired.
 - Domain query work: use canonical API lifecycle from Phase 1; do not introduce a second status polling owner.
 - Test: one auth/subscription e2e suite and shared contracts.
 
-**Exact route coverage:** `/login`, `/app-launch`, `/subscribe`, `/subscribe/loading`, `/subscribe/error`, `/subscribe/status`, `/subscribe/success`, `/subscribe/cancelled`. Test file: `tests/e2e/phase-5-auth-subscription.e2e.test.ts`.
+**Exact route coverage:** `/login`, `/subscribe`, `/subscribe/loading`, `/subscribe/error`, `/subscribe/status`, `/subscribe/success`, `/subscribe/cancelled`. Test file: `tests/e2e/phase-5-auth-subscription.e2e.test.ts`. Authenticated redirects now use the SSR cookie session directly; `/api/auth/restore` remains a silent recovery endpoint only.
 
 **Acceptance:** OTP persistent error/focus/resend, subscription verification/delay/timeout/retry/cancel/success/blocking error, mobile/keyboard.
 

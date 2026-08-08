@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Replaced the visible `/app-launch` auth bridge with direct `/login` routing, Next.js proxy destination preservation, and Supabase SSR cookie sessions with one-time legacy-session recovery.
+- Replaced the duplicate dashboard init request with staged server bootstrap, canonical account-filter reconciliation, and loading-safe trade and aggregate queries.
+- Added explicit current-session and all-device logout routes with scoped client teardown, canonical auth callback origins, and no production fallback to generated Vercel URLs.
 - Fixed collapsed-sidebar tooltips sticking after hover and removed duplicated `JJI` browser-title suffixes.
 - Rebuilt the AI area as a consent-gated evidence workspace with selectable data sources, bounded context, saved chats, insights, mappings, and weekly reviews.
 - Fixed duplicated global navigation/footer surfaces and made mobile navigation, widget sizing, safe-area spacing, and touch targets consistent.

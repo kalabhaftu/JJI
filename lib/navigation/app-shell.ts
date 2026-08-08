@@ -2,7 +2,6 @@ export const APP_SHELL_PREFIXES = [
   '/dashboard',
   '/demo',
   '/login',
-  '/app-launch',
   '/reports/shared',
 ] as const
 

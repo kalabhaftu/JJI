@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
 import hotkeys from 'hotkeys-js';
 import { useRouter } from 'next/navigation';
-import { signOut } from '@/server/auth/providers';
+import { useAuth } from '@/context/auth-provider';
 import { toast } from 'sonner';
 
 export function useKeyboardShortcuts() {
   const router = useRouter();
+  const { logout } = useAuth();
 
   useEffect(() => {
 
@@ -72,13 +73,12 @@ export function useKeyboardShortcuts() {
 
     hotkeys('shift+ctrl+q, shift+cmd+q', (event) => {
       event.preventDefault();
-      signOut();
-      toast.success('Logged out', { description: 'You have been logged out successfully' });
+      void logout();
     });
 
     return () => {
 
       hotkeys.unbind();
     };
-  }, [router]);
+  }, [logout, router]);
 }

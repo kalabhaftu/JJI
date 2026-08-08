@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from 'react'
 import { type TradeFilters } from '@/hooks/use-filtered-trades'
-import { isDemoSurface } from '@/lib/public-surface-routing'
 
 export interface DataProviderDateRange {
   from: Date
@@ -30,21 +29,7 @@ export function useDataProviderFilterState(timezone: string | undefined) {
   const [instruments, setInstruments] = useState<string[]>([])
 
 
-  const [accountNumbers, setAccountNumbers] = useState<string[]>(() => {
-    if (typeof window === 'undefined') return []
-    try {
-      const key = isDemoSurface(window.location.hostname, window.location.pathname) ? 'settings-cache-demo' : 'settings-cache'
-      const cached = localStorage.getItem(key)
-      if (cached) {
-        const parsed = JSON.parse(cached)
-        const ids = parsed?.selectedPhaseAccountIds
-        if (Array.isArray(ids) && ids.length > 0) return ids
-      }
-    } catch {
-      return []
-    }
-    return []
-  })
+  const [accountNumbers, setAccountNumbers] = useState<string[]>([])
   const [dateRange, setDateRange] = useState<DataProviderDateRange | undefined>(undefined)
   const [pnlRange, setPnlRange] = useState<DataProviderPnlRange>({ min: undefined, max: undefined })
   const [timeRange, setTimeRange] = useState<DataProviderTimeRange>({ range: null })

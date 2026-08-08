@@ -2,6 +2,7 @@ import 'server-only'
 
 import { createServerClient } from '@supabase/ssr'
 import { cookies, headers } from 'next/headers'
+import type { NextRequest, NextResponse } from 'next/server'
 
 import { getSafeRedirectPath } from '@/lib/security/redirects'
 import { resolveAuthOrigin } from '@/lib/security/auth-origin'
@@ -12,7 +13,29 @@ function isLocalDevelopment() {
 }
 
 function getConfiguredAppUrl() {
-  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_VERCEL_URL || null
+  return process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || null
+}
+
+function getSupabaseConfig() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+  const hasPlaceholderValues = !supabaseUrl || !supabaseKey ||
+    supabaseUrl.includes('[YOUR_PROJECT_REF]') ||
+    supabaseKey.includes('your-anon-key') ||
+    supabaseUrl === 'https://[YOUR_PROJECT_REF].supabase.co' ||
+    supabaseKey === 'your-anon-key-from-supabase' ||
+    supabaseUrl === 'https://your-project.supabase.co' ||
+    supabaseKey === 'your-anon-key-here'
+
+  if (hasPlaceholderValues && process.env.NODE_ENV === 'production') {
+    throw new Error('Supabase configuration is incomplete. Please check your environment variables.')
+  }
+
+  return {
+    url: hasPlaceholderValues ? 'https://placeholder.supabase.co' : supabaseUrl!,
+    key: hasPlaceholderValues ? 'placeholder-key-for-build' : supabaseKey!,
+  }
 }
 
 async function getRequestOrigin() {
@@ -64,29 +87,11 @@ export async function getAuthCallbackUrl(next: string | null = null) {
 
 export async function createClient() {
   const cookieStore = await cookies()
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  const hasPlaceholderValues = !supabaseUrl || !supabaseKey ||
-    supabaseUrl.includes('[YOUR_PROJECT_REF]') ||
-    supabaseKey.includes('your-anon-key') ||
-    supabaseUrl === 'https://[YOUR_PROJECT_REF].supabase.co' ||
-    supabaseKey === 'your-anon-key-from-supabase' ||
-    supabaseUrl === 'https://your-project.supabase.co' ||
-    supabaseKey === 'your-anon-key-here'
-
-  if (hasPlaceholderValues && process.env.NODE_ENV === 'production') {
-    throw new Error('Supabase configuration is incomplete. Please check your environment variables.')
-  }
-
-
-  const finalUrl = hasPlaceholderValues ? 'https://placeholder.supabase.co' : supabaseUrl!
-  const finalKey = hasPlaceholderValues ? 'placeholder-key-for-build' : supabaseKey!
+  const { url, key } = getSupabaseConfig()
 
   return createServerClient(
-    finalUrl,
-    finalKey,
+    url,
+    key,
     {
       cookies: {
         getAll() {
@@ -105,4 +110,21 @@ export async function createClient() {
       },
     }
   )
+}
+
+export function createRouteHandlerClient(request: NextRequest, response: NextResponse) {
+  const { url, key } = getSupabaseConfig()
+
+  return createServerClient(url, key, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet: { name: string; value: string; options?: any }[]) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          response.cookies.set(name, value, options)
+        })
+      },
+    },
+  })
 }

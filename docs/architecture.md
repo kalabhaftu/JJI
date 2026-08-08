@@ -19,6 +19,8 @@ Browser
 
 Public and shared-report routes have explicit unauthenticated contracts. Demo routes use local fixtures and a route-local interceptor; they do not access production user data.
 
+Protected dashboard loading is staged: the server layout resolves authentication, internal-user access, and subscription entitlement before loading the dashboard bootstrap payload. The client then reconciles account-filter selections against canonical accounts before starting trade, aggregate, and prop-firm detail queries. See [Authentication and dashboard bootstrap](architecture/auth-bootstrap-and-logout.md).
+
 ## Application layers
 
 | Path | Responsibility |

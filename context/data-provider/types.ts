@@ -65,6 +65,8 @@ export interface DataContextType {
   isPlusUser: () => boolean
   entitlement: EntitlementCapability
   isLoading: boolean
+  isDashboardBootstrapReady: boolean
+  isAccountSelectionReady: boolean
   isLoadingAccountFilterSettings: boolean
   accountFilterSettings: AccountFilterSettings | null
   updateAccountFilterSettings: (newSettings: Partial<AccountFilterSettings>) => Promise<void>

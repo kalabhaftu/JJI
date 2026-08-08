@@ -157,7 +157,6 @@ function isAPIRequest(url) {
 
 function isCacheableAPIRequest(url) {
   return [
-    '/api/v1/init',
     '/api/v1/accounts',
     '/api/v1/trades',
     '/api/v1/reports/',

@@ -90,7 +90,7 @@ export function SharedLinksManager() {
   if (isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <HugeiconsIcon icon={Loading01Icon} className="h-6 w-6 animate-spin text-primary" />
+        <HugeiconsIcon icon={Loading01Icon} className="h-6 w-6 animate-spin text-primary" strokeWidth={2} />
       </div>
     )
   }
@@ -107,7 +107,7 @@ export function SharedLinksManager() {
       <div className="flex-1 overflow-y-auto p-6 space-y-4">
         {reports.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <HugeiconsIcon icon={Link02Icon} className="h-8 w-8 text-muted-foreground/35 mb-3" />
+            <HugeiconsIcon icon={Link02Icon} className="h-8 w-8 text-muted-foreground/35 mb-3" strokeWidth={2} />
             <p className="text-xs font-semibold text-muted-foreground">No active shared links found</p>
             <p className="text-[10px] text-muted-foreground/60 mt-1 max-w-[240px]">
               Generate shared links from the share dropdown menu to publish reports.
@@ -137,12 +137,12 @@ export function SharedLinksManager() {
                     </div>
                     <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] text-muted-foreground font-semibold">
                       <span className="flex items-center gap-1">
-                        <HugeiconsIcon icon={Calendar01Icon} className="h-3 w-3 opacity-60" />
+                        <HugeiconsIcon icon={Calendar01Icon} className="h-3 w-3 opacity-60" strokeWidth={2} />
                         {range}
                       </span>
                       <span className="opacity-30">•</span>
                       <span className="flex items-center gap-1">
-                        <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 opacity-60" />
+                        <HugeiconsIcon icon={EyeIcon} className="h-3 w-3 opacity-60" strokeWidth={2} />
                         {report.viewCount} views
                       </span>
                       {report.expiresAt && (
@@ -162,7 +162,7 @@ export function SharedLinksManager() {
                       onClick={() => handleCopy(report.slug)}
                       title="Copy public link"
                     >
-                      {isCopied ? <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-profit" /> : <HugeiconsIcon icon={CopyIcon} className="h-3.5 w-3.5" />}
+                      {isCopied ? <HugeiconsIcon icon={Tick01Icon} className="h-3.5 w-3.5 text-profit" /> : <HugeiconsIcon icon={CopyIcon} className="h-3.5 w-3.5"  strokeWidth={2}/>}
                     </Button>
                     <a
                       href={`/reports/shared/${report.slug}`}
@@ -171,7 +171,7 @@ export function SharedLinksManager() {
                       className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted/40 hover:text-foreground"
                       title="Visit link"
                     >
-                      <HugeiconsIcon icon={ExternalLinkIcon} className="h-3.5 w-3.5" />
+                      <HugeiconsIcon icon={ExternalLinkIcon} className="h-3.5 w-3.5" strokeWidth={2} />
                     </a>
                     <Button
                       variant="tertiary"
@@ -182,9 +182,9 @@ export function SharedLinksManager() {
                       title="Delete link"
                     >
                       {deletingId === report.id ? (
-                        <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" />
+                        <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" strokeWidth={2} />
                       ) : (
-                        <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" />
+                        <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" strokeWidth={2} />
                       )}
                     </Button>
                   </div>

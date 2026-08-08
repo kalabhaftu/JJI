@@ -220,16 +220,16 @@ export function TradeCard({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={onView}>
-                  <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
                   View Details
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={onEdit}>
-                  <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                   Edit Trade
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={onDelete} className="text-destructive">
-                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                   Delete Trade
                 </DropdownMenuItem>
               </DropdownMenuContent>

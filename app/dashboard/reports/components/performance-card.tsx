@@ -163,7 +163,7 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
 
                     <div className="flex flex-col items-end gap-1 shrink-0">
                         <div className="flex items-center gap-1.5 bg-muted/60 border border-border px-2.5 py-1 rounded-full">
-                            <HugeiconsIcon icon={Shield01Icon} className="h-2.5 w-2.5 text-primary" />
+                            <HugeiconsIcon icon={Shield01Icon} className="h-2.5 w-2.5 text-primary" strokeWidth={2} />
                             <span className="text-[9px] font-black uppercase tracking-widest">Verified</span>
                         </div>
                         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
@@ -185,8 +185,8 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                             {pnlFormatted}
                         </span>
                         {isProfit
-                            ? <HugeiconsIcon icon={FlameIcon} className="h-7 w-7 text-long opacity-80 animate-pulse" />
-                            : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-7 w-7 text-short opacity-80" />
+                            ? <HugeiconsIcon icon={FlameIcon} className="h-7 w-7 text-long opacity-80 animate-pulse" strokeWidth={2} />
+                            : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-7 w-7 text-short opacity-80" strokeWidth={2} />
                         }
                     </div>
                 </div>
@@ -234,8 +234,8 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     className="flex-1 h-11 gap-2.5 font-black uppercase tracking-wider text-xs rounded-xl"
                 >
                     {isExporting
-                        ? <><HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 animate-pulse" /> Generating...</>
-                        : <><HugeiconsIcon icon={Download01Icon} className="h-4 w-4" /> Export Image</>
+                        ? <><HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 animate-pulse" strokeWidth={2} /> Generating...</>
+                        : <><HugeiconsIcon icon={Download01Icon} className="h-4 w-4" strokeWidth={2} /> Export Image</>
                     }
                 </Button>
                 <Button
@@ -244,8 +244,8 @@ export function PerformanceCard({ period, stats, userName }: PerformanceCardProp
                     className="sm:w-auto h-11 gap-2.5 font-black uppercase tracking-wider text-xs rounded-xl"
                 >
                     {isCopied
-                        ? <><HugeiconsIcon icon={Tick01Icon} className="h-4 w-4 text-long" /> Copied!</>
-                        : <><HugeiconsIcon icon={CopyIcon} className="h-4 w-4" /> Copy Stats</>
+                        ? <><HugeiconsIcon icon={Tick01Icon} className="h-4 w-4 text-long" strokeWidth={2} /> Copied!</>
+                        : <><HugeiconsIcon icon={CopyIcon} className="h-4 w-4" strokeWidth={2} /> Copy Stats</>
                     }
                 </Button>
             </div>

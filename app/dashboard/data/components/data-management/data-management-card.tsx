@@ -371,7 +371,7 @@ export function DataManagementCard() {
   if (error) {
     return (
       <Alert variant="destructive">
-        <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
+        <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} />
         <AlertTitle>Error</AlertTitle>
         <AlertDescription>{error.message}</AlertDescription>
       </Alert>
@@ -417,7 +417,7 @@ export function DataManagementCard() {
                       <Spinner className="h-4 w-4" />
                     ) : (
                       <>
-<HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" />
+<HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" strokeWidth={2} />
                         Delete selected ({selectedAccounts.length})
                       </>
                     )}
@@ -499,9 +499,9 @@ export function DataManagementCard() {
                     {hasMultiplePhases && (
                       <div className="text-muted-foreground">
                         {isExpanded ? (
-                          <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" />
+                          <HugeiconsIcon icon={ChevronDownIcon} className="h-4 w-4" strokeWidth={2} />
                         ) : (
-                          <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" />
+                          <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={2} />
                         )}
                       </div>
                     )}
@@ -511,9 +511,9 @@ export function DataManagementCard() {
                       isPropFirm ? "bg-primary/10" : "bg-long/10"
                     )}>
                       {isPropFirm ? (
-                        <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-primary" />
+                        <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-primary" strokeWidth={2} />
                       ) : (
-                        <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-long" />
+                        <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-long" strokeWidth={2} />
                       )}
                     </div>
 
@@ -529,7 +529,7 @@ export function DataManagementCard() {
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground">
                         <span className="flex items-center gap-1">
-                          <HugeiconsIcon icon={BarChartIcon} className="h-3 w-3" />
+                          <HugeiconsIcon icon={BarChartIcon} className="h-3 w-3" strokeWidth={2} />
                           {group.totalTrades} trades
                         </span>
                         {hasMultiplePhases && (
@@ -585,7 +585,7 @@ export function DataManagementCard() {
                             setRenameAccountDialogOpen(true)
                           }}
                         >
-                          <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4" />
+                          <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4" strokeWidth={2} />
                         </Button>
                       </div>
                     ))}
@@ -599,7 +599,7 @@ export function DataManagementCard() {
 
       {!accountsLoading && accountsWithTrades.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border/45 bg-card/30 py-16 text-center">
-          <HugeiconsIcon icon={BarChartIcon} className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
+          <HugeiconsIcon icon={BarChartIcon} className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" strokeWidth={2} />
           <h3 className="text-lg font-medium mb-2">No accounts yet</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Create your first account from the Accounts page
@@ -624,7 +624,7 @@ export function DataManagementCard() {
             className="text-destructive hover:bg-destructive/10 hover:text-destructive"
             onClick={() => setDeleteAllDataDialogOpen(true)}
           >
-            <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" />
+            <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" strokeWidth={2} />
             Delete All Data
           </Button>
         </div>

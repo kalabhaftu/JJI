@@ -332,7 +332,7 @@ export default function AccountDetailPage() {
             onClick={() => router.push('/dashboard/accounts')}
             className="gap-2"
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={2} />
             Back to Accounts
           </Button>
 
@@ -347,10 +347,10 @@ export default function AccountDetailPage() {
                       className="h-8 w-48"
                     />
                     <Button size="icon" variant="tertiary" className="h-8 w-8" onClick={handleSaveName} aria-label="Confirm rename">
-                      <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4" />
+                      <HugeiconsIcon icon={Tick01Icon} className="h-4 w-4" strokeWidth={2} />
                     </Button>
                     <Button size="icon" variant="tertiary" className="h-8 w-8" onClick={() => setIsEditingName(false)} aria-label="Cancel rename">
-                      <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" />
+                      <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={2} />
                     </Button>
                   </div>
                 ) : (
@@ -364,7 +364,7 @@ export default function AccountDetailPage() {
                       className="h-6 w-6"
                       onClick={() => setIsEditingName(true)}
                     >
-                      <HugeiconsIcon icon={Pen01Icon} className="h-3 w-3" />
+                      <HugeiconsIcon icon={Pen01Icon} className="h-3 w-3" strokeWidth={2} />
                     </Button>
                   </h1>
                 )}
@@ -390,7 +390,7 @@ export default function AccountDetailPage() {
               disabled={isLoading}
               className="gap-2"
             >
-              {isLoading ? <Spinner className="h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />}
+              {isLoading ? <Spinner className="h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4"  strokeWidth={2}/>}
               Refresh
             </Button>
           </div>
@@ -425,14 +425,14 @@ export default function AccountDetailPage() {
             label="Current Balance"
             value={formatCurrency(account.currentBalance)}
             subtext={`Started: ${formatCurrency(account.startingBalance)}`}
-            icon={<HugeiconsIcon icon={Dollar01Icon} className="h-5 w-5" />}
+            icon={<HugeiconsIcon icon={Dollar01Icon} className="h-5 w-5"  strokeWidth={2}/>}
             trend={(account.currentBalance - account.startingBalance) >= 0 ? 'positive' : 'negative'}
           />
           <MetricCard
             label="Daily Drawdown"
             value={formatCurrency(drawdown.dailyDrawdownRemaining)}
             subtext={`Limit: ${account.dailyDrawdownPercent}%`}
-            icon={<HugeiconsIcon icon={Shield01Icon} className="h-5 w-5" />}
+            icon={<HugeiconsIcon icon={Shield01Icon} className="h-5 w-5"  strokeWidth={2}/>}
             trend={drawdown.dailyDrawdownRemaining < 500 ? 'negative' : 'positive'}
             warning={drawdown.dailyDrawdownRemaining < 500}
           />
@@ -452,7 +452,7 @@ export default function AccountDetailPage() {
             subtext={currentPhase.isFunded
               ? `Split: ${account.profitSplitPercent || 80}%`
               : `Target: ${formatCurrency(currentPhase.profitTarget)}`}
-            icon={<HugeiconsIcon icon={Target01Icon} className="h-5 w-5" />}
+            icon={<HugeiconsIcon icon={Target01Icon} className="h-5 w-5"  strokeWidth={2}/>}
             trend={(currentPhase.isFunded ? currentPhase.netProfitSincePhaseStart : currentPhase.grossProfitSincePhaseStart) >= 0 ? 'positive' : 'negative'}
           />
         </motion.div>
@@ -591,7 +591,7 @@ export default function AccountDetailPage() {
                   <CardHeader className="flex flex-row items-center justify-between">
                     <CardTitle className="text-base">Recent Trades</CardTitle>
                     <Button variant="tertiary" size="sm" onClick={() => setActiveTab('trades')}>
-                      View All <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4 ml-1" />
+                      View All <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4 ml-1" strokeWidth={2} />
                     </Button>
                   </CardHeader>
                   <CardContent>
@@ -692,7 +692,7 @@ export default function AccountDetailPage() {
                   <Card>
                     <CardHeader>
                       <CardTitle className="text-base flex items-center gap-2">
-                        <HugeiconsIcon icon={CreditCardIcon} className="h-5 w-5" />
+                        <HugeiconsIcon icon={CreditCardIcon} className="h-5 w-5" strokeWidth={2} />
                         Payout Eligibility
                       </CardTitle>
                     </CardHeader>
@@ -746,7 +746,7 @@ export default function AccountDetailPage() {
                   <CardContent>
                     {accountData.payouts?.length === 0 ? (
                       <div className="text-center py-8">
-                        <HugeiconsIcon icon={CreditCardIcon} className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                        <HugeiconsIcon icon={CreditCardIcon} className="h-12 w-12 mx-auto text-muted-foreground mb-4" strokeWidth={2} />
                         <p className="text-muted-foreground">No payouts yet</p>
                       </div>
                     ) : (
@@ -804,7 +804,7 @@ export default function AccountDetailPage() {
               <Card>
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                      <HugeiconsIcon icon={Setting06Icon} className="h-5 w-5" />
+                      <HugeiconsIcon icon={Setting06Icon} className="h-5 w-5" strokeWidth={2} />
                       Account Details
                     </CardTitle>
                 </CardHeader>

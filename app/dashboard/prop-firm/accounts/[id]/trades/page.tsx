@@ -168,7 +168,7 @@ export default function AccountTradesPage() {
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
               Go Back
             </Button>
           </div>
@@ -187,7 +187,7 @@ export default function AccountTradesPage() {
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Back
           </Button>
           <div>
@@ -211,7 +211,7 @@ export default function AccountTradesPage() {
             onClick={() => router.push(buildTradeEntryHref({ origin: 'prop-firm', propFirmAccountId: accountId, accountId: account.number, returnTo: `/dashboard/prop-firm/accounts/${accountId}/trades` }))}
             size="sm"
           >
-            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Add Trade
           </Button>
         </div>
@@ -280,7 +280,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Trades</CardTitle>
-            <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={BarChartIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalTrades}</div>
@@ -290,7 +290,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Win Rate</CardTitle>
-            <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{winRate.toFixed(1)}%</div>
@@ -303,7 +303,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total P&L</CardTitle>
-            <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
           </CardHeader>
           <CardContent>
             <div className={cn("text-2xl font-bold", totalPnl >= 0 ? "text-long" : "text-short")}>
@@ -315,7 +315,7 @@ export default function AccountTradesPage() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Account Balance</CardTitle>
-            <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrencyAmount(account.currentBalance)}</div>
@@ -366,7 +366,7 @@ export default function AccountTradesPage() {
                 </p>
                 {!searchTerm && (
                   <Button onClick={() => router.push(buildTradeEntryHref({ origin: 'prop-firm', propFirmAccountId: accountId, accountId: account.number, returnTo: `/dashboard/prop-firm/accounts/${accountId}/trades` }))}>
-                    <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                     Add Trade
                   </Button>
                 )}

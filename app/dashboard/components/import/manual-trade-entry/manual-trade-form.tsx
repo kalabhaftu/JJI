@@ -471,7 +471,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                         className="w-full justify-between h-11 font-normal"
                       >
                         {field.value || "Select or type instrument"}
-                        <HugeiconsIcon icon={BarChartIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        <HugeiconsIcon icon={BarChartIcon} className="ml-2 h-4 w-4 shrink-0 opacity-50" strokeWidth={2} />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[min(26rem,calc(100vw-1rem))] p-0" align="start" side="bottom">
@@ -520,7 +520,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                                     "mr-2 h-4 w-4",
                                     field.value === instr.value ? "opacity-100" : "opacity-0"
                                   )}
-                                />
+                                 strokeWidth={2}/>
                                 {instr.label}
                               </CommandItem>
                             ))}
@@ -560,7 +560,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                       )}
                       onClick={() => field.onChange('LONG')}
                     >
-                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 mr-2" />
+                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
                       Long
                     </Button>
                     <Button
@@ -572,7 +572,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                       )}
                       onClick={() => field.onChange('SHORT')}
                     >
-                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 mr-2" />
+                      <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
                       Short
                     </Button>
                   </div>
@@ -911,9 +911,9 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                   )}
                 >
                   {currentStep > s.step ? (
-                    <HugeiconsIcon icon={CircleCheckIcon} className="h-3 w-3" />
+                    <HugeiconsIcon icon={CircleCheckIcon} className="h-3 w-3" strokeWidth={2} />
                   ) : (
-                    <HugeiconsIcon icon={s.icon} className="h-3 w-3" />
+                    <HugeiconsIcon icon={s.icon} className="h-3 w-3" strokeWidth={2} />
                   )}
                   <span className="hidden sm:inline">{s.title}</span>
                 </div>
@@ -946,7 +946,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
               onClick={onBack}
               className="gap-1.5"
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5" strokeWidth={2} />
               Back to Platforms
             </Button>
           ) : (
@@ -967,7 +967,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                 onClick={handleBack}
                 className="gap-2"
               >
-                <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" />
+                <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4" strokeWidth={2} />
                 Back
               </Button>
             )}
@@ -980,7 +980,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                 className="gap-2"
               >
                 Next
-                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" />
+                <HugeiconsIcon icon={ArrowRight01Icon} className="h-4 w-4" strokeWidth={2} />
               </Button>
             ) : (
               <Button
@@ -996,7 +996,7 @@ export default function ManualTradeForm({ setIsOpen, onClose, onBack, initialVal
                   </>
                 ) : (
                   <>
-                    <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
+                    <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" strokeWidth={2} />
                     Add Trade
                   </>
                 )}

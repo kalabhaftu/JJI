@@ -185,7 +185,7 @@ export function ImportDialog() {
     }}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
-          <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" /> Restore Backup
+          <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4"  strokeWidth={2}/> Restore Backup
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
@@ -202,7 +202,7 @@ export function ImportDialog() {
           {!importResults && (
             <>
               <Alert>
-                <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
+                <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} />
                 <AlertDescription>
                   <strong>Safe Restore:</strong> This process will <strong>not</strong> overwrite existing data. It only adds missing records. Duplicates are automatically skipped.
                 </AlertDescription>
@@ -250,7 +250,7 @@ export function ImportDialog() {
           {importResults && (
             <div className="space-y-4">
               <Alert className="border-long/20 bg-long/5">
-                <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" />
+                <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" strokeWidth={2} />
                 <AlertDescription className="text-long">
                   <strong>Restore operation completed successfully.</strong>
                 </AlertDescription>
@@ -292,7 +292,7 @@ export function ImportDialog() {
               </Button>
             ) : importJob && ['failed', 'cancelled'].includes(importJob.status) ? (
               <Button onClick={handleResumeImport}>
-                <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" />
+                <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" strokeWidth={2} />
                 Resume Restore
               </Button>
             ) : (
@@ -311,7 +311,7 @@ export function ImportDialog() {
                 </>
               ) : (
                 <>
-                  <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={Rotate01Icon} className="mr-2 h-4 w-4" strokeWidth={2} />
                   Start Restore
                 </>
               )}

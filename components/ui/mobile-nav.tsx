@@ -160,7 +160,7 @@ export function MobileBottomNav() {
               setMoreOpen(false)
             }}
           >
-            <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />
+            <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" strokeWidth={2} />
             Sync data
           </Button>
         </DialogContent>

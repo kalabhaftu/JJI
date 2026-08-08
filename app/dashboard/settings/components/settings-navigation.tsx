@@ -33,7 +33,7 @@ export function SettingsNavigation({ categories, value, onValueChange }: { categ
       value: category.id,
       label: (
         <span data-tour={`settings-tab-${category.id}`} className="flex items-center gap-2">
-          <HugeiconsIcon icon={category.icon} className="size-4" aria-hidden />
+          <HugeiconsIcon icon={category.icon} className="size-4" aria-hidden strokeWidth={2} />
           {category.label}
         </span>
       ),

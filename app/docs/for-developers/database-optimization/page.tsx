@@ -29,7 +29,7 @@ export default function DatabaseOptimizationDocsPage() {
       <DocsSection title="Drizzle ORM Performance Patterns">
         <DocsCardGrid>
           <DocsInfoCard
-            icon={<HugeiconsIcon icon={FlashIcon} strokeWidth={1.5} color="currentColor" />}
+            icon={<HugeiconsIcon icon={FlashIcon} strokeWidth={2} color="currentColor" />}
             title="Batch Loading & Relational Queries"
             description="Fetch related trades, tags, and account records in single database roundtrips using Drizzle's relational query API or batch statement execution."
             items={[
@@ -39,7 +39,7 @@ export default function DatabaseOptimizationDocsPage() {
             ]}
           />
           <DocsInfoCard
-            icon={<HugeiconsIcon icon={GaugeIcon} strokeWidth={1.5} color="currentColor" />}
+            icon={<HugeiconsIcon icon={GaugeIcon} strokeWidth={2} color="currentColor" />}
             title="Prepared Statements & Cache Versioning"
             description="Use prepared parameter queries for high-throughput API endpoints and increment cache versioning counters to invalidate stale dashboard metrics."
             items={[

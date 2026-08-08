@@ -226,7 +226,7 @@ export default function TradeReplay({ trade, onClose }: TradeReplayProps) {
 
             {error && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/95 z-20 p-6 text-center">
-                    <HugeiconsIcon icon={Alert02Icon} className="h-10 w-10 text-destructive mb-4" />
+                    <HugeiconsIcon icon={Alert02Icon} className="h-10 w-10 text-destructive mb-4" strokeWidth={2} />
                     <h3 className="text-sm font-semibold mb-2">Market Data Error</h3>
                     <p className="text-xs text-muted-foreground mb-4">{error}</p>
                     <Button

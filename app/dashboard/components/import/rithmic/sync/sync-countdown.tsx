@@ -71,7 +71,7 @@ export function SyncCountdown({ lastSyncTime, isAutoSyncing, credentialId }: Syn
 
   return (
     <Badge variant={isAutoSyncing ? "default" : "secondary"} className="ml-2">
-      <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3 mr-1" />
+      <HugeiconsIcon icon={Clock01Icon} className="h-3 w-3 mr-1" strokeWidth={2} />
       {timeLeft}
     </Badge>
   )

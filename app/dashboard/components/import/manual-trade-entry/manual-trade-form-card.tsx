@@ -412,13 +412,13 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
                     <SelectContent>
                       <SelectItem value="LONG">
                         <div className="flex items-center">
-                          <HugeiconsIcon icon={TrendingUpDownIcon} className="w-4 h-4 mr-2 text-long" />
+                          <HugeiconsIcon icon={TrendingUpDownIcon} className="w-4 h-4 mr-2 text-long" strokeWidth={2} />
                           Long
                         </div>
                       </SelectItem>
                       <SelectItem value="SHORT">
                         <div className="flex items-center">
-                          <HugeiconsIcon icon={TrendingUpDownIcon} className="w-4 h-4 mr-2 text-short" />
+                          <HugeiconsIcon icon={TrendingUpDownIcon} className="w-4 h-4 mr-2 text-short" strokeWidth={2} />
                           Short
                         </div>
                       </SelectItem>
@@ -526,7 +526,7 @@ export default function ManualTradeFormCard({ accountId, accountNumber: propFirm
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-base flex items-center">
-              <HugeiconsIcon icon={CalculatorIcon} className="w-4 h-4 mr-2" />
+              <HugeiconsIcon icon={CalculatorIcon} className="w-4 h-4 mr-2" strokeWidth={2} />
               Financial Results
             </CardTitle>
           </CardHeader>

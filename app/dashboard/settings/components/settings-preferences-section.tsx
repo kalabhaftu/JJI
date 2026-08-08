@@ -126,30 +126,30 @@ export function SettingsPreferencesSection({
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 min-w-[110px] h-8 text-xs" data-tour="theme-switcher-container">
-                    <HugeiconsIcon icon={themeInfo.icon} className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={themeInfo.icon} className="h-3.5 w-3.5" strokeWidth={2} />
                     {themeInfo.label}
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
-                    <HugeiconsIcon icon={MoonIcon} className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={MoonIcon} className="mr-2 h-3.5 w-3.5" strokeWidth={2} />
                     Dark
-                    {theme === 'dark' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'dark' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange("light")}>
-                    <HugeiconsIcon icon={Sun01Icon} className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={Sun01Icon} className="mr-2 h-3.5 w-3.5" strokeWidth={2} />
                     Light
-                    {theme === 'light' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'light' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange("system")}>
-                    <HugeiconsIcon icon={LaptopIcon} className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={LaptopIcon} className="mr-2 h-3.5 w-3.5" strokeWidth={2} />
                     System
-                    {theme === 'system' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'system' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleThemeChange("black")}>
-                    <HugeiconsIcon icon={MoonIcon} className="mr-2 h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={MoonIcon} className="mr-2 h-3.5 w-3.5" strokeWidth={2} />
                     Black
-                    {theme === 'black' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {theme === 'black' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -190,7 +190,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Classic
                     </div>
-                    {accentPack === 'classic' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'classic' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleAccentChange('reports')}>
                     <div className="flex items-center gap-2">
@@ -200,7 +200,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Forest
                     </div>
-                    {accentPack === 'reports' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'reports' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleAccentChange('violet')}>
                     <div className="flex items-center gap-2">
@@ -210,7 +210,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Orchid
                     </div>
-                    {accentPack === 'violet' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'violet' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleAccentChange('slate')}>
                     <div className="flex items-center gap-2">
@@ -220,7 +220,7 @@ export function SettingsPreferencesSection({
                       </div>
                       Graphite
                     </div>
-                    {accentPack === 'slate' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {accentPack === 'slate' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -239,7 +239,7 @@ export function SettingsPreferencesSection({
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     Change
-                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" strokeWidth={2} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -269,7 +269,7 @@ export function SettingsPreferencesSection({
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     Change
-                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" strokeWidth={2} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -331,7 +331,7 @@ export function SettingsPreferencesSection({
                 <DropdownMenuTrigger asChild>
                   <Button variant="secondary" size="sm" className="gap-2 h-8 text-xs">
                     {profileData.pnlDisplayMode === 'gross' ? 'Gross' : 'Net'}
-                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={ChevronRightIcon} className="h-3.5 w-3.5" strokeWidth={2} />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
@@ -364,11 +364,11 @@ export function SettingsPreferencesSection({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleWidgetStyleChange('default')}>
                     Standard
-                    {widgetStyle === 'default' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {widgetStyle === 'default' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleWidgetStyleChange('glass')}>
                     Glassmorphism
-                    {widgetStyle === 'glass' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {widgetStyle === 'glass' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -392,11 +392,11 @@ export function SettingsPreferencesSection({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => handleChartStyleChange('smooth')}>
                     Smooth
-                    {chartStyle === 'smooth' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {chartStyle === 'smooth' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => handleChartStyleChange('sharp')}>
                     Sharp
-                    {chartStyle === 'sharp' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5" />}
+                    {chartStyle === 'sharp' && <HugeiconsIcon icon={Tick01Icon} className="ml-auto h-3.5 w-3.5"  strokeWidth={2}/>}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

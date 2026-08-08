@@ -240,7 +240,7 @@ export default function AccountSettingsPage() {
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
               Go Back
             </Button>
           </div>
@@ -259,7 +259,7 @@ export default function AccountSettingsPage() {
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Back
           </Button>
           <div>
@@ -276,11 +276,11 @@ export default function AccountSettingsPage() {
             onClick={() => { void accountQuery.refetch() }}
             disabled={accountQuery.isFetching}
           >
-            {accountQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" />}
+            {accountQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4"  strokeWidth={2}/>}
             Refresh
           </Button>
           <Button onClick={handleSave} size="sm" loading={saveMutation.isPending} loadingText="Saving changes">
-            <HugeiconsIcon icon={SaveIcon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={SaveIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Save Changes
           </Button>
         </div>
@@ -299,7 +299,7 @@ export default function AccountSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <HugeiconsIcon icon={Setting06Icon} className="h-4 w-4" />
+                  <HugeiconsIcon icon={Setting06Icon} className="h-4 w-4" strokeWidth={2} />
                   Account Information
                 </CardTitle>
               </CardHeader>
@@ -522,7 +522,7 @@ export default function AccountSettingsPage() {
                   size="sm"
                   onClick={handleDeleteAccount}
                 >
-                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                   Delete Account
                 </Button>
               </CardContent>
@@ -542,12 +542,12 @@ export default function AccountSettingsPage() {
 
                 <div className="flex flex-wrap gap-2">
                   <Button variant="secondary" size="sm">
-                    <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                     Export as CSV
                   </Button>
 
                   <Button variant="secondary" size="sm">
-                    <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Download01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                     Export as JSON
                   </Button>
                 </div>

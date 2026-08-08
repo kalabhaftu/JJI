@@ -114,7 +114,7 @@ export default function AccountPayoutsPage() {
             <h3 className="text-lg font-semibold mb-2">Account Not Found</h3>
             <p className="text-muted-foreground">The requested account could not be found.</p>
             <Button onClick={() => router.back()} className="mt-4">
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
               Go Back
             </Button>
           </div>
@@ -162,11 +162,11 @@ export default function AccountPayoutsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
-      case 'approved': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
-      case 'paid': return <HugeiconsIcon icon={CreditCardIcon} className="h-4 w-4" />
-      case 'rejected': return <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
-      default: return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
+      case 'pending': return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" strokeWidth={2} />
+      case 'approved': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" strokeWidth={2} />
+      case 'paid': return <HugeiconsIcon icon={CreditCardIcon} className="h-4 w-4" strokeWidth={2} />
+      case 'rejected': return <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} />
+      default: return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" strokeWidth={2} />
     }
   }
 
@@ -181,7 +181,7 @@ export default function AccountPayoutsPage() {
             size="sm"
             onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}`)}
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Back
           </Button>
           <div>
@@ -198,7 +198,7 @@ export default function AccountPayoutsPage() {
             onClick={() => void refresh()}
             disabled={accountQuery.isFetching || payoutsQuery.isFetching}
           >
-            {accountQuery.isFetching || payoutsQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" />}
+            {accountQuery.isFetching || payoutsQuery.isFetching ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4"  strokeWidth={2}/>}
             Refresh
           </Button>
           {account.isEligibleForPayout && (
@@ -206,7 +206,7 @@ export default function AccountPayoutsPage() {
               onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts/request`)}
               size="sm"
             >
-              <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
               Request Payout
             </Button>
           )}
@@ -266,7 +266,7 @@ export default function AccountPayoutsPage() {
               </p>
               {account.isEligibleForPayout && (
                 <Button onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts/request`)}>
-                  <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
+                  <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                   Request First Payout
                 </Button>
               )}
@@ -311,7 +311,7 @@ export default function AccountPayoutsPage() {
                           {deletingPayoutId === payout.id ? (
                             <Spinner className="h-4 w-4" />
                           ) : (
-                            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" />
+                            <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4" strokeWidth={2} />
                           )}
                         </Button>
                       )}

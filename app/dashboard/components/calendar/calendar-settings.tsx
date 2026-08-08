@@ -55,7 +55,7 @@ export function CalendarSettings() {
                                         : "border border-muted-foreground/45 bg-muted/20"
                                 )}>
                                     {isChecked && (
-                                        <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3" strokeWidth={2.5} color="currentColor" />
+                                        <HugeiconsIcon icon={Tick01Icon} className="h-3 w-3" strokeWidth={2} color="currentColor" />
                                     )}
                                 </div>
                                 <span className="text-xs font-semibold text-foreground/80 tracking-tight">

@@ -321,7 +321,7 @@ export default function TradeTable() {
         {                       }
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <HugeiconsIcon icon={FilterIcon} className="h-4 w-4 text-muted-foreground" />
+            <HugeiconsIcon icon={FilterIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
             <span className="text-sm font-medium">Filters</span>
             {activeFiltersCount > 0 && (
               <Badge variant="secondary" className="h-5 px-1.5">
@@ -374,7 +374,7 @@ export default function TradeTable() {
               onClick={() => setPnlFilter('wins')}
               className="h-7 px-3 text-long"
             >
-              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3 mr-1" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3 mr-1" strokeWidth={2} />
               Wins
             </Button>
             <Button
@@ -383,7 +383,7 @@ export default function TradeTable() {
               onClick={() => setPnlFilter('losses')}
               className="h-7 px-3 text-short"
             >
-              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3 mr-1" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3 mr-1" strokeWidth={2} />
               Losses
             </Button>
           </div>
@@ -475,7 +475,7 @@ export default function TradeTable() {
               onClick={clearAllFilters}
               className="h-9"
             >
-              <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 mr-1" />
+              <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4 mr-1" strokeWidth={2} />
               Clear Filters
             </Button>
           )}
@@ -493,7 +493,7 @@ export default function TradeTable() {
               variant="destructive"
               size="sm"
             >
-              {isDeleting ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4" />}
+              {isDeleting ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={Delete02Icon} className="mr-2 h-4 w-4"  strokeWidth={2}/>}
               {isDeleting ? 'Deleting...' : `Delete (${selectedTrades.size})`}
             </Button>
           )}
@@ -525,55 +525,55 @@ export default function TradeTable() {
               <TableHead className="w-[100px]">
                 <Button variant="tertiary" onClick={() => handleSort('instrument')}>
                   Instrument
-                  {sortConfig.key === 'instrument' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'instrument' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead>
                 <Button variant="tertiary" onClick={() => handleSort('accountNumber')}>
                   Account
-                  {sortConfig.key === 'accountNumber' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'accountNumber' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead>
                 <Button variant="tertiary" onClick={() => handleSort('side')}>
                   Side
-                  {sortConfig.key === 'side' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'side' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead className="hidden lg:table-cell">
                 <Button variant="tertiary" onClick={() => handleSort('quantity')}>
                   Quantity
-                  {sortConfig.key === 'quantity' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'quantity' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead>
                 <Button variant="tertiary" onClick={() => handleSort('entryPrice')}>
                   Entry Price
-                  {sortConfig.key === 'entryPrice' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'entryPrice' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead>
                 <Button variant="tertiary" onClick={() => handleSort('closePrice')}>
                   Close Price
-                  {sortConfig.key === 'closePrice' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'closePrice' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead>
                 <Button variant="tertiary" onClick={() => handleSort('entryDate')}>
                   Entry Date
-                  {sortConfig.key === 'entryDate' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'entryDate' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead className="hidden lg:table-cell">
                 <Button variant="tertiary" onClick={() => handleSort('closeDate')}>
                   Close Date
-                  {sortConfig.key === 'closeDate' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'closeDate' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead>
                 <Button variant="tertiary" onClick={() => handleSort('pnl')}>
                   PNL
-                  {sortConfig.key === 'pnl' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4" />}
+                  {sortConfig.key === 'pnl' && <HugeiconsIcon icon={ArrowUpDownIcon} className="ml-2 h-4 w-4"  strokeWidth={2}/>}
                 </Button>
               </TableHead>
               <TableHead>Actions</TableHead>
@@ -586,9 +586,9 @@ export default function TradeTable() {
                   <div className="flex flex-col items-center justify-center space-y-4">
                     <div className="rounded-full bg-muted/30 p-6">
                       {activeFiltersCount > 0 ? (
-                        <HugeiconsIcon icon={FilterIcon} className="h-10 w-10 text-muted-foreground" />
+                        <HugeiconsIcon icon={FilterIcon} className="h-10 w-10 text-muted-foreground" strokeWidth={2} />
                       ) : (
-                        <HugeiconsIcon icon={TrendingUpDownIcon} className="h-10 w-10 text-muted-foreground" />
+                        <HugeiconsIcon icon={TrendingUpDownIcon} className="h-10 w-10 text-muted-foreground" strokeWidth={2} />
                       )}
                     </div>
                     <div className="space-y-1">
@@ -655,7 +655,7 @@ export default function TradeTable() {
                           size="sm"
                            onClick={() => router.push(`${dataPath}?tab=trades&view=edit&tradeId=${trade.id}`)}
                         >
-                          <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4 mr-1" />
+                          <HugeiconsIcon icon={PencilEdit01Icon} className="w-4 h-4 mr-1" strokeWidth={2} />
                           Edit
                         </Button>
                       </div>
@@ -702,7 +702,7 @@ export default function TradeTable() {
             onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
             disabled={currentPage === 1}
           >
-            <HugeiconsIcon icon={ChevronLeftIcon} className="h-4 w-4" />
+            <HugeiconsIcon icon={ChevronLeftIcon} className="h-4 w-4" strokeWidth={2} />
             Previous
           </Button>
           <span className="text-sm">
@@ -715,7 +715,7 @@ export default function TradeTable() {
             disabled={currentPage === totalPages}
           >
             Next
-            <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" />
+            <HugeiconsIcon icon={ChevronRightIcon} className="h-4 w-4" strokeWidth={2} />
           </Button>
         </div>
       </div>

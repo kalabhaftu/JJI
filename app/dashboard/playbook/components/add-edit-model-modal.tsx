@@ -220,7 +220,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                   onClick={handleAddRule}
                   className="h-8 px-3 font-black uppercase tracking-tighter text-[10px]"
                 >
-                  <HugeiconsIcon icon={Add01Icon} className="h-3 w-3 mr-1.5" />
+                  <HugeiconsIcon icon={Add01Icon} className="h-3 w-3 mr-1.5" strokeWidth={2} />
                   Append Rule
                 </Button>
               </div>
@@ -257,7 +257,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                         onClick={() => handleRemoveRule(index)}
                         className="h-10 w-10 shrink-0 opacity-40 hover:opacity-100 transition-opacity"
                       >
-                        <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" />
+                        <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" strokeWidth={2} />
                       </Button>
                     </div>
                   )
@@ -309,7 +309,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                   disabled={!newSetup.trim()}
                   className="h-9 px-3 font-black uppercase tracking-tighter text-[10px] shrink-0"
                 >
-                  <HugeiconsIcon icon={Add01Icon} className="h-3 w-3 mr-1" />
+                  <HugeiconsIcon icon={Add01Icon} className="h-3 w-3 mr-1" strokeWidth={2} />
                   Add
                 </Button>
               </div>
@@ -324,7 +324,7 @@ export function AddEditModelModal({ isOpen, onClose, onSave, model, mode }: AddE
                         onClick={() => setSetups(setups.filter((_, idx) => idx !== i))}
                         className="text-muted-foreground/40 hover:text-destructive transition-colors"
                       >
-                        <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" />
+                        <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} />
                       </button>
                     </div>
                   ))}

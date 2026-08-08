@@ -140,7 +140,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Perfect for manual journal entries with all trade context and analysis',
     logo: {
-      component: () => <HugeiconsIcon icon={Add01Icon} className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={Add01Icon} className="w-4 h-4"  strokeWidth={2}/>,
     },
     customComponent: ManualTradeForm,
     steps: [
@@ -161,7 +161,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Supports: Tradezella, Tradovate, NinjaTrader, FTMO, Topstep, Exness, Match Trader, MetaTrader 4/5, cTrader, TradingView, Rithmic, Sierra Chart, Quantower, TradeStation, ThinkOrSwim, Interactive Brokers, and more.',
     logo: {
-      component: () => <HugeiconsIcon icon={MagicWand01Icon} className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={MagicWand01Icon} className="w-4 h-4"  strokeWidth={2}/>,
     },
     requiresAccountSelection: true,
     processFile: processStandardCsv,
@@ -203,7 +203,7 @@ export const platforms: PlatformConfig[] = [
     videoUrl: '',
     details: 'Use this if Universal Import cannot detect your CSV format',
     logo: {
-      component: () => <HugeiconsIcon icon={SparklesIcon} className="w-4 h-4" />,
+      component: () => <HugeiconsIcon icon={SparklesIcon} className="w-4 h-4"  strokeWidth={2}/>,
     },
     requiresAccountSelection: true,
     processFile: processStandardCsv,

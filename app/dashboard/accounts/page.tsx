@@ -388,7 +388,7 @@ export default function AccountsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <div className="h-10 w-10 rounded-full bg-destructive/10 flex items-center justify-center">
-                <HugeiconsIcon icon={PencilEdit01Icon} className="h-5 w-5 text-destructive" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-5 w-5 text-destructive" strokeWidth={2} />
               </div>
               <span>Delete Account</span>
             </AlertDialogTitle>
@@ -472,7 +472,7 @@ export default function AccountsPage() {
                         disabled={isRefreshing}
                         className="h-9 w-9 text-muted-foreground hover:text-foreground"
                       >
-                        {isRefreshing ? <Spinner className="h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4" />}
+                        {isRefreshing ? <Spinner className="h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4"  strokeWidth={2}/>}
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Refresh accounts</TooltipContent>
@@ -481,14 +481,14 @@ export default function AccountsPage() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button className="h-9 gap-2" data-tour="add-account-btn" onClick={() => emitTourEvent('account.create.started')}>
-                        <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" />
+                        <HugeiconsIcon icon={Add01Icon} className="h-4 w-4" strokeWidth={2} />
                         <span className="hidden sm:inline">New Account</span>
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-52">
                       <DropdownMenuItem onClick={() => { setCreateLiveDialogOpen(true); emitTourEvent('account.create.form.opened') }} className="gap-3 py-2.5" data-tour="create-live-item">
                         <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-                          <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-muted-foreground" />
+                          <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
                         </div>
                         <div>
                           <div className="font-medium">Live Account</div>
@@ -497,7 +497,7 @@ export default function AccountsPage() {
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => { setCreatePropFirmDialogOpen(true); emitTourEvent('account.create.form.opened') }} className="gap-3 py-2.5" data-tour="create-prop-item">
                         <div className="h-8 w-8 rounded-lg bg-muted flex items-center justify-center">
-                          <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground"  />
+                          <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2}  />
                         </div>
                         <div>
                           <div className="font-medium">Prop Firm</div>
@@ -521,26 +521,26 @@ export default function AccountsPage() {
             <StatCard
               label="Total Equity"
               value={formatCompactCurrency(accountStats.totalEquity)}
-              icon={<HugeiconsIcon icon={Wallet01Icon} className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={Wallet01Icon} className="h-4 w-4"  strokeWidth={2}/>}
               trend={accountStats.pnl >= 0 ? 'up' : 'down'}
               trendValue={`${accountStats.pnl >= 0 ? '+' : ''}${formatCompactCurrency(accountStats.pnl)}`}
             />
             <StatCard
               label="Accounts"
               value={accountStats.total}
-              icon={<HugeiconsIcon icon={ActivityIcon} className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={ActivityIcon} className="h-4 w-4"  strokeWidth={2}/>}
               subtext={`${accountStats.live} live, ${accountStats.propFirm} prop`}
             />
             <StatCard
               label="Funded"
               value={accountStats.funded}
-              icon={<HugeiconsIcon icon={Award01Icon} className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={Award01Icon} className="h-4 w-4"  strokeWidth={2}/>}
               highlight={accountStats.funded > 0}
             />
             <StatCard
               label="Total Trades"
               value={accountStats.totalTrades.toLocaleString()}
-              icon={<HugeiconsIcon icon={BarChartIcon} className="h-4 w-4" />}
+              icon={<HugeiconsIcon icon={BarChartIcon} className="h-4 w-4"  strokeWidth={2}/>}
             />
           </motion.div>
 
@@ -570,7 +570,7 @@ export default function AccountsPage() {
                   className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                   onClick={() => setSearchQuery('')}
                 >
-                  <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" />
+                  <HugeiconsIcon icon={Cancel01Icon} className="h-3 w-3" strokeWidth={2} />
                 </Button>
               ) : (
                 <kbd className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground">
@@ -584,11 +584,11 @@ export default function AccountsPage() {
               <TabsList className="w-full sm:w-auto grid grid-cols-3">
                 <TabsTrigger value="all" className="text-xs px-3">All</TabsTrigger>
                 <TabsTrigger value="live" className="text-xs px-3 gap-1.5">
-                  <HugeiconsIcon icon={User02Icon} className="h-3 w-3" />
+                  <HugeiconsIcon icon={User02Icon} className="h-3 w-3" strokeWidth={2} />
                   <span className="hidden sm:inline">Live</span>
                 </TabsTrigger>
                 <TabsTrigger value="prop-firm" className="text-xs px-3 gap-1.5">
-                  <HugeiconsIcon icon={Building02Icon} className="h-3 w-3" />
+                  <HugeiconsIcon icon={Building02Icon} className="h-3 w-3" strokeWidth={2} />
                   <span className="hidden sm:inline">Prop</span>
                 </TabsTrigger>
               </TabsList>
@@ -724,7 +724,7 @@ function StatCard({
               "flex items-center gap-1 text-[10px] font-bold",
               trend === 'up' ? "text-long" : "text-short"
             )}>
-              {trend === 'up' ? <HugeiconsIcon icon={TrendingUpDownIcon} className="h-2.5 w-2.5"  /> : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-2.5 w-2.5"  />}
+              {trend === 'up' ? <HugeiconsIcon icon={TrendingUpDownIcon} className="h-2.5 w-2.5"  /> : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-2.5 w-2.5"   strokeWidth={2}/>}
               {trendValue}
             </div>
           ) : subtext ? (
@@ -818,13 +818,13 @@ function AccountCard({
                   "bg-muted"
             )}>
               {isFailed ? (
-                <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" />
+                <HugeiconsIcon icon={CircleXIcon} className="h-4 w-4 text-destructive" strokeWidth={2} />
               ) : isFunded ? (
-                <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" />
+                <HugeiconsIcon icon={Award01Icon} className="h-4 w-4 text-primary" strokeWidth={2} />
               ) : isPropFirm ? (
-                <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
               ) : (
-                <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-muted-foreground" />
+                <HugeiconsIcon icon={User02Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -869,23 +869,23 @@ function AccountCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-44">
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onView() }}>
-                <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={EyeIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
                 View Details
               </DropdownMenuItem>
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onEdit() }}>
-                <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" />
+                <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                 Edit
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onArchive() }}>
                 {isArchived ? (
                   <>
-                    <HugeiconsIcon icon={Rotate01Icon} className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={Rotate01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                     Restore
                   </>
                 ) : (
                   <>
-                    <HugeiconsIcon icon={ArchiveIcon} className="h-4 w-4 mr-2" />
+                    <HugeiconsIcon icon={ArchiveIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
                     Archive
                   </>
                 )}
@@ -894,7 +894,7 @@ function AccountCard({
                 onClick={(e) => { e.stopPropagation(); onDelete() }}
                 className="text-destructive focus:text-destructive"
               >
-                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2"  />
+                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={2}  />
                 Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -913,7 +913,7 @@ function AccountCard({
                 "mt-1 flex items-center gap-1 text-xs font-medium",
                 pnl >= 0 ? "text-long" : "text-short"
               )}>
-                {pnl >= 0 ? <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3" /> : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3" />}
+                {pnl >= 0 ? <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3" /> : <HugeiconsIcon icon={TrendingUpDownIcon} className="h-3 w-3"  strokeWidth={2}/>}
                 <span>{pnl >= 0 ? '+' : ''}{formatCurrency(pnl)}</span>
                 <span className="text-muted-foreground">({pnlPercent >= 0 ? '+' : ''}{pnlPercent.toFixed(1)}%)</span>
               </div>
@@ -944,7 +944,7 @@ function AccountCard({
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
                 <span className="text-muted-foreground flex items-center gap-1">
-                  <HugeiconsIcon icon={Target01Icon} className="h-3 w-3" />
+                  <HugeiconsIcon icon={Target01Icon} className="h-3 w-3" strokeWidth={2} />
                   Profit Target
                 </span>
                 <span className="font-medium">{account.profitTargetProgress.toFixed(1)}%</span>
@@ -978,7 +978,7 @@ function AccountCard({
         <div className="mt-4 flex items-center justify-between border-t border-border/18 pt-3 text-xs text-muted-foreground">
           <span className="truncate">{isPropFirm ? (account.currentPhaseDetails?.evaluationType || 'Evaluation') : 'Live account'}</span>
           <span className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            View details <HugeiconsIcon icon={ChevronRightIcon} className="h-3 w-3" />
+            View details <HugeiconsIcon icon={ChevronRightIcon} className="h-3 w-3" strokeWidth={2} />
           </span>
         </div>
       </CardContent>
@@ -1039,12 +1039,12 @@ function AccountLeaderboard({ accounts }: { accounts: Account[] }) {
         {sorted.length >= 2 && (
           <div className="flex items-center gap-4 pt-2 border-t border-border/20">
             <div className="flex items-center gap-1.5 text-xs">
-              <HugeiconsIcon icon={ArrowUp01Icon} className="h-3 w-3 text-long" />
+              <HugeiconsIcon icon={ArrowUp01Icon} className="h-3 w-3 text-long" strokeWidth={2} />
               <span className="text-muted-foreground text-[10px]">Best:</span>
               <span className="font-semibold truncate max-w-[120px]">{best?.displayName || best?.name || best?.number}</span>
             </div>
             <div className="flex items-center gap-1.5 text-xs">
-              <HugeiconsIcon icon={ArrowDown01Icon} className="h-3 w-3 text-short" />
+              <HugeiconsIcon icon={ArrowDown01Icon} className="h-3 w-3 text-short" strokeWidth={2} />
               <span className="text-muted-foreground text-[10px]">Worst:</span>
               <span className="font-semibold truncate max-w-[120px]">{worst?.displayName || worst?.name || worst?.number}</span>
             </div>
@@ -1100,7 +1100,7 @@ function EmptyState({
             <HugeiconsIcon icon={Wallet01Icon} className="h-10 w-10 text-muted-foreground" strokeWidth={2} color="currentColor" />
           </div>
           <div className="absolute -right-2 -bottom-2 h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 text-primary" />
+            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 text-primary" strokeWidth={2} />
           </div>
         </div>
         <h3 className="text-xl font-semibold mb-2">Create your first account</h3>
@@ -1109,11 +1109,11 @@ function EmptyState({
         </p>
         <div className="flex flex-col sm:flex-row gap-3">
           <Button onClick={onCreateLive} className="gap-2">
-            <HugeiconsIcon icon={User02Icon} className="h-4 w-4" />
+            <HugeiconsIcon icon={User02Icon} className="h-4 w-4" strokeWidth={2} />
             Live Account
           </Button>
           <Button onClick={onCreatePropFirm} variant="secondary" className="gap-2">
-            <HugeiconsIcon icon={Building02Icon} className="h-4 w-4" />
+            <HugeiconsIcon icon={Building02Icon} className="h-4 w-4" strokeWidth={2} />
             Prop Firm Account
           </Button>
         </div>

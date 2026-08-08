@@ -343,7 +343,7 @@ export function RithmicCredentialsManager({
         <div className="flex justify-between items-center">
           <h2 className="text-lg font-semibold">Saved Connections</h2>
           <Button onClick={onAddNew} size="sm">
-            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={Add01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Add New Connection
           </Button>
         </div>
@@ -380,7 +380,7 @@ export function RithmicCredentialsManager({
             variant="secondary"
             disabled={true}
           >
-            <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Sync All
           </Button>
         </div>
@@ -403,7 +403,7 @@ export function RithmicCredentialsManager({
                   colSpan={4}
                   className="text-center text-muted-foreground py-6"
                 >
-                  <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin inline mr-2" />
+                  <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin inline mr-2" strokeWidth={2} />
                   Loading...
                 </TableCell>
               </TableRow>
@@ -441,7 +441,7 @@ export function RithmicCredentialsManager({
                           <span title="Credentials only saved in browser session. Please log in to enable scheduled background syncing.">
                             <HugeiconsIcon icon={Alert02Icon}
                               className="h-4 w-4 text-yellow-500"
-                            />
+                             strokeWidth={2}/>
                           </span>
                         )}
                       </div>
@@ -475,9 +475,9 @@ export function RithmicCredentialsManager({
                             aria-label="Sync credentials"
                           >
                             {syncingId === credentialId ? (
-                              <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin" />
+                              <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin" strokeWidth={2} />
                             ) : (
-                              <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 text-muted-foreground" />
+                              <HugeiconsIcon icon={RefreshIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
                             )}
                           </Button>
                           <Popover modal>
@@ -488,7 +488,7 @@ export function RithmicCredentialsManager({
                                 className="h-8 w-8 p-0"
                                 aria-label="More options"
                               >
-                                <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" />
+                                <HugeiconsIcon icon={MoreVerticalIcon} className="h-4 w-4" strokeWidth={2} />
                               </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-52 p-2" align="end">
@@ -501,9 +501,9 @@ export function RithmicCredentialsManager({
                                   disabled={isAutoSyncing}
                                 >
                                   {syncingId === credentialId ? (
-                                    <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin mr-2" />
+                                    <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin mr-2" strokeWidth={2} />
                                   ) : (
-                                    <HugeiconsIcon icon={HistoryIcon} className="h-4 w-4 mr-2" />
+                                    <HugeiconsIcon icon={HistoryIcon} className="h-4 w-4 mr-2" strokeWidth={2} />
                                   )}
                                   Load More Data (400 Days)
                                 </Button>
@@ -513,7 +513,7 @@ export function RithmicCredentialsManager({
                                   className="justify-start text-left"
                                   onClick={() => onSelectCredential(credential)}
                                 >
-                                  <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" />
+                                  <HugeiconsIcon icon={PencilEdit01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                                   Edit Credentials
                                 </Button>
                                 <Button
@@ -525,7 +525,7 @@ export function RithmicCredentialsManager({
                                     setIsDeleteDialogOpen(true);
                                   }}
                                 >
-                                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" />
+                                  <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                                   Delete Connection
                                 </Button>
                               </div>
@@ -535,7 +535,7 @@ export function RithmicCredentialsManager({
                       ) : (
                         <div className="flex flex-col items-center gap-2">
                           <div className="flex items-start gap-2 text-xs text-yellow-600 dark:text-yellow-400 max-w-md">
-                            <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 mt-0.5 shrink-0" />
+                            <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 mt-0.5 shrink-0" strokeWidth={2} />
                             <span className="text-left text-[11px]">
                               Credentials only saved in browser session. Please log in to enable scheduled background syncing.
                             </span>
@@ -553,7 +553,7 @@ export function RithmicCredentialsManager({
                                 deletingSyncId === sync.accountId
                               }
                             >
-                              <HugeiconsIcon icon={Login01Icon} className="h-4 w-4 mr-2" />
+                              <HugeiconsIcon icon={Login01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                               Log In
                             </Button>
                             <Button
@@ -566,9 +566,9 @@ export function RithmicCredentialsManager({
                               disabled={deletingSyncId === sync?.accountId}
                             >
                               {deletingSyncId === sync?.accountId ? (
-                                <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin mr-2" />
+                                <HugeiconsIcon icon={Loading01Icon} className="h-4 w-4 animate-spin mr-2" strokeWidth={2} />
                               ) : (
-                                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" />
+                                <HugeiconsIcon icon={Delete02Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
                               )}
                               Delete Sync
                             </Button>

@@ -235,7 +235,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
 
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
-            <HugeiconsIcon icon={Loading01Icon} className="h-6 w-6 animate-spin text-muted-foreground" />
+            <HugeiconsIcon icon={Loading01Icon} className="h-6 w-6 animate-spin text-muted-foreground" strokeWidth={2} />
           </div>
         ) : (
           <>
@@ -249,7 +249,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                     <div className="flex items-center justify-between gap-3">
                       <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">Logged emotion</span>
                       <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-wide text-primary">
-                        <HugeiconsIcon icon={SelectedEmotionIcon} className="h-3 w-3" aria-hidden="true" />
+                        <HugeiconsIcon icon={SelectedEmotionIcon} className="h-3 w-3" aria-hidden="true" strokeWidth={2} />
                         {getJournalEmotionLabel(selectedEmotion)}
                       </span>
                     </div>
@@ -272,7 +272,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                           : "bg-muted/20 text-muted-foreground border-border/30 hover:bg-muted/40 hover:border-border/50"
                       )}
                     >
-                      <HugeiconsIcon icon={EmotionIcon} className="h-3 w-3" aria-hidden="true" />
+                      <HugeiconsIcon icon={EmotionIcon} className="h-3 w-3" aria-hidden="true" strokeWidth={2} />
                       {getJournalEmotionLabel(emotion)}
                     </button>
                   )
@@ -302,7 +302,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                     disabled={isDeleting || isSaving}
                     className="text-short hover:text-short hover:bg-short/10 text-xs font-bold gap-1.5"
                   >
-                    {isDeleting ? <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" /> : <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5" />}
+                    {isDeleting ? <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" /> : <HugeiconsIcon icon={Delete02Icon} className="h-3.5 w-3.5"  strokeWidth={2}/>}
                     Delete
                   </Button>
                 )}
@@ -312,7 +312,7 @@ export function DailyNotePanel({ date, onClose, dailyStats }: DailyNotePanelProp
                 disabled={isSaving || isDeleting}
                 className="gap-1.5 text-xs font-black uppercase tracking-wider"
               >
-                {isSaving ? <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" /> : <HugeiconsIcon icon={SaveIcon} className="h-3.5 w-3.5" />}
+                {isSaving ? <HugeiconsIcon icon={Loading01Icon} className="h-3.5 w-3.5 animate-spin" /> : <HugeiconsIcon icon={SaveIcon} className="h-3.5 w-3.5"  strokeWidth={2}/>}
                 {note ? 'Update Note' : 'Save Note'}
               </Button>
             </div>

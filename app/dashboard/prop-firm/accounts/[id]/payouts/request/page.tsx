@@ -179,7 +179,7 @@ export default function RequestPayoutPage() {
           size="sm"
           onClick={() => router.push(`/dashboard/prop-firm/accounts/${accountId}/payouts`)}
         >
-          <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+          <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
           Back
         </Button>
         <div>

@@ -73,7 +73,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
             onClick={onBack}
             className="mt-1 h-8 px-3 text-xs border-border/50 hover:bg-muted"
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5 mr-1" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-3.5 w-3.5 mr-1" strokeWidth={2} />
             Back
           </Button>
         )}
@@ -104,7 +104,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
               disabled={!user?.thorToken || isGenerating}
               aria-label="Reveal Thor API Token"
             >
-              <HugeiconsIcon icon={EyeIcon} className="h-4 w-4" />
+              <HugeiconsIcon icon={EyeIcon} className="h-4 w-4" strokeWidth={2} />
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -127,7 +127,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
           disabled={!user?.thorToken || isGenerating}
           aria-label="Copy Thor API Token"
         >
-          <HugeiconsIcon icon={CopyIcon} className="h-4 w-4" />
+          <HugeiconsIcon icon={CopyIcon} className="h-4 w-4" strokeWidth={2} />
         </Button>
         <Button
           variant="secondary"
@@ -138,7 +138,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
         >
           <HugeiconsIcon icon={RefreshIcon} className={cn("h-4 w-4", {
             "animate-spin": isGenerating
-          })} />
+          })}  strokeWidth={2}/>
         </Button>
       </div>
 
@@ -186,7 +186,7 @@ export function ThorSync({ setIsOpen, onBack }: { setIsOpen: (isOpen: boolean) =
                     }
                   }}
                 >
-                  <HugeiconsIcon icon={CopyIcon} className="h-3 w-3" />
+                  <HugeiconsIcon icon={CopyIcon} className="h-3 w-3" strokeWidth={2} />
                 </Button>
               </div>
             </div>

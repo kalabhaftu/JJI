@@ -184,7 +184,7 @@ export function AdvancedExportDialog() {
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="secondary">
-          <HugeiconsIcon icon={DatabaseIcon} className="mr-2 h-4 w-4" /> System Backup
+          <HugeiconsIcon icon={DatabaseIcon} className="mr-2 h-4 w-4"  strokeWidth={2}/> System Backup
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full max-w-4xl max-h-[90vh] flex flex-col">
@@ -340,7 +340,7 @@ export function AdvancedExportDialog() {
                 </>
               ) : (
                 <>
-                  <HugeiconsIcon icon={Download01Icon} className="mr-2 h-4 w-4" />
+                  <HugeiconsIcon icon={Download01Icon} className="mr-2 h-4 w-4" strokeWidth={2} />
                   Download Backup
                 </>
               )}

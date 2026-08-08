@@ -16,13 +16,14 @@ import {
   Database01Icon,
   Bookmark01Icon,
   RefreshIcon,
-  SidebarLeft01Icon,
-  SidebarLeftIcon,
+  PanelLeftOpenIcon,
+  PanelLeftCloseIcon,
   Comment01Icon,
   FavouriteIcon,
   Award01Icon,
   Logout01Icon,
   Brain01Icon,
+  More01Icon,
 } from '@hugeicons/core-free-icons'
 
 import {
@@ -63,7 +64,7 @@ const navigationIcons: Record<NavigationId, HugeiconsIconProps['icon']> = {
   overview: DashboardSquare01Icon, journal: Calendar01Icon, reports: AnalyticsUpIcon, table: Task01Icon,
   accounts: Briefcase01Icon, playbook: BookOpen01Icon, backtesting: TestTube01Icon, goals: Award01Icon,
   assistant: Brain01Icon, data: Database01Icon, settings: Settings02Icon, docs: Bookmark01Icon,
-  feedback: Comment01Icon, donate: FavouriteIcon, more: DashboardSquare01Icon,
+  feedback: Comment01Icon, donate: FavouriteIcon, more: More01Icon,
 }
 
 function NavIcon({ icon, spin = false }: { icon: HugeiconsIconProps['icon']; spin?: boolean }) {
@@ -195,7 +196,7 @@ export function DashboardSidebar({ siteUiSettings }: { siteUiSettings: SiteUiSet
 
   const activeId = getActiveNavigationId(pathname || '', navigationContext)
   const collapseLabel = isCollapsed ? 'Expand' : 'Collapse'
-  const CollapseIcon = isCollapsed ? SidebarLeftIcon : SidebarLeft01Icon
+  const CollapseIcon = isCollapsed ? PanelLeftOpenIcon : PanelLeftCloseIcon
 
   const handleMobileClose = () => {
     if (isOverlay) {

@@ -136,7 +136,7 @@ export function EditLiveAccountDialog({
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <HugeiconsIcon icon={User02Icon} className="h-5 w-5" />
+            <HugeiconsIcon icon={User02Icon} className="h-5 w-5" strokeWidth={2} />
             Edit Account
           </DialogTitle>
           <DialogDescription>

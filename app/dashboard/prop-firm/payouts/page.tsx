@@ -98,11 +98,11 @@ export default function PayoutsPage() {
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'pending': return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
-      case 'approved': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
-      case 'paid': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" />
-      case 'rejected': return <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
-      default: return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" />
+      case 'pending': return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" strokeWidth={2} />
+      case 'approved': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" strokeWidth={2} />
+      case 'paid': return <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4" strokeWidth={2} />
+      case 'rejected': return <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} />
+      default: return <HugeiconsIcon icon={Clock01Icon} className="h-4 w-4" strokeWidth={2} />
     }
   }
 
@@ -133,7 +133,7 @@ export default function PayoutsPage() {
             size="sm"
             onClick={() => router.push('/dashboard/prop-firm')}
           >
-            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+            <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
             Back
           </Button>
           <div>
@@ -148,7 +148,7 @@ export default function PayoutsPage() {
             onClick={() => payoutsQuery.refetch()}
             disabled={isLoading}
           >
-            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4" />}
+            {isLoading ? <Spinner className="mr-2 h-4 w-4" /> : <HugeiconsIcon icon={RefreshIcon} className="mr-2 h-4 w-4"  strokeWidth={2}/>}
             Refresh
           </Button>
         </div>
@@ -171,7 +171,7 @@ export default function PayoutsPage() {
       ) : filteredPayouts.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center justify-center h-64">
-            <HugeiconsIcon icon={Alert02Icon} className="h-12 w-12 text-muted-foreground mb-4" />
+            <HugeiconsIcon icon={Alert02Icon} className="h-12 w-12 text-muted-foreground mb-4" strokeWidth={2} />
             <h3 className="text-lg font-semibold mb-2">
               {searchTerm ? 'No results found' : 'No payouts found'}
             </h3>
@@ -199,7 +199,7 @@ export default function PayoutsPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div className="flex items-center gap-2">
-                        <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
+                        <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
                         <div>
                           <p className="text-xs text-muted-foreground">Requested</p>
                           <p className="font-medium">{formatCurrency(payout.amountRequested)}</p>
@@ -207,7 +207,7 @@ export default function PayoutsPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <HugeiconsIcon icon={CreditCardIcon} className="h-4 w-4 text-muted-foreground" />
+                        <HugeiconsIcon icon={CreditCardIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
                         <div>
                           <p className="text-xs text-muted-foreground">Paid</p>
                           <p className="font-medium">{formatCurrency(payout.amountPaid)}</p>
@@ -215,7 +215,7 @@ export default function PayoutsPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4 text-muted-foreground" />
+                        <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
                         <div>
                           <p className="text-xs text-muted-foreground">Requested Date</p>
                           <p className="font-medium">{formatDate(payout.requestedAt)}</p>
@@ -225,7 +225,7 @@ export default function PayoutsPage() {
 
                     {payout.paidAt && (
                       <div className="flex items-center gap-2">
-                        <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4 text-muted-foreground" />
+                        <HugeiconsIcon icon={Calendar01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
                         <div>
                           <p className="text-xs text-muted-foreground">Paid Date</p>
                           <p className="font-medium">{formatDate(payout.paidAt)}</p>

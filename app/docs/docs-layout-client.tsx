@@ -177,7 +177,7 @@ function DocsNav({
       {docsNavigation.map((section) => (
         <section key={section.title} className="space-y-2">
           <div className="flex items-center gap-2 px-1 text-[10px] font-black uppercase tracking-[0.24em] text-muted-foreground/70">
-            <HugeiconsIcon icon={section.icon} className="h-3.5 w-3.5" strokeWidth={1.5} color="currentColor" />
+            <HugeiconsIcon icon={section.icon} className="h-3.5 w-3.5" strokeWidth={2} color="currentColor" />
             <span>{section.title}</span>
           </div>
 
@@ -206,7 +206,7 @@ icon={ChevronRightIcon}
                         'ml-auto h-3.5 w-3.5 transition-transform',
                         itemActive ? 'text-primary-foreground/80' : 'translate-x-0.5 text-muted-foreground/60'
                       )}
-                      strokeWidth={1.5}
+                      strokeWidth={2}
                       color="currentColor"
                     />
                   </Link>
@@ -279,7 +279,7 @@ function DocsSearchPanel({
 
   return (
     <div className="relative">
-      <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+      <HugeiconsIcon icon={Search01Icon} className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" strokeWidth={2} color="currentColor" />
       <Input
         ref={inputRef}
         value={searchQuery}
@@ -317,7 +317,7 @@ function DocsSearchPanel({
                       {result.section}
                     </p>
                   </div>
-                  <HugeiconsIcon icon={ChevronRightIcon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={ChevronRightIcon} className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" strokeWidth={2} color="currentColor" />
                 </Link>
               ))
             ) : (
@@ -442,7 +442,7 @@ export function DocsLayoutClient({ children }: { children: ReactNode }) {
             <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
               <SheetTrigger asChild>
                 <Button variant="secondary" className="rounded-2xl">
-                  <HugeiconsIcon icon={Menu01Icon} className="mr-2 h-4 w-4" strokeWidth={1.5} color="currentColor" />
+                  <HugeiconsIcon icon={Menu01Icon} className="mr-2 h-4 w-4" strokeWidth={2} color="currentColor" />
                   Browse Docs
                 </Button>
               </SheetTrigger>

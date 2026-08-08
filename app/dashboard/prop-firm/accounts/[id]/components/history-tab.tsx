@@ -82,11 +82,11 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
     if (isFundedPhase(phaseNumber) && status === 'active') return <HugeiconsIcon icon={Award01Icon} className="h-5 w-5 text-primary" strokeWidth={2} color="currentColor" />
 
     switch (status) {
-      case 'active': return <HugeiconsIcon icon={Clock01Icon} className="h-5 w-5 text-primary" />
+      case 'active': return <HugeiconsIcon icon={Clock01Icon} className="h-5 w-5 text-primary" strokeWidth={2} />
       case 'archived':
-      case 'passed': return <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-long" />
-      case 'failed': return <HugeiconsIcon icon={CircleXIcon} className="h-5 w-5 text-destructive" />
-      default: return <HugeiconsIcon icon={Clock01Icon} className="h-5 w-5 text-muted-foreground" />
+      case 'passed': return <HugeiconsIcon icon={CircleCheckIcon} className="h-5 w-5 text-long" strokeWidth={2} />
+      case 'failed': return <HugeiconsIcon icon={CircleXIcon} className="h-5 w-5 text-destructive" strokeWidth={2} />
+      default: return <HugeiconsIcon icon={Clock01Icon} className="h-5 w-5 text-muted-foreground" strokeWidth={2} />
     }
   }
 
@@ -157,7 +157,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                 <p className="text-xs text-muted-foreground mt-1">Phase{completedPhases.length !== 1 ? 's' : ''} passed</p>
               </div>
               <div className="p-3 bg-long/10 rounded-lg">
-                <HugeiconsIcon icon={CircleCheckIcon} className="h-8 w-8 text-long" />
+                <HugeiconsIcon icon={CircleCheckIcon} className="h-8 w-8 text-long" strokeWidth={2} />
               </div>
             </div>
           </CardContent>
@@ -174,7 +174,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                 )}
               </div>
               <div className="p-3 bg-primary/10 rounded-lg">
-                <HugeiconsIcon icon={Clock01Icon} className="h-8 w-8 text-primary" />
+                <HugeiconsIcon icon={Clock01Icon} className="h-8 w-8 text-primary" strokeWidth={2} />
               </div>
             </div>
           </CardContent>
@@ -189,7 +189,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                 <p className="text-xs text-muted-foreground mt-1">Attempt{failedPhases.length !== 1 ? 's' : ''}</p>
               </div>
               <div className="p-3 bg-destructive/10 rounded-lg">
-                <HugeiconsIcon icon={CircleXIcon} className="h-8 w-8 text-destructive" />
+                <HugeiconsIcon icon={CircleXIcon} className="h-8 w-8 text-destructive" strokeWidth={2} />
               </div>
             </div>
           </CardContent>
@@ -391,7 +391,7 @@ export function HistoryTab({ accountName, propFirmName, accountSize, phases, bre
                               <div className="flex items-center gap-1">
                                 <p className="text-lg font-semibold">{Math.min(phase.profitProgress, 100).toFixed(0)}%</p>
                                 {phase.profitProgress >= 100 && (
-                                  <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" />
+                                  <HugeiconsIcon icon={CircleCheckIcon} className="h-4 w-4 text-long" strokeWidth={2} />
                                 )}
                               </div>
                             </div>

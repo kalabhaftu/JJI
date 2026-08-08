@@ -70,7 +70,7 @@ function AccountTradesTab({ accountNumber, trades }: { accountNumber: string; tr
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-16">
-          <HugeiconsIcon icon={Calendar01Icon} className="h-12 w-12 text-muted-foreground/30 mb-4" />
+          <HugeiconsIcon icon={Calendar01Icon} className="h-12 w-12 text-muted-foreground/30 mb-4" strokeWidth={2} />
           <h3 className="text-lg font-semibold mb-1">No Trades Yet</h3>
           <p className="text-sm text-muted-foreground">Import trades to see them here</p>
         </CardContent>
@@ -167,7 +167,7 @@ function AccountAnalyticsTab({ accountNumber, trades }: { accountNumber: string;
     return (
       <Card>
         <CardContent className="flex flex-col items-center justify-center py-16">
-          <HugeiconsIcon icon={BarChartIcon} className="h-12 w-12 text-muted-foreground/30 mb-4" />
+          <HugeiconsIcon icon={BarChartIcon} className="h-12 w-12 text-muted-foreground/30 mb-4" strokeWidth={2} />
           <h3 className="text-lg font-semibold mb-1">No Data Yet</h3>
           <p className="text-sm text-muted-foreground">Import trades to see analytics</p>
         </CardContent>
@@ -281,7 +281,7 @@ export default function LiveAccountDetailPage() {
               onClick={() => router.push('/dashboard/accounts')}
               className="w-fit"
             >
-              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" />
+              <HugeiconsIcon icon={ArrowLeft01Icon} className="h-4 w-4 mr-2" strokeWidth={2} />
               Back
             </Button>
             <div className="flex flex-wrap items-center gap-2">
@@ -307,7 +307,7 @@ export default function LiveAccountDetailPage() {
               onClick={() => void queryClient.invalidateQueries({ queryKey: queryKeys.account(scope, accountId) })}
               className="w-fit"
             >
-              <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4 sm:mr-2" />
+              <HugeiconsIcon icon={Refresh01Icon} className="h-4 w-4 sm:mr-2" strokeWidth={2} />
               <span className="hidden sm:inline">Refresh</span>
             </Button>
             <Button
@@ -316,7 +316,7 @@ export default function LiveAccountDetailPage() {
               onClick={() => setEditDialogOpen(true)}
               className="w-fit"
             >
-              <HugeiconsIcon icon={Setting06Icon} className="h-4 w-4 sm:mr-2" />
+              <HugeiconsIcon icon={Setting06Icon} className="h-4 w-4 sm:mr-2" strokeWidth={2} />
               <span className="hidden sm:inline">Settings</span>
             </Button>
           </div>
@@ -327,7 +327,7 @@ export default function LiveAccountDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Account Number</CardTitle>
-              <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground" />
+              <HugeiconsIcon icon={Building02Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold font-mono">{account.number}</div>
@@ -337,7 +337,7 @@ export default function LiveAccountDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Starting Balance</CardTitle>
-              <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
+              <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{formatCurrency(account.startingBalance)}</div>
@@ -347,7 +347,7 @@ export default function LiveAccountDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Current Equity</CardTitle>
-              <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" />
+              <HugeiconsIcon icon={Dollar01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
             </CardHeader>
             <CardContent>
               <div className={cn(
@@ -362,7 +362,7 @@ export default function LiveAccountDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Trades</CardTitle>
-              <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 text-muted-foreground" />
+              <HugeiconsIcon icon={Activity01Icon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{account.tradeCount}</div>
@@ -372,7 +372,7 @@ export default function LiveAccountDetailPage() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Net P&L</CardTitle>
-              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 text-muted-foreground" />
+              <HugeiconsIcon icon={TrendingUpDownIcon} className="h-4 w-4 text-muted-foreground" strokeWidth={2} />
             </CardHeader>
             <CardContent>
               <div className={cn(
@@ -432,7 +432,7 @@ export default function LiveAccountDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
-                    <HugeiconsIcon icon={Dollar01Icon} className="w-5 h-5" />
+                    <HugeiconsIcon icon={Dollar01Icon} className="w-5 h-5" strokeWidth={2} />
                     Account Management
                   </CardTitle>
                 </CardHeader>
@@ -448,7 +448,7 @@ export default function LiveAccountDetailPage() {
                       }}
                     >
                       <Button className="w-full bg-long hover:bg-long/90 text-long-foreground">
-                        <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 mr-2" />
+                        <HugeiconsIcon icon={Add01Icon} className="w-4 h-4 mr-2" strokeWidth={2} />
                         Deposit
                       </Button>
                     </TransactionDialog>
@@ -463,7 +463,7 @@ export default function LiveAccountDetailPage() {
                       }}
                     >
                       <Button variant="secondary" className="w-full border-short/20 text-short hover:bg-short/10">
-                        <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4 mr-2" />
+                        <HugeiconsIcon icon={Remove01Icon} className="w-4 h-4 mr-2" strokeWidth={2} />
                         Withdraw
                       </Button>
                     </TransactionDialog>
@@ -510,7 +510,7 @@ export default function LiveAccountDetailPage() {
                     </div>
                   </div>
                   <Button variant="secondary" onClick={() => setEditDialogOpen(true)}>
-                    <HugeiconsIcon icon={Setting06Icon} className="h-4 w-4 mr-2" /> Edit Account Details
+                    <HugeiconsIcon icon={Setting06Icon} className="h-4 w-4 mr-2"  strokeWidth={2}/> Edit Account Details
                   </Button>
                 </div>
               </CardContent>

@@ -34,7 +34,7 @@ export const ResumeWidget: React.FC = () => {
             "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           )}
         >
-          <HugeiconsIcon icon={PlayIcon} className="h-3 w-3" color="currentColor" />
+          <HugeiconsIcon icon={PlayIcon} className="h-3 w-3" color="currentColor" strokeWidth={2} />
           Resume Tour
         </button>
         <button
@@ -46,7 +46,7 @@ export const ResumeWidget: React.FC = () => {
           )}
           aria-label="Close paused tour"
         >
-          <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" color="currentColor" />
+          <HugeiconsIcon icon={Cancel01Icon} className="h-4 w-4" color="currentColor" strokeWidth={2} />
         </button>
       </motion.div>
     </AnimatePresence>

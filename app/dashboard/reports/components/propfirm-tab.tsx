@@ -92,7 +92,7 @@ function AccountPanel({ account }: { account: PropFirmAccountDTO }) {
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0">
             <div className="flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.18em] text-primary/80">
-              <HugeiconsIcon icon={Building02Icon} className="h-3.5 w-3.5 text-primary/70" />
+              <HugeiconsIcon icon={Building02Icon} className="h-3.5 w-3.5 text-primary/70" strokeWidth={2} />
               <span className="truncate">{account.propFirmName}</span>
             </div>
             <h3 className="mt-2 text-sm font-black uppercase tracking-tight text-foreground">{account.accountName}</h3>
@@ -170,7 +170,7 @@ function AccountPanel({ account }: { account: PropFirmAccountDTO }) {
             <div className="mb-3 flex flex-wrap items-center gap-3">
               {account.totalPayouts > 0 && (
                 <div className="flex items-center gap-1.5 text-[10px] font-black text-primary">
-                  <HugeiconsIcon icon={Dollar01Icon} className="h-3.5 w-3.5" />
+                  <HugeiconsIcon icon={Dollar01Icon} className="h-3.5 w-3.5" strokeWidth={2} />
                   ${account.totalPayouts.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} payouts
                 </div>
               )}
@@ -222,7 +222,7 @@ export function PropFirmTab({ initialData }: PropFirmTabProps) {
   if (!data || data.accounts.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/60 bg-muted/5 py-24">
-        <HugeiconsIcon icon={Building02Icon} className="mb-4 h-10 w-10 text-muted-foreground/30" />
+        <HugeiconsIcon icon={Building02Icon} className="mb-4 h-10 w-10 text-muted-foreground/30" strokeWidth={2} />
         <h3 className="mb-2 text-sm font-bold uppercase tracking-widest text-muted-foreground/50">No Prop Firm Accounts</h3>
         <p className="text-xs font-medium text-muted-foreground">Import prop firm trades to see account analysis here.</p>
       </div>
@@ -244,7 +244,7 @@ export function PropFirmTab({ initialData }: PropFirmTabProps) {
         <div className="grid gap-0 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
           <div className="border-b border-border/14 px-5 py-5 lg:border-b-0 lg:border-r">
             <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
-              <HugeiconsIcon icon={Building02Icon} className="h-3.5 w-3.5" />
+              <HugeiconsIcon icon={Building02Icon} className="h-3.5 w-3.5" strokeWidth={2} />
               Funded Overview
             </div>
             <p className={cn('mt-5 font-mono text-4xl font-black tracking-tighter sm:text-5xl', data.totalNetPnL >= 0 ? 'text-long' : 'text-short')}>

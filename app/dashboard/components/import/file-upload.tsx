@@ -213,7 +213,7 @@ export default function FileUpload({
                   ? "text-primary scale-110 -translate-y-1" 
                   : "text-muted-foreground group-hover:text-primary group-hover:-translate-y-1"
               )} 
-            />
+             strokeWidth={2}/>
           </div>
           {isDragActive ? (
             <div className="space-y-1">
@@ -254,7 +254,7 @@ export default function FileUpload({
               >
                 <div className="flex items-center space-x-3 min-w-0">
                   <div className="bg-muted p-2 rounded-lg border border-border group-hover:scale-102 transition-transform">
-                    <HugeiconsIcon icon={File01Icon} className="h-4 w-4 text-foreground/70" />
+                    <HugeiconsIcon icon={File01Icon} className="h-4 w-4 text-foreground/70" strokeWidth={2} />
                   </div>
                   <div className="flex flex-col min-w-0">
                     <span className="text-xs font-semibold text-foreground/90 truncate max-w-[200px] sm:max-w-[320px]">{file.name}</span>
@@ -275,7 +275,7 @@ export default function FileUpload({
                     onClick={() => removeFile(index)}
                     className="h-10 w-10 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   >
-                    <HugeiconsIcon icon={Cancel01Icon} className="h-3.5 w-3.5" />
+                    <HugeiconsIcon icon={Cancel01Icon} className="h-3.5 w-3.5" strokeWidth={2} />
                     <span className="sr-only">Remove file</span>
                   </RevealAction>
                 </div>
@@ -287,7 +287,7 @@ export default function FileUpload({
 
       {uploadedFiles.length > 0 && (
         <div className="flex items-start gap-3 bg-muted/40 border border-border p-3.5 rounded-xl text-xs text-muted-foreground w-full animate-in slide-in-from-bottom-5">
-          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-muted-foreground/80 shrink-0 mt-0.5" />
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4 text-muted-foreground/80 shrink-0 mt-0.5" strokeWidth={2} />
           <p className="leading-relaxed">
             Note: All uploaded files will be concatenated and processed using the selected import type configuration.
           </p>
@@ -296,7 +296,7 @@ export default function FileUpload({
 
       {rejectedFiles.length > 0 && (
         <Alert variant="destructive" className="w-full" data-testid="file-rejection-alert">
-          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" />
+          <HugeiconsIcon icon={Alert02Icon} className="h-4 w-4" strokeWidth={2} />
           <AlertTitle>
             {rejectedFiles.length === 1 ? 'This file could not be imported' : 'Some files could not be imported'}
           </AlertTitle>
